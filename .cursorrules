@@ -1,427 +1,68 @@
 # ============================================================
-# .cursorrules — AI-Powered Bar Management System (Backend)
+# .cursorrules — Bar Management System (Root / Monorepo)
 # ============================================================
-# Read this file before every prompt.
-# Full project context: CLAUDE.md
-# Feature scope:        docs/FRD.md
-# Database schema:      docs/schema.sql
-# Session state:        docs/handoff.md
+# This file covers workspace-wide rules only.
+# Stack-specific rules cascade from subfolder .cursorrules:
+#   app/backend/.cursorrules  → NestJS + hexagonal patterns
+#   app/frontend/.cursorrules → Next.js 15 PWA + Tailwind patterns
+#
+# Reference docs (read before working):
+#   CLAUDE.md          → permanent project context
+#   docs/FRD.md        → feature scope (what is in/out)
+#   docs/schema.sql    → PostgreSQL schema (32 tables, 9 domains)
+#   docs/handoff.md    → current session state (always read this first)
 # ============================================================
 
-## Project Overview
-Bar management system for small-to-medium counter bars in Thailand.
-NestJS modular monolith — REST API + WebSocket gateway + webhook receiver in one process.
-2 developers. Senior capstone project, DPU Computer Engineering. Deadline: April 2027.
-AI integration (OpenAI) for guest preference summary only — not a chat AI.
+## Project at a Glance
+AI-powered bar management POS for small-to-medium counter bars in Thailand.
+Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
+2 developers. Production-grade. Phase 1 = order → pay → close core vertical.
 
-## Tech Stack
-- Runtime:     Node.js 22, ESM (type: "module"), TypeScript 6
-- Framework:   NestJS 12 — ports & adapters (hexagonal) architecture
-- Database:    PostgreSQL, TypeORM — synchronize: false always
-- Cache:       Redis (ElastiCache) — ACL + session + BullMQ + WebSocket pub/sub
-- Queue:       BullMQ (@nestjs/bullmq) — backed by Redis
-- WebSocket:   NestJS Gateway (socket.io + Redis adapter)
-- Auth:        LINE SSO + JWT + refresh token rotation
-- Payment:     PromptPay QR + GB Prime Pay webhook
-- AI:          OpenAI API (guest preference summary — Semester 2)
-- Infra:       AWS ECS/ECR + RDS + S3 + ElastiCache
-- Local dev:   Docker Compose (Postgres + Redis) + ngrok
+## Monorepo Structure (pnpm workspaces + Turborepo)
+/
+├── app/
+│   ├── backend/        @bar/backend  — NestJS API (port 3001)
+│   └── frontend/       @bar/frontend — Next.js 15 PWA (port 3000)
+├── packages/
+│   └── contracts/      @bar/contracts — shared enums & types (source of truth)
+├── docs/               project documentation (FRD, schema, handoff)
+├── .cursorrules        ← this file (monorepo-wide)
+├── CLAUDE.md           ← permanent context for all AI sessions
+├── AGENTS.md           ← hard rules for autonomous agents
+├── turbo.json
+└── pnpm-workspace.yaml
 
-## ESM Import Rules
-- Module resolution: NodeNext — relative imports MUST use .js extension
-  even though the source file is .ts
+## Shared Types (@bar/contracts)
+- packages/contracts/src/enums.ts is the SINGLE source of truth for shared enums
+- Never redefine OrderStatus, PaymentStatus, SessionState, StaffRole in app code
+- Import as: import { OrderStatus } from '@bar/contracts'
+- When adding a new shared enum/type: add to packages/contracts/src/ first, then use it
+- Run `pnpm build` from root after modifying contracts — both apps depend on it
+
+## TypeScript / ESM Rules (applies to all packages)
+- TypeScript 6, strict: true, noUncheckedIndexedAccess: true
+- ESM (type: "module") everywhere — no CommonJS
+- NodeNext module resolution — relative imports MUST include .js extension:
   ✅ import { Foo } from './foo.service.js'
   ❌ import { Foo } from './foo.service'
 - Node built-ins: import { randomUUID } from 'node:crypto'
-- Package imports: no extension needed (import { Injectable } from '@nestjs/common')
+- No barrel index.ts files that re-export everything (causes circular dep issues)
 
-## Architecture: Hexagonal (Ports & Adapters)
+## Git Conventions
+- Conventional commits: feat/fix/chore/docs/refactor/test
+- Scope = module name: feat(order): ..., fix(payment): ...
+- Never commit directly to main — use feature branches
+- PR descriptions: what changed, why, any migration needed
 
-### Layers (strict — never import upward or across)
-1. domain/ports/    → interfaces only. No framework imports. No TypeORM.
-2. application/     → service classes, use cases. Imports ports, not adapters.
-3. infrastructure/  → adapters. Implements ports. Imports frameworks (TypeORM, Redis, etc.)
-4. common/          → shared kernel. No business logic. No domain imports.
+## Scope Discipline — HARD RULES
+- Phase 1 ONLY: guest-in → order → pay → close. No Phase 2 features.
+- CUT features (do NOT implement): offline mode, member QR, staff performance analytics
+- Stretch goals (do NOT start): EKS/Kubernetes, kitchen display UI
+- Do not expand scope without a recorded decision in docs/handoff.md
+- Finish the core vertical before adding breadth
 
-### Rule: application/ NEVER imports from infrastructure/
-Services receive ports via constructor injection.
-The NestJS module wires the concrete adapter to the port token.
-
-### Port naming convention
-- Interface file:          [entity].repository.port.ts
-- Interface name:          I[Entity]Repository
-- DI injection token:      [ENTITY]_REPOSITORY (symbol or string)
-- Adapter implements:      class [Entity]TypeOrmRepository implements I[Entity]Repository
-
-## Project Structure
-app/backend/src/
-├── main.ts
-├── app.module.ts
-│
-├── common/                                  ← shared kernel (no domain imports)
-│   ├── base/
-│   │   └── base.entity.ts                  ← BaseEntity
-│   ├── constants/
-│   │   └── sql-column.constant.ts          ← column type constants (no magic strings)
-│   ├── subscribers/
-│   │   └── audit.subscriber.ts             ← global TypeORM AuditSubscriber
-│   ├── guards/
-│   │   └── permissions.guard.ts            ← reads @RequirePermissions() metadata
-│   ├── decorators/
-│   │   ├── current-user.decorator.ts       ← @CurrentUser() param decorator
-│   │   └── require-permissions.decorator.ts ← @RequirePermissions('orders:create')
-│   ├── filters/
-│   │   └── all-exceptions.filter.ts
-│   ├── interceptors/
-│   │   └── transform-response.interceptor.ts
-│   └── common.module.ts
-│
-└── modules/
-    │
-    ├── auth/
-    │   ├── application/
-    │   │   └── auth.service.ts
-    │   ├── infrastructure/
-    │   │   └── http/
-    │   │       ├── auth.controller.ts
-    │   │       └── dto/
-    │   └── auth.module.ts
-    │
-    ├── iam/                                 ← staff users, groups, policies, permissions
-    │   ├── domain/
-    │   │   └── ports/
-    │   │       ├── staff-user.repository.port.ts
-    │   │       ├── staff-group.repository.port.ts
-    │   │       └── policy.repository.port.ts
-    │   ├── application/
-    │   │   ├── staff-user.service.ts
-    │   │   ├── staff-group.service.ts
-    │   │   └── permission-resolver.service.ts  ← resolves + caches in Redis
-    │   ├── infrastructure/
-    │   │   ├── http/
-    │   │   │   ├── staff-user.controller.ts
-    │   │   │   ├── staff-group.controller.ts
-    │   │   │   └── dto/
-    │   │   └── persistence/
-    │   │       ├── staff-user.entity.ts
-    │   │       ├── staff-user-identity.entity.ts
-    │   │       ├── staff-group.entity.ts
-    │   │       ├── user-group-membership.entity.ts
-    │   │       ├── policy.entity.ts
-    │   │       ├── permission.entity.ts
-    │   │       ├── policy-permission.entity.ts
-    │   │       ├── group-policy.entity.ts
-    │   │       ├── user-policy.entity.ts
-    │   │       ├── staff-user.typeorm.repository.ts
-    │   │       ├── staff-group.typeorm.repository.ts
-    │   │       └── policy.typeorm.repository.ts
-    │   └── iam.module.ts
-    │
-    ├── venue/
-    │   ├── domain/ports/
-    │   │   └── venue.repository.port.ts
-    │   ├── application/
-    │   │   └── venue.service.ts
-    │   ├── infrastructure/
-    │   │   ├── http/ + dto/
-    │   │   └── persistence/
-    │   │       ├── venue.entity.ts
-    │   │       ├── table-seat.entity.ts
-    │   │       └── venue.typeorm.repository.ts
-    │   └── venue.module.ts
-    │
-    ├── guest/
-    │   ├── domain/ports/
-    │   │   ├── customer.repository.port.ts
-    │   │   └── visit.repository.port.ts
-    │   ├── application/
-    │   │   ├── customer.service.ts
-    │   │   └── visit.service.ts            ← visit state machine lives here
-    │   ├── infrastructure/
-    │   │   ├── http/ + dto/
-    │   │   └── persistence/
-    │   │       ├── customer.entity.ts
-    │   │       ├── customer-identity.entity.ts
-    │   │       ├── visit.entity.ts
-    │   │       ├── customer.typeorm.repository.ts
-    │   │       └── visit.typeorm.repository.ts
-    │   └── guest.module.ts
-    │
-    ├── menu/
-    │   ├── domain/ports/
-    │   │   └── menu.repository.port.ts
-    │   ├── application/
-    │   │   └── menu.service.ts
-    │   ├── infrastructure/
-    │   │   ├── http/ + dto/
-    │   │   └── persistence/
-    │   │       ├── menu-category.entity.ts
-    │   │       ├── menu-item.entity.ts
-    │   │       ├── menu-item-variant.entity.ts
-    │   │       ├── modifier-group.entity.ts
-    │   │       ├── modifier-option.entity.ts
-    │   │       ├── menu-variant-modifier-group.entity.ts
-    │   │       ├── menu-variant-ingredient.entity.ts   ← recipe link, owned by Menu
-    │   │       └── menu.typeorm.repository.ts
-    │   └── menu.module.ts
-    │
-    ├── inventory/
-    │   ├── domain/ports/
-    │   │   └── inventory.repository.port.ts
-    │   ├── application/
-    │   │   └── inventory.service.ts
-    │   ├── infrastructure/
-    │   │   ├── http/ + dto/
-    │   │   └── persistence/
-    │   │       ├── inventory-item.entity.ts
-    │   │       ├── inventory-transaction.entity.ts
-    │   │       └── inventory.typeorm.repository.ts
-    │   └── inventory.module.ts
-    │
-    ├── order/
-    │   ├── domain/ports/
-    │   │   └── order.repository.port.ts
-    │   ├── application/
-    │   │   └── order.service.ts            ← order state machine, triggers inventory deduction
-    │   ├── infrastructure/
-    │   │   ├── http/ + dto/
-    │   │   └── persistence/
-    │   │       ├── order-record.entity.ts
-    │   │       ├── order-item.entity.ts
-    │   │       ├── order-item-modifier.entity.ts
-    │   │       └── order.typeorm.repository.ts
-    │   └── order.module.ts
-    │
-    ├── payment/
-    │   ├── domain/ports/
-    │   │   └── payment.repository.port.ts
-    │   ├── application/
-    │   │   └── payment.service.ts
-    │   ├── infrastructure/
-    │   │   ├── http/
-    │   │   │   ├── payment.controller.ts   ← REST endpoints + webhook receiver
-    │   │   │   └── dto/
-    │   │   ├── persistence/
-    │   │   │   ├── payment.entity.ts
-    │   │   │   ├── payment-order.entity.ts
-    │   │   │   └── payment.typeorm.repository.ts
-    │   │   └── queue/
-    │   │       └── payment.processor.ts    ← BullMQ consumer (same module, separate class)
-    │   └── payment.module.ts
-    │
-    ├── bottle-keep/
-    │   ├── domain/ports/
-    │   │   └── bottle-keep.repository.port.ts
-    │   ├── application/
-    │   │   └── bottle-keep.service.ts
-    │   ├── infrastructure/
-    │   │   ├── http/ + dto/
-    │   │   └── persistence/
-    │   │       ├── bottle-keep.entity.ts
-    │   │       ├── bottle-keep-pour.entity.ts
-    │   │       └── bottle-keep.typeorm.repository.ts
-    │   └── bottle-keep.module.ts
-    │
-    └── notifications/
-        ├── application/
-        │   └── notifications.service.ts    ← injectable by Order, Payment
-        ├── infrastructure/
-        │   └── ws/
-        │       └── notifications.gateway.ts ← socket.io gateway adapter
-        └── notifications.module.ts
-
-## BaseEntity
-File: common/base/base.entity.ts
-All mutable entities extend BaseEntity. Never repeat these columns.
-- id:         UUID PK (@PrimaryGeneratedColumn('uuid'))
-- createdBy:  UUID FK → staff_user (nullable)
-- updatedBy:  UUID FK → staff_user (nullable)
-- createdAt:  timestamptz, default NOW()
-- updatedAt:  timestamptz, default NOW()
-
-AuditLog does NOT extend BaseEntity — it has its own schema.
-BaseEntity FK columns are populated automatically by AuditSubscriber via @nestjs/cls.
-Never manually set createdBy / updatedBy in service code.
-
-## Column Type Constants
-File: common/constants/sql-column.constant.ts
-No magic strings for column types anywhere in the codebase.
-Always import and use named constants:
-export const COL = {
-  UUID:       { type: 'uuid' },
-  VARCHAR200: { type: 'varchar', length: 200 },
-  VARCHAR100: { type: 'varchar', length: 100 },
-  TEXT:       { type: 'text' },
-  BOOL:       { type: 'boolean' },
-  NUMERIC102: { type: 'numeric', precision: 10, scale: 2 },
-  NUMERIC123: { type: 'numeric', precision: 12, scale: 3 },
-  TIMESTAMPTZ:{ type: 'timestamptz' },
-  JSONB:      { type: 'jsonb' },
-  SMALLINT:   { type: 'smallint' },
-} as const;
-
-## TypeORM Rules
-- synchronize: false — always, no exceptions
-- No eager: true on any relation
-- Always @JoinColumn({ name: 'snake_case_column_name' }) on the owning (@ManyToOne) side
-- camelCase properties; TypeORM maps to snake_case via SnakeNamingStrategy
-- Nullable FK: { nullable: true } on both @Column and @ManyToOne
-- Relations loaded explicitly via relations: {} in queries — never auto-loaded
-- All relations declare both sides: @ManyToOne on child, @OneToMany on parent
-- No @Exclude() on entities — mapper functions handle response shaping
-- namingStrategy: SnakeNamingStrategy from typeorm-naming-strategies
-- Use save() not update() on all audited entities — AuditSubscriber needs databaseEntity
-- All queries filter deletedOn: IsNull() unless explicitly fetching deleted records
-- SSL: enabled when NODE_ENV !== 'local' — { rejectUnauthorized: false }
-
-## Entity Injection Token Pattern
-Every port has a Symbol token in the same file.
-The module binds the TypeORM adapter to that token.
-
-// staff-user.repository.port.ts
-export const STAFF_USER_REPOSITORY = Symbol('STAFF_USER_REPOSITORY');
-export interface IStaffUserRepository { ... }
-
-// iam.module.ts
-providers: [
-  { provide: STAFF_USER_REPOSITORY, useClass: StaffUserTypeOrmRepository },
-  StaffUserService,  // receives IStaffUserRepository via @Inject(STAFF_USER_REPOSITORY)
-]
-
-## DTO Pattern
-- Zod schemas for all DTOs — inferred TypeScript types, NOT classes
-- DTOs are plain types: export type CreateOrderDto = z.infer<typeof CreateOrderSchema>
-- Use plain mapper functions (toOrderDto, toOrderItemDto) for entity → response shape
-- Do NOT use class-based DTOs with static from() methods
-- Controller owns response shape — calls mapper after service returns entity
-- No class-validator / class-transformer on DTOs
-
-## IAM & Permissions
-- permission format: 'resource:action' e.g. 'orders:create', 'menu:manage'
-- @RequirePermissions('orders:create') on controller methods
-- PermissionsGuard (in common/) resolves the current user's effective permissions:
-  1. Load group memberships where NOW() BETWEEN valid_from AND valid_until (or valid_until IS NULL)
-  2. Union of all group policies + direct user policies → union of all permissions
-  3. Cache result in Redis key: `acl:{userId}` with short TTL
-  4. Invalidate on ANY IAM change (group membership, policy assignment)
-- permission-resolver.service.ts in IamModule — exported so AuthModule can use it
-- PermissionsGuard in CommonModule — imports IamModule to call permission-resolver
-- Never inline permission checks in service code — always go through the guard
-
-## Auth Pattern (LINE SSO)
-- LINE Login callback → exchange code → get LINE profile → upsert staff_user_identity
-- Issue JWT access token (short-lived) + refresh token (long-lived, stored in HttpOnly cookie)
-- Refresh rotation: old refresh token invalidated on use
-- JWT payload: { sub: staffUserId, venueId }
-- @CurrentUser() decorator extracts JWT payload from request
-
-## BullMQ Pattern (PaymentModule)
-- Queue name: 'payments'
-- Webhook controller: validate → check gateway_tx_id idempotency → enqueue job → return 200 fast
-- Processor (payment.processor.ts): dequeue → update payment status → emit WebSocket event
-- Idempotency: SELECT payment WHERE gateway_tx_id = $1 before processing
-- Race condition: pessimistic lock (SELECT ... FOR UPDATE) on visit row when creating payment
-  ConflictException if PENDING payment already exists for that visit
-- Never delete failed jobs — let BullMQ retry with backoff
-- Processor lives in infrastructure/queue/ inside PaymentModule — not a separate module
-
-## WebSocket Pattern (NotificationsModule)
-- NotificationsGateway: socket.io adapter, manages room subscriptions
-- NotificationsService: injectable by OrderModule, PaymentModule — emits events
-- Rooms: 'pos' | 'bar-display' | 'kitchen-display'
-- Multi-instance: Redis adapter (socket.io-redis) bridges ECS tasks
-- Never import NotificationsGateway directly into domain modules — import NotificationsService
-- OrderModule → NotificationsService.emitOrderUpdate(room, payload)
-- PaymentModule → NotificationsService.emitPaymentUpdate(room, payload)
-
-## Transaction Management
-- @nestjs-cls/transactional + @nestjs-cls/transactional-adapter-typeorm
-- @Transactional() decorator on service methods that span multiple repos
-- Never manually pass EntityManager to repository methods
-- Payment status update to FAILED always runs OUTSIDE transaction
-  (must persist even when transaction rolls back)
-
-## Config Pattern
-- ConfigModule.forRoot() in AppModule only
-- ConfigModule.forFeature(registerAs('domain', () => ({...}))) per module
-- Each domain config has its own typed wrapper class
-- All reads from process.env — source is irrelevant to the app
-- registerAs domains:
-  'database'  → DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME
-  'redis'     → REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
-  'auth'      → LINE_CLIENT_ID, LINE_CLIENT_SECRET, LINE_CALLBACK_URL
-  'jwt'       → JWT_SECRET, JWT_EXPIRES_IN, REFRESH_TOKEN_SECRET, REFRESH_TOKEN_EXPIRES_IN
-  'payment'   → GB_PRIME_SECRET, GB_PRIME_PUBLIC_KEY
-  'openai'    → OPENAI_API_KEY, OPENAI_MODEL (Semester 2)
-
-## Environment Convention
-NODE_ENV=local       → developer machine, Docker Compose, no SSL
-NODE_ENV=development → shared dev, RDS dev, SSL enabled
-NODE_ENV=production  → live, RDS prod, SSL enabled
-SSL: enabled when NODE_ENV !== 'local'
-
-## Module Rules
-- Feature modules export their Service, never their Repository
-- Never share a repository across modules — share the service instead
-- Domain modules import other domain modules when they need their service
-- IamModule exports PermissionResolverService (used by CommonModule's guard)
-- NotificationsModule exported globally — import once in AppModule
-- Audit log has no module — AuditSubscriber in CommonModule handles it globally
-
-## AuditSubscriber Rules
-- Registered once in AppModule via DataSource event subscriber
-- Listens to afterInsert + afterUpdate on all entities extending BaseEntity
-- Reads current staff user from @nestjs/cls context (set by JWT middleware)
-- Skips audit meta-fields: createdBy, updatedBy, createdAt, updatedAt
-- diff format: { fieldName: { from: oldVal, to: newVal } } — scalar fields only
-- audit_log is append-only: never UPDATE or DELETE it
-
-## Critical Domain Rules
-- price snapshots: order_item.unit_price_snapshot frozen at order time
-  Menu price changes NEVER affect existing orders
-- payment idempotency: always check gateway_tx_id uniqueness before processing webhook
-- visit state machine: open → closed | abandoned. Never reopen a closed visit.
-  VistService owns state transitions — no direct state mutation elsewhere
-- bottle-keep is NOT inventory: already sold to customer. No inventory deduction on pour.
-- menu_variant_ingredient lives in MenuModule (recipe definition)
-  InventoryModule receives deduction calls from OrderModule — it never reads menu tables
-- kitchen_display_enabled stored in venue table (not env var) — admin toggles at runtime
-- PDPA: customer_id on visit is nullable — linked post-hoc with explicit consent only
-  AI summarizes preferences only — never behavioral judgment, never identity inference
-
-## Shared Types (@bar/contracts)
-- Import shared enums from '@bar/contracts' in both frontend and backend
-- OrderStatus, PaymentStatus, SessionState, StaffRole already defined
-- Add new shared types to packages/contracts/src/ as domains are built
-
-## Soft Delete
-- Never hard delete any record
-- Soft delete: deletedAt timestamptz + deletedBy UUID on the entity
-  (add to individual entities that need it, not to BaseEntity)
-- Always filter deletedAt: IsNull() on active record queries
-
-## What NOT To Do
-- Do NOT use synchronize: true
-- Do NOT use eager: true on relations
-- Do NOT return raw TypeORM entities from controllers — always map to DTO
-- Do NOT import infrastructure/ from application/ layer
-- Do NOT import from another module's infrastructure/ directly — use exported service
-- Do NOT inline permission checks in services — use @RequirePermissions() guard
-- Do NOT use update() on audited entities — use save()
-- Do NOT hard delete records
-- Do NOT store magic strings for column types — use COL constants
-- Do NOT repeat audit columns on individual entities — extend BaseEntity
-- Do NOT add id to individual entities — inherited from BaseEntity
-- Do NOT put business logic in repositories — repositories are data access only
-- Do NOT share repositories across modules
-- Do NOT export repositories from feature modules
-- Do NOT resolve FK codes to IDs inside repositories — service does that
-- Do NOT touch audit_log with UPDATE or DELETE — append only
-- Do NOT reopen a closed visit
-- Do NOT modify order_item.unit_price_snapshot after creation
-- Do NOT process a payment webhook without checking gateway_tx_id idempotency
-- Do NOT build kitchen display UI in Semester 1 — routing logic yes, UI no
-- Do NOT add offline mode, member QR, staff performance analytics (cut from scope)
-- Do NOT add Kubernetes/EKS until ECS is stable and shipped
-- Do NOT expand scope — finish order → pay → close first
-- Do NOT omit .js extensions on relative imports (ESM NodeNext rule)
+## Development Workflow
+- Local: Docker Compose for Postgres + Redis (see docker-compose.yml)
+- pnpm dev → Turborepo runs backend + frontend in parallel
+- Migrations: TypeORM migration:generate → review → migration:run (never synchronize: true)
+- Feature flags: not used — scope control is in FRD, not flags
