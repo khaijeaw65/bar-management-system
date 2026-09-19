@@ -146,7 +146,7 @@ Build contracts first before using in either app (`pnpm build` from root).
 |---|---|---|---|
 | 1 | GB Prime Pay vs Omise for PromptPay webhook | ⏳ pending | KJ |
 | 2 | S3 bucket strategy: per-venue prefix vs per-venue bucket | ⏳ pending | KJ |
-| 3 | JWT access token storage: HttpOnly cookie vs memory (XSS vs CSRF trade-off) | ⏳ pending | KJ |
+| 3 | JWT access token storage | ✅ decided: HttpOnly cookie for both access + refresh token. Staff-internal tool — CSRF risk acceptable. Frontend never reads tokens. | KJ |
 | 4 | OpenAI model for guest summary (gpt-4o-mini vs gpt-4o) — Semester 2 | 🔲 deferred | — |
 
 ---
