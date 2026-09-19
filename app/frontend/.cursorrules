@@ -1,13 +1,13 @@
 # ============================================================
-# .cursorrules — app/frontend (Next.js 15 PWA + Tailwind)
+# .cursorrules — app/frontend (Next.js 16 PWA + Tailwind)
 # ============================================================
 # Cascades from root .cursorrules. Root rules still apply.
 # Read docs/handoff.md → Frontend section before starting any task.
 # ============================================================
 
 ## Stack
-- Next.js 15 (App Router) — PWA via next-pwa
-- React 19, TypeScript 6, strict mode
+- Next.js 16 (App Router) — PWA via next-pwa
+- React 19, TypeScript 5, strict mode
 - Tailwind CSS v4 — utility-first, no component library (no shadcn, no MUI)
 - pnpm, ESM, NodeNext module resolution (same .js extension rule as backend)
 - @bar/contracts for shared enums (OrderStatus, PaymentStatus, etc.)
