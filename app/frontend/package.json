@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "@bar/frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,8 @@
   "dependencies": {
     "next": "16.3.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "@bar/contracts": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
