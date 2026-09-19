@@ -1,0 +1,43 @@
+# Cursor Rules — AI-Powered Bar Management System
+
+## Context
+Bar management system for Thai counter bars. NestJS backend + Next.js frontend. Senior project, production-grade quality expected.
+Full context: CLAUDE.md | Features: docs/FRD.md | Schema: docs/schema.sql | Session state: docs/handoff.md
+
+## Code Style
+
+### General
+- TypeScript strict mode. No `any` — use `unknown` and narrow it.
+- Prefer explicit return types on all functions.
+- Named exports over default exports (except Next.js pages/layouts).
+- No barrel files (`index.ts` re-exports) in backend modules — they cause circular dependency issues with NestJS DI.
+
+### NestJS (backend/)
+- Layer order: controller → service → repository. No business logic in controllers.
+- One module per domain. Module boundaries follow ERD domains.
+- Always use `PermissionsGuard` — never inline permission checks.
+- Use `save()` not `update()` on TypeORM entities (AuditSubscriber requires it).
+- DTOs with `class-validator` on all controller inputs. Whitelist enabled globally.
+- Async/await throughout. No `.then()` chains.
+- Use `@nestjs/cls` for request-scoped context (current user for audit).
+
+### Next.js (frontend/)
+- App Router. Server Components by default; `'use client'` only when needed.
+- Tailwind CSS only — no inline styles, no CSS modules.
+- Import alias `@/*` maps to `./src/*`.
+- Fetch data in Server Components or React Query (client). No direct API calls inside event handlers.
+
+## Architecture Rules
+- No microservices. One NestJS process (REST + WebSocket + webhook).
+- No Prisma — TypeORM only (Prisma requires build-time network for binary download on ECS).
+- No Redux — React Query for server state, Zustand if client state needed.
+- Redis does 4 jobs: ACL cache, session, BullMQ queue, WebSocket pub/sub. Don't add a 5th unless discussed.
+- BullMQ for async jobs — webhook response must return 200 fast, enqueue and process async.
+
+## What NOT to do
+- Do not split backend into separate services or containers.
+- Do not use `update()` on audited TypeORM entities.
+- Do not add offline mode, member QR, or staff performance analytics (cut from scope).
+- Do not touch audit_log with UPDATE/DELETE — append only.
+- Do not add Kubernetes/EKS until ECS is stable.
+- Do not expand scope without a deliberate decision — finish order → pay → close first.
