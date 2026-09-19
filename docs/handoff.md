@@ -23,7 +23,7 @@ Still in **project setup / scaffold phase**. No business logic implemented yet.
 - [x] Monorepo structure: pnpm workspace + Turborepo wired
 - [x] `app/backend/` — empty NestJS 12 project (ESM, NodeNext, TypeScript 6)
 - [x] `app/frontend/` — empty Next.js 15 project (App Router, Tailwind v4)
-- [x] `packages/contracts/` — shared enums (OrderStatus, PaymentStatus, SessionState, StaffRole)
+- [x] `app/packages/contracts/` — shared enums (OrderStatus, PaymentStatus, SessionState, StaffRole)
 - [x] Root `.cursorrules` — monorepo-wide rules (68 lines, lean)
 - [x] `app/backend/.cursorrules` — full hexagonal NestJS rules (219 lines)
 - [x] `app/frontend/.cursorrules` — Next.js 15 PWA + Tailwind rules (160 lines)

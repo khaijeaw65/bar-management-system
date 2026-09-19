@@ -22,9 +22,9 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 /
 ├── app/
 │   ├── backend/        @bar/backend  — NestJS API (port 3001)
-│   └── frontend/       @bar/frontend — Next.js 15 PWA (port 3000)
-├── packages/
-│   └── contracts/      @bar/contracts — shared enums & types (source of truth)
+│   ├── frontend/       @bar/frontend — Next.js 15 PWA (port 3000)
+│   └── packages/
+│       └── contracts/  @bar/contracts — shared enums & types (source of truth)
 ├── docs/               project documentation (FRD, schema, handoff)
 ├── .cursorrules        ← this file (monorepo-wide)
 ├── CLAUDE.md           ← permanent context for all AI sessions
@@ -33,10 +33,10 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 └── pnpm-workspace.yaml
 
 ## Shared Types (@bar/contracts)
-- packages/contracts/src/enums.ts is the SINGLE source of truth for shared enums
+- app/packages/contracts/src/enums.ts is the SINGLE source of truth for shared enums
 - Never redefine OrderStatus, PaymentStatus, SessionState, StaffRole in app code
 - Import as: import { OrderStatus } from '@bar/contracts'
-- When adding a new shared enum/type: add to packages/contracts/src/ first, then use it
+- When adding a new shared enum/type: add to app/packages/contracts/src/ first, then use it
 - Run `pnpm build` from root after modifying contracts — both apps depend on it
 
 ## TypeScript / ESM Rules (applies to all packages)
