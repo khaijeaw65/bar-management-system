@@ -2,7 +2,7 @@
 
 > **Always-on. All agents, all people.** Human-controlled file (see `agent-boundaries.md`).
 > This file defines HOW work moves. WHAT to build lives in briefs. HOW to write code lives in `core.md` / `backend.md` / `frontend.md`.
-> Rev 5 — 2026-09-23 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
+> Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
 
 ---
 
@@ -48,7 +48,7 @@ docs/
 | Doc | Written by | Lifespan | Template |
 |---|---|---|---|
 | Brief | Field (Cowork may create Drafts) | Stable; revised only by Field | `docs/briefs/_TEMPLATE.md` |
-| State | Owner (via their session) | Overwritten every session, ≤ 40 lines | `docs/state/_TEMPLATE.md` |
+| State | Owner (via their session) | Overwritten every session, ≤ 40 lines · **local only, gitignored** | `docs/state/_TEMPLATE.md` |
 | Handoff | Implementer | Created at `Implemented`, updated if review sends it back, frozen at merge | `docs/handoffs/_TEMPLATE.md` |
 | Decision (DR) | Anyone raises · only Field decides | Permanent | `docs/decisions/_TEMPLATE.md` |
 | Audit | Cowork / Codex | Permanent; a re-audit appends a section | `docs/audits/_TEMPLATE.md` |
@@ -60,6 +60,8 @@ This order resolves *what to build*. It **never** changes role permissions, docu
 `docs/briefs/ui/` holds UI **design** references — inputs to FE/MB briefs, not executable briefs.
 
 **No other state files.** No `SESSION_STATE.md`, no per-agent notes.
+
+**State files are local only** (gitignored; only `_TEMPLATE.md` is committed). Why: they change every session — committing them would need a PR per update on protected `main`, and switching branches would roll them back to a stale version. Each person keeps theirs on their own machine; agents read it from disk. History lives in handoffs, DRs, audits and PRs. Lost file → rebuild from the active brief + `git log`.
 
 ---
 
