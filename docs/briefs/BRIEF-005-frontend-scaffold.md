@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Draft |
-| **Implementer** | เมธี (learning mode — workflow.md §8: he writes ≥ 70%, agents explain/review) |
+| **Implementer** | Field (executor agent — see §6 for running it next to BRIEF-004) |
 | **Affected apps** | frontend |
 | **Revision** | 1 |
 | **Depends on** | none. **Runs in parallel with BRIEF-004** — no shared files except `pnpm-lock.yaml` (see §6) |
@@ -80,7 +80,7 @@ pnpm --filter @bar/frontend test:e2e   # local
 
 ## 6. Constraints
 - **DR-002 overrides `frontend.md`** on: component library (HeroUI allowed; wrap only a component+config used 2+ times), PWA (removed), dark mode (`next-themes`, tokens), `middleware.ts` → `proxy.ts`. Everything else in `frontend.md` applies (named exports, `'use client'` only when needed, React Query for server state, `lib/api/` wrappers, no axios, hardcoded Thai, `_components/` co-location, size limits).
-- **Learning mode (§8):** เมธี writes the components, hooks and tests himself. Agents may scaffold config files (`vitest.config.ts`, `playwright.config.ts`, MSW init) and explain; they don't generate `MenuList*` or the tests. PR walkthrough at G3: เมธี explains the data flow MSW → `apiFetch` → React Query → `MenuList`.
+- **Pattern-setting brief:** every later screen copies the `apiFetch` → React Query → component + states pattern from `/pos/menu`, so keep it plain and readable — it doubles as the reference เมธี learns from. The handoff includes a short "How the data flows" section (MSW → `apiFetch` → React Query → `MenuList`).
 - **HeroUI spike rule:** if a HeroUI v3 component needed here doesn't work with Next 16 / React 19 / Tailwind v4 (SSR errors, theming can't take our tokens), stop that part and raise a DR with what failed — that's the point of the spike.
 - **Lockfile & parallel work:** BRIEF-004 also changes `pnpm-lock.yaml`. Whichever PR merges second: `git merge origin/main`, then `git checkout origin/main -- pnpm-lock.yaml && pnpm install`, commit the lockfile. Routine — no DR.
 - Do not touch `app/backend/**`, `app/packages/**`, `infra/**`, `.github/**`, `turbo.json`.
@@ -121,4 +121,4 @@ pnpm --filter @bar/frontend test:e2e   # local
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
-| 1 | 2026-09-24 | Initial draft (Cowork) |
+| 1 | 2026-09-24 | Initial draft (Cowork) · implementer changed เมธี → Field (Field, same session) |
