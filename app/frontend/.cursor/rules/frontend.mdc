@@ -1,0 +1,7 @@
+---
+description: Next.js 16 frontend architecture, UI, state management, language, and PWA constraints.
+globs: app/frontend/**
+alwaysApply: false
+---
+
+@/docs/rules/frontend.md

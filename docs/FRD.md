@@ -94,6 +94,7 @@ Nobody identifies themselves to buy a drink. Identity offered only when it unloc
   - ☐ Save my preferences & bottle-keep (required for feature)
   - ☐ Send promotions via LINE (optional)
 - Short, benefit-framed text + link to full policy.
+- **Storage:** consent is persisted in a dedicated `customer_consent` table (one row per customer, UNIQUE on `customer_id`). Fields: `data_consent BOOLEAN`, `marketing_consent BOOLEAN`, `consented_at`, `updated_at`. Revocation UPDATEs the existing row — current state is always readable without scanning history.
 
 ### Returning-customer recognition (fallback ladder)
 - **Fast:** LINE OA "My Bottle" button (Semester 2, nothing to save).
@@ -271,6 +272,8 @@ Many collisions above share one root: **state can change between when an action 
 
 - **Guest profile (organic, not form-filled):** name, photo (both optional + consent), drink preferences, visit history, flags (allergy, VIP), color tags, linked bottle-keep.
 - **AI summary:** condenses bartender notes into quick-read. **Preferences only — no behavioral profiling** (no "drinks heavily", "usually alone"). PDPA + non-creepy.
+- **Input source:** `customer.notes` (bartender-written free text). AI is never given order history, visit counts, or spending data.
+- **Fallback when no notes:** AI panel is visible on the identified-guest screen but shows placeholder text: **"ยังไม่มีข้อมูล — ลองถามดูนะ"**. This prompts the bartender to engage and write the first note. Summary generates only once `customer.notes` has content.
 - **Role:** memory aid for staff, not a behavior coach. System surfaces "has this person been here, what do they like"; bartender decides how to use it.
 - **Surfaces:** bartender screen (when regular identified) + QR menu ("recommended for you", own history only).
 

@@ -1,0 +1,7 @@
+---
+description: NestJS backend architecture, TypeORM safety, authorization, payment, and audit invariants.
+globs: app/backend/**
+alwaysApply: false
+---
+
+@/docs/rules/backend.md

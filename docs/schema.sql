@@ -1,6 +1,6 @@
 -- ============================================================
 -- Bar Management System — Initial Schema
--- Generated: 2026-09-13  |  9 domains, 31 tables
+-- Generated: 2026-09-13  |  Updated: 2026-09-22  |  9 domains, 32 tables
 -- ============================================================
 
 -- ── Extensions ───────────────────────────────────────────────
@@ -8,7 +8,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ── Enums ────────────────────────────────────────────────────
 CREATE TYPE identity_provider   AS ENUM ('line', 'phone_otp');
-CREATE TYPE visit_state         AS ENUM ('open', 'closed', 'abandoned');
+CREATE TYPE visit_state         AS ENUM ('open', 'active', 'idle', 'closed', 'abandoned');
 CREATE TYPE item_type           AS ENUM ('simple', 'recipe', 'charge');
 CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue');
 CREATE TYPE order_item_status   AS ENUM ('pending', 'preparing', 'ready', 'cancelled');
@@ -37,7 +37,6 @@ CREATE TABLE venue (
 
 CREATE TABLE table_seat (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  venue_id    UUID NOT NULL REFERENCES venue(id),
   label       VARCHAR(50) NOT NULL,
   sort_order  SMALLINT NOT NULL DEFAULT 0,
   qr_code     VARCHAR(500),
@@ -66,7 +65,7 @@ CREATE TABLE customer_identity (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   customer_id  UUID NOT NULL REFERENCES customer(id),
   provider     identity_provider NOT NULL,
-  external_id  VARCHAR(300) NOT NULL,
+  external_id  VARCHAR(300),           -- nullable for anonymization (PDPA forget-me)
   display_name VARCHAR(200),
   avatar_url   VARCHAR(500),
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -82,6 +81,16 @@ CREATE TABLE visit (
   closed_at      TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE customer_consent (
+  id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  customer_id        UUID NOT NULL REFERENCES customer(id),
+  data_consent       BOOLEAN NOT NULL DEFAULT FALSE,   -- save preferences & bottle-keep (required for feature)
+  marketing_consent  BOOLEAN NOT NULL DEFAULT FALSE,   -- receive LINE promotions (optional)
+  consented_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (customer_id)
 );
 
 -- ============================================================
@@ -106,7 +115,7 @@ CREATE TABLE staff_user_identity (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id      UUID NOT NULL REFERENCES staff_user(id),
   provider     identity_provider NOT NULL,
-  external_id  VARCHAR(300) NOT NULL,
+  external_id  VARCHAR(300),           -- nullable for anonymization (PDPA forget-me)
   display_name VARCHAR(200),
   avatar_url   VARCHAR(500),
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -115,7 +124,6 @@ CREATE TABLE staff_user_identity (
 
 CREATE TABLE staff_group (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  venue_id     UUID NOT NULL REFERENCES venue(id),
   name         VARCHAR(100) NOT NULL,
   description  TEXT,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -135,7 +143,6 @@ CREATE TABLE user_group_membership (
 
 CREATE TABLE policy (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  venue_id     UUID NOT NULL REFERENCES venue(id),
   name         VARCHAR(100) NOT NULL,
   description  TEXT,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -175,7 +182,6 @@ CREATE TABLE user_policy (
 
 CREATE TABLE menu_category (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  venue_id    UUID NOT NULL REFERENCES venue(id),
   name        VARCHAR(200) NOT NULL,
   sort_order  SMALLINT NOT NULL DEFAULT 0,
   is_active   BOOLEAN NOT NULL DEFAULT TRUE,
@@ -215,7 +221,6 @@ CREATE TABLE menu_item_variant (
 
 CREATE TABLE modifier_group (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  venue_id    UUID NOT NULL REFERENCES venue(id),
   name        VARCHAR(200) NOT NULL,
   is_required BOOLEAN NOT NULL DEFAULT FALSE,
   min_select  SMALLINT NOT NULL DEFAULT 0,
@@ -248,7 +253,6 @@ CREATE TABLE menu_variant_modifier_group (
 
 CREATE TABLE inventory_item (
   id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  venue_id             UUID NOT NULL REFERENCES venue(id),
   name                 VARCHAR(200) NOT NULL,
   category             inv_category NOT NULL DEFAULT 'C',
   unit_type            VARCHAR(50),            -- e.g. 'bottle', 'keg', 'ml'
@@ -282,6 +286,17 @@ CREATE TABLE inventory_transaction (
   created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE restock_request (
+  id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  inventory_item_id  UUID NOT NULL REFERENCES inventory_item(id),
+  notes              TEXT,
+  status             VARCHAR(50) NOT NULL DEFAULT 'pending',   -- pending | acknowledged | fulfilled
+  created_by         UUID REFERENCES staff_user(id),
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_by         UUID REFERENCES staff_user(id)
+);
+
 -- ============================================================
 -- 6. ORDER
 -- ============================================================
@@ -302,6 +317,7 @@ CREATE TABLE order_item (
   menu_item_variant_id  UUID NOT NULL REFERENCES menu_item_variant(id),
   quantity              SMALLINT NOT NULL DEFAULT 1,
   unit_price_snapshot   NUMERIC(10,2) NOT NULL,   -- frozen at order time
+  ordered_by_name       VARCHAR(100),           -- e.g. 'Filippo' — label shown on order card
   notes                 TEXT,
   status                order_item_status NOT NULL DEFAULT 'pending',
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -353,6 +369,7 @@ CREATE TABLE bottle_keep (
   remaining_quantity  SMALLINT NOT NULL DEFAULT 1,
   remaining_note      TEXT,           -- e.g. 'ครึ่งขวด', '2 bottles left'
   opened_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at          TIMESTAMPTZ,                    -- bar policy expiry date (e.g. opened_at + 90 days)
   last_used_at        TIMESTAMPTZ,
   location_note       TEXT,
   status              bottle_keep_status NOT NULL DEFAULT 'active',
@@ -362,14 +379,6 @@ CREATE TABLE bottle_keep (
   updated_by          UUID REFERENCES staff_user(id)
 );
 
-CREATE TABLE bottle_keep_pour (
-  id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  bottle_keep_id   UUID NOT NULL REFERENCES bottle_keep(id),
-  visit_id         UUID NOT NULL REFERENCES visit(id),
-  quantity_poured  NUMERIC(12,3) NOT NULL,
-  created_by       UUID REFERENCES staff_user(id),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
 
 -- ============================================================
 -- 9. AUDIT LOG  (append-only — never UPDATE or DELETE)
@@ -417,6 +426,8 @@ CREATE INDEX idx_audit_changed_at    ON audit_log(changed_at DESC);
 
 -- Inventory
 CREATE INDEX idx_inv_tx_item         ON inventory_transaction(inventory_item_id);
+CREATE INDEX idx_restock_item        ON restock_request(inventory_item_id);
+CREATE INDEX idx_restock_status      ON restock_request(status);
 
 -- Bottle keep
 CREATE INDEX idx_bottle_customer     ON bottle_keep(customer_id);
@@ -424,6 +435,7 @@ CREATE INDEX idx_bottle_status       ON bottle_keep(status);
 
 -- Customer identity
 CREATE INDEX idx_cust_identity_cust  ON customer_identity(customer_id);
+CREATE INDEX idx_consent_customer    ON customer_consent(customer_id);
 
 -- ============================================================
 -- SEED — permissions (atomic strings, seeded at boot)
