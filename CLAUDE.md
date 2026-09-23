@@ -56,7 +56,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 | AI | OpenAI API |
 | Auth | LINE SSO + JWT + refresh token rotation |
 | Payment | PromptPay QR + webhook (GB Prime Pay) |
-| Infra | AWS ECS/ECR, RDS, S3, ElastiCache + CloudFormation |
+| Infra | AWS ECS/ECR, RDS, S3, ElastiCache + Terraform (`infra/terraform/`) |
 | CI/CD | GitHub Actions |
 | Local dev | Docker Compose (Postgres + Redis) + ngrok |
 
@@ -82,7 +82,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 
 ### Deployment
 - Frontend → Vercel (free). Backend → AWS ECS + ECR.
-- DNS → Cloudflare (not Route 53). IaC → CloudFormation.
+- DNS → Cloudflare (not Route 53). IaC → Terraform (DR-001) — AWS + Cloudflare from one config.
 - Cloud setup deferred to **last 2 weeks of November**. Local dev via Docker Compose until then.
 
 ---

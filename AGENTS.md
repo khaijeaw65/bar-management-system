@@ -33,7 +33,7 @@ docs/                   → rules/, briefs/, state/, handoffs/, decisions/, audi
 - **Auth:** LINE SSO + JWT + refresh rotation
 - **Payment:** PromptPay QR + GB Prime Pay webhook
 - **AI:** OpenAI API (guest preference summary — never behavioral profiling)
-- **Infra:** AWS ECS/ECR + RDS + S3 + ElastiCache + CloudFormation + Vercel (frontend)
+- **Infra:** AWS ECS/ECR + RDS + S3 + ElastiCache + Terraform (`infra/terraform/`) + Vercel (frontend)
 
 ---
 
