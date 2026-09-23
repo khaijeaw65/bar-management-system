@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | Field (Cursor primary) |
 | **Affected apps** | backend · infra (`infra/docker-compose.yml`) |
 | **Revision** | 1 |
@@ -101,3 +101,4 @@ pnpm --filter @bar/backend build
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-24 | Initial draft (Cowork) |
+| 1 | 2026-09-24 | Ready — approved by Field in session 2026-09-24 (parallel via workflow Rev 13) |
