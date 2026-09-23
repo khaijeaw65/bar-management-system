@@ -5,16 +5,16 @@
 
 ## Active
 - **Phase:** High-level / workflow setup week — no application code this week
-- **Work:** Agent workflow system Rev 4 (Codex audit + re-audit applied) — uncommitted, pending Field review
-- **Checkout:** branch `main` · last commit `9a869b7` (2026-09-19) · uncommitted: large — prior setup work (rules, .cursor/.agents, app/packages move, backend common/) + workflow system
-- **Next step:** Field reviews `docs/rules/workflow.md` Rev 4 + both Disposition sections in `docs/audits/WORKFLOW-codex.md` → commit
+- **Work:** Workflow Rev 4 merged (PR #1). Rev 5 (trunk-based branching + tag deploy) + `SH-001` Draft on branch `docs/branching-and-sh001` — uncommitted
+- **Checkout:** branch `docs/branching-and-sh001` · base `4775aa6` (PR #1 merge) · uncommitted: `docs/rules/workflow.md`, `docs/briefs/SH-001-ci-gate.md`, `docs/state/kj.md`
+- **Next step:** commit + PR #2 → set branch protection → merge PR #2 via admin bypass (first bypass test)
 
 ## Awaiting Field
-- Commit plan: (1) prior setup work, (2) workflow system — separate commits
+- SH-001: decide Postgres image + pnpm version → set Status: Ready
 - GitHub (manual): branch protection on `main` per workflow §7 → record here when verified
 
 ## Queue
-1. `SH-001` CI gate G2 (unlock: `.github/workflows/ci.yml`) + missing scripts (backend typecheck, frontend all, contracts lint/test)
+1. `SH-001` CI gate G2 (Draft written) (unlock: `.github/workflows/ci.yml`) + missing scripts (backend typecheck, frontend all, contracts lint/test)
 2. `SH-002` contracts enum reconciliation (stale vs schema)
 3. `SH-003` config truth: core.md claims vs actual (TS version, module resolution, contracts build, `dev` script)
 4. `BE-000` module scaffold · `FE-000` route scaffold + Vitest · `MB-000` Expo scaffold (unlock: `pnpm-workspace.yaml`, `turbo.json`)
@@ -25,6 +25,8 @@
 - (none)
 
 ## Notes for next session
+- Decided 2026-09-23: trunk-based (`main` only, no dev / per-app branches) · merge never deploys · deploy on Field's `vX.Y.Z` tag
+- Both pptx files were committed in PR #1 — delete the duplicate in a later chore if unwanted
 - Confirmed 2026-09-23: executors mark `Implemented` (เสร็จแล้ว), Field sets `Done` · R2-2 admin bypass for Field's PRs, เมธี's PRs blocked until Field approves
 - Cursor = primary executor for Field, Claude Code = fallback when Cursor hits limit
 - DR backfill from `docs/handoff.md`: only when a brief needs the decision

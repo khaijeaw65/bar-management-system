@@ -2,7 +2,7 @@
 
 > **Always-on. All agents, all people.** Human-controlled file (see `agent-boundaries.md`).
 > This file defines HOW work moves. WHAT to build lives in briefs. HOW to write code lives in `core.md` / `backend.md` / `frontend.md`.
-> Rev 4 — 2026-09-23 — applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
+> Rev 5 — 2026-09-23 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
 
 ---
 
@@ -176,7 +176,27 @@ Why CI and not "the agent says tests pass": agents report green when a test is s
 
 ---
 
-## 7. Git Traceability
+## 7. Branching, Deploy & Git Traceability
+
+### Branch model — trunk-based (decided by Field 2026-09-23)
+- **`main` is the only long-lived branch.** No `dev`, no per-app branches (`frontend` / `mobile` / `backend`).
+- Work happens on **short-lived** branches off `main`, merged by PR, deleted after merge.
+- Why: `@bar/contracts` and the order → pay → close flow cross apps — per-app or dev branches drift and hide integration bugs until late. The brief ID prefix (BE/FE/MB/SH) already tells which app a branch touches, and CI tests only affected packages.
+- Merge method: **Create a merge commit** (keeps the brief's commits visible). Delete the branch after merge.
+
+### Deploy — merging never deploys
+| Event | What happens |
+|---|---|
+| PR opened / updated | CI on affected packages · Vercel **preview** URL for frontend changes |
+| Merge to `main` | CI only. **Nothing deploys.** |
+| Field pushes a tag `vX.Y.Z` | Deploy workflow (frontend → Vercel prod, backend → ECS) |
+| Manual `workflow_dispatch` | Same deploy workflow — for redeploys / rollback to an older tag |
+
+- **Only Field creates release tags.** Tags mark milestones (e.g. `v0.1.0` = core vertical works end-to-end).
+- Vercel auto-deploy of `main` is disabled (`git.deploymentEnabled.main: false`); PR previews stay on.
+- The deploy workflow is its own brief, scheduled with cloud setup (late November). Until then there is nothing to deploy to.
+
+### Traceability
 
 | Item | Format | Example |
 |---|---|---|
