@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Field via Cowork · 2026-09-23 |
 | **Brief** | none (lands with SH-002/SH-003 or BE-000) |
 | **Category** | Flow/Architecture |
@@ -31,6 +31,6 @@ The backend already uses Zod DTOs (`docs/rules/backend.md` — no class-validato
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: A · Rejected · Approved with change: …>
-**Why:**
-**Date:**
+**Decision:** Approved: A
+**Why:** Backend, web and mobile are all TypeScript in one pnpm workspace, so one shared Zod schema per endpoint removes FE/BE shape drift at almost no cost.
+**Date:** 2026-09-24 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR
