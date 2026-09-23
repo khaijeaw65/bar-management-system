@@ -2,7 +2,7 @@
 
 > **Always-on. All agents, all people.** Human-controlled file (see `agent-boundaries.md`).
 > This file defines HOW work moves. WHAT to build lives in briefs. HOW to write code lives in `core.md` / `backend.md` / `frontend.md`.
-> Rev 10 — 2026-09-24 — Cowork may revise a brief / set it Ready after Field reviews and approves in the session (§1, §2, §3). Rev 9 — 2026-09-24 — old prefixes retired + rename map (§2, §10); cross-app brief = one owner only (§2); optional Queue in state (§2). Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
+> Rev 11 — 2026-09-24 — Field authorized routine Git and execution without repeated approval; critical actions remain gated (§4). Rev 10 — 2026-09-24 — Cowork may revise a brief / set it Ready after Field reviews and approves in the session (§1, §2, §3). Rev 9 — 2026-09-24 — old prefixes retired + rename map (§2, §10); cross-app brief = one owner only (§2); optional Queue in state (§2). Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
 
 ---
 
@@ -118,6 +118,29 @@ Field switches tools mid-brief (Cursor → Claude Code when Cursor hits its limi
 - Developers use separate checkouts (separate clones on their machines, or separate worktrees on a shared machine). Never run concurrent branch-changing sessions in one working directory. Ignored state is local to each checkout; copy your own state deliberately when moving, then verify it.
 - List likely overlapping files under Shared files and coordinate via the brief/PR. Another person's unavailable local state is not evidence that a file is free to edit.
 - Resume is one concrete next action; it must match the first Next step. Keep completed work to AC/commit references, not a session log. Preserve unresolved blockers when rewriting state.
+
+### Approval policy — routine work proceeds; critical actions need explicit authority
+Field approved this policy on 2026-09-24. A task/Ready brief authorizes its routine execution: do not ask again at every read, edit, test, commit or feature-branch push. Existing approvals persist for the exact approved scope; a changed target or material effect needs a new decision.
+
+| Proceed without a separate conversational approval | Conditions |
+|---|---|
+| Read/search files; inspect logs/status/diffs; run local lint, typecheck, build and tests | Within the assigned scope and permitted environment; no destructive/shared/production side effects |
+| Edit scoped code/tests, update own state and handoff | Follow role limits, learning mode and protected paths; no new product decision |
+| Install already approved dependencies / restore the existing lockfile environment | No new package/version choice; unexpected manifest or lockfile drift must be inspected, not silently accepted |
+| Git status, diff, log, show, fetch; inspect branches and PR/check status | Use the project's existing remote; do not change remotes, credentials or Git hooks |
+| Create task branch/worktree; switch to the verified task branch; fast-forward pull | Preserve all existing work, use separate checkouts for concurrent sessions, stop on conflicts/ownership uncertainty |
+| Stage exact task files, commit, normal push to the task's non-protected branch; create/update its PR | Inspect staged diff and destination first; keep unrelated files/secrets out; honor required gates and audit-session limits. Never push directly to main. PR creation does not authorize merging. |
+| Update a feature branch from main; rebase only own unpublished commits | Preserve semantics, do not rewrite published/shared history; resolve routine in-scope conflicts, stop when resolution needs a Field-level decision |
+
+**Critical — require explicit authorization for the concrete action (do not ask again if that exact action is already authorized):**
+- New decisions covered by Field Guard (§5): scope/architecture, dependencies, schema/contracts, auth/payment/PDPA. Faithful implementation of an existing approval is routine.
+- Merge to `main`, use admin bypass, approve a PR, set Done, create/push release tags, deploy/rollback, or change branch protections/access/agent permission settings. Field remains the merger/decision authority; general Git permission is not merge/release approval. Review and gate requirements still apply.
+- Force-push (including `--force-with-lease`), rewrite published history, discard existing work (`reset --hard`, destructive restore/checkout, `clean`), delete unmerged branches or shared remote refs, or remove a worktree with uncommitted work.
+- Mutate production/shared data, destructive migrations, delete persistent volumes, expose secrets/private data, or provision paid infrastructure.
+
+Prepare the diff/plan and validation first so a critical approval names the target, effect and recovery implications. Stop only the affected path; continue independent authorized work. Routine Git needs no DR. Field Guard decisions use DRs; operational approvals such as merging a reviewed PR need the explicit instruction, not a redundant DR.
+
+**Tool permission prompts are separate:** this policy removes extra agent questions, not the sandbox, OS permissions or organization controls. If a tool requires approval to write `.git`, use the network or leave allowed paths, follow its approval mechanism and explain the actual restriction. Where supported, request a narrowly scoped reusable command rule; never grant blanket `git *`, disable all approvals, or route around a rejected request. Do not claim this Markdown changes Codex/Claude/Cursor permission settings.
 
 ### Chat commands (shared across tools; not shell or slash commands)
 Names: `kj` / `Field` → `kj.md`; `methee` / `เมธี` → `methee.md`. An explicit name establishes the session owner; reuse it until the user changes it. Ask only when identity is unknown. Naming a person never transfers another person's brief or grants Field's decision authority.
