@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | Field (Cursor primary) |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | none |
 | **References** | `docs/rules/workflow.md` §6 (gates), §7 (branching) · Codex audit findings #1, R2-5 |
 | **Audit depth** | Full — this is the enforcement layer |
@@ -74,6 +74,7 @@ Package-specific gates (justified): contracts = typecheck only (enums/types, not
 ## 7. Decision Points (Field Guard)
 - **Pre-decided (exact only):** `actions/checkout@v4` · `pnpm/action-setup@v4` · `actions/setup-node@v4` with `node-version: 22`, `cache: pnpm` · runner `ubuntu-latest`
   · Postgres e2e service image `postgres:16-alpine` (matches planned RDS PostgreSQL 16 — `docs/infra.md`)
+  · Scripts: `"typecheck": "tsc --noEmit"` in `app/backend/package.json` and `app/frontend/package.json` (script only — no dependency changes)
   · pnpm: root `packageManager` (`pnpm@10.0.0`) is the only source — `pnpm/action-setup@v4` with **no** `version:` input, so it reads the root `package.json`. Do not touch `app/frontend`'s `packageManager` field or `app/frontend/pnpm-lock.yaml` in this brief (cleanup belongs to the config-truth brief).
 - **Likely DRs:** any new devDependency; any change to `turbo.json` task definitions
 
@@ -92,3 +93,4 @@ Package-specific gates (justified): contracts = typecheck only (enums/types, not
 | 1 | 2026-09-23 | Initial draft (Cowork) |
 | 1 | 2026-09-23 | §7 decisions resolved by Field: `postgres:16-alpine` (RDS → 16), root-only pnpm. Still Draft — Field sets Ready |
 | 1 | 2026-09-24 | Renamed SH-001 → BRIEF-001 (workflow Rev 9 rename map). No scope change |
+| 2 | 2026-09-24 | Typecheck scripts added to Pre-decided (§2 scope needed it; `app/*/package.json` is DR-gated). Ready — approved by Field in session 2026-09-24 |
