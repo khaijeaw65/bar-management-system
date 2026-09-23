@@ -47,7 +47,32 @@ CREATE INDEX idx_notification_unread ON notification(recipient_id) WHERE read_at
 - **Endpoints (sketch):** `GET /notifications?cursor=` · `GET /notifications/unread-count` · `PATCH /notifications/:id/read` · `PATCH /notifications/read-all`.
 - **Retention:** decide later (e.g. purge > 30 days via a BullMQ repeatable job). Not needed for Sprint 7.
 
-**Follow-ups (Field, manual — protected):** `docs/schema.sql` (+1 table, +1 enum → 33 tables), `docs/erd.html`, CLAUDE.md table count, FRD §13.
+### Amendment (2026-09-23) — push delivery to the Expo app
+DR-002 #1 makes the Expo app the only background-push channel. The feed table above stores notifications, but there is nowhere to store each phone's push token. Added here so all notification decisions stay in one DR.
+
+```sql
+CREATE TABLE staff_push_token (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  staff_user_id   UUID NOT NULL REFERENCES staff_user(id) ON DELETE CASCADE,
+  expo_push_token VARCHAR(255) NOT NULL UNIQUE,   -- 'ExponentPushToken[…]'
+  platform        VARCHAR(10) NOT NULL CHECK (platform IN ('ios', 'android')),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_seen_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_staff_push_token_user ON staff_push_token(staff_user_id);
+```
+
+- **Not an audited entity** — device registration data, same exception as `notification`.
+- **Flow (extends the one above):** insert `notification` rows → WebSocket `notification:new` → enqueue BullMQ job `notification.push` → send to every token of each recipient via the **Expo Push API** (`https://exp.host/--/api/v2/push/send`, plain `fetch`, no SDK dependency). The app decides what to show in the foreground.
+- **Why Expo Push:** one HTTP call covers iOS + Android; no FCM/APNs server code. Free.
+- **Token hygiene:** `DeviceNotRegistered` in the push receipt → delete that token. `last_seen_at` updated on every app start.
+- **Shared phones:** `PUT` with a token that belongs to another staff user → reassign it to the caller (UNIQUE on the token).
+- **Endpoints (sketch):** `PUT /notifications/push-tokens` body `{ token, platform }` (upsert) · `DELETE /notifications/push-tokens/:token` (logout — see DR-005).
+- **PDPA:** push title/body never contain guest notes or personal data — lock screens are visible to others. Use `title` + a short neutral `body` (e.g. "โต๊ะ 3 · ออเดอร์ใหม่").
+- **iOS:** needs an Apple Developer account ($99/yr). Demo target is Android (EAS free tier); iOS only if the advisor asks.
+- **Table count:** 32 + `notification` + `staff_push_token` = **34**.
+
+**Follow-ups (Field, manual — protected):** `docs/schema.sql` (+2 tables `notification` + `staff_push_token`, +1 enum → **34 tables**), `docs/erd.html`, CLAUDE.md table count, FRD §13.
 
 ---
 
