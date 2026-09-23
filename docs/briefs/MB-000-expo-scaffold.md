@@ -145,7 +145,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 
 ## Before Ready (Field)
 - DR-002 approved (HeroUI Native + Lucide on mobile).
-- DR-005 approved (only for the `barapp` scheme — nothing else from it is built here).
+- ~~DR-005 approved~~ ✅ 2026-09-23
 
 ## After Done (Field / follow-ups)
 - เมธี spike: **menu list screen on HeroUI Native** on a throwaway branch off `main` (same spike as the web one before FE-000). Result recorded in DR-002 before any MB feature brief is Ready.
