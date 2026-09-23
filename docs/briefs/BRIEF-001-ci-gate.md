@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Ready |
+| **Status** | Done |
 | **Implementer** | Field (Cursor primary) |
 | **Revision** | 2 |
 | **Depends on** | none |
@@ -94,3 +94,4 @@ Package-specific gates (justified): contracts = typecheck only (enums/types, not
 | 1 | 2026-09-23 | §7 decisions resolved by Field: `postgres:16-alpine` (RDS → 16), root-only pnpm. Still Draft — Field sets Ready |
 | 1 | 2026-09-24 | Renamed SH-001 → BRIEF-001 (workflow Rev 9 rename map). No scope change |
 | 2 | 2026-09-24 | Typecheck scripts added to Pre-decided (§2 scope needed it; `app/*/package.json` is DR-gated). Ready — approved by Field in session 2026-09-24 |
+| 2 | 2026-09-24 | Done — merged in PR #10 (audit PASS WITH NOTES), `ci` required on `main`. Set by Cowork on Field's explicit instruction |
