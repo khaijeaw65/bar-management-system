@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Field via Cowork · 2026-09-23 |
 | **Brief** | none yet (future BE auth brief + MB auth brief). MB-000 only prepares the `barapp` URL scheme |
 | **Category** | Sensitive (auth) · Flow/Architecture |
@@ -62,7 +62,6 @@ App                                   Backend                         LINE
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: A · Rejected · Approved with change: …>
-**Why:**
-**Date:**
-> Field confirmed option A in the Cowork planning session 2026-09-23 — fill in the Decision section to make it effective.
+**Decision:** Approved: A
+**Why:** The standard native-app OAuth pattern (system browser + app redirect + PKCE). Two new endpoints, no change to the web cookie flow.
+**Date:** 2026-09-23 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR

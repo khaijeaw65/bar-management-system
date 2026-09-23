@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Field via Cowork · 2026-09-23 |
 | **Brief** | none (future BE notifications brief) |
 | **Category** | Data |
@@ -77,6 +77,6 @@ CREATE INDEX idx_staff_push_token_user ON staff_push_token(staff_user_id);
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: A · Rejected · Approved with change: …>
-**Why:**
-**Date:**
+**Decision:** Approved: A + Amendment (push delivery, `staff_push_token`)
+**Why:** The PWA is removed because the Expo staff app now covers native use and background push (DR-002 #1). Web can only get real-time updates while a tab is open, so notifications must be stored as a feed (A). The mobile app needs push, so phone tokens are stored and delivered through the Expo Push API (Amendment).
+**Date:** 2026-09-23 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR
