@@ -6,7 +6,7 @@
 | **Implementer** | Field (executor agent — see §6 for running it next to BRIEF-004) |
 | **Affected apps** | frontend |
 | **Revision** | 1 |
-| **Depends on** | none. **Runs in parallel with BRIEF-004** — no shared files except `pnpm-lock.yaml` (see §6) |
+| **Depends on** | none. **Runs in parallel with BRIEF-004** (workflow §4 exception: own worktree, own agent) — no shared files except `pnpm-lock.yaml` (see §6) |
 | **References** | DR-002 (stack — **overrides `docs/rules/frontend.md` where they conflict**) · DR-004 (one Zod version) · `docs/design-system.md` (tokens, theming) · UI brief `docs/briefs/ui/pos-desktop.md` Screen 5 (menu) · BRIEF-001 audit F2 (typed routes) |
 | **Audit depth** | Compact (UI scaffold) — but check the data-layer pattern carefully; every later screen copies it |
 

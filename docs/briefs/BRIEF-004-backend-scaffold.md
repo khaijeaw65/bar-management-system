@@ -6,7 +6,7 @@
 | **Implementer** | Field (Cursor primary) |
 | **Affected apps** | backend · infra (`infra/docker-compose.yml`) |
 | **Revision** | 1 |
-| **Depends on** | BRIEF-003 (Done). **Runs in parallel with BRIEF-005** — no shared files except `pnpm-lock.yaml` (see §6) |
+| **Depends on** | BRIEF-003 (Done). **Runs in parallel with BRIEF-005** (workflow §4 exception: own worktree, own agent) — no shared files except `pnpm-lock.yaml` (see §6) |
 | **References** | `docs/rules/backend.md` (Config, TypeORM, AuditSubscriber, Transaction) · DR-001 (`infra/`) · DR-004 (one Zod version) · `docs/infra.md` (PG 16) |
 | **Audit depth** | Full — every later backend brief builds on this |
 
