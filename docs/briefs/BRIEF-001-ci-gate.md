@@ -1,4 +1,4 @@
-# SH-001 — CI Gate (G2): affected-only checks on every PR
+# BRIEF-001 — CI Gate (G2): affected-only checks on every PR
 
 | | |
 |---|---|
@@ -24,8 +24,8 @@ Every PR to `main` runs lint + typecheck + test on **only the packages it affect
 
 ### Out (do NOT build here)
 - Deploy / CD of any kind (separate brief, late November)
-- Frontend Vitest setup (`FE-000`) — frontend runs lint + typecheck only for now
-- Fixing config drift in `core.md` (`SH-003`)
+- Frontend Vitest setup (frontend scaffold brief) — frontend runs lint + typecheck only for now
+- Fixing config drift in `core.md` (config-truth brief)
 - Caching tuning, matrix builds, SonarQube
 
 ## 3. Contract
@@ -63,7 +63,7 @@ pnpm --filter @bar/frontend lint
 pnpm --filter @bar/frontend typecheck
 pnpm --filter @bar/contracts typecheck
 ```
-Package-specific gates (justified): contracts = typecheck only (enums/types, nothing to unit test). Frontend `test` = **BLOCKED until FE-000** — report it, don't fake it.
+Package-specific gates (justified): contracts = typecheck only (enums/types, nothing to unit test). Frontend `test` = **BLOCKED until the frontend scaffold brief** — report it, don't fake it.
 
 ## 6. Constraints
 - Turbo silently skips a package that has no script for a task — the handoff must list which packages actually ran each task.
@@ -74,7 +74,7 @@ Package-specific gates (justified): contracts = typecheck only (enums/types, not
 ## 7. Decision Points (Field Guard)
 - **Pre-decided (exact only):** `actions/checkout@v4` · `pnpm/action-setup@v4` · `actions/setup-node@v4` with `node-version: 22`, `cache: pnpm` · runner `ubuntu-latest`
   · Postgres e2e service image `postgres:16-alpine` (matches planned RDS PostgreSQL 16 — `docs/infra.md`)
-  · pnpm: root `packageManager` (`pnpm@10.0.0`) is the only source — `pnpm/action-setup@v4` with **no** `version:` input, so it reads the root `package.json`. Do not touch `app/frontend`'s `packageManager` field or `app/frontend/pnpm-lock.yaml` in this brief (cleanup belongs to `SH-003`).
+  · pnpm: root `packageManager` (`pnpm@10.0.0`) is the only source — `pnpm/action-setup@v4` with **no** `version:` input, so it reads the root `package.json`. Do not touch `app/frontend`'s `packageManager` field or `app/frontend/pnpm-lock.yaml` in this brief (cleanup belongs to the config-truth brief).
 - **Likely DRs:** any new devDependency; any change to `turbo.json` task definitions
 
 ## 8. Unlocked Protected Files
@@ -91,3 +91,4 @@ Package-specific gates (justified): contracts = typecheck only (enums/types, not
 |---|---|---|
 | 1 | 2026-09-23 | Initial draft (Cowork) |
 | 1 | 2026-09-23 | §7 decisions resolved by Field: `postgres:16-alpine` (RDS → 16), root-only pnpm. Still Draft — Field sets Ready |
+| 1 | 2026-09-24 | Renamed SH-001 → BRIEF-001 (workflow Rev 9 rename map). No scope change |

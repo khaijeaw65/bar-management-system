@@ -1,23 +1,35 @@
-# State — <Field | เมธี>
-**Updated:** YYYY-MM-DD HH:MM · **By:** <person> via <tool>
+# State — <KJ | Methee>
+Updated: YYYY-MM-DD HH:mm · Agent: <tool>
+> Local-only index, ≤ 40 lines. Write only your own state; refresh at session end/before changing tools.
 
-> Overwrite at the end of every implementation session. ≤ 40 lines. Not a log.
-> This is an INDEX — the brief and DRs are authoritative. One executor session per person at a time.
+## Resume
+<One concrete next action with a file/command; matches Next steps item 1.>
 
 ## Active
-- **Brief:** <ID — title> (Rev <n>) → `docs/briefs/<ID>-<slug>.md`
-- **Branch:** <type/ID-slug>
-- **Stage:** In Progress · Implemented (PR #<n>, awaiting audit) · Changes requested (PR #<n>)
-- **Checkout:** branch `<name>` · last commit `<sha>` · uncommitted: <files, or clean>
-- **Progress:** AC-1 ✅ · AC-2 🔄 · AC-3 🔲
-- **Next step:** <the single next concrete action>
+- Brief: BRIEF-001 — <title> · Revision: <n> (or none)
+- Brief file: docs/briefs/BRIEF-001-<slug>.md
+- Stage: In Progress | Implemented | Changes requested (or onboarding/planning)
+- Branch: <actual branch>
+- Last commit: <sha>
+- PR: <link or none>
 
-## Awaiting Field
-- <DR-### — one line> ← do not work on this path until Approved
-- (none)
+## Working tree
+- Uncommitted: <files + unfinished work, or clean>
+- Checks: <command/result or not run + reason; never infer pass>
 
-## Queue
-- <next brief IDs, in order>
+## Progress
+- Completed: <ACs + evidence/commit references>
+- Remaining: <ACs still open>
 
-## Notes for next session
-- <temporary things: mocks to remove, env quirks, half-done refactors>
+## Next steps
+1. <same action as Resume>
+2. <next action>
+3. <next action>
+
+## Blockers / Coordination
+- <waiting for whom / BRIEF or DR / blocked path, or none>
+- Shared files: <likely overlap + coordination needed, or none>
+- Review queue: <PRs awaiting review, or none>
+
+## Queue (optional — planning only, ≤ 6 lines)
+1. <next item after the active brief>

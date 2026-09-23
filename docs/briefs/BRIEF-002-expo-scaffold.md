@@ -1,11 +1,12 @@
-# MB-000 — Expo staff app scaffold (setup only, no features)
+# BRIEF-002 — Expo staff app scaffold (setup only, no features)
 
 | | |
 |---|---|
 | **Status** | Draft |
 | **Implementer** | เมธี (an executor agent may run the setup commands in his session) |
+| **Affected apps** | mobile · tooling (`pnpm-workspace.yaml`) |
 | **Revision** | 1 |
-| **Depends on** | none (can run in parallel with BE-000 / FE-000). Merge after `docs/fe-stack-decisions` (DR-002/003/004) |
+| **Depends on** | none (can run in parallel with the backend / frontend scaffold briefs). Merge after `docs/fe-stack-decisions` (DR-002/003/004) |
 | **References** | CLAUDE.md "Architecture → Shape" (mobile scope) · DR-002 (HeroUI, Lucide, dual theme) · DR-004 (contracts) · DR-005 (URL scheme `barapp`) · `docs/design-system.md` · UI brief: `docs/briefs/ui/staff-mobile.md` (reference only — no screens built here) |
 | **Audit depth** | Compact — tooling scaffold, no business logic |
 
@@ -148,14 +149,15 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - ~~DR-005 approved~~ ✅ 2026-09-23
 
 ## After Done (Field / follow-ups)
-- เมธี spike: **menu list screen on HeroUI Native** on a throwaway branch off `main` (same spike as the web one before FE-000). Result recorded in DR-002 before any MB feature brief is Ready.
+- เมธี spike: **menu list screen on HeroUI Native** on a throwaway branch off `main` (same spike as the web one before the frontend scaffold brief). Result recorded in DR-002 before any MB feature brief is Ready.
 - Field adds `docs/rules/mobile.md` + thin wrappers (`.cursor/rules/mobile.mdc`, `.agents/rules/mobile.md`, glob `app/mobile/**`) and the `app/mobile` carve-out in `core.md` (`.js` extension / NodeNext rule).
 - CLAUDE.md / AGENTS.md / `core.md` repo tree: `app/mobile/` — "planned" → created.
-- SH-001 AC-3: a contracts change now also runs `@bar/mobile` tasks (Turbo does this automatically once it's in the workspace — note it in the SH-001 evidence).
+- BRIEF-001 (CI gate) AC-3: a contracts change now also runs `@bar/mobile` tasks (Turbo does this automatically once it's in the workspace — note it in the BRIEF-001 evidence).
 
 ---
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
-| 1 | 2026-09-23 | Initial draft (Cowork) |
+| 1 | 2026-09-23 | Initial draft (Cowork) as MB-000 |
+| 1 | 2026-09-24 | Renamed MB-000 → BRIEF-002 (ID convention, workflow Rev 9); added Affected apps. No scope change |

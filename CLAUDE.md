@@ -115,6 +115,8 @@ Cross-cutting concerns to resolve:
 
 ## Workflow & Decision Authority
 
+Chat commands: `onboard kj|methee`, `resume kj|methee`, `ทำ BRIEF-###`, `ตรวจ BRIEF-###`, `สถานะ BRIEF-###`, `handoff` — definitions and limits in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
+
 @docs/rules/workflow.md
 
 - **Field** (KJ) is the only decision authority. Any new dependency, brief deviation, flow/architecture change, schema change, or auth/payment/PDPA change → needs approval: an exact Pre-decided item in the Ready brief, or an Approved DR. Neither → raise a DR and stop that path. Never decide alone.

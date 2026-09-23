@@ -1,13 +1,14 @@
-# <ID> — <Title>
+# BRIEF-### — <Title>
 
 | | |
 |---|---|
 | **Status** | Draft · Ready · Done  ← Field only |
 | **Implementer** | Field / เมธี |
+| **Affected apps** | backend / frontend / mobile / contracts / tooling (select all in scope) |
 | **Revision** | 1 |
 | **Depends on** | <brief IDs, or none> |
 | **References** | FRD §<n> · schema tables: <…> · UI brief: <…> · DRs: <…> |
-| **Audit depth** | Full (BE / core flow / auth-payment-PDPA) · Compact (low-risk UI, chores) |
+| **Audit depth** | Full (backend / core flow / auth-payment-PDPA) · Compact (low-risk UI, chores) |
 
 ---
 
