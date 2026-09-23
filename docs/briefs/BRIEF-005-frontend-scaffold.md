@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | Field (executor agent — see §6 for running it next to BRIEF-004) |
 | **Affected apps** | frontend |
 | **Revision** | 1 |
@@ -122,3 +122,4 @@ pnpm --filter @bar/frontend test:e2e   # local
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-24 | Initial draft (Cowork) · implementer changed เมธี → Field (Field, same session) |
+| 1 | 2026-09-24 | Ready — approved by Field in session 2026-09-24 (parallel via workflow Rev 13) |
