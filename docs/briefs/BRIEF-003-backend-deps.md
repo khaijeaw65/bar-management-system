@@ -40,12 +40,13 @@ The packages the existing backend scaffold already imports are installed, the DR
 - **AC-5** — `pnpm install --frozen-lockfile` passes from a clean clone with pnpm 10.x; the lockfile diff only adds the §7 packages and their transitive deps.
 - **AC-6** — `git diff origin/main -- app/backend/src/app.module.ts` is empty.
 - **AC-7** — The `ci` check on the PR is green.
+- **AC-8** — `pnpm --filter @bar/backend build` exits 0 (`tsconfig.build.json` has its own `exclude`, so `nest build` compiles the scaffold files — BRIEF-001 audit F3).
 
 ## 5. Test Gate
 | AC | Evidence |
 |---|---|
 | AC-1, AC-2, AC-6 | diff in the PR |
-| AC-3, AC-4 | command output in the handoff |
+| AC-3, AC-4, AC-8 | command output in the handoff |
 | AC-5 | `pnpm --version` + `pnpm install --frozen-lockfile` output |
 | AC-7 | green `ci` run link |
 
@@ -54,6 +55,7 @@ pnpm --filter @bar/backend lint
 pnpm --filter @bar/backend typecheck
 pnpm --filter @bar/backend test
 pnpm --filter @bar/backend test:e2e
+pnpm --filter @bar/backend build
 ```
 
 ## 6. Constraints
