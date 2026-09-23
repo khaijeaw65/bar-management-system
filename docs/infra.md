@@ -94,7 +94,7 @@ flowchart TD
             end
 
             subgraph DATA["Data Subnets  (Private)"]
-                RDS[("🐘  RDS PostgreSQL 15\nSingle-AZ (demo) / Multi-AZ (prod)")]
+                RDS[("🐘  RDS PostgreSQL 16\nSingle-AZ (demo) / Multi-AZ (prod)")]
                 REDIS[("⚡  ElastiCache Redis\ncache.t4g.micro ~$13/mo\nACL · Session · BullMQ · WS pub/sub")]
             end
         end
@@ -134,7 +134,7 @@ flowchart TD
 |---|---|---|---|
 | Frontend | Vercel | Free | Native Next.js, preview deploys per PR |
 | Backend | ECS Fargate (0.25 vCPU / 0.5GB) | ~$9 | Scale to 2+ tasks when needed |
-| Database | RDS PostgreSQL 15 db.t3.micro | ~$15 | Single-AZ for demo, multi-AZ for prod |
+| Database | RDS PostgreSQL 16 db.t3.micro | ~$15 | Single-AZ for demo, multi-AZ for prod |
 | Cache/Queue | ElastiCache cache.t4g.micro | ~$13 | ACL · Session · BullMQ · WS pub/sub |
 | Load Balancer | ALB | ~$16 | Stable DNS entry point, SSL termination via ACM |
 | Storage | S3 | ~$1 | Photos, receipts |

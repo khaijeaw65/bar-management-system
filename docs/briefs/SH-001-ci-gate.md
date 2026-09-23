@@ -73,9 +73,8 @@ Package-specific gates (justified): contracts = typecheck only (enums/types, not
 
 ## 7. Decision Points (Field Guard)
 - **Pre-decided (exact only):** `actions/checkout@v4` · `pnpm/action-setup@v4` · `actions/setup-node@v4` with `node-version: 22`, `cache: pnpm` · runner `ubuntu-latest`
-- **Field to decide before Ready:**
-  - Postgres image for the e2e service container (proposal: `postgres:16-alpine` — confirm it matches the planned RDS version)
-  - pnpm version: root `packageManager` is `pnpm@10.0.0` but `app/frontend` declares `pnpm@11.21.0` — pick one (likely DR, overlaps `SH-003`)
+  · Postgres e2e service image `postgres:16-alpine` (matches planned RDS PostgreSQL 16 — `docs/infra.md`)
+  · pnpm: root `packageManager` (`pnpm@10.0.0`) is the only source — `pnpm/action-setup@v4` with **no** `version:` input, so it reads the root `package.json`. Do not touch `app/frontend`'s `packageManager` field or `app/frontend/pnpm-lock.yaml` in this brief (cleanup belongs to `SH-003`).
 - **Likely DRs:** any new devDependency; any change to `turbo.json` task definitions
 
 ## 8. Unlocked Protected Files
@@ -91,3 +90,4 @@ Package-specific gates (justified): contracts = typecheck only (enums/types, not
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-23 | Initial draft (Cowork) |
+| 1 | 2026-09-23 | §7 decisions resolved by Field: `postgres:16-alpine` (RDS → 16), root-only pnpm. Still Draft — Field sets Ready |
