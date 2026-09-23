@@ -1,7 +1,7 @@
 # CLAUDE.md — AI-Powered Bar Management System
 
 > Read this file at the start of every session. It is the single source of truth for project context, architecture decisions, and working rules.
-> For full feature scope → `docs/FRD.md`. For schema details → `docs/schema.sql`. For session state → `docs/handoff.md`.
+> For full feature scope → `docs/FRD.md`. For schema details → `docs/schema.sql`. For workflow & roles → `docs/rules/workflow.md`. For current state → `docs/state/<person>.md`.
 
 ---
 
@@ -24,14 +24,20 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 
 ```
 /
-├── docs/           → FRD, ERD, schema, infra, handoff
-├── frontend/       → Next.js 15 PWA (Tailwind, ESM, Vitest)
-├── backend/        → NestJS modular monolith (ESM, Vitest, TypeORM)
-├── .claude/        → Claude-specific configs
-├── .cursor/        → Cursor IDE configs
-├── CLAUDE.md       ← this file
-├── AGENTS.md       → agent-agnostic context
-└── .cursorrules    → Cursor rules
+├── app/
+│   ├── backend/            → NestJS modular monolith (ESM, Vitest, TypeORM)
+│   ├── frontend/           → Next.js 16 PWA (Tailwind v4, ESM)
+│   ├── mobile/             → Expo React Native — staff surface (planned, not created yet)
+│   └── packages/contracts/ → @bar/contracts — shared enums & types
+├── docs/
+│   ├── rules/              → all agent rules (source of truth) incl. workflow.md
+│   ├── briefs/             → executable briefs (<ID>-<slug>.md) + ui/ design references
+│   ├── state/              → kj.md, methee.md — current progress per person
+│   ├── handoffs/ decisions/ audits/
+│   └── FRD.md, schema.sql, erd.html, infra.md, handoff.md (frozen legacy log)
+├── .cursor/rules/ .agents/rules/ → thin wrappers → docs/rules/
+├── CLAUDE.md               ← this file
+└── AGENTS.md               → agent-agnostic context (Codex reads this)
 ```
 
 ---
@@ -40,7 +46,8 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 
 | Layer | Choice |
 |---|---|
-| Frontend | Next.js 15 PWA + Tailwind CSS |
+| Frontend | Next.js 16 PWA + Tailwind CSS |
+| Mobile | Expo (React Native) — staff surface duplicate |
 | Backend | NestJS modular monolith + TypeORM |
 | Database | PostgreSQL (RDS) |
 | Cache | Redis (ElastiCache) — ACL + session + BullMQ + WebSocket pub/sub |
@@ -60,6 +67,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 ### Shape
 - **One NestJS process** — REST API + WebSocket Gateway + webhook receiver. No microservices.
 - **One Next.js PWA** — 3 role-based surfaces (customer QR, staff mobile, POS desktop) via route separation.
+- **One Expo React Native app** — duplicates staff mobile surface only. Same backend API, no new endpoints. Scope: login, table/session list, order taking, order management, push notifications, guest notes entry, bottle keep check.
 - **Modular monolith** — extract services only if load demands it post-launch.
 
 ### IAM Model
@@ -101,15 +109,28 @@ Cross-cutting concerns to resolve:
 - `IamModule` — imported by almost everything; wraps `PermissionsGuard` + Redis cache.
 - `NotificationsModule` — injectable by Order + Payment modules to emit WebSocket events; do NOT import the gateway directly.
 - `BullMQ` — `PaymentModule` enqueues; separate processor consumes. HTTP controller must not be coupled to the processor.
-- `BaseEntity` — defined in `backend/src/common/`; all entities extend it.
+- `BaseEntity` — defined in `app/backend/src/common/`; all entities extend it.
+
+---
+
+## Workflow & Decision Authority
+
+@docs/rules/workflow.md
+
+- **Field** (KJ) is the only decision authority. Any new dependency, brief deviation, flow/architecture change, schema change, or auth/payment/PDPA change → needs approval: an exact Pre-decided item in the Ready brief, or an Approved DR. Neither → raise a DR and stop that path. Never decide alone.
+- **Roles:** Cowork = auditor + decision partner (no app code). Claude Code / Cursor / Antigravity / Codex = executors (only inside a `Ready` brief).
+- **Lifecycle:** executor marks `Implemented` → Cowork audits → Field sets `Done`. Executors never set Done.
+- **Every implementation session:** read `docs/state/<person>.md` + run the checkout check at start, overwrite state at end.
 
 ---
 
 ## Working Rules
 
+> **Agent boundaries:** See `docs/rules/agent-boundaries.md`. Never modify listed files.
+
 - **Finish core vertical slice first:** order → pay → close. No scope expansion mid-build.
 - **Simple before complex.** No premature abstractions.
-- AI tools (~40% of work) handle boilerplate/CRUD/scaffolding. Human owns architecture, integration, edge cases.
+- AI split: Field 20–30% / agents 70–80% (reviewer mode). เมธี 70–80% / agents ≤ 20% (learning mode). Humans own architecture, integration, edge cases.
 - EKS is a stretch goal — only after ECS is solid. Do not touch Kubernetes in Semester 1.
 - Infra features cut from scope (see `docs/FRD.md`): offline mode, member QR, staff performance analytics. Do not reintroduce.
 - Break tasks into small steps. Do not dump full solutions.

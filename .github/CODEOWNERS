@@ -1,0 +1,3 @@
+# Field (KJ) is the sole reviewer and decision authority — docs/rules/workflow.md §1, §5.
+# Enforced only when branch protection on `main` has "Require review from Code Owners" enabled.
+*    @khaijeaw65

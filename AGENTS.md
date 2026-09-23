@@ -1,7 +1,7 @@
 # AGENTS.md — AI-Powered Bar Management System
 
 > Agent-agnostic project context. Read alongside `CLAUDE.md` for full detail.
-> For feature scope → `docs/FRD.md`. For schema → `docs/schema.sql`. For current session state → `docs/handoff.md`.
+> For feature scope → `docs/FRD.md`. For schema → `docs/schema.sql`. For workflow & roles → `docs/rules/workflow.md`. For current state → `docs/state/<person>.md`.
 
 ---
 
@@ -17,16 +17,18 @@ Differentiators: AI guest intelligence (OpenAI), bottle-keep, real-time WebSocke
 ## Repo Layout
 
 ```
-frontend/   → Next.js 15 PWA (customer QR ordering, staff mobile, POS desktop)
-backend/    → NestJS modular monolith (REST + WebSocket + webhook in one process)
-docs/       → FRD.md, erd.html, schema.sql, infra.md, handoff.md
+app/backend/            → NestJS modular monolith (REST + WebSocket + webhook in one process)
+app/frontend/           → Next.js 16 PWA (customer QR ordering, staff mobile, POS desktop)
+app/mobile/             → Expo React Native, staff surface (planned, not created yet)
+app/packages/contracts/ → @bar/contracts — shared enums & types
+docs/                   → rules/, briefs/, state/, handoffs/, decisions/, audits/, FRD.md, schema.sql
 ```
 
 ---
 
 ## Stack (locked)
 
-- **Frontend:** Next.js 15 + Tailwind CSS + Vitest
+- **Frontend:** Next.js 16 + Tailwind CSS + Vitest
 - **Backend:** NestJS + TypeORM + PostgreSQL + Redis + BullMQ + Vitest
 - **Auth:** LINE SSO + JWT + refresh rotation
 - **Payment:** PromptPay QR + GB Prime Pay webhook
@@ -35,7 +37,20 @@ docs/       → FRD.md, erd.html, schema.sql, infra.md, handoff.md
 
 ---
 
+## Before Any Task (mandatory)
+
+1. Read `docs/rules/workflow.md` — roles, session types, brief lifecycle, gates, Field Guard.
+2. Decide your **session type** (workflow.md §1): Implementation · Audit · Planning. Audit and Planning sessions follow their own write limits and do not need a Ready brief.
+3. **Implementation sessions:** identify who runs this session (Field or เมธี) — ask if unclear. Read `docs/state/<person>.md`, then the `Ready` brief and its linked DRs. Run the read-only checkout check (`git status`, branch, last commit) — mismatch → stop and report.
+4. Implementation sessions end by overwriting `docs/state/<person>.md`. When all ACs pass G1 → handoff + status `Implemented`. Only Field sets `Done`.
+
+**Field (KJ) is the only decision authority.** New dependency, brief deviation, flow/architecture change, schema/contracts change, or auth/payment/PDPA change — unless already **approved** (exact Pre-decided item in the Ready brief, or an Approved DR) → create a DR in `docs/decisions/`, stop that path, and start your reply with `FIELD REVIEW NEEDED: DR-### — <one line>`.
+
+---
+
 ## Hard Rules for Agents
+
+> **Agent boundaries:** See `docs/rules/agent-boundaries.md`. Never modify listed files.
 
 1. **Do not split into microservices.** One NestJS process, one Next.js app.
 2. **Do not use `update()` on audited entities** — use `save()` or `AuditSubscriber` produces empty diffs.
@@ -45,10 +60,12 @@ docs/       → FRD.md, erd.html, schema.sql, infra.md, handoff.md
 6. **Do not add Kubernetes/EKS** until ECS is stable and shipping.
 7. **Price snapshots are immutable** — `order_item.unit_price_snapshot` is frozen at order time.
 8. **Payment idempotency** — always check `gateway_tx_id` before processing a webhook.
+9. **Never decide alone** — anything on the Field Guard trigger list goes through a DR (workflow.md §5).
+10. **Never edit briefs, rules, or the other person's state file.** Protected files only if the active brief lists the exact path under *Unlocked protected files*.
 
 ---
 
 ## Current Phase
 
-ERD complete. Next: NestJS module breakdown → repo scaffold → auth module.
-See `docs/handoff.md` for exact current state before starting any task.
+Phase 1 — core vertical (order → pay → close). Scaffold stage, no business logic yet.
+Current progress lives in `docs/state/kj.md` and `docs/state/methee.md` — not here.
