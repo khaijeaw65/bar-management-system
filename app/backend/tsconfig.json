@@ -18,5 +18,14 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "types": ["vitest/globals", "node"]
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    // temporary — removed by BRIEF-003 (DR-006)
+    "src/common/base/base.entity.ts",
+    "src/common/subscribers/audit.subscriber.ts",
+    "src/common/interceptors/cls-user.interceptor.ts",
+    "src/modules/auth"
+  ]
 }
