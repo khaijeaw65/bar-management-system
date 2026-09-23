@@ -1,0 +1,1473 @@
+<title>Bar System ERD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+/* ── Tokens ─────────────────────────────────── */
+:root {
+  --bg:        #0C0E14;
+  --surface:   #13161F;
+  --elevated:  #1C2030;
+  --border:    #252A3D;
+  --accent:    #F0A520;
+  --accent-dim:#7A520E;
+  --text:      #E2E4EF;
+  --muted:     #6B738A;
+  --muted2:    #3D4560;
+
+  /* domain palette */
+  --d-venue:   #818CF8;
+  --d-guest:   #34D399;
+  --d-iam:     #FBBF24;
+  --d-menu:    #F472B6;
+  --d-inv:     #2DD4BF;
+  --d-order:   #FB923C;
+  --d-pay:     #4ADE80;
+  --d-bottle:  #A78BFA;
+  --d-audit:   #94A3B8;
+
+  --r: 6px;
+  --r-sm: 4px;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:        #F5F6FA;
+    --surface:   #FFFFFF;
+    --elevated:  #ECEEF6;
+    --border:    #DDE0EE;
+    --accent:    #C27D0A;
+    --accent-dim:#FEF3C7;
+    --text:      #0C0E14;
+    --muted:     #5C6478;
+    --muted2:    #C8CCDD;
+
+    --d-venue:   #4F46E5;
+    --d-guest:   #059669;
+    --d-iam:     #D97706;
+    --d-menu:    #DB2777;
+    --d-inv:     #0891B2;
+    --d-order:   #EA580C;
+    --d-pay:     #16A34A;
+    --d-bottle:  #7C3AED;
+    --d-audit:   #64748B;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:        #0C0E14;
+  --surface:   #13161F;
+  --elevated:  #1C2030;
+  --border:    #252A3D;
+  --accent:    #F0A520;
+  --accent-dim:#7A520E;
+  --text:      #E2E4EF;
+  --muted:     #6B738A;
+  --muted2:    #3D4560;
+}
+
+/* ── Reset & base ────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  padding-inline: 0;
+  padding-block: 0;
+  min-height: 100vh;
+}
+
+h1,h2,h3,h4 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+
+code, .mono { font-family: var(--font-mono); font-size: 12px; }
+
+/* ── Header ──────────────────────────────────── */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 52px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.header-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+}
+
+.header-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.header-pills {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.pill-sem1 { background: color-mix(in srgb, var(--d-pay) 15%, transparent); color: var(--d-pay); border: 1px solid color-mix(in srgb, var(--d-pay) 30%, transparent); }
+.pill-phase { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+
+/* ── Wrapper ─────────────────────────────────── */
+.wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ── Intro strip ─────────────────────────────── */
+.intro {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.intro-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.intro-title span { color: var(--accent); }
+
+.intro-meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.intro-meta strong { color: var(--text); font-weight: 500; }
+
+.stack-note {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.stack-note strong { color: var(--text); display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; color: var(--muted); }
+
+/* ── Domain legend ───────────────────────────── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.legend-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* ── ERD diagram wrapper ─────────────────────── */
+.erd-section {
+  margin-bottom: 48px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.erd-frame {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow-x: auto;
+  padding: 24px;
+  min-height: 480px;
+}
+
+/* Force mermaid to render at readable size */
+.erd-frame .mermaid {
+  min-width: 900px;
+}
+
+.erd-note {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── Entity reference grid ───────────────────── */
+.domains-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.domain-block {}
+
+.domain-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+
+.domain-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.domain-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.domain-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.domain-tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.entity-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.entity-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.entity-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.entity-tag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tag-s1 { background: color-mix(in srgb, var(--d-pay) 12%, transparent); color: var(--d-pay); }
+.tag-s2 { background: color-mix(in srgb, var(--d-bottle) 12%, transparent); color: var(--d-bottle); }
+.tag-junction { background: color-mix(in srgb, var(--muted) 12%, transparent); color: var(--muted); }
+.tag-append { background: color-mix(in srgb, var(--d-audit) 12%, transparent); color: var(--d-audit); }
+
+.entity-fields {
+  padding: 0;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.field-row:last-child { border-bottom: none; }
+
+.field-row:hover { background: var(--elevated); }
+
+.field-name {
+  font-family: var(--font-mono);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-pk { background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
+.badge-fk { background: color-mix(in srgb, var(--d-venue) 20%, transparent); color: var(--d-venue); }
+.badge-uk { background: color-mix(in srgb, var(--d-pay) 20%, transparent); color: var(--d-pay); }
+
+.field-type {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.field-note {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 4px 12px 6px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ── Key decisions callout ───────────────────── */
+.callouts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r);
+  padding: 12px 14px;
+}
+
+.callout-title {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+
+.callout-body {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.callout-body strong { color: var(--text); font-weight: 500; }
+
+/* ── State machine chips ─────────────────────── */
+.state-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.state-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.state-arrow {
+  font-size: 10px;
+  color: var(--muted);
+  align-self: center;
+}
+
+/* ── Footer ──────────────────────────────────── */
+.page-footer {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 640px) {
+  .intro { grid-template-columns: 1fr; }
+  .stack-note { white-space: normal; }
+  .domain-tables { grid-template-columns: 1fr; }
+  .callouts { grid-template-columns: 1fr; }
+  .header-pills { display: none; }
+  .intro-title { font-size: 20px; }
+}
+</style>
+
+<!-- ── HEADER ── -->
+<header class="site-header">
+  <div class="header-brand">
+    <div class="brand-dot"></div>
+    <span class="brand-name">Bar Management System</span>
+  </div>
+  <div class="header-sep"></div>
+  <span class="header-sub">Data Model · v0.1</span>
+  <div class="header-pills">
+    <span class="pill pill-phase">ERD</span>
+    <span class="pill pill-sem1">Sem 1</span>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<div class="wrap">
+
+  <!-- Intro -->
+  <div class="intro">
+    <div>
+      <h1 class="intro-title">Entity<br><span>Relationship Diagram</span></h1>
+      <div class="intro-meta">
+        <span><strong>9 domains</strong> · 32 tables</span>
+        <span><strong>Stack:</strong> NestJS + PostgreSQL + TypeORM</span>
+        <span><strong>Updated:</strong> Sep 2026</span>
+      </div>
+    </div>
+    <div class="stack-note">
+      <strong>ORM & conventions</strong>
+      UUIDs for all PKs<br>
+      snake_case table names<br>
+      TypeORM entities (no Prisma)<br>
+      jsonb for audit payloads
+    </div>
+  </div>
+
+  <!-- Domain legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-venue)"></div> Venue &amp; Tables <span class="legend-count">2</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-guest)"></div> Guest Identity <span class="legend-count">3</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-iam)"></div> Staff IAM <span class="legend-count">9</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-menu)"></div> Menu <span class="legend-count">7</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-inv)"></div> Inventory <span class="legend-count">3</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-order)"></div> Orders <span class="legend-count">3</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-pay)"></div> Payment <span class="legend-count">2</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-bottle)"></div> Bottle Keep <span class="legend-count">2</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-audit)"></div> Audit Log <span class="legend-count">1</span></div>
+  </div>
+
+  <!-- Key design decisions -->
+  <div class="section-label">Key Design Decisions</div>
+  <div class="callouts">
+    <div class="callout">
+      <div class="callout-title">Menu ≠ Inventory</div>
+      <div class="callout-body"><strong>menu_item_variant</strong> links to <strong>inventory_item</strong> via <strong>menu_variant_ingredient</strong>. Hazy IPA (M) and (L) deduct different volumes from the same keg row — no double inventory entries.</div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Visit ≠ Customer</div>
+      <div class="callout-body"><strong>visit.customer_id</strong> is nullable. A session opens on QR scan; the customer is linked post-hoc if they consent. Order belongs to visit, never directly to a customer.</div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">IAM — Most Permissive Wins</div>
+      <div class="callout-body">Permissions are the union of all active group + individual policies. <strong>user_group_membership.valid_until</strong> handles time-bound elevation (e.g. bartender → manager for one shift).</div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Payment Idempotency</div>
+      <div class="callout-body"><strong>payment.gateway_tx_id</strong> carries a UNIQUE constraint. GB Prime Pay may retry webhooks — the service checks this before settling to prevent double-payment.</div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Snapshots on Order Items</div>
+      <div class="callout-body"><strong>order_item.unit_price_snapshot</strong> and <strong>order_item_modifier.price_delta_snapshot</strong> freeze prices at order time. Menu price changes never retroactively alter a bill.</div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Audit Log — Append Only</div>
+      <div class="callout-body">No UPDATE or DELETE ever touches <strong>audit_log</strong>. Voids, comps, and price changes leave a before/after jsonb payload trail. Pair with a DB trigger or TypeORM subscriber.</div>
+    </div>
+  </div>
+
+  <!-- Mermaid ERD -->
+  <div class="erd-section">
+    <div class="section-label">Full Entity Diagram</div>
+    <div class="erd-frame">
+<pre class="mermaid">
+erDiagram
+    venue {
+        uuid id PK
+        string name
+        string timezone
+        boolean kitchen_display_enabled
+        timestamp created_at
+    }
+    table_seat {
+        uuid id PK
+        uuid venue_id FK
+        string label
+        string qr_token
+        int capacity
+        string status
+    }
+    customer {
+        uuid id PK
+        string display_name
+        timestamp consent_given_at
+        text notes
+        timestamp anonymized_at
+        timestamp created_at
+    }
+    customer_identity {
+        uuid id PK
+        uuid customer_id FK
+        string provider
+        string external_id
+        string display_name
+        string avatar_url
+        timestamp linked_at
+    }
+    visit {
+        uuid id PK
+        uuid table_seat_id FK
+        uuid customer_id FK
+        string state
+        timestamp opened_at
+        timestamp closed_at
+    }
+    staff_user {
+        uuid id PK
+        string display_name
+        boolean is_active
+        timestamp created_at
+    }
+    staff_user_identity {
+        uuid id PK
+        uuid user_id FK
+        string provider
+        string external_id
+        string display_name
+        string avatar_url
+    }
+    staff_group {
+        uuid id PK
+        uuid venue_id FK
+        string name
+        text description
+    }
+    user_group_membership {
+        uuid id PK
+        uuid user_id FK
+        uuid group_id FK
+        timestamp valid_from
+        timestamp valid_until
+    }
+    policy {
+        uuid id PK
+        uuid venue_id FK
+        string name
+        text description
+    }
+    permission {
+        uuid id PK
+        string resource
+        string action
+    }
+    policy_permission {
+        uuid policy_id FK
+        uuid permission_id FK
+    }
+    group_policy {
+        uuid group_id FK
+        uuid policy_id FK
+    }
+    user_policy {
+        uuid user_id FK
+        uuid policy_id FK
+    }
+    menu_category {
+        uuid id PK
+        uuid venue_id FK
+        string name
+        int sort_order
+        boolean is_active
+    }
+    menu_item {
+        uuid id PK
+        uuid category_id FK
+        string name
+        text description
+        decimal base_price
+        string item_type
+        string kitchen_tag
+        boolean is_available
+        int sort_order
+    }
+    menu_item_variant {
+        uuid id PK
+        uuid menu_item_id FK
+        string name
+        decimal price
+        boolean is_available
+    }
+    modifier_group {
+        uuid id PK
+        string name
+        boolean is_required
+        int min_select
+        int max_select
+    }
+    modifier_option {
+        uuid id PK
+        uuid group_id FK
+        string name
+        decimal price_delta
+        boolean is_available
+    }
+    menu_variant_modifier_group {
+        uuid menu_item_variant_id FK
+        uuid modifier_group_id FK
+    }
+    inventory_item {
+        uuid id PK
+        uuid venue_id FK
+        string name
+        string category
+        string unit_type
+        decimal quantity_on_hand
+        string unit
+        decimal low_stock_threshold
+        decimal cost_per_unit
+    }
+    menu_variant_ingredient {
+        uuid id PK
+        uuid menu_item_variant_id FK
+        uuid inventory_item_id FK
+        decimal quantity_used
+    }
+    inventory_transaction {
+        uuid id PK
+        uuid inventory_item_id FK
+        string tx_type
+        decimal delta_quantity
+        string reference_type
+        uuid reference_id
+        text notes
+        uuid created_by FK
+        timestamp created_at
+    }
+    order_record {
+        uuid id PK
+        uuid visit_id FK
+        string status
+        timestamp created_at
+        timestamp updated_at
+    }
+    order_item {
+        uuid id PK
+        uuid order_id FK
+        uuid menu_item_variant_id FK
+        int quantity
+        decimal unit_price_snapshot
+        text notes
+        string status
+        timestamp created_at
+    }
+    order_item_modifier {
+        uuid id PK
+        uuid order_item_id FK
+        uuid modifier_option_id FK
+        decimal price_delta_snapshot
+    }
+    payment {
+        uuid id PK
+        uuid visit_id FK
+        decimal amount
+        string method
+        string status
+        string gateway_tx_id UK
+        text qr_payload
+        timestamp paid_at
+        timestamp created_at
+    }
+    payment_order {
+        uuid payment_id FK
+        uuid order_id FK
+    }
+    bottle_keep {
+        uuid id PK
+        uuid customer_id FK
+        uuid inventory_item_id FK
+        int quantity_registered
+        int remaining_quantity
+        text remaining_note
+        timestamp opened_at
+        timestamp last_used_at
+        text location_note
+        string status
+    }
+    bottle_keep_pour {
+        uuid id PK
+        uuid bottle_keep_id FK
+        uuid visit_id FK
+        decimal quantity_poured
+        uuid created_by FK
+        timestamp created_at
+    }
+    audit_log {
+        uuid id PK
+        string entity
+        uuid entity_id
+        string action
+        jsonb changed_fields
+        uuid changed_by
+        timestamp changed_at
+    }
+
+    venue ||--o{ table_seat : has
+    venue ||--o{ menu_category : has
+    venue ||--o{ staff_group : has
+    venue ||--o{ policy : has
+    venue ||--o{ inventory_item : tracks
+
+    table_seat ||--o{ visit : receives
+
+    customer ||--o{ customer_identity : "identified via"
+    customer |o--o{ visit : attends
+    customer ||--o{ bottle_keep : keeps
+
+    visit ||--o{ order_record : contains
+    visit ||--o{ payment : settles
+    visit ||--o{ bottle_keep_pour : poured_at
+
+    staff_user ||--o{ staff_user_identity : "identified via"
+    staff_user ||--o{ user_group_membership : belongs
+    staff_user ||--o{ user_policy : "has direct"
+    staff_user ||--o{ inventory_transaction : creates
+    staff_user ||--o{ bottle_keep_pour : creates
+
+    staff_group ||--o{ user_group_membership : includes
+    staff_group ||--o{ group_policy : has
+
+    policy ||--o{ policy_permission : has
+    policy ||--o{ group_policy : "applied via"
+    policy ||--o{ user_policy : "applied via"
+
+    permission ||--o{ policy_permission : "part of"
+
+    menu_category ||--o{ menu_item : contains
+    menu_item ||--o{ menu_item_variant : has
+    menu_item_variant ||--o{ menu_variant_modifier_group : supports
+    menu_item_variant ||--o{ menu_variant_ingredient : uses
+    menu_item_variant ||--o{ order_item : "ordered as"
+
+    modifier_group ||--o{ menu_variant_modifier_group : "applied to"
+    modifier_group ||--o{ modifier_option : has
+    modifier_option ||--o{ order_item_modifier : "applied in"
+
+    inventory_item ||--o{ inventory_transaction : tracked_by
+    inventory_item ||--o{ menu_variant_ingredient : "ingredient in"
+    inventory_item ||--o{ bottle_keep : is
+
+    order_record ||--o{ order_item : contains
+    order_item ||--o{ order_item_modifier : has
+
+    payment ||--o{ payment_order : covers
+    order_record ||--o{ payment_order : "settled by"
+
+    bottle_keep ||--o{ bottle_keep_pour : tracks
+</pre>
+    </div>
+    <p class="erd-note">Scroll horizontally to explore. Relationships show cardinality (||=one, o{=many, |o=optional).</p>
+  </div>
+
+  <!-- Entity Reference -->
+  <div class="section-label">Entity Reference by Domain</div>
+  <div class="domains-grid">
+
+    <!-- VENUE & TABLES -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-venue)"></div>
+        <div class="domain-name" style="color:var(--d-venue)">Venue &amp; Tables</div>
+        <div class="domain-desc">Top-level config + physical space</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">venue</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">timezone</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">kitchen_display_enabled</span><span class="field-type">boolean</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">kitchen_display_enabled toggled at runtime — no redeploy needed (see handoff §Kitchen Display)</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">table_seat</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">label</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">qr_token</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">capacity</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
+          </div>
+          <div class="field-note">status: active | inactive. qr_token: regenerating issues a new token and invalidates old (counter QR reuse pattern)</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- GUEST IDENTITY -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-guest)"></div>
+        <div class="domain-name" style="color:var(--d-guest)">Guest Identity</div>
+        <div class="domain-desc">Opt-in, provider-agnostic, PDPA-safe</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">customer</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">display_name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">consent_given_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">notes</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name">anonymized_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">Anonymize = null name/notes + delete photo from S3 + set anonymized_at. Row retained for order/payment FK integrity. Block if active bottle_keep exists.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">customer_identity</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> customer_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">provider</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">external_id</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">display_name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">avatar_url</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">linked_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">provider: LINE | phone. Unique on (provider, external_id). Multiple providers per customer row supported.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">visit</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> table_seat_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> customer_id</span><span class="field-type">uuid?</span></div>
+            <div class="field-row"><span class="field-name">state</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">opened_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">closed_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">customer_id nullable — visit exists before identity. State machine: OPEN → ACTIVE → IDLE → CLOSED</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STAFF IAM -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-iam)"></div>
+        <div class="domain-name" style="color:var(--d-iam)">Staff IAM</div>
+        <div class="domain-desc">AWS-style groups + policies + time-bound membership</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">staff_user</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">display_name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">is_active</span><span class="field-type">boolean</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">staff_user_identity</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> user_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">provider</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">external_id</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">display_name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">avatar_url</span><span class="field-type">varchar</span></div>
+          </div>
+          <div class="field-note">Same provider-agnostic pattern as customer_identity. Unique on (provider, external_id).</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">staff_group</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">description</span><span class="field-type">text</span></div>
+          </div>
+          <div class="field-note">Default groups: Owner, Manager, Bartender, Waiter. Roles combinable per user.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">user_group_membership</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> user_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> group_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">valid_from</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">valid_until</span><span class="field-type">timestamptz?</span></div>
+          </div>
+          <div class="field-note">valid_until nullable = permanent. Time-bound elevation: bartender → manager for one shift. Redis ACL cache invalidated on any change.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">policy</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">description</span><span class="field-type">text</span></div>
+          </div>
+          <div class="field-note">Named bundle of permissions. e.g. "Bartender Policy" — bundles orders.create, orders.void. Attach to groups or users via junctions below.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">permission</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">resource</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">action</span><span class="field-type">varchar</span></div>
+          </div>
+          <div class="field-note">Atomic permission string. e.g. resource="orders" action="void" → "orders.void". Seeded at boot; not created by users. A policy bundles many permissions.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">policy_permission</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> policy_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> permission_id</span><span class="field-type">uuid</span></div>
+          </div>
+          <div class="field-note">PK: (policy_id, permission_id). Links which atomic permissions belong to a policy. One policy → many permissions.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">group_policy</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> group_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> policy_id</span><span class="field-type">uuid</span></div>
+          </div>
+          <div class="field-note">PK: (group_id, policy_id). Assigns a policy to a group. Every member of that group inherits the policy's permissions via most-permissive-wins union.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">user_policy</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> user_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> policy_id</span><span class="field-type">uuid</span></div>
+          </div>
+          <div class="field-note">PK: (user_id, policy_id). Direct policy on a specific user — overrides nothing, just adds. Final permissions = union(group policies, user policies). Redis cache invalidated on change.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MENU -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-menu)"></div>
+        <div class="domain-name" style="color:var(--d-menu)">Menu</div>
+        <div class="domain-desc">Items, variants, modifiers — decoupled from inventory</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">menu_category</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">sort_order</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">is_active</span><span class="field-type">boolean</span></div>
+          </div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">menu_item</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> category_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">base_price</span><span class="field-type">numeric(10,2)</span></div>
+            <div class="field-row"><span class="field-name">item_type</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">kitchen_tag</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">is_available</span><span class="field-type">boolean</span></div>
+            <div class="field-row"><span class="field-name">sort_order</span><span class="field-type">smallint</span></div>
+          </div>
+          <div class="field-note">item_type: simple | recipe | charge. kitchen_tag: bar | food | both | n/a. Charge items (puke fine, corkage) permission-gated + audit-logged.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">menu_item_variant</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> menu_item_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">price</span><span class="field-type">numeric(10,2)</span></div>
+            <div class="field-row"><span class="field-name">is_available</span><span class="field-type">boolean</span></div>
+          </div>
+          <div class="field-note">The orderable unit. Hazy IPA (M) + Hazy IPA (L) = two variants, one menu_item, one keg in inventory_item.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">modifier_group</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">is_required</span><span class="field-type">boolean</span></div>
+            <div class="field-row"><span class="field-name">min_select</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">max_select</span><span class="field-type">smallint</span></div>
+          </div>
+          <div class="field-note">Defines a choice set. e.g. "Sugar level" (required, pick exactly 1), "Add-ons" (optional, pick 0–3). Attached to specific variants via menu_variant_modifier_group.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">modifier_option</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> group_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">price_delta</span><span class="field-type">numeric(10,2)</span></div>
+            <div class="field-row"><span class="field-name">is_available</span><span class="field-type">boolean</span></div>
+          </div>
+          <div class="field-note">One choice within a group. e.g. "หวานน้อย" (+0฿), "Extra shot" (+35฿). price_delta is 0 for free options. Snapshot frozen into order_item_modifier at order time.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">menu_variant_modifier_group</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> menu_item_variant_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> modifier_group_id</span><span class="field-type">uuid</span></div>
+          </div>
+          <div class="field-note">PK: (menu_item_variant_id, modifier_group_id). Declares which modifier groups apply to a given variant. e.g. only the "Hot" variant of a coffee offers "Sugar level" — not the bottled version.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-inv)"></div>
+        <div class="domain-name" style="color:var(--d-inv)">Inventory</div>
+        <div class="domain-desc">A/B/C category tracking + recipe linkage</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">inventory_item</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">category</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">unit_type</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">quantity_on_hand</span><span class="field-type">numeric(12,3)</span></div>
+            <div class="field-row"><span class="field-name">unit</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">low_stock_threshold</span><span class="field-type">numeric(12,3)</span></div>
+            <div class="field-row"><span class="field-name">cost_per_unit</span><span class="field-type">numeric(10,2)</span></div>
+          </div>
+          <div class="field-note">category: A (precise ml) | B (loose ml) | C (no tracking). unit_type: unit | volume.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">menu_variant_ingredient</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> menu_item_variant_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> inventory_item_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">quantity_used</span><span class="field-type">numeric(12,3)</span></div>
+          </div>
+          <div class="field-note">The recipe link. Many variants → one inventory_item. quantity_used in the inventory_item's unit.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">inventory_transaction</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> inventory_item_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">tx_type</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">delta_quantity</span><span class="field-type">numeric(12,3)</span></div>
+            <div class="field-row"><span class="field-name">reference_type</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">reference_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> created_by</span><span class="field-type">uuid → staff_user</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">tx_type: restock | deduct | adjustment | loss. reference_type + reference_id = polymorphic pointer (e.g. order_item).</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-order)"></div>
+        <div class="domain-name" style="color:var(--d-order)">Orders</div>
+        <div class="domain-desc">State machine from pending → served, with price snapshots</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">order_record</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> visit_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">
+            <div class="state-list">
+              <span class="state-chip">PENDING</span><span class="state-arrow">→</span>
+              <span class="state-chip">ACCEPTED</span><span class="state-arrow">→</span>
+              <span class="state-chip">READY</span><span class="state-arrow">→</span>
+              <span class="state-chip">SENT</span>
+              <span class="state-arrow">⤳</span>
+              <span class="state-chip">ISSUE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">order_item</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> order_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> menu_item_variant_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">quantity</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">unit_price_snapshot</span><span class="field-type">numeric(10,2)</span></div>
+            <div class="field-row"><span class="field-name">notes</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">unit_price_snapshot frozen at order time. Cancelled items stay visible, struck-through (audit principle).</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">order_item_modifier</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> order_item_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> modifier_option_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">price_delta_snapshot</span><span class="field-type">numeric(10,2)</span></div>
+          </div>
+          <div class="field-note">Snapshot frozen at order time — modifier price changes don't affect existing orders.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-pay)"></div>
+        <div class="domain-name" style="color:var(--d-pay)">Payment</div>
+        <div class="domain-desc">PromptPay QR + webhook + idempotency</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">payment</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> visit_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">amount</span><span class="field-type">numeric(12,2)</span></div>
+            <div class="field-row"><span class="field-name">method</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-uk">UK</span> gateway_tx_id</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">qr_payload</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name">paid_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">gateway_tx_id UNIQUE = idempotency key — GB Prime Pay may retry webhooks, check before settling. method: promptpay | cash. status: pending | completed | failed | refunded. One visit can have multiple payments (separate bills).</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">payment_order</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> payment_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> order_id</span><span class="field-type">uuid</span></div>
+          </div>
+          <div class="field-note">PK: (payment_id, order_id). Declares which orders are covered by a payment. New orders placed after a QR is generated are NOT in this set — they become a separate bill. Query unbilled orders via: orders WHERE NOT EXISTS completed payment_order link.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BOTTLE KEEP -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-bottle)"></div>
+        <div class="domain-name" style="color:var(--d-bottle)">Bottle Keep</div>
+        <div class="domain-desc">Schema in Sem 1 — UI in Sem 2. Links customer + inventory.</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">bottle_keep</span>
+            <span class="entity-tag tag-s2">Sem 2 UI</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> customer_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> inventory_item_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">quantity_registered</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">remaining_quantity</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">remaining_note</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name">opened_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">last_used_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">location_note</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
+          </div>
+          <div class="field-note">Separate from bar inventory — already sold. No precise ml tracking; bars use "2 bottles, half left" style. remaining_note = free text e.g. "ครึ่งขวด". Status: active | finished | expired. Blocks customer anonymization while active.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">bottle_keep_pour</span>
+            <span class="entity-tag tag-s2">Sem 2 UI</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> bottle_keep_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> visit_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">quantity_poured</span><span class="field-type">numeric(12,3)</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> created_by</span><span class="field-type">uuid → staff_user</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">Each pour decrements bottle_keep.remaining_quantity. Linked to the visit so pour history is visible per session.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- AUDIT LOG -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-audit)"></div>
+        <div class="domain-name" style="color:var(--d-audit)">Audit Log</div>
+        <div class="domain-desc">Append-only. No UPDATE or DELETE ever.</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">audit_log</span>
+            <span class="entity-tag tag-append">append-only</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">entity</span><span class="field-type">varchar(100)</span></div>
+            <div class="field-row"><span class="field-name">entity_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">action</span><span class="field-type">varchar(20)</span></div>
+            <div class="field-row"><span class="field-name">changed_fields</span><span class="field-type">jsonb?</span></div>
+            <div class="field-row"><span class="field-name">changed_by</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">changed_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">Diff-only pattern — changedFields stores <code>{field: {from, to}}</code> for scalar changes only; null on CREATE. Populated automatically by TypeORM AuditSubscriber via @nestjs/cls userId. No actor_type — always a staff user. No full snapshots — query by field name to see who changed status, price, etc.</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /domains-grid -->
+
+  <footer class="page-footer">
+    <span>Bar Management System · ERD v0.1 · Sep 2026</span>
+    <span>NestJS + PostgreSQL + TypeORM · AWS ECS + RDS</span>
+  </footer>
+
+</div><!-- /wrap -->

@@ -1,0 +1,6 @@
+---
+description: Workspace-wide architecture, scope, and TypeScript conventions for the Bar Management System monorepo.
+alwaysApply: true
+---
+
+@/docs/rules/core.md

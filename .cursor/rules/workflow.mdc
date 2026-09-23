@@ -1,0 +1,6 @@
+---
+description: Workflow — roles, brief lifecycle, quality gates, Field Guard (decision authority), session protocol.
+alwaysApply: true
+---
+
+@/docs/rules/workflow.md
