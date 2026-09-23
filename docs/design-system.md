@@ -2,30 +2,50 @@
 
 **Status:** Established 2026-09-20  
 **Canvas:** https://claude.ai/artifact/3bffc3c8-7223-4803-bd39-bb74de243226  
-**Aesthetic:** Cozy loft — warm neutrals, amber accent, dark mode only
+**Aesthetic:** Cozy loft — warm neutrals, amber accent. **Dark (default) + light theme**  
+**Updated:** 2026-09-23 — light theme added (see DR-002)
 
 ---
 
 ## Color Tokens
 
-| Token | Hex | Usage |
-|---|---|---|
-| `--color-bg` | `#1C1610` | Page/app background |
-| `--color-surface` | `#2C2318` | Cards, panels, modals |
-| `--color-surface-raised` | `#3A2F22` | Elevated cards, dropdowns |
-| `--color-border` | `#4A3B2A` | Dividers, input borders |
-| `--color-text-primary` | `#F0E6D0` | Body text, headings |
-| `--color-text-secondary` | `#A89070` | Labels, captions, metadata |
-| `--color-text-disabled` | `#6B5A48` | Disabled states |
-| `--color-accent` | `#D4872A` | Primary CTA, active states (dark surfaces) |
-| `--color-accent-light` | `#C07820` | Primary CTA on lighter surfaces |
-| `--color-accent-subtle` | `#3D2810` | Accent background tint |
-| `--color-success` | `#4CAF7D` | Confirmed, paid, ready states |
-| `--color-warning` | `#E8A838` | ISSUE state, attention needed |
-| `--color-error` | `#E05A5A` | Errors, cancelled items |
-| `--color-bottle-keep` | `#8B93D4` | Bottle-keep accent (indigo) |
+Two themes share the same token names — components never reference a theme directly.
+Dark is the default and the design reference; light is the "daylight / bright venue" variant.
 
-> **Rule:** Dark mode only. No light mode. Do not add `prefers-color-scheme` media queries.
+| Token | Dark (default) | Light | Usage |
+|---|---|---|---|
+| `--color-bg` | `#1C1610` | `#FAF6EF` | Page/app background |
+| `--color-surface` | `#2C2318` | `#FFFDF9` | Cards, panels, modals |
+| `--color-surface-raised` | `#3A2F22` | `#F2EADD` | Elevated cards, dropdowns |
+| `--color-border` | `#4A3B2A` | `#E3D6C2` | Dividers, input borders |
+| `--color-text-primary` | `#F0E6D0` | `#2A2016` | Body text, headings |
+| `--color-text-secondary` | `#A89070` | `#735E49` | Labels, captions, metadata |
+| `--color-text-disabled` | `#6B5A48` | `#A8977F` | Disabled states |
+| `--color-accent` | `#D4872A` | `#D4872A` | Primary CTA background (both themes — text on it is always `#1C1610`) |
+| `--color-accent-text` | `#D4872A` | `#A5601A` | Accent used as **text/icon** (links, ghost buttons, active nav) |
+| `--color-accent-subtle` | `#3D2810` | `#F6E6CF` | Accent background tint |
+| `--color-success` | `#4CAF7D` | `#2A8055` | Confirmed, paid, ready states |
+| `--color-success-subtle` | `#1A2D20` | `#E3F1E8` | Success chip background |
+| `--color-warning` | `#E8A838` | `#9A6512` | ISSUE state, attention needed |
+| `--color-warning-subtle` | `#3D2810` | `#F8EBD3` | Warning chip background |
+| `--color-error` | `#E05A5A` | `#C23B3B` | Errors, cancelled items |
+| `--color-error-subtle` | `#3A1C1C` | `#F9E1E1` | Error chip / danger button background |
+| `--color-bottle-keep` | `#8B93D4` | `#5A62B0` | Bottle-keep accent (indigo) |
+| `--color-bottle-keep-subtle` | `#262840` | `#E6E8F6` | Bottle-keep chip background |
+
+> **Contrast (light):** every text/status token is ≥ 4.5:1 on `--color-bg` and `--color-surface` (checked 2026-09-23). `--color-text-disabled` is intentionally lower — disabled only.
+> **Removed:** `--color-accent-light` → replaced by `--color-accent-text` (clearer name, one token per role).
+
+---
+
+## Theming
+
+- **Library:** `next-themes` (web) — `attribute="class"`, `defaultTheme="dark"`, `enableSystem` (user may pick ธีมมืด / ธีมสว่าง / ตามระบบ).
+- **Stored per device** (localStorage). **Not per venue** — no DB column.
+- Tokens defined in `globals.css`: dark values on `:root, .dark`, light values on `.light`. Map them onto HeroUI v3 theme variables so HeroUI components follow the same palette.
+- Never use `dark:` utilities for colors — expose the tokens through Tailwind v4 `@theme` (e.g. `bg-surface`, `text-accent-text`) so one class works in both themes. `dark:` only for rare non-color tweaks (e.g. image dimming).
+- New in this revision (dark values too): `--color-accent-text`, `--color-success-subtle`, `--color-warning-subtle`, `--color-error-subtle`, `--color-bottle-keep-subtle`.
+- Expo app: same token values, theme from the OS / in-app toggle (MB brief).
 
 ---
 
@@ -83,10 +103,10 @@ Base unit: `4px`
 
 | Variant | Background | Text | Border | Usage |
 |---|---|---|---|---|
-| Primary | `--color-accent` | `#1C1610` | none | Main CTA (สั่งอาหาร, ชำระเงิน) |
+| Primary | `--color-accent` | `#1C1610` (both themes) | none | Main CTA (สั่งอาหาร, ชำระเงิน) |
 | Secondary | `--color-surface-raised` | `--color-text-primary` | `--color-border` | Secondary actions |
-| Ghost | transparent | `--color-accent` | none | Tertiary, inline actions |
-| Danger | `--color-error` at 15% opacity | `--color-error` | `--color-error` at 40% | Destructive actions |
+| Ghost | transparent | `--color-accent-text` | none | Tertiary, inline actions |
+| Danger | `--color-error-subtle` | `--color-error` | `--color-error` at 40% | Destructive actions |
 
 Height: `48px` (touch), `40px` (desktop)  
 Radius: `--radius-md` (10px)  
@@ -98,7 +118,7 @@ Background: `--color-surface`
 Border: `1px solid --color-border`  
 Radius: `--radius-lg` (12px)  
 Padding: `--space-5` (20px)  
-Shadow: `0 2px 8px rgba(0,0,0,0.3)`
+Shadow: dark `0 2px 8px rgba(0,0,0,0.3)` · light `0 1px 4px rgba(42,32,22,0.08)`
 
 ### Chips / Status Badges
 
@@ -109,22 +129,24 @@ Font: `label` scale
 
 | Status | Background | Text |
 |---|---|---|
-| PENDING | `#3D2810` | `#D4872A` |
-| ACCEPTED | `#1A2D20` | `#4CAF7D` |
-| READY | `#4CAF7D` at 20% | `#4CAF7D` |
+| PENDING | `--color-accent-subtle` | `--color-accent-text` |
+| ACCEPTED | `--color-success-subtle` | `--color-success` |
+| READY | `--color-success` at 20% | `--color-success` |
 | SENT | `--color-surface-raised` | `--color-text-secondary` |
-| ISSUE | `#3D2810` | `#E8A838` |
+| ISSUE | `--color-warning-subtle` | `--color-warning` |
 | ว่าง (empty) | `--color-surface-raised` | `--color-text-secondary` |
-| มีแขก (occupied) | `#1A2D20` | `#4CAF7D` |
-| รอชำระ (awaiting payment) | `#3D2810` | `#D4872A` |
+| มีแขก (occupied) | `--color-success-subtle` | `--color-success` |
+| รอชำระ (awaiting payment) | `--color-accent-subtle` | `--color-accent-text` |
 | ปิดโต๊ะ (closed) | `--color-surface` | `--color-text-disabled` |
+
+> Tokens only — no raw hex in chips, so both themes work automatically.
 
 ### Bottom Navigation (Staff Mobile)
 
 Height: `64px` + safe area  
 Background: `--color-surface` with top border `--color-border`  
 4 tabs: ออเดอร์ / ชำระเงิน / แขก / อื่นๆ  
-Active: icon + label in `--color-accent`  
+Active: icon + label in `--color-accent-text`  
 Inactive: icon + label in `--color-text-secondary`
 
 ### Top Bar (POS Desktop)
@@ -139,7 +161,7 @@ Contains: venue name (left), notifications + profile (right)
 Width: `220px`  
 Background: `--color-bg`  
 Right border: `--color-border`  
-Active nav item: `--color-accent-subtle` background, `--color-accent` text
+Active nav item: `--color-accent-subtle` background, `--color-accent-text` text
 
 ---
 
@@ -181,7 +203,7 @@ Table grid: responsive CSS grid, min `160px` per cell
 
 ## Iconography
 
-Library: **Lucide Icons** (consistent with Tailwind ecosystem)  
+Library: **Lucide** — `lucide-react` (web), `lucide-react-native` (Expo). Brand logos (LINE) as SVG files, not an icon library (DR-002)  
 Size: `20px` (nav), `16px` (inline), `24px` (feature icons)  
 Stroke width: `1.5px`  
 Color: inherits from text context
@@ -204,7 +226,7 @@ Color: inherits from text context
 
 ## Special Accents
 
-- **Bottle-keep items:** Indigo accent `#8B93D4` — used for chips, icons, and borders on bottle-keep entries only
+- **Bottle-keep items:** `--color-bottle-keep` (indigo) + `--color-bottle-keep-subtle` — chips, icons, and borders on bottle-keep entries only
 - **86'd items:** Show item name struck through (`text-decoration: line-through`), text in `--color-text-disabled`, no interaction
 - **Cancelled order items:** Struck through, `--color-error` tint, remain visible for audit trail (do NOT hide)
 
@@ -214,7 +236,7 @@ Color: inherits from text context
 
 | Artboard | Content |
 |---|---|
-| Colors | Full color palette with token names |
+| Colors | Full color palette with token names — **dark only; light theme not yet drawn** |
 | Typography | Sarabun scale examples in Thai + English |
 | Components | Buttons, cards, inputs, chips, nav |
 | Surfaces | Full-screen mockups per surface |
