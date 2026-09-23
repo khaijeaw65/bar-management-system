@@ -64,7 +64,7 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 - Finish the core vertical before adding breadth
 
 ## Development Workflow
-- Local: Docker Compose for Postgres + Redis (see `docker-compose.yml`)
+- Local: Docker Compose for Postgres + Redis (see `infra/docker-compose.yml`)
 - `pnpm dev` → Turborepo runs backend + frontend in parallel
 - Migrations: `migration:generate` → review → `migration:run` (never `synchronize: true`)
 - Feature flags: not used — scope control is in FRD, not flags

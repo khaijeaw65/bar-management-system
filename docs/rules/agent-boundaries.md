@@ -29,8 +29,7 @@ Exception: `app/frontend/AGENTS.md` + `app/frontend/CLAUDE.md` are regenerated b
 
 ### Infrastructure & Enforcement
 ```
-docker-compose.yml
-cloudformation/**
+infra/**                     ← Terraform, docker-compose.yml, all infra files (DR-001)
 .github/**                   ← workflows, CODEOWNERS, PR template
 ```
 

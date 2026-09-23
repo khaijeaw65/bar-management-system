@@ -157,7 +157,7 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 ### Protected-file unlocks
 - Protected files (`agent-boundaries.md`) stay protected by default. **A DR approval does not unlock them.**
 - A brief may list **exact paths** under *Unlocked protected files*. The executor may edit **only those paths, only for that brief**. No globs.
-- **Only these categories are unlockable:** root config (`turbo.json`, `pnpm-workspace.yaml`, root `package.json`, `.gitignore`), infrastructure (`docker-compose.yml`, `cloudformation/**`, `.github/workflows/**`), and `docs/schema.sql`.
+- **Only these categories are unlockable:** root config (`turbo.json`, `pnpm-workspace.yaml`, root `package.json`, `.gitignore`), infrastructure (`infra/**`, `.github/workflows/**`) — still exact paths only, e.g. `infra/docker-compose.yml`, and `docs/schema.sql`.
 - **Never unlockable:** rules & instructions (`docs/rules/**`, `CLAUDE.md`, `AGENTS.md`, agent wrappers), `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all ownership-restricted docs (briefs, DR decisions, other person's state, audits, `docs/handoff.md`).
 - Field's PR review (+ Cowork audit) is the backstop.
 

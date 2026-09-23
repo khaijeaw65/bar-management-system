@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Field via Cowork · 2026-09-23 |
 | **Brief** | none (affects the future cloud-setup brief) |
 | **Category** | Flow/Architecture |
@@ -24,6 +24,6 @@ B. Cloud setup has not started, so switching costs nothing now. The Cloudflare D
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: B · Rejected · Approved with change: …>
-**Why:**
-**Date:**
+**Decision:** Approved: B (Terraform, all infra files under `infra/`)
+**Why:** Infra spans AWS + Cloudflare DNS (+ Vercel); Terraform manages all of them from one place, CloudFormation only AWS. Cloud setup hasn't started, so switching costs nothing.
+**Date:** 2026-09-24 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR
