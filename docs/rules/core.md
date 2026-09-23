@@ -51,7 +51,7 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 
 ## Git Conventions
 - Conventional commits: `feat/fix/chore/docs/refactor/test`
-- Brief work: scope = brief ID — `feat(BE-001): ...`, branch `feat/BE-001-<slug>`, PR title `BE-001: <title>`
+- Brief work: scope = brief ID — `feat(BRIEF-001): ...`, branch `feat/BRIEF-001-<slug>`, PR title `BRIEF-001: <title>`
 - Non-brief chores: scope = module — `chore(repo): ...`
 - Never commit directly to `main` — use feature branches. One brief = one branch = one PR
 - PR description follows `.github/pull_request_template.md` (brief, DRs, handoff, gates)
