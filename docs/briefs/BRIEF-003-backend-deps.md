@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | Field (Cursor primary) |
 | **Affected apps** | backend |
 | **Revision** | 1 |
@@ -84,3 +84,4 @@ pnpm --filter @bar/backend build
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-24 | Initial draft (Cowork) from DR-006 |
+| 1 | 2026-09-24 | AC-8 added (backend build, BRIEF-001 audit F3). Ready — approved by Field in session 2026-09-24 |

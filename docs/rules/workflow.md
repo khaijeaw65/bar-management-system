@@ -2,7 +2,7 @@
 
 > **Always-on. All agents, all people.** Human-controlled file (see `agent-boundaries.md`).
 > This file defines HOW work moves. WHAT to build lives in briefs. HOW to write code lives in `core.md` / `backend.md` / `frontend.md`.
-> Rev 11 — 2026-09-24 — Field authorized routine Git and execution without repeated approval; critical actions remain gated (§4). Rev 10 — 2026-09-24 — Cowork may revise a brief / set it Ready after Field reviews and approves in the session (§1, §2, §3). Rev 9 — 2026-09-24 — old prefixes retired + rename map (§2, §10); cross-app brief = one owner only (§2); optional Queue in state (§2). Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
+> Rev 12 — 2026-09-24 — bookkeeping (status flips, DR records, approved rule edits) rides along in the open brief PR (§3). Rev 11 — 2026-09-24 — Field authorized routine Git and execution without repeated approval; critical actions remain gated (§4). Rev 10 — 2026-09-24 — Cowork may revise a brief / set it Ready after Field reviews and approves in the session (§1, §2, §3). Rev 9 — 2026-09-24 — old prefixes retired + rename map (§2, §10); cross-app brief = one owner only (§2); optional Queue in state (§2). Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
 
 ---
 
@@ -90,6 +90,7 @@ Rules:
 - **Size ≤ 3 working days.** Bigger → Field splits it.
 - **Every brief is audited by Cowork before Done.** Codex cross-check, when Field requests it, **supplements** the Cowork audit — it never replaces it. Audit depth scales with risk: full for backend changes, core flow (order → pay → close), auth / payment / PDPA; compact (AC table + findings only) for low-risk UI and chores.
 - A brief changed after `Ready` gets `Revision +1` and a changelog line. The implementer re-reads it before continuing.
+- **Bookkeeping rides along — no standalone PR.** Status flips of *other* briefs (Ready / Done), recorded DR decisions and small rule edits Field approved go into the **currently open brief branch** as a separate `docs(...)` commit. Cowork commits them only while that branch's working tree is clean and no executor is mid-change; otherwise it notes them under Coordination in `kj.md` and adds them at the next clean point. A standalone docs PR is used only when no brief branch is open.
 
 ---
 
