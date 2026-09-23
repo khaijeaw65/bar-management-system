@@ -50,6 +50,7 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 - No barrel `index.ts` files that re-export everything (causes circular dep issues)
 
 ## Git Conventions
+- Routine task-scoped Git is pre-authorized under workflow.md §4; do not ask again for each commit/push/PR. Main merges, destructive/history-rewriting actions and releases remain explicitly gated.
 - Conventional commits: `feat/fix/chore/docs/refactor/test`
 - Brief work: scope = brief ID — `feat(BRIEF-001): ...`, branch `feat/BRIEF-001-<slug>`, PR title `BRIEF-001: <title>`
 - Non-brief chores: scope = module — `chore(repo): ...`
