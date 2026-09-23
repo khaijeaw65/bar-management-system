@@ -18,3 +18,7 @@ dist/
 # Editor
 .vscode/
 *.swp
+
+# Workflow state — local per person, never committed (workflow.md §2)
+docs/state/*.md
+!docs/state/_TEMPLATE.md
