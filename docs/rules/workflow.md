@@ -272,6 +272,6 @@ Locked decisions there are backfilled into DRs **only when a brief needs them** 
 ### Brief ID rename map (Field, 2026-09-24)
 | Old | New | Note |
 |---|---|---|
-| SH-001 | BRIEF-001 | File renamed in a chore after the `docs/sh001-decisions` PR merges (avoids a rename/edit conflict) |
+| SH-001 | BRIEF-001 | Renamed 2026-09-24 |
 | MB-000 | BRIEF-002 | Renamed 2026-09-24 |
 | SH-002, SH-003, BE-000, FE-000, BE-001 | — | Never drafted under the old prefix; get the next BRIEF ID when drafted |

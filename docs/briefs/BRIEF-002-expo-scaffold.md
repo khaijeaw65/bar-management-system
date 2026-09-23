@@ -152,7 +152,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - เมธี spike: **menu list screen on HeroUI Native** on a throwaway branch off `main` (same spike as the web one before the frontend scaffold brief). Result recorded in DR-002 before any MB feature brief is Ready.
 - Field adds `docs/rules/mobile.md` + thin wrappers (`.cursor/rules/mobile.mdc`, `.agents/rules/mobile.md`, glob `app/mobile/**`) and the `app/mobile` carve-out in `core.md` (`.js` extension / NodeNext rule).
 - CLAUDE.md / AGENTS.md / `core.md` repo tree: `app/mobile/` — "planned" → created.
-- BRIEF-001 (CI gate) AC-3: a contracts change now also runs `@bar/mobile` tasks (Turbo does this automatically once it's in the workspace — note it in the SH-001 evidence).
+- BRIEF-001 (CI gate) AC-3: a contracts change now also runs `@bar/mobile` tasks (Turbo does this automatically once it's in the workspace — note it in the BRIEF-001 evidence).
 
 ---
 

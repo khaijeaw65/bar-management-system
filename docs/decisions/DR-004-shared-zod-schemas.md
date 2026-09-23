@@ -4,7 +4,7 @@
 |---|---|
 | **Status** | Approved |
 | **Raised by** | Field via Cowork · 2026-09-23 |
-| **Brief** | none (lands with SH-002/SH-003 or BE-000) |
+| **Brief** | none (lands with the contracts-enum / config-truth brief or the backend scaffold brief) |
 | **Category** | Flow/Architecture |
 
 ## Context
@@ -24,7 +24,7 @@ The backend already uses Zod DTOs (`docs/rules/backend.md` — no class-validato
 - **One Zod version for the whole workspace.** Use Zod 4, pinned once (pnpm catalog or the same exact version in contracts, backend and frontend).
 - **Money on the wire:** decimal string validated by regex (`/^\d+\.\d{2}$/`) — matches `NUMERIC(…,2)` without float loss (see DR-002 #11).
 - **Dates on the wire:** ISO 8601 strings.
-- Contracts has to be buildable/consumable by both apps (NodeNext ESM backend, Next.js frontend). Confirm this in SH-003 ("contracts build").
+- Contracts has to be buildable/consumable by both apps (NodeNext ESM backend, Next.js frontend). Confirm this in the config-truth brief ("contracts build").
 
 **Follow-ups:** `docs/rules/backend.md` DTO section (schemas move to contracts; mappers stay) and `docs/rules/frontend.md` API client section — Field, manual. `app/packages/contracts/package.json` gets `zod` (dependency — through a brief).
 

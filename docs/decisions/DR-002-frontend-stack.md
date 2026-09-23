@@ -43,7 +43,7 @@ Main option = the UI framework (others below are single-choice items):
 | 11 | Money display | `Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' })`. **Frontend never does money math** — totals come from the backend | See money note below |
 | 12 | PromptPay QR | Backend returns a **base64 PNG**; frontend renders it with a plain `<img>`, not `next/image` | No QR library on the frontend |
 | 13 | Charts | **Deferred** to Sprint 6 (dashboard) | Not needed yet |
-| 14 | API mocking | **MSW** (dev + tests), early phase | FE work isn't blocked on BE-000 |
+| 14 | API mocking | **MSW** (dev + tests), early phase | FE work isn't blocked on the backend scaffold brief |
 | 15 | Testing | **Vitest + Testing Library** (unit/component), **Playwright** (e2e gate) | Matches the brief testing gate |
 | 16 | Route guard | `proxy.ts` (Next 16) replaces `middleware.ts` | Framework rename |
 | 17 | Kept as is | TanStack Query v5, Zustand (UI state only), Zod, `react-hook-form` + Zod resolver, native fetch wrappers, no i18n library | — |
