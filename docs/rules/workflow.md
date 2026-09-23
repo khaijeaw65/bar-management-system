@@ -2,7 +2,7 @@
 
 > **Always-on. All agents, all people.** Human-controlled file (see `agent-boundaries.md`).
 > This file defines HOW work moves. WHAT to build lives in briefs. HOW to write code lives in `core.md` / `backend.md` / `frontend.md`.
-> Rev 9 — 2026-09-24 — old prefixes retired + rename map (§2, §10); cross-app brief = one owner only (§2); optional Queue in state (§2). Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
+> Rev 10 — 2026-09-24 — Cowork may revise a brief / set it Ready after Field reviews and approves in the session (§1, §2, §3). Rev 9 — 2026-09-24 — old prefixes retired + rename map (§2, §10); cross-app brief = one owner only (§2); optional Queue in state (§2). Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
 
 ---
 
@@ -17,7 +17,7 @@
 ### Agents
 | Agent | Role | May write | Must NOT write |
 |---|---|---|---|
-| **Cowork** (Claude) | Auditor + decision partner for Field | New briefs with `Status: Draft`, DR recommendations, audit reports, `docs/state/kj.md` (planning sessions), a DR's Decision section **when Field states the decision explicitly in the session** (§5) | App code, tests, DR decisions on its own judgement, brief status beyond Draft |
+| **Cowork** (Claude) | Auditor + decision partner for Field | New briefs with `Status: Draft`, DR recommendations, audit reports, `docs/state/kj.md` (planning sessions), a DR's Decision section **when Field states the decision explicitly in the session** (§5), brief revisions and `Draft → Ready` **after Field reviews and approves them in the session** (§3) | App code, tests, DR decisions or brief changes on its own judgement, `Done` |
 | **Cursor, Claude Code, Antigravity, Codex** | Executor | App code + tests **inside the active brief's scope**, protected files **listed in the brief's unlock list** (§5), the brief's handoff, the state file of the person running the session, new DRs (`Pending`) | Briefs, DR decision sections, rules, the other person's state, audits |
 | **Codex — cross-check mode** (only when Field asks) | Independent second auditor | Audit reports marked `Auditor: Codex` | Same limits as Cowork |
 
@@ -48,7 +48,7 @@ docs/
 
 | Doc | Written by | Lifespan | Template |
 |---|---|---|---|
-| Brief | Field (Cowork may create Drafts) | Stable; revised only by Field | `docs/briefs/_TEMPLATE.md` |
+| Brief | Field (Cowork may create Drafts, and revise / set Ready on Field's approval — §3) | Stable; revised only by Field or on Field's approval | `docs/briefs/_TEMPLATE.md` |
 | State | Owner (via their session) | Overwritten every session, ≤ 40 lines · **local only, gitignored** | `docs/state/_TEMPLATE.md` |
 | Handoff | Implementer | Created at `Implemented`, updated if review sends it back, frozen at merge | `docs/handoffs/_TEMPLATE.md` |
 | Decision (DR) | Anyone raises · only Field decides (Cowork may record a decision Field states) | Permanent | `docs/decisions/_TEMPLATE.md` |
@@ -76,7 +76,7 @@ Draft → Ready → In Progress → Implemented → Audited → Done
 
 | Stage | Set by | Where recorded |
 |---|---|---|
-| Draft · Ready | Field | Brief `Status:` |
+| Draft · Ready | Field — or Cowork after Field reviews and approves (see below) | Brief `Status:` |
 | In Progress | Implementer | Own state file |
 | **Implemented** (เสร็จแล้ว) | Implementer (agent or person) — all ACs met + G1 passes | State file + handoff `Status:` — write `Implemented` (เสร็จแล้ว is the same status) |
 | **Audited** | Cowork — audit written with a PASS / PASS WITH NOTES / FAIL recommendation | Audit file (implementer links it in the PR) |
@@ -85,6 +85,7 @@ Draft → Ready → In Progress → Implemented → Audited → Done
 
 Rules:
 - **Nobody starts a Draft.** Only `Ready` briefs are executed.
+- **Ready via Cowork:** Cowork presents the brief (or the change) for review and asks *"approve BRIEF-### Ready?"*. Only an explicit Field reply — "approve", "ready", "approve with change …" — counts; silence or "looks good" does not. Cowork then sets `Status: Ready`, bumps Revision if content changed, and adds a changelog line `Ready — approved by Field in session <date>`. Field's PR merge is the sign-off. Executors never change brief status or content.
 - **One implementer per brief. One brief = one branch = one PR.**
 - **Size ≤ 3 working days.** Bigger → Field splits it.
 - **Every brief is audited by Cowork before Done.** Codex cross-check, when Field requests it, **supplements** the Cowork audit — it never replaces it. Audit depth scales with risk: full for backend changes, core flow (order → pay → close), auth / payment / PDPA; compact (AC table + findings only) for low-risk UI and chores.

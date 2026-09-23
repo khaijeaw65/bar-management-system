@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft · Ready · Done  ← Field only |
+| **Status** | Draft · Ready · Done  ← Field only (Cowork sets Ready on Field's approval) |
 | **Implementer** | Field / เมธี |
 | **Affected apps** | backend / frontend / mobile / contracts / tooling (select all in scope) |
 | **Revision** | 1 |
