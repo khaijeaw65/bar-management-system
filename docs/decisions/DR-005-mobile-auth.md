@@ -4,7 +4,7 @@
 |---|---|
 | **Status** | Approved |
 | **Raised by** | Field via Cowork · 2026-09-23 |
-| **Brief** | none yet (future BE auth brief + MB auth brief). MB-000 only prepares the `barapp` URL scheme |
+| **Brief** | none yet (future BE auth brief + MB auth brief). BRIEF-002 (was MB-000) only prepares the `barapp` URL scheme |
 | **Category** | Sensitive (auth) · Flow/Architecture |
 
 ## Context
@@ -54,7 +54,7 @@ App                                   Backend                         LINE
 - **Logout (mobile):** revoke the refresh token server-side (existing logout path, token from body), delete the push token (DR-003 amendment), clear SecureStore.
 - **Web:** no change. Cookie config, `SameSite=Lax`, CORS, `/api/auth/refresh` all stay as they are.
 
-### New dependencies (mobile, in the MB auth brief — not MB-000)
+### New dependencies (mobile, in the mobile auth brief — not BRIEF-002)
 `expo-web-browser`, `expo-secure-store`, `expo-crypto` (PKCE) — via `npx expo install`, exact versions pinned in that brief.
 
 **Follow-ups (Field, manual — protected):** `docs/rules/backend.md` Auth section (second extractor + mobile endpoints), CLAUDE.md "Auth" row (add "Bearer for mobile"), handoff note superseded by this DR.

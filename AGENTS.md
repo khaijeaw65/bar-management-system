@@ -39,7 +39,7 @@ docs/                   → rules/, briefs/, state/, handoffs/, decisions/, audi
 
 ## Before Any Task (mandatory)
 
-Chat commands: `onboard kj|methee`, `resume kj|methee`, `ทำ BRIEF-###`, `ตรวจ BRIEF-###`, `สถานะ BRIEF-###`, `handoff` — definitions and limits in `docs/rules/workflow.md` §4. New briefs use project-wide `BRIEF-###`; existing legacy IDs remain valid.
+Chat commands: `onboard kj|methee`, `resume kj|methee`, `ทำ BRIEF-###`, `ตรวจ BRIEF-###`, `สถานะ BRIEF-###`, `handoff` — definitions and limits in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
 
 1. Read `docs/rules/workflow.md` — roles, session types, brief lifecycle, gates, Field Guard.
 2. Decide your **session type** (workflow.md §1): Implementation · Audit · Planning · Onboarding. Audit, Planning and Onboarding sessions follow their own write limits and do not need a Ready brief.

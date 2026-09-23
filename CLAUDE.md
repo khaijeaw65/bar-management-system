@@ -115,7 +115,7 @@ Cross-cutting concerns to resolve:
 
 ## Workflow & Decision Authority
 
-Chat commands: `onboard kj|methee`, `resume kj|methee`, `ทำ BRIEF-###`, `ตรวจ BRIEF-###`, `สถานะ BRIEF-###`, `handoff` — definitions and limits in `docs/rules/workflow.md` §4. New briefs use project-wide `BRIEF-###`; existing legacy IDs remain valid.
+Chat commands: `onboard kj|methee`, `resume kj|methee`, `ทำ BRIEF-###`, `ตรวจ BRIEF-###`, `สถานะ BRIEF-###`, `handoff` — definitions and limits in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
 
 @docs/rules/workflow.md
 

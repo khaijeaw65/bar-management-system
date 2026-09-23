@@ -30,3 +30,6 @@ Updated: YYYY-MM-DD HH:mm · Agent: <tool>
 - <waiting for whom / BRIEF or DR / blocked path, or none>
 - Shared files: <likely overlap + coordination needed, or none>
 - Review queue: <PRs awaiting review, or none>
+
+## Queue (optional — planning only, ≤ 6 lines)
+1. <next item after the active brief>

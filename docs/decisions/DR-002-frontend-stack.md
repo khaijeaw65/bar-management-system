@@ -4,7 +4,7 @@
 |---|---|
 | **Status** | Approved |
 | **Raised by** | Field via Cowork · 2026-09-23 |
-| **Brief** | none (input to FE-000; MB-000 for icons) |
+| **Brief** | none (input to the frontend scaffold brief; BRIEF-002 (was MB-000) for icons) |
 | **Category** | Dependency |
 
 ## Context
@@ -24,7 +24,7 @@ Main option = the UI framework (others below are single-choice items):
 **C) Mantine** — rich component set, easy / own CSS system, awkward with Tailwind-first rules; no React Native.
 
 ## Recommendation
-**A) HeroUI v3.** It is the only option with an official React Native counterpart, so web and the Expo app share one design language. Tailwind v4 and dark/light theming work out of the box. Validate with one real screen (menu list) before FE-000 is Ready.
+**A) HeroUI v3.** It is the only option with an official React Native counterpart, so web and the Expo app share one design language. Tailwind v4 and dark/light theming work out of the box. Validate with one real screen (menu list) before the frontend scaffold brief is Ready.
 
 ### Full decision list
 
@@ -50,7 +50,7 @@ Main option = the UI framework (others below are single-choice items):
 
 **Money note:** `docs/schema.sql` already uses `NUMERIC(10,2)`/`NUMERIC(12,2)`, which is exact. No schema change. Money travels in the API as a decimal **string** (e.g. `"120.00"`), and the frontend only formats it for display. The exact wire format is settled with the shared schemas in **DR-004**.
 
-**New dependencies (frontend):** `@heroui/react` (+ its documented peer deps), `next-themes`, `clsx`, `tailwind-merge`, `lucide-react`. Dev: `msw`, `vitest`, `@testing-library/react`, `@testing-library/user-event`, `@playwright/test`. Exact versions pinned in FE-000.
+**New dependencies (frontend):** `@heroui/react` (+ its documented peer deps), `next-themes`, `clsx`, `tailwind-merge`, `lucide-react`. Dev: `msw`, `vitest`, `@testing-library/react`, `@testing-library/user-event`, `@playwright/test`. Exact versions pinned in the frontend scaffold brief.
 
 **Follow-ups (Field, manual — protected files), after approval:**
 - `docs/rules/frontend.md` — Stack list, "PWA" section → removed, Styling (dark mode line → `next-themes`, dual theme), DO NOT list (drop "no component library"; add the wrapper rule), `middleware.ts` → `proxy.ts` in the tree + Auth section.

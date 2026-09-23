@@ -2,7 +2,7 @@
 
 > **Always-on. All agents, all people.** Human-controlled file (see `agent-boundaries.md`).
 > This file defines HOW work moves. WHAT to build lives in briefs. HOW to write code lives in `core.md` / `backend.md` / `frontend.md`.
-> Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
+> Rev 9 — 2026-09-24 — old prefixes retired + rename map (§2, §10); cross-app brief = one owner only (§2); optional Queue in state (§2). Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
 
 ---
 
@@ -12,7 +12,7 @@
 | Who | Role | Coding split | Primary tools |
 |---|---|---|---|
 | **Field** (KJ — ณัฐวัฒน์) | Decision owner · backend lead · sole reviewer & merger | Field 20–30% · agents 70–80% (reviewer mode) | Cursor (primary), Claude Code (fallback when Cursor hits limit) |
-| **เมธี** (Methee) | Frontend (PWA) + mobile developer | เมธี 70–80% · agents ≤ 20% (learning mode, §8) | His choice |
+| **เมธี** (Methee) | Frontend (web) + mobile developer | เมธี 70–80% · agents ≤ 20% (learning mode, §8) | His choice |
 
 ### Agents
 | Agent | Role | May write | Must NOT write |
@@ -57,12 +57,12 @@ docs/
 **Authority order when documents disagree about a product/technical decision:** Approved DR > brief > rules > state file. The state file is an index only — never treat it as a decision.
 This order resolves *what to build*. It **never** changes role permissions, document ownership, protected-file bans, or who approves — those come only from §1 and `agent-boundaries.md`.
 
-**Brief IDs:** New briefs use one project-wide sequence: `BRIEF-001`, `BRIEF-002`, …, regardless of frontend/backend/mobile/shared scope. Field allocates IDs; numbers are never reused. One brief describes a testable outcome and may span multiple apps. Existing BE/FE/MB/SH IDs and recorded references remain valid legacy IDs; do not rename them or historical branches/DR links automatically. Queued ideas without a brief receive a new ID when drafted; do not assign an ID merely from their queue position.
+**Brief IDs:** New briefs use one project-wide sequence: `BRIEF-001`, `BRIEF-002`, …, regardless of frontend/backend/mobile/shared scope. Field allocates IDs; numbers are never reused. One brief describes a testable outcome and may span multiple apps **only when one person owns every part**; otherwise split it into separate briefs linked by *Depends on*. The ≤ 3-day size limit still applies. The old BE/FE/MB/SH prefixes are retired — see §10 for the rename map. Commit messages, merged branches, the frozen `docs/handoff.md` and dated DR history keep the old IDs as written. Queued ideas without a brief receive a new ID when drafted; do not assign an ID merely from their queue position.
 `docs/briefs/ui/` holds UI **design** references — inputs to implementation briefs, not executable briefs.
 
 **No other state files.** No `SESSION_STATE.md`, no per-agent notes.
 
-**State files are local only** (gitignored; only `_TEMPLATE.md` is committed). Why: they change every session — committing them would need a PR per update on protected `main`, and switching branches would roll them back to a stale version. Each person keeps theirs on their own machine; agents read it from disk. History lives in handoffs, DRs, audits and PRs. Lost file → rebuild from the active brief, handoff/PR and `git log`, then inspect the working tree. Local uncommitted progress cannot be recovered from Git history alone. Never assume another developer’s local state is available on this machine.
+**State files are local only** (gitignored; only `_TEMPLATE.md` is committed). Why: they change every session — committing them would need a PR per update on protected `main`, and switching branches would roll them back to a stale version. Each person keeps theirs on their own machine; agents read it from disk. History lives in handoffs, DRs, audits and PRs. Lost file → rebuild from the active brief, handoff/PR and `git log`, then inspect the working tree. Local uncommitted progress cannot be recovered from Git history alone. Never assume another developer’s local state is available on this machine. **Queue** (optional, planning sessions only — mainly `kj.md`): up to 6 upcoming items, one line each. It is not a handoff: the handoff/Resume records where the *active* brief stands; the Queue lists what comes *after* it.
 
 ---
 
@@ -125,7 +125,7 @@ Names: `kj` / `Field` → `kj.md`; `methee` / `เมธี` → `methee.md`. An
 |---|---|
 | `onboard methee` / `onboard kj` | Read workflow, role rules, own state if present, relevant briefs/DRs. Inspect checkout and required tool availability read-only. Create missing own state from the template, using verified facts; never overwrite existing progress. Summarize responsibilities, setup gaps, blockers, and one eligible Ready brief with a suggested `ทำ <ID>` command. Stop ready to start; do not install dependencies, switch branches, or implement automatically. |
 | `resume methee` / `resume kj` | Read own state and linked brief/DRs, verify checkout, revision, implementer and dependencies, then continue the Resume action within existing authorization. Missing/stale state → reconstruct from evidence and report ambiguity; no guessed task or destructive checkout repair. Draft/blocked work stays blocked. |
-| `ทำ BRIEF-001` | Find the exact ID (legacy IDs also accepted); verify Ready status, current revision, owner, dependency completion, DRs, scope, unlocks and checkout. Start or resume implementation, run required gates, update own state and produce the brief handoff only at Implemented. Missing/duplicate ID or different implementer → report the mismatch; never choose a near match or self-assign. |
+| `ทำ BRIEF-001` | Find the exact ID (old IDs → use the §10 rename map); verify Ready status, current revision, owner, dependency completion, DRs, scope, unlocks and checkout. Start or resume implementation, run required gates, update own state and produce the brief handoff only at Implemented. Missing/duplicate ID or different implementer → report the mismatch; never choose a near match or self-assign. |
 | `ตรวจ BRIEF-001` | Audit against the brief and current evidence under Audit-session write limits. Codex cross-check requires Field's request and supplements Cowork review. |
 | `สถานะ BRIEF-001` | Read-only summary of verified AC progress, review state and blockers; distinguish observed facts from unavailable/local-only information. |
 | `handoff` | Save current session progress into the known owner's state, with uncommitted files, checks and Resume. No automatic commit/push/branch switch. A permanent `docs/handoffs/<ID>.md` is created only when all ACs and G1 pass; an existing handoff is updated through review. Audit sessions instead record pending review work in their audit and leave state untouched. |
@@ -183,7 +183,7 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 | Gate | What must pass | Enforced by | Status |
 |---|---|---|---|
 | **G1 — Local** | The exact gate commands listed in the Ready brief — default `lint` + `typecheck` + `test` per touched package; the brief may justify package-specific gates | Implementer, before `Implemented` | Partial — scripts missing (see below) |
-| **G2 — CI** | G1 + `test:e2e` (backend: supertest vs real Postgres · frontend: Playwright on order → pay → close only) | GitHub Actions, required check on `main` | **Planned** — `SH-001` |
+| **G2 — CI** | G1 + `test:e2e` (backend: supertest vs real Postgres · frontend: Playwright on order → pay → close only) | GitHub Actions, required check on `main` | **Planned** — `BRIEF-001` (was SH-001) |
 | **G3 — Review** | Checklist below | Field (Cowork audit supports) | Active |
 
 **Evidence rules**
@@ -191,7 +191,7 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 - **A missing script is `BLOCKED`, never green and never silent N/A.** Report it in the handoff.
 - Documentation / design ACs may use manual evidence (screenshot, file link) — no artificial unit tests.
 
-**Current script gaps (verified 2026-09-23):** backend has no `typecheck`; frontend has only `lint` (no `typecheck`, `test`, `test:e2e`); contracts has only `typecheck` (no `lint`, `test`); backend e2e only checks `GET /`. `SH-001` / `FE-000` close these — `SH-001` includes contracts. Until G2 exists, G1 output in the handoff is the evidence.
+**Current script gaps (verified 2026-09-23):** backend has no `typecheck`; frontend has only `lint` (no `typecheck`, `test`, `test:e2e`); contracts has only `typecheck` (no `lint`, `test`); backend e2e only checks `GET /`. `BRIEF-001` (CI gate) and the frontend scaffold brief close these — `BRIEF-001` includes contracts. Until G2 exists, G1 output in the handoff is the evidence.
 
 **G3 checklist**
 - [ ] Every AC met and mapped to a test or manual evidence
@@ -268,3 +268,10 @@ No formal grading rubric — the process is shown to the advisor as-is and serve
 
 `docs/handoff.md` is **frozen** as the project log (decisions up to 2026-09-23). Do not add to it.
 Locked decisions there are backfilled into DRs **only when a brief needs them** — not all at once.
+
+### Brief ID rename map (Field, 2026-09-24)
+| Old | New | Note |
+|---|---|---|
+| SH-001 | BRIEF-001 | File renamed in a chore after the `docs/sh001-decisions` PR merges (avoids a rename/edit conflict) |
+| MB-000 | BRIEF-002 | Renamed 2026-09-24 |
+| SH-002, SH-003, BE-000, FE-000, BE-001 | — | Never drafted under the old prefix; get the next BRIEF ID when drafted |
