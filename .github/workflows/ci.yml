@@ -1,0 +1,65 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: bar
+          POSTGRES_PASSWORD: bar
+          POSTGRES_DB: bar
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bar -d bar"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: bar
+      PGPASSWORD: bar
+      PGDATABASE: bar
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Affected lint, typecheck, test
+        run: pnpm turbo run lint typecheck test --filter="...[origin/main]"
+
+      # ponytail: one job, so Postgres always starts. test:e2e runs only when
+      # @bar/backend is in the affected set. turbo.json has no test:e2e task.
+      - name: Backend e2e when affected
+        run: |
+          set -euo pipefail
+          dry=$(pnpm exec turbo run lint typecheck test --filter="...[origin/main]" --dry=json)
+          if printf '%s\n' "$dry" | jq -e 'any(.packages[]?; . == "@bar/backend")' >/dev/null; then
+            echo "test:e2e @bar/backend against postgres://${PGUSER}@${PGHOST}:${PGPORT}/${PGDATABASE}"
+            pnpm --filter @bar/backend test:e2e
+          else
+            echo "Skipping test:e2e — @bar/backend is not affected"
+          fi
