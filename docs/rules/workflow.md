@@ -2,7 +2,7 @@
 
 > **Always-on. All agents, all people.** Human-controlled file (see `agent-boundaries.md`).
 > This file defines HOW work moves. WHAT to build lives in briefs. HOW to write code lives in `core.md` / `backend.md` / `frontend.md`.
-> Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
+> Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
 
 ---
 
@@ -17,7 +17,7 @@
 ### Agents
 | Agent | Role | May write | Must NOT write |
 |---|---|---|---|
-| **Cowork** (Claude) | Auditor + decision partner for Field | New briefs with `Status: Draft`, DR recommendations, audit reports, `docs/state/kj.md` (planning sessions) | App code, tests, DR decisions, brief status beyond Draft |
+| **Cowork** (Claude) | Auditor + decision partner for Field | New briefs with `Status: Draft`, DR recommendations, audit reports, `docs/state/kj.md` (planning sessions), a DR's Decision section **when Field states the decision explicitly in the session** (§5) | App code, tests, DR decisions on its own judgement, brief status beyond Draft |
 | **Cursor, Claude Code, Antigravity, Codex** | Executor | App code + tests **inside the active brief's scope**, protected files **listed in the brief's unlock list** (§5), the brief's handoff, the state file of the person running the session, new DRs (`Pending`) | Briefs, DR decision sections, rules, the other person's state, audits |
 | **Codex — cross-check mode** (only when Field asks) | Independent second auditor | Audit reports marked `Auditor: Codex` | Same limits as Cowork |
 
@@ -50,7 +50,7 @@ docs/
 | Brief | Field (Cowork may create Drafts) | Stable; revised only by Field | `docs/briefs/_TEMPLATE.md` |
 | State | Owner (via their session) | Overwritten every session, ≤ 40 lines · **local only, gitignored** | `docs/state/_TEMPLATE.md` |
 | Handoff | Implementer | Created at `Implemented`, updated if review sends it back, frozen at merge | `docs/handoffs/_TEMPLATE.md` |
-| Decision (DR) | Anyone raises · only Field decides | Permanent | `docs/decisions/_TEMPLATE.md` |
+| Decision (DR) | Anyone raises · only Field decides (Cowork may record a decision Field states) | Permanent | `docs/decisions/_TEMPLATE.md` |
 | Audit | Cowork / Codex | Permanent; a re-audit appends a section | `docs/audits/_TEMPLATE.md` |
 
 **Authority order when documents disagree about a product/technical decision:** Approved DR > brief > rules > state file. The state file is an index only — never treat it as a decision.
@@ -142,7 +142,9 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 2. Create `docs/decisions/DR-###-<slug>.md` from the template — **context, options, and a recommendation are required.**
 3. Add it under **Awaiting Field** in your state file.
 4. Say it at the top of your reply: `FIELD REVIEW NEEDED: DR-### — <one line>`.
-5. Field writes the Decision section → `Approved` / `Rejected`. The implementer resumes.
+5. Field writes the Decision section, or tells Cowork to record it → `Approved` / `Rejected`. The implementer resumes.
+
+**Recording rule (Cowork only):** Cowork writes a Decision only when Field states it explicitly in the session ("approve DR-00X", "approve with change …", "reject"). Silence, "looks good", or approval of a related item never counts. The Date line says `recorded by Cowork on Field's explicit instruction`. Field's PR merge is the sign-off. Executors never write a Decision.
 
 ### Never
 - Implement first, ask later.

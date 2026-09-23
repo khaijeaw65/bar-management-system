@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Field via Cowork · 2026-09-23 |
 | **Brief** | none (input to FE-000; MB-000 for icons) |
 | **Category** | Dependency |
@@ -62,6 +62,6 @@ Main option = the UI framework (others below are single-choice items):
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: A · Rejected · Approved with change: …>
-**Why:**
-**Date:**
+**Decision:** Approved: A (HeroUI v3) + full decision list #1–#17
+**Why:** HeroUI is the only option with an official React Native counterpart, so web and the Expo app share one design language. The PWA is removed because the Expo app now handles native use and background push; the web stays an online in-app UI.
+**Date:** 2026-09-23 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR

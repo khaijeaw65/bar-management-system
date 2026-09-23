@@ -42,7 +42,7 @@ docs/schema.sql
 ### Workflow Documents (ownership-restricted)
 ```
 docs/briefs/**            ← Field only. Cowork may CREATE new briefs with Status: Draft
-docs/decisions/**         ← anyone may CREATE a new DR (Pending). Only Field writes Decision/Status
+docs/decisions/**         ← anyone may CREATE a new DR (Pending). Only Field writes Decision/Status — Cowork may record a decision Field states explicitly in the session (workflow.md §5)
 docs/audits/**            ← Cowork, or Codex in cross-check mode, only
 docs/state/<person>.md    ← only the state file of the person running the session
 docs/handoff.md           ← frozen legacy log — do not edit
