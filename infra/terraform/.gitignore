@@ -1,0 +1,17 @@
+# Terraform — never commit state, plans, providers or secret vars
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!example.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+# DO commit .terraform.lock.hcl (provider version pinning)
