@@ -1,7 +1,7 @@
 # Infrastructure Design — AI-Powered Bar Management System
 
-**Last updated:** 2026-09-13
-**Status:** Architecture locked. Implement last 2 weeks of November via CloudFormation.
+**Last updated:** 2026-09-23
+**Status:** Architecture locked. Implement last 2 weeks of November via Terraform (DR-001). Files: `infra/terraform/`.
 
 ---
 
@@ -139,13 +139,13 @@ flowchart TD
 | Load Balancer | ALB | ~$16 | Stable DNS entry point, SSL termination via ACM |
 | Storage | S3 | ~$1 | Photos, receipts |
 | DNS | Cloudflare | Free | Skip Route 53 |
-| IaC | CloudFormation | Free | AWS-native, no extra tooling |
+| IaC | Terraform (`infra/terraform/`) | ~$0 | AWS + Cloudflare (+ Vercel) in one tool · state in S3 (native lock) |
 | CI/CD | GitHub Actions | Free | Build → push ECR → deploy ECS |
 | **Total** | | **~$54/mo** | |
 
 ### Demo / Presentation strategy
-Spin up via CloudFormation → present (~2 hrs) → tear down.
-Cost per session: **~$0.11**. Use `SkipFinalSnapshot: true` on RDS delete to avoid lingering snapshot charges.
+`terraform apply` → present (~2 hrs) → `terraform destroy`.
+Cost per session: **~$0.11**. Use `skip_final_snapshot = true` on `aws_db_instance` to avoid lingering snapshot charges.
 
 ---
 
@@ -167,8 +167,10 @@ Destination     Target
 
 ---
 
-## CloudFormation Rollout Plan
-**Timeline:** Last 2 weeks of November.
+## Terraform Rollout Plan
+**Timeline:** Last 2 weeks of November. **Files:** `infra/terraform/`.
+
+0. Bootstrap (once, outside the demo stack): S3 state bucket (versioned) — never destroyed by `terraform destroy`
 
 Resources to provision (in order):
 1. VPC + subnets + IGW + route tables
@@ -181,3 +183,4 @@ Resources to provision (in order):
 8. ALB + target group + listener
 9. Secrets Manager entries
 10. GitHub Actions OIDC role (for CI/CD — no long-lived keys)
+11. Cloudflare DNS records → ALB (`cloudflare` provider)
