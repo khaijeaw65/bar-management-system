@@ -77,3 +77,17 @@ F8–F10 are carried as ACs into the next backend brief (auth) rather than anoth
 
 ## Update — 2026-09-24
 Field replaced the config layout with a per-domain structure (`backend.md` → providers/ Rules) → BRIEF-004 **Rev 3 — changes requested**. F8, F9, F10 are folded into Rev 3 (items 2–3). Re-audit after Cursor's Rev 3 commit.
+
+## Re-audit — 2026-09-24 · `d325061` (handoff `4a637a0`, CI run 36013669823 green)
+**Recommendation: PASS — ready to merge.**
+
+| Rev 3 item | Met? | Evidence |
+|---|---|---|
+| 1 Config per domain | ✅ | `providers/config/{app,database}/{configuration,config.service,config.module}.ts`; each `configuration.ts` has its own Zod schema and throws `Validate <domain> config error`; `AppModule` = `ConfigModule.forRoot({ isGlobal: true })` + domain modules |
+| 2 `providers/database/` | ✅ | `database.module.ts` builds options from `DatabaseConfigService` + `AppConfigService.nodeEnv`; `data-source.ts` calls `appConfiguration()` / `databaseConfiguration()` — no second env parse; `database-options.ts` lives here (F10 closed) |
+| 3 F8 / F9 | ✅ | Filter `@Catch()` all → plain `Error` = 500 envelope + stack log (test); interceptor reads `statusCode` inside `map()`, `@HttpCode(201)` POST test returns `status: 201` |
+| AC-5 / AC-11 / AC-12 | ✅ | `process.env` only in the two `configuration.ts` files; tests as listed in the handoff |
+
+**Info (no change needed now):** the handoff says the auth brief will replace the `'stub'` JWT secret "via `AppConfigService`" — under the new rule it will be a `JwtConfigService` in `providers/config/jwt/`. The auth brief states this.
+
+All findings F1–F10 are closed. Field may merge #16.
