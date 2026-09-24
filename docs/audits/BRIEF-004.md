@@ -53,3 +53,24 @@ Good. The e2e boots the real `AppModule`, runs migrations and hits the real DB i
 
 ## Update — 2026-09-24 · `94c7438`
 Field updated `docs/rules/backend.md` (providers/ layout, `AppConfigService`, API envelope) and moved BRIEF-004 to **Rev 2 — changes requested**. F1, F5 are folded into Rev 2 items 2–3; F6 is superseded by `AppConfigService`; F7 is resolved by the rule update. Re-audit follows Cursor's Rev 2 commit.
+
+## Re-audit — 2026-09-24 · `5e4f08c` (handoff `2c44cc8`, CI run 35950209362 green)
+**Recommendation: PASS WITH NOTES — ready to merge.**
+
+| Rev 2 item | Met? | Evidence |
+|---|---|---|
+| 1 Layout | ✅ | `providers/config/{config.module,config.schema,config.service}.ts`, `providers/orm/{typeorm.module,data-source,migrations,snake-naming.strategy}.ts` + `subscribers/`, `modules/health/` with `health.module.ts`; `AppModule` is 3 imports + CLS interceptor |
+| 2 One migration list | ✅ | `providers/orm/migrations.ts` imported by `typeorm.module.ts` and `data-source.ts` (F1 closed) |
+| 3 No global env state | ✅ | `parseEnv` is pure; `booted`/`getEnv` gone; `AppConfigService` reads through Nest `ConfigService` (F5 closed); `process.env` only in `data-source.ts` (AC-11) |
+| 4 Envelope | ✅ | Interceptor + filter registered in `configureApp`; health 503 via `ServiceUnavailableException`; AC-3/AC-4/AC-10 tests updated |
+| 5 Rename | ✅ | `require-permissions.decorator.ts` / `RequirePermissions`; no old references left |
+
+### New findings (Current → Updated)
+| # | Severity | Current → Updated |
+|---|---|---|
+| F8 | Med | **Current:** `HttpExceptionFilter` is `@Catch(HttpException)` only, so an unexpected error (e.g. TypeORM `QueryFailedError`) returns Nest's default `{ statusCode, message }` — not the envelope `backend.md` promises. → **Updated:** `@Catch()` all; non-`HttpException` → `500 { status: 500, message: 'Internal server error', data: null }` + log the stack. Add a unit test. |
+| F9 | Low | **Current:** `TransformResponseInterceptor` reads `statusCode` before the handler runs; a route using `@HttpCode(201)` (or Nest's POST default) could report `status: 200` in the body while HTTP says 201. → **Updated:** read `statusCode` inside `map()` and add a test with a POST route (`201`). |
+| F10 | Low | **Current:** `databaseOptions()` (TypeORM options + naming strategy) lives in `providers/config/config.service.ts`, so config imports ORM code. → **Updated:** move it to `providers/orm/database-options.ts`; `AppConfigService.database` returns plain connection settings. Cosmetic cohesion, no behavior change. |
+| — | Info | `AuthModule` stub uses a literal JWT secret `'stub'`; it is not imported anywhere. The auth brief replaces it with `AppConfigService`. |
+
+F8–F10 are carried as ACs into the next backend brief (auth) rather than another Rev here — the scaffold's contract (layout, config, migrations, envelope shape) is correct and every Rev 2 item is met.
