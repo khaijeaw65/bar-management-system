@@ -50,3 +50,6 @@ Good. The e2e boots the real `AppModule`, runs migrations and hits the real DB i
 
 ## Recommendation to Field
 **PASS WITH NOTES.** All 9 ACs met with real evidence; the scaffold is clean, small and matches `backend.md`. Fix F1 (single migration list), F5 (remove the global env cache) and F6 before merge — all small, and every next backend brief copies this config pattern. F7 is a rules update for Field. F2–F4 need no change now.
+
+## Update — 2026-09-24 · `94c7438`
+Field updated `docs/rules/backend.md` (providers/ layout, `AppConfigService`, API envelope) and moved BRIEF-004 to **Rev 2 — changes requested**. F1, F5 are folded into Rev 2 items 2–3; F6 is superseded by `AppConfigService`; F7 is resolved by the rule update. Re-audit follows Cursor's Rev 2 commit.
