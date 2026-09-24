@@ -22,7 +22,7 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 /
 ├── app/
 │   ├── backend/        @bar/backend  — NestJS API (port 3001)
-│   ├── frontend/       @bar/frontend — Next.js 16 PWA (port 3000)
+│   ├── frontend/       @bar/frontend — Next.js 16 web app (port 3000)
 │   └── packages/
 │       └── contracts/  @bar/contracts — shared enums & types (source of truth)
 ├── docs/               project documentation (FRD, schema, handoff, rules)
@@ -43,7 +43,7 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 ## TypeScript / ESM Rules (all packages)
 - TypeScript 6, `strict: true`, `noUncheckedIndexedAccess: true`
 - ESM (`type: "module"`) everywhere — no CommonJS
-- NodeNext module resolution — relative imports MUST include `.js` extension:
+- **Backend + contracts:** NodeNext module resolution — relative imports MUST include `.js` extension. **Web app (`app/frontend`) and Expo app (`app/mobile`) use bundler resolution — no `.js` extensions** (see `frontend.md`):
   - ✅ `import { Foo } from './foo.service.js'`
   - ❌ `import { Foo } from './foo.service'`
 - Node built-ins: `import { randomUUID } from 'node:crypto'`

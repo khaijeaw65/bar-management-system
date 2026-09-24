@@ -43,3 +43,6 @@
 
 ## Recommendation to Field
 **PASS WITH NOTES.** All 11 ACs met, deps exact, the HeroUI spike succeeded, and the `apiFetch → React Query → component + states` pattern is clean and readable. F1 is the one to fix early (next frontend brief) because the pattern will be copied; F2 is a rules edit; F3–F5 need nothing now. Safe to merge #17.
+
+## Update — 2026-09-24
+Field's decisions: **F1** → DR-007 (switch to axios + TanStack Query in the frontend auth brief; no fetch patch now). **F2** → fixed in `docs/rules/frontend.md` (bundler resolution, no `.js`) + `core.md` carve-out, together with all DR-002 `frontend.md` follow-ups and the PWA wording in CLAUDE.md / AGENTS.md / `core.md`. **F3, F4, F5** → BRIEF-005 **Rev 3 — changes requested** (AC-12..14). Re-audit after Cursor's Rev 3 commit.

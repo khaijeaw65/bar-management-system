@@ -26,7 +26,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 /
 ├── app/
 │   ├── backend/            → NestJS modular monolith (ESM, Vitest, TypeORM)
-│   ├── frontend/           → Next.js 16 PWA (Tailwind v4, ESM)
+│   ├── frontend/           → Next.js 16 web app (HeroUI v3, Tailwind v4)
 │   ├── mobile/             → Expo React Native — staff surface (planned, not created yet)
 │   └── packages/contracts/ → @bar/contracts — shared enums & types
 ├── docs/
@@ -46,7 +46,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 
 | Layer | Choice |
 |---|---|
-| Frontend | Next.js 16 PWA + Tailwind CSS |
+| Frontend | Next.js 16 web app + HeroUI v3 + Tailwind v4 (DR-002) · axios + TanStack Query (DR-007) |
 | Mobile | Expo (React Native) — staff surface duplicate |
 | Backend | NestJS modular monolith + TypeORM |
 | Database | PostgreSQL (RDS) |
@@ -66,7 +66,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 
 ### Shape
 - **One NestJS process** — REST API + WebSocket Gateway + webhook receiver. No microservices.
-- **One Next.js PWA** — 3 role-based surfaces (customer QR, staff mobile, POS desktop) via route separation.
+- **One Next.js web app** — role-based surfaces (POS `/pos`, staff `/staff`, customer QR) via route segments. No PWA — native + push is the Expo app (DR-002).
 - **One Expo React Native app** — duplicates staff mobile surface only. Same backend API, no new endpoints. Scope: login, table/session list, order taking, order management, push notifications, guest notes entry, bottle keep check.
 - **Modular monolith** — extract services only if load demands it post-launch.
 

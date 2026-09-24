@@ -18,7 +18,7 @@ Differentiators: AI guest intelligence (OpenAI), bottle-keep, real-time WebSocke
 
 ```
 app/backend/            → NestJS modular monolith (REST + WebSocket + webhook in one process)
-app/frontend/           → Next.js 16 PWA (customer QR ordering, staff mobile, POS desktop)
+app/frontend/           → Next.js 16 web app (customer QR ordering, staff web, POS desktop)
 app/mobile/             → Expo React Native, staff surface (planned, not created yet)
 app/packages/contracts/ → @bar/contracts — shared enums & types
 docs/                   → rules/, briefs/, state/, handoffs/, decisions/, audits/, FRD.md, schema.sql
