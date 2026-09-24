@@ -46,6 +46,7 @@ docs/decisions/**         ← anyone may CREATE a new DR (Pending). Only Field w
 docs/audits/**            ← assigned Cowork/Codex auditor, or explicitly requested cross-check, only
 docs/state/<person>/SESSION_STATE.md    ← only the state file of the person running the session
 docs/handoff.md           ← frozen legacy log — do not edit
+docs/quality/README.md    ← Field-owned quality procedure (SonarQube Cloud); change only with Field's approval
 ```
 
 ---

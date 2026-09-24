@@ -42,3 +42,7 @@ Write the independent report to `docs/audits/WORKFLOW-agent-loop.md`. Until chan
 ## Follow-up — Cowork M1
 
 Implemented M1 on Field's forwarded review: Planning permissions now reference the explicit KJ-state writer rule. Cowork writes only on the open task/docs branch, never main, at a coordinated clean point with no executor mid-change. Otherwise it reports the proposed update in chat. Methee state remains off-limits. README clarifies that clean Git status alone does not prove an idle executor. `git diff --check` passed. Cowork's report remains unchanged; this is a fix awaiting independent recheck, not an audit PASS. Suggestions S1–S6 were not applied in this M1-only follow-up.
+
+## Local Quality Evidence Addition — 2026-09-24
+
+Field confirmed local SonarQube with committed per-brief evidence. Added workflow policy, coverage/Sonar fields to brief/handoff/audit templates, and docs/quality/_TEMPLATE.md. The current Compose has only PostgreSQL/Redis; no server/scanner was installed and no JSON report or passing result was fabricated. Exact versions, API commands, coverage thresholds and exclusions remain for an approved tooling brief. Cowork should recheck exact-analysis identity, S..H report-only commits, required-vs-deferred rollout and sensitive-data handling. Documentation validation only; no scan/tests/deploy.

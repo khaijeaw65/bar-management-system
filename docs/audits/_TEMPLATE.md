@@ -47,3 +47,8 @@
 - Tests run or independently inspected: <commands, SHA, results, limitations>
 - Audit is committed after S; pre-merge summary must verify S..head contains evidence-only changes (§7).
 - Repeated blocker: <attempts/evidence and decision needed, or none>
+
+## SonarQube Cloud (when the brief requires the gate)
+- Gate result on PR head H: <passed / failed / unavailable = BLOCKED> · link: <SonarQube Cloud PR analysis>
+- New-code coverage, issues, hotspots reviewed: <summary>
+- Any exclusion / "won't fix" / threshold change approved by Field: <reference or none>

@@ -29,6 +29,11 @@ One row per gate command from the brief. Exact command, run on the commit above.
 | `pnpm --filter @bar/<pkg> test` | 0 | <n> passed · 0 failed · <n> skipped |
 | `pnpm --filter @bar/<pkg> test:e2e` | 0 · — | <n> passed · 0 failed · <n> skipped · not in brief · BLOCKED |
 
+## Coverage / SonarQube Cloud
+- Gate: required / deferred (per brief) · result on head: <passed / failed / not live yet>
+- Link: <SonarQube Cloud PR analysis> · new-code coverage: <n%>
+- Unresolved issues / hotspots: <none or list>
+
 ## Decisions Raised
 - <DR-### — status> (or none)
 

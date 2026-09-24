@@ -60,3 +60,37 @@
 | S6 | ✅ applied | README legacy cleanup rule |
 
 **Recommendation: PASS** for the working tree as reviewed. Bind to the commit: after Codex/Field commits this, S = that commit; any further change to rules/templates before merge needs a re-check. This is a Field PR (workflow maintenance), so under the new §7 it may be merged once the commit is re-bound and `ci` is green.
+
+## Re-check — 2026-09-24 · local SonarQube / coverage addition (working tree on `3a1f890`, uncommitted)
+Reviewed: workflow §6 "Local SonarQube and coverage evidence", §7 S..H wording, brief/handoff/audit template sections, `docs/quality/_TEMPLATE.md`, Codex handoff note, KJ state.
+
+**Result: CHANGES REQUIRED — 1 Must fix, 1 Field decision.**
+
+| # | Must fix / Suggestion | Severity | Evidence · Current → Updated |
+|---|---|---|---|
+| Q1 | **Must fix** | Med | **Current:** §6 says "Coverage runs in local tests and CI". `ci.yml` runs no coverage, and the frontend has no coverage package (only backend `test:cov` + `@vitest/coverage-v8`). → **Updated:** "Coverage will run locally and in CI once the tooling brief adds it; today only backend `test:cov` exists." Rules must describe what exists (source-grounding rule 6). |
+| Q2 | **Field decision** | High | **Current:** per-brief analysis on task branches is assumed, but the free SonarQube **Community** edition analyzes **one branch per project** — scanning `feat/BRIEF-00x` overwrites the main analysis unless each brief uses its own project key or a community branch plugin. The text only says "verify branch-analysis capabilities". → **Updated:** decide before the tooling brief (see options below) and state the chosen mechanism in §6. |
+| Q3 | Suggestion | Med | **Current:** ~30 lines of scanner procedure now sit in `workflow.md` (which every agent reads every session). → **Updated:** move steps 1–6 to `docs/quality/README.md`; keep 3–4 lines in §6 (gate required/deferred per brief, evidence location, local ≠ CI enforcement, BLOCKED if unavailable). |
+| Q4 | Suggestion | Low | **Current:** `docs/quality/**` has no owner in `agent-boundaries.md`. → **Updated:** "`docs/quality/<ID>/` ← implementer of that brief only; auditor reads; never edited after merge." |
+| Q5 | Suggestion | Low | **Current:** every brief would carry export JSON + summary + task/analysis IDs + sanitization notes — heavy for a 2-person team. → **Updated:** keep, but let the tooling brief decide whether small/UI-only briefs may mark the gate "deferred" by default. |
+
+### Q2 options for Field
+| | A) Local Docker SonarQube Community (current choice) | B) SonarQube Cloud (free for public repos) |
+|---|---|---|
+| Cost | $0; ~2–4 GB RAM on your Mac while running | $0 while the repo stays public |
+| Branch / PR analysis | Main branch only per project → per-brief project key or plugin workaround | Built in: PR analysis + decoration |
+| Enforcement | Local, manual; evidence is committed files (editable) | Runs in GitHub Actions; can be a **required check** on `main` like `ci` |
+| Per-brief evidence work | Export JSON + summary each brief | None — the PR check is the evidence |
+| Fits "production-grade" + resume | OK | Stronger (same as industry setup) |
+
+Recommendation: **B** if the repo stays public — it removes the per-brief export procedure and gives real CI enforcement. Keep **A** only if the repo must be private or you specifically want the self-hosted setup experience.
+
+### Resolution — 2026-09-25 (Field's decisions)
+- **Q2 → B:** SonarQube Cloud free plan, public repo, analysis in GitHub Actions, Quality Gate as a required check (plan page checked 2026-09-25: free tier covers public + private ≤ 50k LOC, PR analysis and Quality Gate).
+- **Q1:** fixed — §6 now says coverage/Sonar are **not live yet**; the tooling brief adds them; briefs mark the gate *deferred* until then.
+- **Q3:** scanner procedure moved to `docs/quality/README.md`; §6 is 6 bullets. Local per-brief export procedure and `docs/quality/_TEMPLATE.md` removed (cloud PR check is the evidence). S..H wording back to audit/handoff/state/PR-link.
+- **Q4:** `docs/quality/README.md` listed as Field-owned in `agent-boundaries.md`.
+- **Q5:** small/UI-only briefs may mark the gate *deferred* by default (§6).
+- Brief / handoff / audit templates reduced to required/deferred + PR analysis link. CLAUDE.md CI/CD row updated.
+
+**Result: PASS** for this working tree. Bind to the commit that includes it; this is a Field PR, mergeable under §7 once `ci` is green.

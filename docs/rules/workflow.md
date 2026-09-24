@@ -161,6 +161,15 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 - **G2:** applicable required CI checks on the current PR head, including the brief's integration/e2e coverage. Verify current workflows and scripts; historical setup notes are not evidence that CI exists or passes.
 - **G3:** assigned audit PASS, all ACs supported, no unresolved Must fix/unapproved deviation, handoff/state present, and Field review. Methee's walkthrough remains required.
 
+### Coverage and SonarQube Cloud gate (G2)
+
+Field chose **SonarQube Cloud (free plan, public repo)** on 2026-09-25 — analysis runs **in GitHub Actions** on every PR and its Quality Gate becomes a required check next to `ci`. No local SonarQube server, no per-brief exported reports: the PR check and its SonarQube Cloud page are the evidence.
+- **Not live yet.** Today CI runs no coverage and no Sonar analysis (only backend has `test:cov`). The tooling brief adds coverage to all packages, the scan job, the project/token setup and the gate thresholds. Until it merges, briefs mark the Sonar gate **deferred**.
+- Each brief states the gate as **required** or **deferred** (small/UI-only briefs may defer by default). Required but not green on the PR head → not mergeable; analysis unavailable → BLOCKED, never "assumed pass".
+- Never lower thresholds, add exclusions or mark issues "won't fix"/"false positive" to pass without Field's approval.
+- The auditor reads the Sonar result for the PR head, not just the percentage. A green gate does not replace behavior tests or the audit.
+- Setup and procedure: `docs/quality/README.md`.
+
 ### Six source-grounding rules
 1. Read the approved brief, relevant DRs, contracts/schema before writing behavior.
 2. Preserve approved DTO fields/types, enum values, REST responses and WS payloads. Never invent business fields or errors.
