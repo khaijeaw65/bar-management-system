@@ -1,33 +1,32 @@
 # State — KJ
-Updated: 2026-09-24 · Agent: Codex (Field-confirmed workflow migration)
+Updated: 2026-09-25 · Agent: Cursor
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
-On `feat/BRIEF-006-local-sonar`: run `execute BRIEF-006` (Claude Code or Cursor).
+Push `feat/BRIEF-006-local-sonar` and open the PR, then `audit BRIEF-006` (Cowork).
 
 ## Active
-- Brief: Field-authorized workflow maintenance; no application brief executed
-- Stage: Prepared for Cowork review
-- Branch: docs/workflow-agent-loop
-- Work commit: 3a1f890 (base; current quality-policy addition is uncommitted)
-- PR: not opened this session
+- Brief: BRIEF-006 — local SonarQube · Revision: 1
+- Brief file: docs/briefs/BRIEF-006-local-sonar.md
+- Stage: Implemented
+- Branch: feat/BRIEF-006-local-sonar
+- Work commit: b95df84
+- PR: none yet
 
 ## Working tree
-- Uncommitted: workflow, brief/audit/handoff templates, docs/quality template, handoff and own state
-- Checks: documentation validation and git diff --check; no app tests (docs-only)
+- Uncommitted: handoff, operational screenshot, this state
+- Checks: on b95df84, `pnpm lint && pnpm typecheck && pnpm test` exit 0 (17 tests); `pnpm sonar` exit 0, gate PASSED; `pnpm sonar:report` exit 0
 
 ## Progress
-- Completed: confirmed workflow draft written; identity initialized as kj locally
-- Remaining: quality-policy recheck; Ready tooling brief for Sonar/scanner/coverage settings; no scans run
-- Prior local snapshot: BRIEF-005 Rev 3 marked Implemented at b73dcbf, PR #17; tests reported on 09df010 and CI on 0839c61. These are historical claims, not rerun here.
-- Actual base c8e36bc records PR #17 merged; prior local instruction awaiting its audit/merge was stale. Audit completeness not reverified here.
+- Completed: AC-1 through AC-7 locally. Image `sonarqube:26.9.0.129388-community`. Gate PASSED. 15 existing issues listed, not fixed.
+- Remaining: push, PR, `ci` link in the handoff
 
 ## Next steps
-1. Push `docs/workflow-agent-loop` → PR → merge (Field PR, audit PASS). Then Cowork drafts BRIEF-006 (coverage + SonarQube Cloud CI).
-2. Resolve review findings, then commit/push and prepare the docs PR.
-3. Field approves the final head before any merge.
+1. Push the branch and open the PR. Fill the brief PR link.
+2. Cowork runs `audit BRIEF-006`.
+3. After audit PASS, merge under Field's pre-approved path.
 
 ## Blockers / Coordination
-- Shared files: workflow/root instructions/templates; coordinate further edits
-- Review queue: this workflow update; see docs/handoffs/WORKFLOW-agent-loop.md
-- No application code, historical audits/DRs or existing brief statuses changed.
+- None. No DR.
+- Shared files: root `package.json`, `pnpm-lock.yaml`, `infra/docker-compose.yml`
+- Review queue: this PR, once opened
