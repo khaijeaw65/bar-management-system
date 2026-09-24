@@ -22,9 +22,9 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "migration:create": "node ./node_modules/typeorm/cli.js migration:create",
-    "migration:generate": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:generate -d dist/providers/orm/data-source.js",
-    "migration:run": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:run -d dist/providers/orm/data-source.js",
-    "migration:revert": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:revert -d dist/providers/orm/data-source.js"
+    "migration:generate": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:generate -d dist/providers/database/data-source.js",
+    "migration:run": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:run -d dist/providers/database/data-source.js",
+    "migration:revert": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:revert -d dist/providers/database/data-source.js"
   },
   "dependencies": {
     "@bar/contracts": "workspace:*",

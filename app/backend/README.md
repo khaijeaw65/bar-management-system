@@ -11,7 +11,7 @@ pnpm --filter @bar/backend start:dev
 
 Health: `GET http://localhost:3001/api/health`
 
-Migration scripts compile with `nest build`, then the TypeORM CLI loads `dist/providers/orm/data-source.js` (`node --env-file=.env`). That file is the ESM data source; Node cannot resolve the `.js` imports in the `.ts` source without an extra loader, so the CLI runs the compiled output.
+Migration scripts compile with `nest build`, then the TypeORM CLI loads `dist/providers/database/data-source.js` (`node --env-file=.env`). That file is the ESM data source; Node cannot resolve the `.js` imports in the `.ts` source without an extra loader, so the CLI runs the compiled output.
 
 ```bash
 pnpm --filter @bar/backend migration:revert

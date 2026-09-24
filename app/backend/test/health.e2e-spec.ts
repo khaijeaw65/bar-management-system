@@ -4,7 +4,7 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
-import { AuditSubscriber } from '../src/providers/orm/subscribers/audit.subscriber.js';
+import { AuditSubscriber } from '../src/providers/database/subscribers/audit.subscriber.js';
 
 describe('Health (e2e)', () => {
   let app: INestApplication;

@@ -8,7 +8,7 @@ describe('CLI data source', () => {
     process.env.PGDATABASE = 'bar';
 
     const { AppDataSource } =
-      await import('../src/providers/orm/data-source.js');
+      await import('../src/providers/database/data-source.js');
     expect(AppDataSource.options.synchronize).toBe(false);
   });
 });
