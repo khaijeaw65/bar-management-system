@@ -6,7 +6,7 @@
 | **Date** | 2026-09-24 |
 | **Brief revision** | 3 |
 | **Branch / PR** | `feat/BRIEF-004-backend-scaffold` · PR #16 |
-| **Commit** | `d325061` (local gates). CI URL filled after the push |
+| **Commit** | `d325061` (local gates). `ci` green on `8720b06` |
 | **Status** | Implemented — Rev 3 awaiting re-audit |
 
 > Created at `Implemented`. Updated for Rev 3 after changes requested. Frozen at merge.
@@ -24,14 +24,14 @@ Rev 3 splits config into `providers/config/app` and `providers/config/database`.
 | AC-5 | ✅ | `src/providers/config/database/configuration.spec.ts` — empty `PGHOST` makes `databaseConfiguration()` throw and the message names `PGHOST` |
 | AC-6 | ✅ | `test/health.e2e-spec.ts` — `registers AuditSubscriber once` |
 | AC-7 | ✅ | `src/providers/database/database-options.spec.ts` and `test/data-source.spec.ts` — `synchronize` is `false` |
-| AC-8 | ✅ | lint, typecheck, test, test:e2e, build exit 0 on `d325061` |
+| AC-8 | ✅ | lint, typecheck, test, test:e2e, build exit 0 on `d325061`. `ci` success on `8720b06`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36013669823 |
 | AC-9 | ✅ | Unchanged from Rev 1: pnpm 10.0.0, frozen lockfile, no new packages in Rev 3 |
 | AC-10 | ✅ | `transform-response.interceptor.spec.ts` wraps a value; `http-exception.filter.spec.ts` maps `ServiceUnavailableException` to the error envelope |
 | AC-11 | ✅ | `rg -n "process.env" app/backend/src` matches only `providers/config/app/configuration.ts` and `providers/config/database/configuration.ts` |
 | AC-12 | ✅ | `http-exception.filter.spec.ts` maps a plain `Error` to 500 `{ status: 500, message: 'Internal server error', data: null }` and logs the stack. `transform-response.interceptor.spec.ts` POSTs a `@HttpCode(201)` route and the envelope `status` is `201` |
 
 ## Gate Evidence (G1)
-Local commands on the `d325061` tree (`pnpm --version` 10.0.0).
+Local commands on the `d325061` tree (`pnpm --version` 10.0.0). `8720b06` adds this handoff only. CI on that commit ran the backend gates, including `test:e2e`.
 
 | Command | Exit | Result |
 |---|---|---|
