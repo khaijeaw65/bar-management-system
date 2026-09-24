@@ -46,3 +46,16 @@
 
 ## Update — 2026-09-24
 Field's decisions: **F1** → DR-007 (switch to axios + TanStack Query in the frontend auth brief; no fetch patch now). **F2** → fixed in `docs/rules/frontend.md` (bundler resolution, no `.js`) + `core.md` carve-out, together with all DR-002 `frontend.md` follow-ups and the PWA wording in CLAUDE.md / AGENTS.md / `core.md`. **F3, F4, F5** → BRIEF-005 **Rev 3 — changes requested** (AC-12..14). Re-audit after Cursor's Rev 3 commit.
+
+## Re-audit — 2026-09-24 · `09df010` (handoff `b73dcbf`)
+**Recommendation: PASS — ready to merge.**
+
+| Rev 3 item | Met? | Evidence |
+|---|---|---|
+| F3 / AC-12 | ✅ | No `void params` in `src/`; pages without params take no props; `LayoutProps` kept only where `children` is used (`/`, `/pos`) |
+| F4 / AC-13 | ✅ | `ThemeProvider` now wraps everything; only the data tree waits for MSW (`{ready ? children : null}`), so the theme script is in the server HTML in both modes. `<html>` has `light` at `DOMContentLoaded` with a saved light theme; captured console logs (dev + MSW) show no `next-themes` / script warning |
+| F5 / AC-14 | ✅ | `packageManager` removed from `app/frontend/package.json` (trailing newline added); `app/frontend/pnpm-lock.yaml` deleted; root `--frozen-lockfile` passes |
+
+**Info:** the "console screenshots" are rendered captures of the browser console log (Playwright), not DevTools screenshots — acceptable evidence for AC-13.
+
+Open items carried forward: F1 → DR-007 (axios, frontend auth brief). F2 closed in `frontend.md` / `core.md`. Field may merge #17.
