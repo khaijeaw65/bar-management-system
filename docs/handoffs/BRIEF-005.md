@@ -5,8 +5,8 @@
 | **Implementer** | Field (Cursor) |
 | **Date** | 2026-09-24 |
 | **Brief revision** | 2 |
-| **Branch / PR** | `feat/BRIEF-005-frontend-scaffold` · PR (opened with this handoff) |
-| **Commit** | `97f9748` (local gates). Screenshot script removed in the following commit; it is not part of the app. |
+| **Branch / PR** | `feat/BRIEF-005-frontend-scaffold` · PR #17 |
+| **Commit** | `97f9748` (local gates). `ci` green on `96e3d4a` |
 | **Status** | Implemented — awaiting audit |
 
 > Created at `Implemented`. Update it if review requests changes. Frozen at merge.
@@ -29,11 +29,11 @@ MSW `GET */api/menu/items` returns `{ status, message, data: { items } }`. With 
 | AC-7 | ✅ | `src/app/pos/menu/_components/MenuList.test.tsx` — loaded / error / empty |
 | AC-8 | ✅ | `e2e/menu.spec.ts` — heading เมนู and 4 `rowheader`s. 1 passed |
 | AC-9 | ✅ | `pnpm --filter @bar/frontend typecheck` after `rm -rf app/frontend/.next` — `next typegen` then `tsc --noEmit`, exit 0. Root layout uses `LayoutProps<'/'>` |
-| AC-10 | ✅ | Gates below, all exit 0 on the `97f9748` tree. `pnpm --version` 10.0.0. Production `.next` has no `setupWorker` / `mockServiceWorker`. `ci` link filled in after the PR run |
+| AC-10 | ✅ | Gates below, all exit 0 on the `97f9748` tree. `pnpm --version` 10.0.0. Production `.next` has no `setupWorker` / `mockServiceWorker`. `ci` success on `96e3d4a`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36016628822 |
 | AC-11 | ✅ | `wc -l` — largest component `providers.tsx` 47, `MenuList.tsx` 40, pages ≤ 11. Returned JSX in each component is under 40 lines |
 
 ## Gate Evidence (G1)
-Commands run on the `97f9748` tree before that commit (`pnpm --version` 10.0.0). The next commit only deletes `e2e/screenshots.mjs`.
+Commands run on the `97f9748` tree before that commit (`pnpm --version` 10.0.0). `48ca110` only deletes `e2e/screenshots.mjs`. `ci` on `96e3d4a`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36016628822
 
 | Command | Exit | Result |
 |---|---|---|
