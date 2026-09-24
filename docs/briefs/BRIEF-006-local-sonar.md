@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |
-| **PR** | <executor fills> |
+| **PR** | https://github.com/khaijeaw65/bar-management-system/pull/20 |
 | **Affected apps** | tooling · infra |
 | **Revision** | 1 |
 | **Depends on** | none (BRIEF-004 Compose file exists) |
@@ -93,9 +93,10 @@ pnpm sonar:report
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-25 | Initial draft (Cowork) — local SonarQube per Field's decision |
+| 1 | 2026-09-25 | Ready — approved by Field in session 2026-09-25 |

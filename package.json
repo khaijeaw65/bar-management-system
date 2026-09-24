@@ -8,11 +8,14 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "sonar": "node scripts/sonar.mjs",
+    "sonar:report": "node scripts/sonar-report.mjs"
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
+    "@sonar/scan": "^5.0.1",
     "prettier": "^3.0.0",
+    "turbo": "^2.0.0",
     "typescript": "^5.0.0"
   },
   "packageManager": "pnpm@10.0.0",
