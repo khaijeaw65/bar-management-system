@@ -6,7 +6,7 @@
 | **Date** | 2026-09-24 |
 | **Brief revision** | 3 |
 | **Branch / PR** | `feat/BRIEF-005-frontend-scaffold` · PR #17 |
-| **Commit** | `09df010` (Rev 3 local gates). Earlier `ci` on `96e3d4a`; Rev 3 `ci` fills in after push |
+| **Commit** | `09df010` (Rev 3 fixes). `ci` green on `0839c61`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36020696933 |
 | **Status** | Implemented — Rev 3 awaiting re-audit |
 
 > Created at `Implemented`. Updated for Rev 3 after changes requested. Frozen at merge.
@@ -29,7 +29,7 @@ MSW `GET */api/menu/items` returns `{ status, message, data: { items } }`. With 
 | AC-7 | ✅ | `src/app/pos/menu/_components/MenuList.test.tsx` — loaded / error / empty |
 | AC-8 | ✅ | `e2e/menu.spec.ts` — heading เมนู and 4 `rowheader`s. 1 passed |
 | AC-9 | ✅ | `typecheck` after `rm -rf app/frontend/.next` — exit 0. Root layout uses `LayoutProps<'/'>` |
-| AC-10 | ✅ | Gates below, all exit 0 on the `09df010` tree. `pnpm --version` 10.0.0. Production `.next` has no `setupWorker` / `mockServiceWorker` |
+| AC-10 | ✅ | Gates below, all exit 0 on the `09df010` tree. `pnpm --version` 10.0.0. Production `.next` has no `setupWorker` / `mockServiceWorker`. `ci` green on `0839c61` (run 36020696933) |
 | AC-11 | ✅ | `wc -l` — `providers.tsx` 47, `ThemeToggle.tsx` 46, pages ≤ 10. Returned JSX stays under 40 lines |
 | AC-12 | ✅ | `rg -n "void params" app/frontend/src` — no matches. `page.tsx`, `pos/menu/page.tsx`, and `staff/page.tsx` take no props. Layouts that use `children` keep `LayoutProps` |
 | AC-13 | ✅ | Saved `theme=light`. At `DOMContentLoaded`, `<html>` class includes `light` in both modes. Screenshots: `rev3-light-dev.png` (`pnpm dev`, API down so the error state is light), `rev3-light-msw.png` (mocking on, four rows, ธีมสว่าง pressed). Console: `rev3-console-dev.png`, `rev3-console-msw.png` — no `next-themes` / script-tag warning. Playwright e2e log also no longer prints that warning |
