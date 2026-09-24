@@ -37,11 +37,11 @@ export function Providers({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  if (!ready) return null;
-
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {ready ? children : null}
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

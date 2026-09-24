@@ -1,7 +1,16 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils/cn";
+
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
 
 const options = [
   { value: "dark", label: "ธีมมืด" },
@@ -11,11 +20,12 @@ const options = [
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const isClient = useIsClient();
 
   return (
     <div role="group" aria-label="ธีม" className="flex gap-1">
       {options.map((option) => {
-        const selected = theme === option.value;
+        const selected = isClient && theme === option.value;
         return (
           <button
             key={option.value}

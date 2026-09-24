@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function Home({ params }: PageProps<"/">) {
-  void params;
+export default function Home() {
   redirect("/pos/menu");
 }
