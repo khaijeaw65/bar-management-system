@@ -3,7 +3,7 @@ Updated: 2026-09-24 · Agent: Codex (Field-confirmed workflow migration)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
-Field reviews BRIEF-006 draft (local SonarQube) on `docs/brief-006-sonar` → approve Ready → push → merge.
+On `feat/BRIEF-006-local-sonar`: run `execute BRIEF-006` (Claude Code or Cursor).
 
 ## Active
 - Brief: Field-authorized workflow maintenance; no application brief executed
