@@ -6,7 +6,7 @@
 | **Date** | 2026-09-24 |
 | **Brief revision** | 2 |
 | **Branch / PR** | `feat/BRIEF-004-backend-scaffold` · PR #16 |
-| **Commit** | `5e4f08c` (local gates on this tree) |
+| **Commit** | `5e4f08c` (local gates). `ci` green on `1124658` |
 | **Status** | Implemented — Rev 2 awaiting re-audit |
 
 > Created at `Implemented`. Updated for Rev 2 after changes requested. Frozen at merge.
@@ -24,13 +24,13 @@ Rev 2 moves config and ORM under `providers/`, reads env only through `parseEnv`
 | AC-5 | ✅ | `src/providers/config/config.schema.spec.ts` — missing `PGHOST` throws and the message names `PGHOST` |
 | AC-6 | ✅ | `test/health.e2e-spec.ts` — `registers AuditSubscriber once` |
 | AC-7 | ✅ | `src/providers/config/config.service.spec.ts` and `test/data-source.spec.ts` — `synchronize` is `false` |
-| AC-8 | ✅ | lint, typecheck, test, test:e2e, build exit 0 on `5e4f08c`. `ci` re-runs on the PR |
+| AC-8 | ✅ | lint, typecheck, test, test:e2e, build exit 0 on `5e4f08c`. `ci` success on `1124658`: https://github.com/khaijeaw65/bar-management-system/actions/runs/35950209362 |
 | AC-9 | ✅ | Unchanged from Rev 1: pnpm 10.0.0, frozen lockfile, no new packages in Rev 2 |
 | AC-10 | ✅ | `transform-response.interceptor.spec.ts` wraps a value; `http-exception.filter.spec.ts` maps `ServiceUnavailableException` to the error envelope |
 | AC-11 | ✅ | `rg -n "process.env" app/backend/src` matches only `src/providers/orm/data-source.ts` |
 
 ## Gate Evidence (G1)
-Local commands on the `5e4f08c` tree (`pnpm --version` 10.0.0).
+Local commands on the `5e4f08c` tree (`pnpm --version` 10.0.0). `1124658` adds this handoff only. CI on that commit ran the backend gates, including `test:e2e`.
 
 | Command | Exit | Result |
 |---|---|---|
