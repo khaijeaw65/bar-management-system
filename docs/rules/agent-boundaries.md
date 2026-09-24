@@ -2,6 +2,7 @@
 
 > **Always-on. All agents. No exceptions.**
 > Protected files are never edited by agents — not even with a comment or TODO. If you think one needs changing → raise a DR (`docs/decisions/_TEMPLATE.md`) and stop that path. Field (KJ) applies changes manually.
+> Explicit Field-requested workflow maintenance may change only the specified documents; this is not a standing executor exception. Onboarding may write `.agent-local.json` and initialize own state. Executors may fill only the brief PR link as bookkeeping. See workflow §1–4.
 > Workflow, roles and the Field Guard: `docs/rules/workflow.md`.
 
 ---
@@ -40,16 +41,16 @@ docs/schema.sql
 
 ### Workflow Documents (ownership-restricted)
 ```
-docs/briefs/**            ← Field only. Cowork may CREATE new briefs with Status: Draft, and revise / set Ready after Field approves in the session (workflow.md §3)
+docs/briefs/**            ← Field only. Cowork may CREATE new briefs with Status: Draft, and revise / set Ready after Field approves in the session (workflow.md §3). Executors may fill the brief's PR field only
 docs/decisions/**         ← anyone may CREATE a new DR (Pending). Only Field writes Decision/Status — Cowork may record a decision Field states explicitly in the session (workflow.md §5)
-docs/audits/**            ← Cowork, or Codex in cross-check mode, only
-docs/state/<person>.md    ← only the state file of the person running the session
+docs/audits/**            ← assigned Cowork/Codex auditor, or explicitly requested cross-check, only
+docs/state/<person>/SESSION_STATE.md    ← only the state file of the person running the session
 docs/handoff.md           ← frozen legacy log — do not edit
 ```
 
 ---
 
-## Brief Unlocks (the only exception)
+## Brief Unlocks
 
 A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.g. `.github/workflows/ci.yml`, `pnpm-workspace.yaml`, `turbo.json`.
 - The executor may edit **only those paths, only within that brief**. No globs.

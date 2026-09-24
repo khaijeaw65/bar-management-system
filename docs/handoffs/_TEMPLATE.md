@@ -7,7 +7,7 @@
 | **Brief revision** | <n> |
 | **Branch / PR** | <branch> · PR #<n> |
 | **Commit** | `<sha>` (the commit the evidence below was run on) |
-| **Status** | Implemented — awaiting audit · Changes requested · Merged (frozen) |
+| **Status** | Implemented — awaiting audit · Changes requested (merged PR determines Done) |
 
 > Created at `Implemented`. Update it if review requests changes. Frozen at merge.
 
@@ -40,6 +40,11 @@ One row per gate command from the brief. Exact command, run on the commit above.
 
 ## AI Usage
 **Low · Medium · High** — <one line: tool + what for>  e.g. `Low — Cursor: explained WS reconnect, reviewed tests`
+
+## Review Routing
+- Assigned auditor: <Cowork / Field-assigned Codex>
+- Next command: `audit <ID>`
+- PR: <link> · Work SHA: <sha> · self-check source/contract comparison: <evidence>
 
 ## Notes for Reviewer
 - <where to look first, tricky parts>

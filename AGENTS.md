@@ -1,7 +1,7 @@
 # AGENTS.md — AI-Powered Bar Management System
 
 > Agent-agnostic project context. Read alongside `CLAUDE.md` for full detail.
-> For feature scope → `docs/FRD.md`. For schema → `docs/schema.sql`. For workflow & roles → `docs/rules/workflow.md`. For current state → `docs/state/<person>.md`.
+> For feature scope → `docs/FRD.md`. For schema → `docs/schema.sql`. For workflow & roles → `docs/rules/workflow.md`. For current state → `docs/state/<person>/SESSION_STATE.md`.
 
 ---
 
@@ -41,12 +41,12 @@ docs/                   → rules/, briefs/, state/, handoffs/, decisions/, audi
 
 Approval policy: routine scoped work and Git (including task-branch commit/push/PR creation) proceed without repeated questions; critical decisions, destructive actions, main merges and releases require explicit authority. See `docs/rules/workflow.md` §4. Tool/sandbox permission prompts remain separate.
 
-Chat commands: `onboard kj|methee`, `resume kj|methee`, `ทำ BRIEF-###`, `ตรวจ BRIEF-###`, `สถานะ BRIEF-###`, `handoff` — definitions and limits in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
+Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `audit BRIEF-###` (`ตรวจ`), `สถานะ BRIEF-###`, `handoff`, `อนุมัติ merge BRIEF-###` — definitions and limits in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
 
 1. Read `docs/rules/workflow.md` — roles, session types, brief lifecycle, gates, Field Guard.
-2. Decide your **session type** (workflow.md §1): Implementation · Audit · Planning · Onboarding. Audit, Planning and Onboarding sessions follow their own write limits and do not need a Ready brief.
-3. **Implementation sessions:** identify who runs this session (Field or เมธี) — ask if unclear. Read `docs/state/<person>.md`, then the `Ready` brief and its linked DRs. Run the read-only checkout check (`git status`, branch, last commit) — mismatch → stop and report.
-4. Implementation sessions end by overwriting `docs/state/<person>.md`. When all ACs pass G1 → handoff + status `Implemented`. Only Field sets `Done`.
+2. Decide your **session type** (workflow.md §1): Implementation · Audit · Planning · Onboarding · explicit Field-authorized workflow maintenance. Non-implementation sessions follow their own write limits and do not need a Ready brief.
+3. **Implementation sessions:** identify who runs this session (Field or เมธี) — ask if unclear. Read `docs/state/<person>/SESSION_STATE.md`, then the `Ready` brief and its linked DRs. Run the read-only checkout check (`git status`, branch, last commit) — mismatch → stop and report.
+4. Implementation sessions end by overwriting `docs/state/<person>/SESSION_STATE.md`. When all ACs pass G1 → handoff + status `Implemented`. Done is derived from the merged PR after Field approval; no status-only brief edit is required.
 
 **Field (KJ) is the only decision authority.** New dependency, brief deviation, flow/architecture change, schema/contracts change, or auth/payment/PDPA change — unless already **approved** (exact Pre-decided item in the Ready brief, or an Approved DR) → create a DR in `docs/decisions/`, stop that path, and start your reply with `FIELD REVIEW NEEDED: DR-### — <one line>`.
 
@@ -65,11 +65,11 @@ Chat commands: `onboard kj|methee`, `resume kj|methee`, `ทำ BRIEF-###`, `ต
 7. **Price snapshots are immutable** — `order_item.unit_price_snapshot` is frozen at order time.
 8. **Payment idempotency** — always check `gateway_tx_id` before processing a webhook.
 9. **Never decide alone** — anything on the Field Guard trigger list goes through a DR (workflow.md §5).
-10. **Never edit briefs, rules, or the other person's state file.** Protected files only if the active brief lists the exact path under *Unlocked protected files*.
+10. **Never change brief scope/approval, rules, or the other person's state on your own initiative. The brief PR-link bookkeeping exception and explicit Field-authorized maintenance are defined in workflow.md.** Protected files only if the active brief lists the exact path under *Unlocked protected files*.
 
 ---
 
 ## Current Phase
 
 Phase 1 — core vertical (order → pay → close). Scaffold stage, no business logic yet.
-Current progress lives in `docs/state/kj.md` and `docs/state/methee.md` — not here.
+Current progress lives in `docs/state/kj/SESSION_STATE.md` and `docs/state/methee/SESSION_STATE.md` — not here.

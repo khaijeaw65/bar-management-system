@@ -1,6 +1,6 @@
 # State — <KJ | Methee>
 Updated: YYYY-MM-DD HH:mm · Agent: <tool>
-> Local-only index, ≤ 40 lines. Write only your own state; refresh at session end/before changing tools.
+> Tracked branch snapshot, ≤ 40 lines. Write only your own state; refresh at session end/before changing tools.
 
 ## Resume
 <One concrete next action with a file/command; matches Next steps item 1.>
@@ -8,9 +8,9 @@ Updated: YYYY-MM-DD HH:mm · Agent: <tool>
 ## Active
 - Brief: BRIEF-001 — <title> · Revision: <n> (or none)
 - Brief file: docs/briefs/BRIEF-001-<slug>.md
-- Stage: In Progress | Implemented | Changes requested (or onboarding/planning)
+- Stage: In Progress | Implemented | Changes requested | Done (merged PR evidence) (or onboarding/planning)
 - Branch: <actual branch>
-- Last commit: <sha>
+- Work commit: <implementation/evidence sha, not this state commit>
 - PR: <link or none>
 
 ## Working tree

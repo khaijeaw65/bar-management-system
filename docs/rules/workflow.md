@@ -1,163 +1,116 @@
 # Workflow — Roles, Briefs, Gates, Field Guard
 
-> **Always-on. All agents, all people.** Human-controlled file (see `agent-boundaries.md`).
-> This file defines HOW work moves. WHAT to build lives in briefs. HOW to write code lives in `core.md` / `backend.md` / `frontend.md`.
-> Rev 13 — 2026-09-24 — Field may run 2 non-overlapping briefs in parallel via worktrees (§4). Rev 12 — 2026-09-24 — bookkeeping (status flips, DR records, approved rule edits) rides along in the open brief PR (§3). Rev 11 — 2026-09-24 — Field authorized routine Git and execution without repeated approval; critical actions remain gated (§4). Rev 10 — 2026-09-24 — Cowork may revise a brief / set it Ready after Field reviews and approves in the session (§1, §2, §3). Rev 9 — 2026-09-24 — old prefixes retired + rename map (§2, §10); cross-app brief = one owner only (§2); optional Queue in state (§2). Rev 8 — 2026-09-24 — Field approved unified brief IDs, personal resume state, and chat commands. Rev 7 — 2026-09-23 — Cowork may record a DR decision Field states explicitly (§1, §2, §5). Rev 6 — 2026-09-23 — state files local-only (§2). Rev 5 — trunk-based branching + tag-triggered deploy (§7). Rev 4 applied Codex cross-check + re-audit (`docs/audits/WORKFLOW-codex.md`).
-
----
+> Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
+> This file governs execution. Briefs define outcomes; scoped rules define code conventions. Historical revisions remain in Git.
 
 ## 1. People, Roles, Session Types
 
-### People
-| Who | Role | Coding split | Primary tools |
-|---|---|---|---|
-| **Field** (KJ — ณัฐวัฒน์) | Decision owner · backend lead · sole reviewer & merger | Field 20–30% · agents 70–80% (reviewer mode) | Cursor (primary), Claude Code (fallback when Cursor hits limit) |
-| **เมธี** (Methee) | Frontend (web) + mobile developer | เมธี 70–80% · agents ≤ 20% (learning mode, §8) | His choice |
+- **Field (KJ):** decision authority, backend lead and final merge approver. Cursor is the primary executor; Claude Code is a fallback. Field may authorize an agent to perform the approved merge.
+- **Methee (เมธี):** frontend/web and mobile developer; learning mode (§8) applies.
+- **Executors (Cursor, Claude Code, Antigravity, Codex):** scoped code/tests, own state, handoffs, Pending DRs and brief-unlocked paths. Never approve their own work or change brief scope/status, DR decisions or rules on their own initiative.
+- **Cowork:** planning partner and default auditor. May create Draft briefs, record explicit Field decisions, and revise/set Ready after Field reviews and explicitly approves. No app code.
+- **Codex auditor:** fallback when Cowork usage is exhausted and Field explicitly assigns Codex; never switch automatically. Field may also request an additional cross-check. If Codex implemented the work, use a separate audit session.
 
-### Agents
-| Agent | Role | May write | Must NOT write |
-|---|---|---|---|
-| **Cowork** (Claude) | Auditor + decision partner for Field | New briefs with `Status: Draft`, DR recommendations, audit reports, `docs/state/kj.md` (planning sessions), a DR's Decision section **when Field states the decision explicitly in the session** (§5), brief revisions and `Draft → Ready` **after Field reviews and approves them in the session** (§3) | App code, tests, DR decisions or brief changes on its own judgement, `Done` |
-| **Cursor, Claude Code, Antigravity, Codex** | Executor | App code + tests **inside the active brief's scope**, protected files **listed in the brief's unlock list** (§5), the brief's handoff, the state file of the person running the session, new DRs (`Pending`) | Briefs, DR decision sections, rules, the other person's state, audits |
-| **Codex — cross-check mode** (only when Field asks) | Independent second auditor | Audit reports marked `Auditor: Codex` | Same limits as Cowork |
-
-### Session types — decide which one you are in before doing anything
-| Type | Who | Needs a Ready brief? | Writes | State update at end? |
-|---|---|---|---|---|
-| **Implementation** | Executors | Yes | Code, tests, handoff, DRs, own-person state | Yes — mandatory |
-| **Audit** | Cowork, Codex (cross-check) | No | The audit file only | No |
-| **Onboarding** | Any agent with the named developer | No | Initialize missing own-person local state only (§4) | Initialize only; preserve existing state |
-| **Planning** | Cowork with Field | No | Draft briefs, DR recommendations, `docs/state/kj.md` | Yes — `kj.md` |
-
-### Decision authority
-**Field is the only decision authority.** People and agents propose; Field decides. Silence is not approval.
-Why no one approves their own work: whoever checks must not also decide. Executors mark `Implemented`, the auditor recommends, Field sets `Done`.
-
----
-
-## 2. Document System
-
-```
-docs/
-├── briefs/<ID>-<slug>.md      ← the contract: what to build + how we know it's done
-├── state/kj.md, methee.md     ← INDEX of where each person is right now
-├── handoffs/<ID>.md           ← what was built — updated through review, frozen at merge
-├── decisions/DR-###-<slug>.md ← every Field-level decision (also our ADR log)
-└── audits/<ID>.md             ← auditor's check of a brief's work, bound to a commit
-```
-
-| Doc | Written by | Lifespan | Template |
-|---|---|---|---|
-| Brief | Field (Cowork may create Drafts, and revise / set Ready on Field's approval — §3) | Stable; revised only by Field or on Field's approval | `docs/briefs/_TEMPLATE.md` |
-| State | Owner (via their session) | Overwritten every session, ≤ 40 lines · **local only, gitignored** | `docs/state/_TEMPLATE.md` |
-| Handoff | Implementer | Created at `Implemented`, updated if review sends it back, frozen at merge | `docs/handoffs/_TEMPLATE.md` |
-| Decision (DR) | Anyone raises · only Field decides (Cowork may record a decision Field states) | Permanent | `docs/decisions/_TEMPLATE.md` |
-| Audit | Cowork / Codex | Permanent; a re-audit appends a section | `docs/audits/_TEMPLATE.md` |
-
-**Authority order when documents disagree about a product/technical decision:** Approved DR > brief > rules > state file. The state file is an index only — never treat it as a decision.
-This order resolves *what to build*. It **never** changes role permissions, document ownership, protected-file bans, or who approves — those come only from §1 and `agent-boundaries.md`.
-
-**Brief IDs:** New briefs use one project-wide sequence: `BRIEF-001`, `BRIEF-002`, …, regardless of frontend/backend/mobile/shared scope. Field allocates IDs; numbers are never reused. One brief describes a testable outcome and may span multiple apps **only when one person owns every part**; otherwise split it into separate briefs linked by *Depends on*. The ≤ 3-day size limit still applies. The old BE/FE/MB/SH prefixes are retired — see §10 for the rename map. Commit messages, merged branches, the frozen `docs/handoff.md` and dated DR history keep the old IDs as written. Queued ideas without a brief receive a new ID when drafted; do not assign an ID merely from their queue position.
-`docs/briefs/ui/` holds UI **design** references — inputs to implementation briefs, not executable briefs.
-
-**No other state files.** No `SESSION_STATE.md`, no per-agent notes.
-
-**State files are local only** (gitignored; only `_TEMPLATE.md` is committed). Why: they change every session — committing them would need a PR per update on protected `main`, and switching branches would roll them back to a stale version. Each person keeps theirs on their own machine; agents read it from disk. History lives in handoffs, DRs, audits and PRs. Lost file → rebuild from the active brief, handoff/PR and `git log`, then inspect the working tree. Local uncommitted progress cannot be recovered from Git history alone. Never assume another developer’s local state is available on this machine. **Queue** (optional, planning sessions only — mainly `kj.md`): up to 6 upcoming items, one line each. It is not a handoff: the handoff/Resume records where the *active* brief stands; the Queue lists what comes *after* it.
-
----
-
-## 3. Brief Lifecycle
-
-```
-Draft → Ready → In Progress → Implemented → Audited → Done
-                     ↑                          │
-                     └──────── Changes requested┘
-```
-
-| Stage | Set by | Where recorded |
+| Session | Ready brief? | Allowed writes |
 |---|---|---|
-| Draft · Ready | Field — or Cowork after Field reviews and approves (see below) | Brief `Status:` |
-| In Progress | Implementer | Own state file |
-| **Implemented** (เสร็จแล้ว) | Implementer (agent or person) — all ACs met + G1 passes | State file + handoff `Status:` — write `Implemented` (เสร็จแล้ว is the same status) |
-| **Audited** | Cowork — audit written with a PASS / PASS WITH NOTES / FAIL recommendation | Audit file (implementer links it in the PR) |
-| Changes requested | Field (after reading the audit / PR review) | PR review + state file |
-| **Done** | **Field only** — after merge | Brief `Status:` |
+| Implementation | Yes | Scoped implementation, own state, handoff, Pending DRs |
+| Audit | No | Audit report only; no implementation or state edits |
+| Onboarding | No | Local identity and missing own state; preserve existing progress |
+| Planning | No | Cowork's Drafts, explicit approved records, KJ state only under the coordinated branch rule in §2 |
+| Field-authorized workflow maintenance | No | Only the concrete documents/changes Field explicitly requests; no general permission to rewrite rules |
 
-Rules:
-- **Nobody starts a Draft.** Only `Ready` briefs are executed.
-- **Ready via Cowork:** Cowork presents the brief (or the change) for review and asks *"approve BRIEF-### Ready?"*. Only an explicit Field reply — "approve", "ready", "approve with change …" — counts; silence or "looks good" does not. Cowork then sets `Status: Ready`, bumps Revision if content changed, and adds a changelog line `Ready — approved by Field in session <date>`. Field's PR merge is the sign-off. Executors never change brief status or content.
-- **One implementer per brief. One brief = one branch = one PR.**
-- **Size ≤ 3 working days.** Bigger → Field splits it.
-- **Every brief is audited by Cowork before Done.** Codex cross-check, when Field requests it, **supplements** the Cowork audit — it never replaces it. Audit depth scales with risk: full for backend changes, core flow (order → pay → close), auth / payment / PDPA; compact (AC table + findings only) for low-risk UI and chores.
-- A brief changed after `Ready` gets `Revision +1` and a changelog line. The implementer re-reads it before continuing.
-- **Bookkeeping rides along — no standalone PR.** Status flips of *other* briefs (Ready / Done), recorded DR decisions and small rule edits Field approved go into the **currently open brief branch** as a separate `docs(...)` commit. Cowork commits them only while that branch's working tree is clean and no executor is mid-change; otherwise it notes them under Coordination in `kj.md` and adds them at the next clean point. A standalone docs PR is used only when no brief branch is open.
+Field decides; agents recommend or execute an explicit decision. Naming a developer does not grant that person's approval authority.
 
----
+## 2. Documents and Ownership
 
-## 4. Session Protocol
+```text
+docs/
+  briefs/BRIEF-###-<slug>.md
+  state/README.md
+  state/_TEMPLATE.md
+  state/kj/SESSION_STATE.md
+  state/methee/SESSION_STATE.md
+  handoffs/BRIEF-###.md
+  decisions/DR-###-<slug>.md
+  audits/BRIEF-###.md
+.agent-local.json                 # gitignored checkout identity, not progress
+```
 
-### Start (Implementation sessions)
-1. Read `CLAUDE.md` (or `AGENTS.md`) → this file.
-2. Identify **who** is running the session (Field or เมธี). If unclear — ask. Do not guess.
-3. Read `docs/state/<person>.md`, then the active brief and every DR it links (brief + DRs are authoritative, not the state file).
-4. **Checkout check (read-only):** `git status` + current branch + last commit.
-   - Branch ≠ state file's branch, or uncommitted changes that don't belong to the active brief → **stop and report**. Do not stash, reset, or commit someone else's work.
-5. Check **Blockers / Coordination** (or legacy **Awaiting Field**) against the actual DRs and dependencies. Do not work on a blocked path.
+- Brief: Field-owned; Cowork creates Drafts and records Field-approved revisions/Ready status. Executors may fill only its PR link as bookkeeping, never scope, approval, status or auditor assignment.
+- State: tracked in Git, one writer per developer; updated at session end, tool change or important blocker. Keep about 40 lines; optional planning Queue has at most six items.
+- Cowork updates `docs/state/kj/SESSION_STATE.md` only on the currently open task/docs branch (never `main`), at a coordinated clean point with no executor mid-change or writing that state. With no open branch or no safe handoff point, Cowork reports the proposed state change in chat for the next owning session to record. Cowork never edits `docs/state/methee/`.
+- Handoff: executor writes at Implemented, updates during review, frozen at merge. No post-merge status-only PR required.
+- DR: anyone proposes; only Field decides; Cowork may transcribe Field's explicit decision (§5).
+- Audit: assigned auditor records actual auditor, assignment source, brief revision, reviewed SHA and findings; append re-audits rather than rewriting history.
+- PR: shared progress and completion authority. **Merged PR = Done**, even if the brief approval field still says Ready. Closed without merge is not Done.
 
-### End (Implementation sessions — mandatory, even if cut short)
-1. **Overwrite** `docs/state/<person>.md` from the template: Resume, branch, last commit, uncommitted work, checks, AC progress, and blockers. Do this before switching tools as well as at session end.
-2. All ACs met + G1 passes → write the handoff, set `Implemented`, open the PR.
+For product/technical decisions: Approved DR > approved brief > rules > state. This never overrides document ownership, agent roles or protected-file permissions. A newer timestamp alone grants no authority; report unresolved contradictions.
 
-### One executor session per person at a time
-Field switches tools mid-brief (Cursor → Claude Code when Cursor hits its limit). That is the main resume case: the state file + checkout check must be enough for the next tool to continue. Never run two executor sessions on the same person's state file at once.
+Brief IDs use one project-wide `BRIEF-###` sequence allocated by Field. One testable outcome may span apps only with one implementer responsible for all parts; otherwise split and link dependencies. Target size: at most three working days. See §10 for retired IDs. UI briefs are design inputs, not executable briefs.
 
+State is a branch snapshot, not a live lock. KJ reads Methee's latest state from the task branch/Draft PR without switching checkout. No CLAIMS file or additional project-wide session log. See `docs/state/README.md` for migration and concurrent-work rules.
 
-### Personal state and concurrent development
-- Keep `docs/state/kj.md` and `docs/state/methee.md`, using the same template, local-only and at most 40 lines. Each person/agent writes only their own state. No separate SESSION_STATE file or claim system.
-- One active implementation brief per person, one primary implementer per brief. **Exception — Field only:** up to 2 briefs at once when they share no files except `pnpm-lock.yaml`: separate worktrees (`git worktree add ../<repo>-<ID> <branch>`), a different agent per brief, and each session edits only its own brief's lines in `kj.md`. The PR merged second regenerates the lockfile from `main`. A brief may span frontend/backend/contracts; a second person's contribution needs agreed scope first. For independent work, use separate briefs with explicit dependencies.
-- Once a brief is handed to review, record its PR under Coordination before starting the next brief. PRs and handoffs retain the durable history.
-- Developers use separate checkouts (separate clones on their machines, or separate worktrees on a shared machine). Never run concurrent branch-changing sessions in one working directory. Ignored state is local to each checkout; copy your own state deliberately when moving, then verify it.
-- List likely overlapping files under Shared files and coordinate via the brief/PR. Another person's unavailable local state is not evidence that a file is free to edit.
-- Resume is one concrete next action; it must match the first Next step. Keep completed work to AC/commit references, not a session log. Preserve unresolved blockers when rewriting state.
+## 3. Lifecycle and Ready Checklist
 
-### Approval policy — routine work proceeds; critical actions need explicit authority
-Field approved this policy on 2026-09-24. A task/Ready brief authorizes its routine execution: do not ask again at every read, edit, test, commit or feature-branch push. Existing approvals persist for the exact approved scope; a changed target or material effect needs a new decision.
+```text
+Draft → Ready → In Progress → Implemented → Audit PASS → merge authority (§7) → PR merged (Done)
+                              ↑                |
+                              └─ CHANGES REQUIRED
+Audit BLOCKED → Field decision / missing evidence → resume the affected step
+```
 
-| Proceed without a separate conversational approval | Conditions |
-|---|---|
-| Read/search files; inspect logs/status/diffs; run local lint, typecheck, build and tests | Within the assigned scope and permitted environment; no destructive/shared/production side effects |
-| Edit scoped code/tests, update own state and handoff | Follow role limits, learning mode and protected paths; no new product decision |
-| Install already approved dependencies / restore the existing lockfile environment | No new package/version choice; unexpected manifest or lockfile drift must be inspected, not silently accepted |
-| Git status, diff, log, show, fetch; inspect branches and PR/check status | Use the project's existing remote; do not change remotes, credentials or Git hooks |
-| Create task branch/worktree; switch to the verified task branch; fast-forward pull | Preserve all existing work, use separate checkouts for concurrent sessions, stop on conflicts/ownership uncertainty |
-| Stage exact task files, commit, normal push to the task's non-protected branch; create/update its PR | Inspect staged diff and destination first; keep unrelated files/secrets out; honor required gates and audit-session limits. Never push directly to main. PR creation does not authorize merging. |
-| Update a feature branch from main; rebase only own unpublished commits | Preserve semantics, do not rewrite published/shared history; resolve routine in-scope conflicts, stop when resolution needs a Field-level decision |
+Before Ready, Field/Cowork checks:
+- Named implementer and **Assigned auditor: Cowork or Codex**; Codex assignment needs Field's explicit instruction.
+- Goal, in/out scope, affected apps, references and approved contracts.
+- Testable ACs, exact gate commands and required evidence.
+- Dependencies with completion conditions; no unresolved decision blocking the main outcome.
+- Exact Pre-decided items and protected-path unlocks where required.
 
-**Critical — require explicit authorization for the concrete action (do not ask again if that exact action is already authorized):**
-- New decisions covered by Field Guard (§5): scope/architecture, dependencies, schema/contracts, auth/payment/PDPA. Faithful implementation of an existing approval is routine.
-- Merge to `main`, use admin bypass, approve a PR, set Done, create/push release tags, deploy/rollback, or change branch protections/access/agent permission settings. Field remains the merger/decision authority; general Git permission is not merge/release approval. Review and gate requirements still apply.
-- Force-push (including `--force-with-lease`), rewrite published history, discard existing work (`reset --hard`, destructive restore/checkout, `clean`), delete unmerged branches or shared remote refs, or remove a worktree with uncommitted work.
-- Mutate production/shared data, destructive migrations, delete persistent volumes, expose secrets/private data, or provision paid infrastructure.
+Cowork presents the brief/change and asks for explicit Ready approval. Record approval date in the changelog; bump revision on content changes. Executors never turn a Draft into Ready. Existing active briefs missing assignment metadata require Field/Cowork to record it before audit; do not silently assign Codex. Completed historical briefs/reports retain their original statuses.
 
-Prepare the diff/plan and validation first so a critical approval names the target, effect and recovery implications. Stop only the affected path; continue independent authorized work. Routine Git needs no DR. Field Guard decisions use DRs; operational approvals such as merging a reviewed PR need the explicit instruction, not a redundant DR.
+One brief = one task branch = one PR. Open a Draft PR after the first suitable commit; convert it to ready for review only after all ACs and G1 pass, handoff exists and state is current. WIP/state pushes may contain failing or unrun tests if disclosed honestly; they do not establish Implemented or authorize merge.
 
-**Tool permission prompts are separate:** this policy removes extra agent questions, not the sandbox, OS permissions or organization controls. If a tool requires approval to write `.git`, use the network or leave allowed paths, follow its approval mechanism and explain the actual restriction. Where supported, request a narrowly scoped reusable command rule; never grant blanket `git *`, disable all approvals, or route around a rejected request. Do not claim this Markdown changes Codex/Claude/Cursor permission settings.
+**Who can open / merge PRs (tool reality, 2026-09-24):** Claude Code runs in Field's own terminal with an authenticated `gh`, so it can push, open and merge PRs. Cursor's sandbox usually cannot reach `api.github.com` — it pushes and gives Field the compare link, unless Field allows a narrow network rule for `gh`. Cowork has no GitHub credentials — it commits locally and gives Field the push/PR commands. Any tool that cannot create the PR hands over the exact compare link; it never claims the PR exists.
 
-### Chat commands (shared across tools; not shell or slash commands)
-Names: `kj` / `Field` → `kj.md`; `methee` / `เมธี` → `methee.md`. An explicit name establishes the session owner; reuse it until the user changes it. Ask only when identity is unknown. Naming a person never transfers another person's brief or grants Field's decision authority.
+Approved bookkeeping can ride with an open task PR as a separate docs commit at a coordinated clean point. Changes after an audit/approval require the head/evidence checks in §7. Do not create a separate PR only to mark an already merged brief Done.
+
+## 4. Identity, Commands and Execution
+
+### Identity and checkout
+
+`onboard kj` / `onboard methee` stores `{ "developer": "kj" }` or `{ "developer": "methee" }` in the gitignored root `.agent-local.json`. This contains no tokens or progress. Select the owner from explicit session input first, then this local setting. If missing/invalid/conflicting, ask once; never infer identity from Git author configuration, tool account or the most recently edited state. Explicit onboarding may replace the identity setting; it does not transfer a brief.
+
+Read AGENTS/CLAUDE, workflow, own state, exact brief revision and linked DRs. Check Git status, current branch, worktree and latest commit. Reconcile stale state from actual Git/PR evidence. Stop affected mutations on unexplained branch/ownership mismatch or unrelated dirty work; never stash/reset/commit another person's changes. Inspect blockers and dependency PRs, not just state text.
+
+### Commands (chat commands, not installed shell commands)
 
 | Command | Behavior |
 |---|---|
-| `onboard methee` / `onboard kj` | Read workflow, role rules, own state if present, relevant briefs/DRs. Inspect checkout and required tool availability read-only. Create missing own state from the template, using verified facts; never overwrite existing progress. Summarize responsibilities, setup gaps, blockers, and one eligible Ready brief with a suggested `ทำ <ID>` command. Stop ready to start; do not install dependencies, switch branches, or implement automatically. |
-| `resume methee` / `resume kj` | Read own state and linked brief/DRs, verify checkout, revision, implementer and dependencies, then continue the Resume action within existing authorization. Missing/stale state → reconstruct from evidence and report ambiguity; no guessed task or destructive checkout repair. Draft/blocked work stays blocked. |
-| `ทำ BRIEF-001` | Find the exact ID (old IDs → use the §10 rename map); verify Ready status, current revision, owner, dependency completion, DRs, scope, unlocks and checkout. Start or resume implementation, run required gates, update own state and produce the brief handoff only at Implemented. Missing/duplicate ID or different implementer → report the mismatch; never choose a near match or self-assign. |
-| `ตรวจ BRIEF-001` | Audit against the brief and current evidence under Audit-session write limits. Codex cross-check requires Field's request and supplements Cowork review. |
-| `สถานะ BRIEF-001` | Read-only summary of verified AC progress, review state and blockers; distinguish observed facts from unavailable/local-only information. |
-| `handoff` | Save current session progress into the known owner's state, with uncommitted files, checks and Resume. No automatic commit/push/branch switch. A permanent `docs/handoffs/<ID>.md` is created only when all ACs and G1 pass; an existing handoff is updated through review. Audit sessions instead record pending review work in their audit and leave state untouched. |
+| `onboard kj` / `onboard methee` | Read rules/state/briefs, inspect tools and checkout, save identity, initialize missing own state, summarize setup gaps and one eligible Ready brief. No automatic install, branch switch or feature implementation. |
+| `execute BRIEF-###` / `ทำ BRIEF-###` | Includes resume automatically: verify identity, Ready revision, implementer, dependencies, DRs, scope, unlocks and checkout. Reuse existing branch/PR; implement, test, self-check, push and prepare review. |
+| `resume` (optionally `kj` / `methee`) | Resume the current checkout's active brief through the same checks. Missing/ambiguous state requires evidence-based reconstruction, not a guessed task. |
+| `audit BRIEF-###` / `ตรวจ BRIEF-###` | Use the assigned auditor and Audit write limits. Wrong tool for the assignment → explain the handoff; do not pretend a review happened or change assignment. |
+| `สถานะ BRIEF-###` | Read-only summary from brief, branch, PR and evidence; label unavailable/stale information. |
+| `handoff` | Update own tracked state and commit/push scoped progress to the task branch when permitted. Disclose failed/unrun checks; keep WIP PR Draft. Audit sessions update only their audit. Never auto-merge, deploy or switch branches. |
+| `อนุมัติ merge BRIEF-###` | Field authorizes the presented PR/head and its completion actions under §7. |
 
-Onboarding is a support session available to every developer: no Ready brief required; its only write is initialization of the named developer's missing local state. All execution commands preserve Methee's learning mode (§8): explain, guide, debug and review within its limits, never generate whole features/tests merely because a command was used.
+Execute is idempotent: continue WIP, fix in-scope Must fix findings, report waiting review, or report Done for an already merged PR. Never create duplicate branches/PRs. A missing/duplicate ID or implementer mismatch must be clarified; legacy IDs resolve only through §10.
 
----
+At Implemented, provide the PR, handoff, assigned auditor and `audit BRIEF-###` as the next action. Dispatch across tools only if an available integration actually supports it and the task authorizes it; otherwise provide the handoff command. Do not claim an external auditor has started when it has not.
+
+### Concurrent work and state
+
+One active brief per developer by default. Preserve Field's existing exception: at most two non-overlapping briefs in separate worktrees, separate agents, sharing only the lockfile and KJ's tracked state. Each checkout records its own active brief and the other brief under Coordination. Do not concurrently write the same physical state file. When integrating, reconcile the shared KJ state explicitly: retain the still-active brief as Resume, keep other progress/blockers in Coordination, never choose ours/theirs wholesale. The second PR reconciles the lockfile against main and re-runs affected gates. No claim service is introduced.
+
+Developers use separate clones/worktrees. State commits travel on the task branch; main only shows merged snapshots. Before publishing, inspect the staged files for unrelated edits and sensitive data. A Work commit references the implementation evidence, never the state commit itself. At a cut-short session, record what is known without fabricating checks.
+
+### Approval policy
+
+Routine scoped reads, edits, tests, approved dependency installation, Git inspection/fetch, safe branch/worktree creation, scoped commits, normal feature-branch push and PR creation/update need no repeated conversational approval. Inspect checkout and destination first. Rebase only your own unpublished commits; stop when conflict resolution requires a product decision. Never push directly to main.
+
+Critical actions require explicit authority: new Field Guard decisions; main merges/admin bypass (except Field's own PRs meeting the §7 pre-approval); releases/deploys; force-push or published-history rewrite; discarding work; deleting unmerged/shared refs or dirty worktrees; production/shared-data mutation; destructive migrations/volume deletion; paid infrastructure; access/permission changes. An exact existing approval remains valid until its scope/target changes.
+
+Prepare reviewable evidence before requesting approval. Stop only the blocked path. Git operations do not need a DR; new product/architecture decisions do. Sandbox/OS/network prompts are separate from project authorization: obey tool permission mechanisms, request narrow reusable rules where supported, and never disable all approvals or bypass a rejection.
 
 ## 5. Field Guard — Decisions Go Through Field
 
@@ -184,7 +137,7 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 - A brief may list **exact paths** under *Unlocked protected files*. The executor may edit **only those paths, only for that brief**. No globs.
 - **Only these categories are unlockable:** root config (`turbo.json`, `pnpm-workspace.yaml`, root `package.json`, `.gitignore`), infrastructure (`infra/**`, `.github/workflows/**`) — still exact paths only, e.g. `infra/docker-compose.yml`, and `docs/schema.sql`.
 - **Never unlockable:** rules & instructions (`docs/rules/**`, `CLAUDE.md`, `AGENTS.md`, agent wrappers), `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all ownership-restricted docs (briefs, DR decisions, other person's state, audits, `docs/handoff.md`).
-- Field's PR review (+ Cowork audit) is the backstop.
+- Field's PR review (+ assigned auditor's audit) is the backstop.
 
 ### Procedure
 1. **Stop that path only.** Continue ACs that are not blocked.
@@ -201,41 +154,51 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 - Put proposals as comments inside protected files — proposals go in a DR.
 - Mark your own DR approved, or treat "no answer yet" as approval.
 
----
 
-## 6. Quality Gates
+## 6. Quality Gates, Grounding and Audit
 
-| Gate | What must pass | Enforced by | Status |
-|---|---|---|---|
-| **G1 — Local** | The exact gate commands listed in the Ready brief — default `lint` + `typecheck` + `test` per touched package; the brief may justify package-specific gates | Implementer, before `Implemented` | Partial — scripts missing (see below) |
-| **G2 — CI** | G1 + `test:e2e` (backend: supertest vs real Postgres · frontend: Playwright on order → pay → close only) | GitHub Actions, required check on `main` | **Planned** — `BRIEF-001` (was SH-001) |
-| **G3 — Review** | Checklist below | Field (Cowork audit supports) | Active |
+- **G1:** exact commands in the Ready brief, normally lint/typecheck/tests for affected packages. Explicitly justified package-specific/manual evidence is allowed.
+- **G2:** applicable required CI checks on the current PR head, including the brief's integration/e2e coverage. Verify current workflows and scripts; historical setup notes are not evidence that CI exists or passes.
+- **G3:** assigned audit PASS, all ACs supported, no unresolved Must fix/unapproved deviation, handoff/state present, and Field review. Methee's walkthrough remains required.
 
-**Evidence rules**
-- Record exact commands, package, **commit SHA**, exit status, test counts, and skips.
-- **A missing script is `BLOCKED`, never green and never silent N/A.** Report it in the handoff.
-- Documentation / design ACs may use manual evidence (screenshot, file link) — no artificial unit tests.
+### Six source-grounding rules
+1. Read the approved brief, relevant DRs, contracts/schema before writing behavior.
+2. Preserve approved DTO fields/types, enum values, REST responses and WS payloads. Never invent business fields or errors.
+3. Missing business/security/payment/guest-data behavior is a blocker/DR, not a TODO that permits claiming an AC is complete. Continue independent work.
+4. Respect module services/ports; do not invent cross-module repository shortcuts.
+5. Before review, compare brief ↔ contract ↔ implementation ↔ tests, and touched schema ↔ migration/entity definitions. The auditor independently reads sources and diff, not just the executor's summary.
+6. Report exact commands, environment, work SHA, exits, counts/skips and limitations. Not run is never pass. Do not hardcode/log secrets, tokens or sensitive guest data.
 
-**Current script gaps (verified 2026-09-23):** backend has no `typecheck`; frontend has only `lint` (no `typecheck`, `test`, `test:e2e`); contracts has only `typecheck` (no `lint`, `test`); backend e2e only checks `GET /`. `BRIEF-001` (CI gate) and the frontend scaffold brief close these — `BRIEF-001` includes contracts. Until G2 exists, G1 output in the handoff is the evidence.
+Cite decisions in the brief/handoff. Add code comments for non-obvious reasons, not mechanical citations on every helper. Private helpers/naming/test organization inside scope are routine decisions. Resolve conflicting sources by authority, never timestamp alone; unknown significant behavior goes to Field.
 
-**G3 checklist**
-- [ ] Every AC met and mapped to a test or manual evidence
-- [ ] Handoff written · state file updated
-- [ ] No unapproved deviations — every DR in the PR is `Approved`
-- [ ] Cowork audit written for the reviewed commit (+ Codex cross-check if Field requested one)
-- [ ] เมธี's PRs: 5-minute walkthrough passed (§8)
+### Audit loop
 
-Why CI and not "the agent says tests pass": agents report green when a test is skipped or mocked away. A required check can't be talked around.
+Cowork is default. Codex may replace it only when Field explicitly assigns the fallback due to Cowork usage exhaustion. Record assignment/reassignment in the brief through Field/Cowork, and actual reviewer/session, reason and reviewed SHA in the audit. A separate Codex cross-check remains optional. An executor's self-check is not an independent audit.
 
----
+Results: **PASS** (no Must fix), **CHANGES REQUIRED** (in-scope fixes), **BLOCKED** (decision, evidence or environment missing). Label each finding **Must fix** or **Suggestion**, with evidence and expected correction. Suggestions do not automatically expand scope. Re-audit after fixes; append results with the new work SHA. If the same failure repeats without progress, stop that loop and report attempts/evidence and the decision needed instead of repeating indefinitely.
 
-## 7. Branching, Deploy & Git Traceability
+Historical PASS WITH NOTES/FAIL reports stay unchanged; new reports use the new results.
 
-### Branch model — trunk-based (decided by Field 2026-09-23)
-- **`main` is the only long-lived branch.** No `dev`, no per-app branches (`frontend` / `mobile` / `backend`).
-- Work happens on **short-lived** branches off `main`, merged by PR, deleted after merge.
-- Why: `@bar/contracts` and the order → pay → close flow cross apps — per-app or dev branches drift and hide integration bugs until late. The brief Scope identifies affected apps; the ID identifies the outcome, and CI tests only affected packages.
-- Merge method: **Create a merge commit** (keeps the brief's commits visible). Delete the branch after merge.
+## 7. Branching, Approval and Completion
+
+Main is the only long-lived branch. Use short-lived task branches and merge commits through PRs. Default format: `feat/BRIEF-###-<slug>`; commits `<type>(BRIEF-###): <message>`; PR title `BRIEF-###: <title>`. Field may request a docs branch for approved workflow maintenance.
+
+### Review evidence without a SHA loop
+
+The audit reviews implementation commit S. The audit file itself is committed later at head H. Before approval, verify and record that S..H contains only audit/handoff/state/PR-link evidence; any code, tests, dependency, CI, schema, brief-scope or rule change requires re-audit of the changed work. Do not require an audit file to contain its own commit SHA. The pre-merge summary names both audited S and actual H, checks on H and the intervening diff. Reuse test evidence only with an explicit explanation of unchanged tested files/environment; required CI still targets H.
+
+**Merge authority (Field, 2026-09-24):**
+- **Field's own PRs** (brief Implementer = kj): pre-approved. The agent may merge once the assigned audit is **PASS** with zero Must fix, S..H is evidence-only, and required checks are green on H. No separate `อนุมัติ merge` needed; the agent reports PR, H and merge SHA afterwards.
+- **Methee's PRs:** always need Field's explicit `อนุมัติ merge BRIEF-###` for the exact head H, plus the G3 walkthrough.
+- **Remote protection (confirmed 2026-09-23/24):** `main` requires a PR + 1 approval, CODEOWNERS = Field, admin bypass allowed for Field, required status check `ci`. Before relying on bypass, verify the live settings still match.
+
+For Methee's PRs, before Field approval present exact PR, brief revision, head H, assigned audit/result, G1/G2 evidence, zero unresolved Must fix findings, and remaining limitations. Field's `อนุมัติ merge BRIEF-###` approves the presented PR/head, not an unspecified future head.
+
+Immediately before merging, verify head H is unchanged, applicable gates pass, no unresolved conflicts/reviews and no new blocker. If head changes after approval (including state/docs), show the delta and request approval for the new head; code-affecting changes also need re-audit. Use an expected-head merge check where supported. Never silently merge a different head or bypass failing checks.
+
+Field may always merge directly. Admin bypass is used only for Field's own PRs under the merge-authority conditions above; normal Git permission never grants bypass. Methee's PRs never use bypass.
+
+After verified merge: report merge SHA/PR and **Done**. The PR is authoritative; no status-only brief PR. Optionally remove the merged task branch only when no work is lost and sync the local checkout safely. Update own state locally with the result; include it in the next suitable task commit, never commit directly to main just to publish closure. Closed/unmerged PRs remain incomplete. No release tag or deployment is included in merge approval.
 
 ### Deploy — merging never deploys
 | Event | What happens |
@@ -249,26 +212,6 @@ Why CI and not "the agent says tests pass": agents report green when a test is s
 - Vercel auto-deploy of `main` is disabled (`git.deploymentEnabled.main: false`); PR previews stay on.
 - The deploy workflow is its own brief, scheduled with cloud setup (late November). Until then there is nothing to deploy to.
 
-### Traceability
-
-| Item | Format | Example |
-|---|---|---|
-| Branch | `<type>/<ID>-<slug>` | `feat/BRIEF-001-permissions-guard` |
-| Commit | `<type>(<ID>): <msg>` | `feat(BRIEF-001): cache resolved permissions in Redis` |
-| PR title | `<ID>: <title>` | `BRIEF-001: PermissionsGuard + Redis cache` |
-| Non-brief chore | `<type>(<module>): <msg>` | `chore(repo): …` (still needs a DR if it touches deps) |
-
-- **Branch protection on `main`:** **pending — Field sets manually and records it in `kj.md` when verified.** Settings:
-  - Require a pull request · require status checks (once G2 exists) · no direct push · no force push.
-  - Require **1 approval** · CODEOWNERS = Field · **allow administrators (Field) to bypass**. *(Confirmed by Field 2026-09-23.)*
-- **Why the bypass:** GitHub never lets a PR author approve their own PR. Most of Field's PRs are opened from Field's account (agents run as Field), so a hard "Field must approve" rule would deadlock them.
-  - **เมธี's PRs:** blocked until Field approves on GitHub.
-  - **Field's PRs:** Field merges via admin bypass **only after** a Cowork audit exists for the merged commit and G1/G2 pass. The Cowork audit is the independent review; the GitHub bypass is the recorded exception.
-  - **เมธี may review Field's PRs** (comment, non-blocking) — good learning, not a gate.
-  - **Never** create a second GitHub account to self-approve.
-- The PR template links brief → DRs → handoff → audit.
-
----
 
 ## 8. Learning Mode — เมธี
 
@@ -281,13 +224,10 @@ Goal: เมธี builds real skill. Agents support, they don't author.
 
 **Agents running in เมธี's session:** if asked to generate a whole file, feature, or test file, remind him of this rule once, then offer an explanation, a skeleton, or a review instead.
 
----
 
 ## 9. Why This Process Exists
 
-No formal grading rubric — the process is shown to the advisor as-is and serves Field's own learning. The artifacts ARE the evidence: briefs (planning), DRs (design reasoning / ADR log), audits (review), handoffs + CI (delivery). No separate evidence matrix — don't create extra docs to "prove" the process.
-
----
+No formal grading rubric is assumed. Briefs, DRs, tests, audits, handoffs and PRs provide evidence of planning, reasoning, review and delivery. Pilot the loop on one small brief before adding more automation or coordination systems.
 
 ## 10. Legacy
 

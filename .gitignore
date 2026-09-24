@@ -19,6 +19,8 @@ dist/
 .vscode/
 *.swp
 
-# Workflow state — local per person, never committed (workflow.md §2)
-docs/state/*.md
-!docs/state/_TEMPLATE.md
+# Checkout identity only; personal state folders are tracked
+.agent-local.json
+# Legacy local state kept ignored during migration; not authoritative
+docs/state/kj.md
+docs/state/methee.md
