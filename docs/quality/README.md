@@ -1,26 +1,28 @@
-# Quality — Coverage and SonarQube Cloud
+# Quality — Local SonarQube scan
 
-> Decided by Field 2026-09-25: **SonarQube Cloud, free plan, public repo**, analysed in GitHub Actions. Rules summary lives in `docs/rules/workflow.md` §6; this file holds the setup and day-to-day procedure. Field-owned (rules-level) — change only with Field's approval.
+> Decided by Field 2026-09-25. Rule summary: `docs/rules/workflow.md` §6 "Local SonarQube scan". Field-owned — change only with Field's approval.
 
 ## Status
-**Not live.** Set up by the tooling brief (coverage + Sonar job). Until then every brief marks the Sonar gate *deferred*.
+**Not live until BRIEF-006 merges.** Then: SonarQube Community Build runs locally in Docker; developers scan before committing; the result goes into the handoff; Field reviews it in the PR. No CI gate. Shared hosting (EC2 / cloud plan) is revisited in November.
 
-## Target setup (the tooling brief implements and verifies each line)
-- **Plan:** SonarQube Cloud Free — public and private repos, PR analysis and Quality Gate included; private code capped at 50k LOC (not relevant while the repo is public). Re-check the plan page before setup; plans change.
-- **Project:** one SonarQube Cloud project for the monorepo (sources `app/backend/src`, `app/frontend/src`, `app/packages/contracts/src`; tests excluded from sources, included as tests). Split per app only if analysis needs it.
-- **Automatic Analysis: OFF** — CI-based analysis and Automatic Analysis cannot run together.
-- **Workflow:** a `sonar` job in GitHub Actions using `SonarSource/sonarqube-scan-action` (v7+, pinned), `fetch-depth: 0`, secret `SONAR_TOKEN` (free plan = personal access token), `sonar.qualitygate.wait=true` so a failed gate fails the job.
-- **Coverage:** Vitest `--coverage` with `lcov` reporter in backend, frontend and contracts (needs `@vitest/coverage-v8` in the packages that lack it — pre-decided in the brief); report paths passed via `sonar.javascript.lcov.reportPaths`.
-- **Gate:** start from "Sonar way" (new-code conditions). Thresholds that differ (e.g. coverage on new code) are set in the tooling brief and approved by Field — never guessed.
-- **Branch protection:** after the first green run, add the Sonar check as a required status check on `main` next to `ci`.
+## One-time setup (after BRIEF-006)
+1. `docker compose -f infra/docker-compose.yml --profile sonar up -d` — wait until http://localhost:9000 shows "SonarQube is operational" (first start takes a few minutes, needs ~3 GB RAM).
+2. Log in (`admin` / `admin`), set a new password.
+3. My Account → Security → generate a token → put `SONAR_TOKEN=<token>` in the repo-root `.env` (gitignored — never commit it).
 
-## Per-brief procedure (once live)
-1. Brief says **required** or **deferred**.
-2. Push the PR → CI runs tests with coverage → Sonar job analyses the PR head and waits for the Quality Gate.
-3. Fix in-scope issues on the branch; the analysis re-runs on the new head.
-4. Handoff links the SonarQube Cloud PR analysis and states the gate result. Nothing is exported or committed.
-5. Exclusions, "won't fix", "false positive" or threshold changes need Field's approval, recorded in the brief/DR.
+## Before each commit that changes code
+1. Start SonarQube (step 1 above) if it isn't running.
+2. `pnpm sonar` — scans the repo and waits for the Quality Gate.
+3. Open http://localhost:9000 → project **bar-management** → fix findings in your own code. Re-run `pnpm sonar`.
+4. Stop when the gate passes, or when every remaining issue has a written reason.
+5. `pnpm sonar:report` → paste the output into the handoff's **Sonar** section.
+6. Stop the server when done: `docker compose -f infra/docker-compose.yml --profile sonar stop`.
+
+## Who fixes
+- Agents may run the scan and explain issues.
+- **Methee fixes his own issues.** Agents write code only when he is blocked (counts toward his ≤ 20%, workflow §8).
+- "Won't fix" / "false positive" / exclusions / gate changes → Field's approval first.
 
 ## Never
-- Commit `SONAR_TOKEN` or any token; the secret lives in GitHub Actions only.
-- Treat a missing/unavailable analysis as passed.
+- Commit `SONAR_TOKEN`, `.scannerwork/` or SonarQube volumes.
+- Claim a scan passed without running it — "not run" is written as "not run".

@@ -161,13 +161,14 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 - **G2:** applicable required CI checks on the current PR head, including the brief's integration/e2e coverage. Verify current workflows and scripts; historical setup notes are not evidence that CI exists or passes.
 - **G3:** assigned audit PASS, all ACs supported, no unresolved Must fix/unapproved deviation, handoff/state present, and Field review. Methee's walkthrough remains required.
 
-### Coverage and SonarQube Cloud gate (G2)
+### Local SonarQube scan (pre-commit habit, not a CI gate)
 
-Field chose **SonarQube Cloud (free plan, public repo)** on 2026-09-25 — analysis runs **in GitHub Actions** on every PR and its Quality Gate becomes a required check next to `ci`. No local SonarQube server, no per-brief exported reports: the PR check and its SonarQube Cloud page are the evidence.
-- **Not live yet.** Today CI runs no coverage and no Sonar analysis (only backend has `test:cov`). The tooling brief adds coverage to all packages, the scan job, the project/token setup and the gate thresholds. Until it merges, briefs mark the Sonar gate **deferred**.
-- Each brief states the gate as **required** or **deferred** (small/UI-only briefs may defer by default). Required but not green on the PR head → not mergeable; analysis unavailable → BLOCKED, never "assumed pass".
-- Never lower thresholds, add exclusions or mark issues "won't fix"/"false positive" to pass without Field's approval.
-- The auditor reads the Sonar result for the PR head, not just the percentage. A green gate does not replace behavior tests or the audit.
+Field decided 2026-09-25: **local SonarQube Community Build** in Docker. Purpose: every developer — **required for Methee's work** — scans before committing and fixes what it flags; Field reads the result in the PR. Not enforced by CI. Hosting a shared SonarQube (EC2 or a cloud plan) is reconsidered with cloud provisioning in November.
+- **Not live until BRIEF-006 merges** (Compose service, `pnpm sonar`, report script). Until then the handoff says "not available yet".
+- **Before each commit that changes code:** start SonarQube, run `pnpm sonar`, fix findings, re-scan until the Quality Gate passes **or** every remaining issue has a written reason.
+- **Handoff → Sonar section:** gate result, issue counts by severity, remaining issues + reason (output of `pnpm sonar:report`). Field reviews it in the PR.
+- **Who fixes:** an agent may **run** the scan and **explain** each issue. In Methee's sessions **Methee fixes the issues himself**; the agent helps with code only when he is blocked, and that help counts toward his ≤ 20% (§8).
+- Never mark issues "won't fix"/"false positive", add exclusions or change the gate to get a pass without Field's approval.
 - Setup and procedure: `docs/quality/README.md`.
 
 ### Six source-grounding rules
@@ -230,6 +231,8 @@ Goal: เมธี builds real skill. Agents support, they don't author.
 - **เมธี writes the tests himself.** Tests are where the learning is.
 - **AI usage** in every handoff: `Low / Medium / High` + one line on what for. No fake-precise percentages.
 - **G3 walkthrough:** เมธี explains one non-trivial part of the PR. Can't explain it → PR goes back. This is the real evidence of learning.
+
+**Sonar issues:** agents may run the scan and explain findings; เมธี fixes them himself — agents write code only to unblock him (counts toward the 20%).
 
 **Agents running in เมธี's session:** if asked to generate a whole file, feature, or test file, remind him of this rule once, then offer an explanation, a skeleton, or a review instead.
 
