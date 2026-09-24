@@ -1,6 +1,5 @@
 import {
   EntitySubscriberInterface,
-  EventSubscriber,
   InsertEvent,
   UpdateEvent,
   DataSource,
@@ -14,9 +13,12 @@ import { BaseEntity } from '../base/base.entity.js';
  * Stamps createdBy / updatedBy from the CLS (AsyncLocalStorage) context
  * so application code never needs to pass the current user manually.
  *
+ * Registered once: Nest constructs this provider and the constructor pushes
+ * it onto the DataSource. Not listed in TypeORM `subscribers`, and not
+ * decorated with `@EventSubscriber()`, so it is not constructed a second time.
+ *
  * TODO: also append to audit_log table once it's defined.
  */
-@EventSubscriber()
 export class AuditSubscriber implements EntitySubscriberInterface {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
