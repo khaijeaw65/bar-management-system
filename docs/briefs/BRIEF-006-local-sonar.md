@@ -6,7 +6,7 @@
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |
-| **PR** | <executor fills> |
+| **PR** | https://github.com/khaijeaw65/bar-management-system/pull/20 |
 | **Affected apps** | tooling · infra |
 | **Revision** | 1 |
 | **Depends on** | none (BRIEF-004 Compose file exists) |

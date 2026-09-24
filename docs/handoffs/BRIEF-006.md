@@ -5,7 +5,7 @@
 | **Implementer** | kj (Cursor) |
 | **Date** | 2026-09-25 |
 | **Brief revision** | 1 |
-| **Branch / PR** | `feat/BRIEF-006-local-sonar` · PR pending |
+| **Branch / PR** | `feat/BRIEF-006-local-sonar` · PR #20 |
 | **Commit** | `b95df84` (scan and local gates). Handoff commit follows. |
 | **Status** | Implemented — awaiting audit |
 
@@ -22,7 +22,7 @@ SonarQube Community Build `26.9.0.129388` runs under Compose profile `sonar`, wi
 | AC-3 | ✅ | `pnpm sonar` on `b95df84` exited 0 with `QUALITY GATE STATUS: PASSED`. Missing `SONAR_TOKEN` (no repo-root `.env`) exits 1: `SONAR_TOKEN is missing. Add SONAR_TOKEN to the repo-root .env (see docs/quality/README.md).` Same message from `pnpm sonar:report`. |
 | AC-4 | ✅ | `pnpm sonar:report` output is below. A check compared that output to the token in `.env` and the token was absent. |
 | AC-5 | ✅ | Scanner log on `b95df84` lists the exclusions and test inclusions below. API `components/tree` on that project: 55 source files (`FIL`) and 12 test files (`UTS`), including `app/backend/test/data-source.spec.ts` and `app/frontend/e2e/menu.spec.ts`. `mockServiceWorker.js` and `migrations/` are not indexed. |
-| AC-6 | ✅ | `.env` and `.scannerwork/` are gitignored. Work commit `b95df84` does not contain a token or volume data. `ci` link filled after the PR opens. |
+| AC-6 | ✅ | `.env` and `.scannerwork/` are gitignored. Work commit `b95df84` does not contain a token or volume data. PR #20 runs `ci`. |
 | AC-7 | ✅ | Report below is the scan of `b95df84`. App sources match `main` (`338c3ad`) plus this brief's tooling. Issues are listed, not fixed. |
 
 ## Gate Evidence (G1)
@@ -87,7 +87,7 @@ Included tests: **/*.spec.ts, **/*.test.ts, **/*.test.tsx
 ## Review Routing
 - Assigned auditor: Cowork
 - Next command: `audit BRIEF-006`
-- PR: pending · Work SHA: `b95df84` · sources/tests/exclusions checked against the scanner log and the component tree
+- PR: https://github.com/khaijeaw65/bar-management-system/pull/20 · Work SHA: `b95df84` · sources/tests/exclusions checked against the scanner log and the component tree
 
 ## Notes for Reviewer
 - Startup screen: `docs/handoffs/assets/BRIEF-006/operational.png`
