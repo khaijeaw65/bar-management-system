@@ -4,36 +4,39 @@
 |---|---|
 | **Implementer** | Field (Cursor) |
 | **Date** | 2026-09-24 |
-| **Brief revision** | 2 |
+| **Brief revision** | 3 |
 | **Branch / PR** | `feat/BRIEF-005-frontend-scaffold` · PR #17 |
-| **Commit** | `97f9748` (local gates). `ci` green on `96e3d4a` |
-| **Status** | Implemented — awaiting audit |
+| **Commit** | `09df010` (Rev 3 local gates). Earlier `ci` on `96e3d4a`; Rev 3 `ci` fills in after push |
+| **Status** | Implemented — Rev 3 awaiting re-audit |
 
-> Created at `Implemented`. Update it if review requests changes. Frozen at merge.
+> Created at `Implemented`. Updated for Rev 3 after changes requested. Frozen at merge.
 
 ## Summary
-The web app now has Sarabun, dark/light tokens mapped onto HeroUI, TanStack Query, and `apiFetch` (envelope in, `data` out). `/` redirects to `/pos/menu`, a read-only HeroUI table fed by MSW. `/staff` is a placeholder. HeroUI v3 Table rendered under Next 16 without an SSR or token failure.
+Rev 3 applies the audit notes. Pages that do not read route params take no props. `ThemeProvider` stays in the server HTML in mock mode, so a saved light theme is on `<html>` before paint and React no longer warns about the `next-themes` script. The frontend package no longer pins its own pnpm version; the root lockfile is the only one.
 
 ## How the data flows
-MSW `GET */api/menu/items` returns `{ status, message, data: { items } }`. With `NEXT_PUBLIC_API_MOCKING=enabled`, `Providers` starts the browser worker before the tree renders; production builds do not register it. `MenuList` uses `useQuery(['menu', 'items'])` → `getMenuItems()` → `apiFetch`, which sends `credentials: 'include'`, validates the envelope, and returns `data` only. The table, error, empty, and skeleton views render from that result.
+MSW `GET */api/menu/items` returns `{ status, message, data: { items } }`. With `NEXT_PUBLIC_API_MOCKING=enabled`, `Providers` starts the browser worker before the data tree renders; `ThemeProvider` is outside that gate. Production builds do not register the worker. `MenuList` uses `useQuery(['menu', 'items'])` → `getMenuItems()` → `apiFetch`, which sends `credentials: 'include'`, validates the envelope, and returns `data` only.
 
 ## Acceptance Criteria
 | AC | Result | Test |
 |---|---|---|
-| AC-1 | ✅ | `docs/handoffs/assets/BRIEF-005/menu-dark.png` — `/pos/menu`, four Thai items, `฿120.00` / `฿180.00` / `฿150.00` / `฿220.00`, one หมด chip. `e2e/menu.spec.ts` opens `/` and lands on `/pos/menu` |
-| AC-2 | ✅ | `menu-error.png` (เกิดข้อผิดพลาด + ลองอีกครั้ง), `menu-empty.png` (ยังไม่มีเมนู). Retry: `MenuList.test.tsx` — `shows the error state and retries` |
-| AC-3 | ✅ | `menu-light.png` — ธีมสว่าง selected, light tokens. After reload, `aria-pressed` on ธีมสว่าง stayed `true`. First paint with no saved choice is dark (`:root` holds the dark tokens) |
+| AC-1 | ✅ | `docs/handoffs/assets/BRIEF-005/menu-dark.png` — four Thai items, baht prices, one หมด chip. `e2e/menu.spec.ts` opens `/` and lands on `/pos/menu` |
+| AC-2 | ✅ | `menu-error.png`, `menu-empty.png`. Retry: `MenuList.test.tsx` — `shows the error state and retries` |
+| AC-3 | ✅ | `menu-light.png`. Rev 3 strengthens this in AC-13 |
 | AC-4 | ✅ | `rg -n "#[0-9A-Fa-f]{3,8}" app/frontend/src --glob '*.tsx'` — no matches. `rg -n "dark:" app/frontend/src --glob '*.tsx'` — no matches |
-| AC-5 | ✅ | `src/lib/api/client.test.ts` — envelope `data` only, `ApiError` status + message, `ZodError`, `credentials: 'include'` |
+| AC-5 | ✅ | `src/lib/api/client.test.ts` |
 | AC-6 | ✅ | `src/lib/utils/format.test.ts` — `formatTHB('1234.50')` → `฿1,234.50` |
 | AC-7 | ✅ | `src/app/pos/menu/_components/MenuList.test.tsx` — loaded / error / empty |
 | AC-8 | ✅ | `e2e/menu.spec.ts` — heading เมนู and 4 `rowheader`s. 1 passed |
-| AC-9 | ✅ | `pnpm --filter @bar/frontend typecheck` after `rm -rf app/frontend/.next` — `next typegen` then `tsc --noEmit`, exit 0. Root layout uses `LayoutProps<'/'>` |
-| AC-10 | ✅ | Gates below, all exit 0 on the `97f9748` tree. `pnpm --version` 10.0.0. Production `.next` has no `setupWorker` / `mockServiceWorker`. `ci` success on `96e3d4a`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36016628822 |
-| AC-11 | ✅ | `wc -l` — largest component `providers.tsx` 47, `MenuList.tsx` 40, pages ≤ 11. Returned JSX in each component is under 40 lines |
+| AC-9 | ✅ | `typecheck` after `rm -rf app/frontend/.next` — exit 0. Root layout uses `LayoutProps<'/'>` |
+| AC-10 | ✅ | Gates below, all exit 0 on the `09df010` tree. `pnpm --version` 10.0.0. Production `.next` has no `setupWorker` / `mockServiceWorker` |
+| AC-11 | ✅ | `wc -l` — `providers.tsx` 47, `ThemeToggle.tsx` 46, pages ≤ 10. Returned JSX stays under 40 lines |
+| AC-12 | ✅ | `rg -n "void params" app/frontend/src` — no matches. `page.tsx`, `pos/menu/page.tsx`, and `staff/page.tsx` take no props. Layouts that use `children` keep `LayoutProps` |
+| AC-13 | ✅ | Saved `theme=light`. At `DOMContentLoaded`, `<html>` class includes `light` in both modes. Screenshots: `rev3-light-dev.png` (`pnpm dev`, API down so the error state is light), `rev3-light-msw.png` (mocking on, four rows, ธีมสว่าง pressed). Console: `rev3-console-dev.png`, `rev3-console-msw.png` — no `next-themes` / script-tag warning. Playwright e2e log also no longer prints that warning |
+| AC-14 | ✅ | `rg packageManager app/frontend/package.json` — no matches. `app/frontend/pnpm-lock.yaml` deleted. `pnpm install --frozen-lockfile` at the root — exit 0 |
 
 ## Gate Evidence (G1)
-Commands run on the `97f9748` tree before that commit (`pnpm --version` 10.0.0). `48ca110` only deletes `e2e/screenshots.mjs`. `ci` on `96e3d4a`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36016628822
+Commands run on the `09df010` tree (`pnpm --version` 10.0.0).
 
 | Command | Exit | Result |
 |---|---|---|
@@ -42,23 +45,23 @@ Commands run on the `97f9748` tree before that commit (`pnpm --version` 10.0.0).
 | `pnpm --filter @bar/frontend test` | 0 | 7 passed · 0 failed · 0 skipped |
 | `pnpm --filter @bar/frontend build` | 0 | pass. `rg` of `.next` for `setupWorker` and `mockServiceWorker` — no matches |
 | `pnpm --filter @bar/frontend test:e2e` | 0 | 1 passed · 0 failed · 0 skipped (local; not in CI) |
-| `pnpm install --frozen-lockfile` | 0 | pass (pnpm 10.0.0). pnpm warned that the `msw` install script was ignored; `public/mockServiceWorker.js` is already committed from `msw init` |
+| `pnpm install --frozen-lockfile` | 0 | pass (pnpm 10.0.0), already up to date |
 
 ## Decisions Raised
 - none
 
 ## Deviations from Brief
-- None.
+- None. A hand-written theme script was not needed: moving `ThemeProvider` outside the MSW gate was enough.
 
 ## Known Gaps / Follow-ups
-- `next-themes` injects a `<script>` from a client component. React 19 logs that this script does not run on the client (the "1 Issue" badge in the dev screenshots). The saved class still applies after hydration. First load with no saved choice stays dark because `:root` is the dark palette. A saved light theme can flash dark for one frame.
-- `app/frontend/package.json` `packageManager` is the pre-existing `pnpm@11.21.0` pin. Repo root is pnpm 10. Playwright starts `next dev` on port 3100 because Docker already listens on 3000.
-- HeroUI did not need a React provider. Tokens are mapped by pointing HeroUI's `--background`, `--surface`, `--accent`, and status variables at the design-system tokens.
+- F1 (`apiFetch` body handling) stays for DR-007 in the frontend auth brief.
+- Playwright still starts `next dev` on port 3100 because Docker listens on 3000.
 
 ## AI Usage
-**High** — Cursor wrote the scaffold, tests, and this handoff.
+**High** — Cursor wrote the Rev 3 fixes and updated this handoff.
 
 ## Notes for Reviewer
-- Start at `src/lib/api/client.ts`, then `src/app/pos/menu/_components/MenuList.tsx`. That is the pattern later screens copy.
-- Screenshots: `docs/handoffs/assets/BRIEF-005/`.
-- Dev command: `NEXT_PUBLIC_API_MOCKING=enabled pnpm --filter @bar/frontend dev`.
+- F4: `src/app/providers.tsx` — `ThemeProvider` wraps the tree; only the children wait for MSW.
+- F3: pages with no params declare no props.
+- F5: root `package.json` `packageManager` (pnpm 10) and root `pnpm-lock.yaml` only.
+- Rev 3 screenshots: `docs/handoffs/assets/BRIEF-005/rev3-*`.
