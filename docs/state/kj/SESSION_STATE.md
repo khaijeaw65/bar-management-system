@@ -19,7 +19,7 @@ Cowork runs `audit BRIEF-006` on PR #20. Work SHA `b95df84`.
 
 ## Progress
 - Completed: AC-1 through AC-7 locally. Image `sonarqube:26.9.0.129388-community`. Gate PASSED. 15 existing issues listed, not fixed.
-- Remaining: `ci` on PR #20 (running), then Cowork audit
+- Remaining: Cowork audit. `ci` passed on `2a91496`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36037116559
 
 ## Next steps
 1. Cowork runs `audit BRIEF-006` on PR #20 (`b95df84`).

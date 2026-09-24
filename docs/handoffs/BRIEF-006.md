@@ -22,7 +22,7 @@ SonarQube Community Build `26.9.0.129388` runs under Compose profile `sonar`, wi
 | AC-3 | ✅ | `pnpm sonar` on `b95df84` exited 0 with `QUALITY GATE STATUS: PASSED`. Missing `SONAR_TOKEN` (no repo-root `.env`) exits 1: `SONAR_TOKEN is missing. Add SONAR_TOKEN to the repo-root .env (see docs/quality/README.md).` Same message from `pnpm sonar:report`. |
 | AC-4 | ✅ | `pnpm sonar:report` output is below. A check compared that output to the token in `.env` and the token was absent. |
 | AC-5 | ✅ | Scanner log on `b95df84` lists the exclusions and test inclusions below. API `components/tree` on that project: 55 source files (`FIL`) and 12 test files (`UTS`), including `app/backend/test/data-source.spec.ts` and `app/frontend/e2e/menu.spec.ts`. `mockServiceWorker.js` and `migrations/` are not indexed. |
-| AC-6 | ✅ | `.env` and `.scannerwork/` are gitignored. Work commit `b95df84` does not contain a token or volume data. PR #20 runs `ci`. |
+| AC-6 | ✅ | `.env` and `.scannerwork/` are gitignored. Work commit `b95df84` does not contain a token or volume data. `ci` passed on `2a91496`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36037116559 |
 | AC-7 | ✅ | Report below is the scan of `b95df84`. App sources match `main` (`338c3ad`) plus this brief's tooling. Issues are listed, not fixed. |
 
 ## Gate Evidence (G1)
