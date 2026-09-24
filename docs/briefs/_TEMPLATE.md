@@ -51,10 +51,9 @@ pnpm --filter <pkg> test:e2e   # if the brief has e2e ACs
 ```
 A required script that doesn't exist yet = **BLOCKED** — report it, never skip silently.
 
-### Coverage / SonarQube Cloud gate
-- Sonar gate: **required** / **deferred** — <reason; deferred until the tooling brief merges>
-- Coverage command(s) for touched packages: <exact>
-- Approved exclusions / threshold changes: <none, or Field-approved reference>
+### Local Sonar scan
+- Required for this brief: yes (always for Methee) / optional — <reason>
+- Approved exclusions / "won't fix": <none, or Field-approved reference>
 
 ## 6. Constraints
 <Rules that matter most for this brief — e.g. `save()` not `update()`, `.js` import extensions, `PermissionsGuard` only, Thai hardcoded strings.>

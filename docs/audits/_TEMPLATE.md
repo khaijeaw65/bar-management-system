@@ -48,7 +48,7 @@
 - Audit is committed after S; pre-merge summary must verify S..head contains evidence-only changes (§7).
 - Repeated blocker: <attempts/evidence and decision needed, or none>
 
-## SonarQube Cloud (when the brief requires the gate)
-- Gate result on PR head H: <passed / failed / unavailable = BLOCKED> · link: <SonarQube Cloud PR analysis>
-- New-code coverage, issues, hotspots reviewed: <summary>
-- Any exclusion / "won't fix" / threshold change approved by Field: <reference or none>
+## Sonar (local scan)
+- Handoff Sonar section present for the scanned commit = S (or later scan): <yes / no>
+- Remaining issues have reasons; no unapproved "won't fix"/exclusions: <yes / findings>
+- Learning mode respected (Methee fixed his own issues): <yes / notes>

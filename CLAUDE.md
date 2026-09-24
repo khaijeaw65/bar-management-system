@@ -57,7 +57,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 | Auth | LINE SSO + JWT + refresh token rotation |
 | Payment | PromptPay QR + webhook (GB Prime Pay) |
 | Infra | AWS ECS/ECR, RDS, S3, ElastiCache + Terraform (`infra/terraform/`) |
-| CI/CD | GitHub Actions + SonarQube Cloud quality gate (free plan, public repo — set up by the tooling brief) |
+| CI/CD | GitHub Actions · local SonarQube Community scan before commit (BRIEF-006; shared hosting decided in Nov) |
 | Local dev | Docker Compose (Postgres + Redis) + ngrok |
 
 ---

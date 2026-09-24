@@ -3,7 +3,7 @@ Updated: 2026-09-24 · Agent: Codex (Field-confirmed workflow migration)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
-Push `docs/workflow-agent-loop` → PR → merge (Field PR, audit PASS). Then Cowork drafts BRIEF-006 (coverage + SonarQube Cloud CI).
+Field reviews BRIEF-006 draft (local SonarQube) on `docs/brief-006-sonar` → approve Ready → push → merge.
 
 ## Active
 - Brief: Field-authorized workflow maintenance; no application brief executed
