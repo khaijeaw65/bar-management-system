@@ -4,7 +4,7 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
-import { AuditSubscriber } from '../src/common/subscribers/audit.subscriber.js';
+import { AuditSubscriber } from '../src/providers/orm/subscribers/audit.subscriber.js';
 
 describe('Health (e2e)', () => {
   let app: INestApplication;
@@ -28,7 +28,11 @@ describe('Health (e2e)', () => {
     await request(app.getHttpServer())
       .get('/api/health')
       .expect(200)
-      .expect({ status: 'ok', db: 'up' });
+      .expect({
+        status: 200,
+        message: 'success',
+        data: { status: 'ok', db: 'up' },
+      });
   });
 
   it('registers AuditSubscriber once', () => {

@@ -12,8 +12,6 @@ const EnvSchema = z.object({
 
 export type Env = z.infer<typeof EnvSchema>;
 
-let booted: Env | undefined;
-
 export function parseEnv(source: Record<string, unknown>): Env {
   const result = EnvSchema.safeParse({
     NODE_ENV: source.NODE_ENV,
@@ -33,15 +31,4 @@ export function parseEnv(source: Record<string, unknown>): Env {
   }
 
   return result.data;
-}
-
-/** Nest `ConfigModule` validate hook. Parses once per process. */
-export function validateEnv(source: Record<string, unknown>): Env {
-  booted = parseEnv(source);
-  return booted;
-}
-
-export function getEnv(): Env {
-  booted ??= parseEnv(process.env);
-  return booted;
 }

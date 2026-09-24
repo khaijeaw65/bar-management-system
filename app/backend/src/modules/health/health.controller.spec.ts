@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { configureApp } from '../bootstrap/configure-app.js';
+import { configureApp } from '../../bootstrap/configure-app.js';
 import { HealthController } from './health.controller.js';
 import { HealthService } from './health.service.js';
 
@@ -20,10 +20,11 @@ describe('HealthController', () => {
     configureApp(app);
     await app.init();
 
-    await request(app.getHttpServer())
-      .get('/api/health')
-      .expect(503)
-      .expect({ status: 'error', db: 'down' });
+    await request(app.getHttpServer()).get('/api/health').expect(503).expect({
+      status: 503,
+      message: 'database unavailable',
+      data: null,
+    });
 
     await app.close();
   });

@@ -1,4 +1,4 @@
-import { parseEnv } from './env.schema.js';
+import { parseEnv } from './config.schema.js';
 
 describe('parseEnv', () => {
   it('names PGHOST when it is missing', () => {

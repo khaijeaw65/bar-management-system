@@ -8,12 +8,10 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-interface ErrorResponse {
-  statusCode: number;
+interface ErrorEnvelope {
+  status: number;
   message: string | string[];
-  error: string;
-  timestamp: string;
-  path: string;
+  data: null;
 }
 
 @Catch(HttpException)
@@ -32,12 +30,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? (exceptionResponse as { message: string | string[] }).message
         : exception.message;
 
-    const body: ErrorResponse = {
-      statusCode: status,
+    const body: ErrorEnvelope = {
+      status,
       message,
-      error: HttpStatus[status] ?? 'Unknown',
-      timestamp: new Date().toISOString(),
-      path: request.url,
+      data: null,
     };
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
