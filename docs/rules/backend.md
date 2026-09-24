@@ -1,7 +1,97 @@
 # Backend — NestJS + Hexagonal Architecture
 
 > Scoped to `app/backend/**`. Workspace-wide rules in `docs/rules/core.md` also apply.
-> Read `docs/state/<person>.md` and the active brief before starting any task (see `docs/rules/workflow.md`).
+
+---
+
+## src/ Directory Structure
+
+Files marked *(planned)* do not exist yet — the brief that needs them creates them. **Never create empty stubs from this tree.**
+
+```
+src/
+├── bootstrap/
+│   └── configure-app.ts              ← global prefix `api`, filter, interceptor, shutdown hooks — used by main.ts AND tests
+│
+├── common/                           ← cross-cutting kernel (no business logic)
+│   ├── base/
+│   │   └── base.entity.ts
+│   ├── constants/
+│   │   └── sql-column.constant.ts
+│   ├── decorators/
+│   │   ├── current-user.decorator.ts
+│   │   ├── public.decorator.ts               (planned — auth brief)
+│   │   └── require-permissions.decorator.ts  ← `@RequirePermissions(...)`
+│   ├── filters/
+│   │   └── http-exception.filter.ts  ← error envelope (see API Response)
+│   ├── guards/
+│   │   └── permissions.guard.ts
+│   └── interceptors/
+│       ├── cls-user.interceptor.ts
+│       └── transform-response.interceptor.ts ← success envelope (see API Response)
+│
+├── providers/                        ← infra wiring only — no domain logic, no controllers
+│   ├── config/
+│   │   ├── config.module.ts          ← global; wraps ConfigModule.forRoot({ validate })
+│   │   ├── config.schema.ts          ← Zod schema for ALL env vars, parsed once at boot
+│   │   └── config.service.ts         ← AppConfigService: typed getters per domain (db, app, auth, …)
+│   ├── orm/
+│   │   ├── typeorm.module.ts         ← TypeOrmModule.forRootAsync + CLS transactional plugin
+│   │   ├── data-source.ts            ← standalone DataSource for the TypeORM CLI (same options)
+│   │   ├── migrations.ts             ← THE single migrations array (used by typeorm.module + data-source)
+│   │   ├── migrations/               ← <timestamp>-<Name>.ts
+│   │   ├── snake-naming.strategy.ts
+│   │   └── subscribers/
+│   │       └── audit.subscriber.ts
+│   ├── redis/                        (planned — IAM cache brief)
+│   │   ├── redis.module.ts
+│   │   └── redis.service.ts
+│   └── infrastructures/              (planned — first AWS brief)
+│       ├── aws/
+│       │   └── s3.adapter.ts
+│       └── infrastructure.module.ts
+│
+├── modules/                          ← domain modules (hexagonal per module)
+│   ├── health/                       ← infra-only (controller + service, no domain/ports)
+│   ├── auth/                         ← infra-only (no domain/ports)
+│   ├── iam/  venue/  guest/  menu/  inventory/  order/  payment/  bottle-keep/
+│   └── notifications/                ← infra-only (no domain/ports)
+│
+├── app.module.ts
+└── main.ts
+```
+
+## Layer Responsibilities
+
+| Folder | Owns | Never contains |
+|---|---|---|
+| `bootstrap/` | App-level setup shared by `main.ts` and tests | Business logic |
+| `common/` | Decorators, guards, filters, interceptors, base entity, constants | Business logic, domain imports |
+| `providers/` | Config, ORM, Redis, AWS adapters | Domain logic, controllers, services with business rules |
+| `modules/` | All domain features (hexagonal) + infra-only modules (`health`, `auth`, `notifications`) | Direct infra imports across modules |
+
+## providers/ Rules
+- `config/config.schema.ts` validates **all** env vars at startup with Zod — the app crashes immediately if any are missing, and the error names the variable.
+- `config/config.service.ts` is the only way code reads config: inject `AppConfigService` and use its typed getters (`config.database`, `config.app.port`, …). **No `process.env` outside `config.schema.ts` / `data-source.ts`**, no module-level cached state.
+- `orm/` owns `AuditSubscriber` — registered once globally, never per module. It owns the migration pipeline too: **one** `migrations.ts` list, imported by both `typeorm.module.ts` and `data-source.ts`.
+- `infrastructures/infrastructure.module.ts` is an **aggregator module** (a Nest module that imports/exports the adapters) — imported once in `AppModule`. Not an `index.ts` re-export (`core.md` bans those).
+- `redis/redis.service.ts` is global — shared by IAM cache, BullMQ and the socket.io adapter.
+
+## API Response
+
+Every HTTP response uses one envelope. Decided by Field 2026-09-24.
+
+```typescript
+// success — TransformResponseInterceptor wraps whatever the controller returns
+{ status: number; message: 'success'; data: T }        // status = response.statusCode
+
+// error — HttpExceptionFilter
+{ status: number; message: string | string[]; data: null }
+```
+- Controllers return the plain response DTO; they never build the envelope themselves.
+- Non-2xx responses always go through `HttpExceptionFilter` (throw an `HttpException`, don't set `res.status()` and return a body).
+- The envelope type/schema lives in `@bar/contracts` (`ApiResponse<T>` / `apiResponseSchema(dataSchema)`, DR-004) once a frontend brief consumes it; the frontend `apiFetch` unwraps `data`.
+- Webhook endpoints (payment gateway) may answer in the format the gateway requires — document the exception in that brief.
 
 ---
 
@@ -140,7 +230,7 @@ export type CreateOrderDto = z.infer<typeof CreateOrderSchema>;
 ## IAM & Permissions
 
 - Format: `'resource:action'` — e.g. `'orders:create'`, `'menu:manage'`
-- `@RequirePermissions('orders:create')` on controller methods
+- `@RequirePermissions('orders:create')` on controller methods (`common/decorators/require-permissions.decorator.ts`)
 - `PermissionsGuard` resolves effective permissions:
   1. Load group memberships where `NOW() BETWEEN valid_from AND valid_until` (or null)
   2. Union all group policies + direct user policies
@@ -192,12 +282,9 @@ export type CreateOrderDto = z.infer<typeof CreateOrderSchema>;
 
 ## Config
 
-```typescript
-// Per-module: registerAs('domain', () => ({ ... }))
-// AppModule: ConfigModule.forRoot({ isGlobal: true })
-```
-Domains: `database`, `redis`, `auth`, `jwt`, `payment`, `openai`.
-All env vars from `process.env` — no hardcoding.
+See **providers/ Rules** above: `providers/config/` (`config.module.ts` + `config.schema.ts` + `AppConfigService`).
+Getter domains: `app`, `database`, `redis`, `auth`, `jwt`, `payment`, `openai` — each added by the brief that needs it (schema + getter together).
+No hardcoded values; no `registerAs` / `ConfigService.get('x.y')` string lookups in feature code.
 
 ---
 
@@ -210,9 +297,9 @@ All env vars from `process.env` — no hardcoding.
 
 ---
 
-## AuditSubscriber (`common/subscribers/`)
+## AuditSubscriber (`providers/orm/subscribers/`)
 
-- Registered once globally via `DataSource` event subscriber in `AppModule`
+- Registered once globally: a Nest provider that pushes itself onto the `DataSource` (no `@EventSubscriber()`, not listed in TypeORM `subscribers`)
 - Listens to `beforeInsert` + `beforeUpdate` on all `BaseEntity` subclasses
 - Reads `userId` from `@nestjs/cls` context (populated by `ClsUserInterceptor`)
 - `audit_log` is append-only — NEVER UPDATE or DELETE it
