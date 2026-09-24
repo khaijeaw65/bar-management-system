@@ -5,7 +5,7 @@
 | **Status** | Ready |
 | **Implementer** | Field (Cursor primary) |
 | **Affected apps** | backend · infra (`infra/docker-compose.yml`) |
-| **Revision** | 1 |
+| **Revision** | 3 |
 | **Depends on** | BRIEF-003 (Done). **Runs in parallel with BRIEF-005** (workflow §4 exception: own worktree, own agent) — no shared files except `pnpm-lock.yaml` (see §6) |
 | **References** | `docs/rules/backend.md` (Config, TypeORM, AuditSubscriber, Transaction) · DR-001 (`infra/`) · DR-004 (one Zod version) · `docs/infra.md` (PG 16) |
 | **Audit depth** | Full — every later backend brief builds on this |
@@ -95,6 +95,24 @@ pnpm --filter @bar/backend build
 ## 8. Unlocked Protected Files
 - `infra/docker-compose.yml`
 
+## Rev 2 — changes requested after audit (Field, 2026-09-24)
+`docs/rules/backend.md` now defines the `src/` layout, config service and API envelope. Apply in this PR:
+1. **Layout** (`backend.md` → src/ Directory Structure): `config/*` → `providers/config/` (`config.module.ts`, `config.schema.ts`, `config.service.ts` = `AppConfigService` with typed getters `app`, `database`; drop `registerAs` and `getEnv`/`booted`); `database/data-source.ts`, `migrations/`, `common/database/snake-naming.strategy.ts`, `common/subscribers/audit.subscriber.ts` → `providers/orm/` (+ `typeorm.module.ts` holding `TypeOrmModule.forRootAsync` and the CLS transactional plugin); `health/` → `modules/health/` with a `health.module.ts`.
+2. **One migration list** — `providers/orm/migrations.ts`, used by `typeorm.module.ts` and `data-source.ts` (audit F1).
+3. **No global env state** — `config.schema.ts` exports a pure `parseEnv(source)`; `ConfigModule.forRoot({ validate: parseEnv })`; `AppConfigService` reads validated values through Nest's `ConfigService`; `data-source.ts` calls `parseEnv(process.env)` (audit F5, F6 superseded by the service).
+4. **API envelope** (`backend.md` → API Response): `common/interceptors/transform-response.interceptor.ts` → `{ status, message: 'success', data }`; `HttpExceptionFilter` → `{ status, message, data: null }`; both registered in `bootstrap/configure-app.ts`. Health 503 is now `throw new ServiceUnavailableException(...)` (no `@Res`).
+5. **Rename** `common/decorators/require-permission.decorator.ts` → `require-permissions.decorator.ts`, export `RequirePermissions`; update `permissions.guard.ts`.
+
+**AC changes:** AC-3 → body is `{ status: 200, message: 'success', data: { status: 'ok', db: 'up' } }`; AC-4 → 503 body `{ status: 503, message: <text>, data: null }`. **New AC-10** — unit tests: interceptor wraps a value; filter maps an `HttpException` to the error envelope. **New AC-11** — `grep -rn "process.env" app/backend/src` only hits `config.schema.ts` / `data-source.ts`. All other ACs unchanged. No new packages.
+
+## Rev 3 — config structure per domain (Field, 2026-09-24)
+`docs/rules/backend.md` → providers/ Rules now uses one folder per config domain (Field's reference structure). Apply in this PR, replacing the Rev 2 config layout:
+1. **Config:** delete `providers/config/{config.module,config.schema,config.service}.ts`. Create `providers/config/app/` and `providers/config/database/`, each with `configuration.ts` (`registerAs` + local Zod schema, throws `Validate <domain> config error: …`), `config.service.ts` (`AppConfigService` / `DatabaseConfigService`, typed getters via `getOrThrow('<domain>.<key>')`), `config.module.ts` (`ConfigModule.forFeature`). `AppModule`: `ConfigModule.forRoot({ isGlobal: true })`. Env var names unchanged (`NODE_ENV`, `PORT`, `PG*`).
+2. **Database:** rename `providers/orm/` → `providers/database/`; `typeorm.module.ts` → `database.module.ts` (`DatabaseModule`), building TypeORM options from `DatabaseConfigService` + `AppConfigService.nodeEnv` (SSL). `data-source.ts` builds the same options by calling `databaseConfiguration()` and `appConfiguration()` directly. Move `databaseOptions()` out of config into `providers/database/` (closes audit F10).
+3. **Carry-over fixes (audit re-check):** F8 — `HttpExceptionFilter` becomes `@Catch()`; unknown errors → `500 { status: 500, message: 'Internal server error', data: null }` + stack log; unit test. F9 — interceptor reads `statusCode` inside `map()`; test with a `201` route.
+
+**AC changes:** AC-5 → missing `PGHOST` makes `databaseConfiguration()` throw with a message naming `PGHOST`. AC-11 → `process.env` appears only in `providers/config/*/configuration.ts`. **New AC-12** — F8 + F9 tests pass. All other ACs unchanged. No new packages.
+
 ---
 
 ## Changelog
@@ -102,3 +120,5 @@ pnpm --filter @bar/backend build
 |---|---|---|
 | 1 | 2026-09-24 | Initial draft (Cowork) |
 | 1 | 2026-09-24 | Ready — approved by Field in session 2026-09-24 (parallel via workflow Rev 13) |
+| 2 | 2026-09-24 | Changes requested: providers/ layout, AppConfigService, single migration list, API envelope, `RequirePermissions` rename (audit F1/F5/F6 + backend.md update). Approved by Field in session |
+| 3 | 2026-09-24 | Changes requested: config per domain (`config/<domain>/{configuration,config.service,config.module}.ts`), `providers/database/`, audit F8–F10 folded in. Field's reference structure, approved in session |

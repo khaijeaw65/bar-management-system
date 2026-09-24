@@ -8,42 +8,49 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-interface ErrorResponse {
-  statusCode: number;
+interface ErrorEnvelope {
+  status: number;
   message: string | string[];
-  error: string;
-  timestamp: string;
-  path: string;
+  data: null;
 }
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost): void {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const status = exception.getStatus();
-    const exceptionResponse = exception.getResponse();
+    const isHttp = exception instanceof HttpException;
+    const status = isHttp
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
+    const message = isHttp
+      ? this.messageOf(exception)
+      : 'Internal server error';
 
-    const message =
-      typeof exceptionResponse === 'object' && 'message' in exceptionResponse
-        ? (exceptionResponse as { message: string | string[] }).message
-        : exception.message;
-
-    const body: ErrorResponse = {
-      statusCode: status,
-      message,
-      error: HttpStatus[status] ?? 'Unknown',
-      timestamp: new Date().toISOString(),
-      path: request.url,
-    };
-
-    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      this.logger.error(`${request.method} ${request.url}`, exception.stack);
+    if (!isHttp || status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      const stack = exception instanceof Error ? exception.stack : undefined;
+      this.logger.error(
+        `${request.method} ${request.url}`,
+        stack ?? String(exception),
+      );
     }
 
+    const body: ErrorEnvelope = { status, message, data: null };
     response.status(status).json(body);
+  }
+
+  private messageOf(exception: HttpException): string | string[] {
+    const exceptionResponse = exception.getResponse();
+    if (
+      typeof exceptionResponse === 'object' &&
+      exceptionResponse !== null &&
+      'message' in exceptionResponse
+    ) {
+      return (exceptionResponse as { message: string | string[] }).message;
+    }
+    return exception.message;
   }
 }

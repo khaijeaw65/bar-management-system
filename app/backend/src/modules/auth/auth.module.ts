@@ -10,11 +10,9 @@ import { AuthController } from './infrastructure/http/auth.controller.js';
 @Module({
   imports: [
     PassportModule,
-    JwtModule.registerAsync({
-      useFactory: () => ({
-        secret: process.env['JWT_SECRET'],
-        signOptions: { expiresIn: '15m' },
-      }),
+    JwtModule.register({
+      secret: 'stub',
+      signOptions: { expiresIn: '15m' },
     }),
   ],
   providers: [AuthService, LineStrategy, JwtStrategy, JwtRefreshStrategy],
