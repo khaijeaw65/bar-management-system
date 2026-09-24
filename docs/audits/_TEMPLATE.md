@@ -2,12 +2,13 @@
 
 | | |
 |---|---|
-| **Auditor** | Cowork · Codex (cross-check) |
+| **Auditor** | <actual Cowork / Codex reviewer; session reference> |
+| **Assignment** | <brief auditor + Field instruction/date; fallback/reassignment reason> |
 | **Date** | YYYY-MM-DD |
 | **PR / commit** | #<n> · `<sha>` (the audited commit) |
 | **Depth** | Full · Compact |
 | **Brief revision** | <n> |
-| **Recommendation** | PASS · PASS WITH NOTES · FAIL  ← Field makes the final call |
+| **Recommendation** | PASS · CHANGES REQUIRED · BLOCKED  ← Field makes the final call |
 
 > Findings describe code and documents, not people. Use "Current → Updated" framing.
 
@@ -30,12 +31,24 @@
 <Do the tests actually assert the ACs? Anything mocked away that should be real? Missing edge cases?>
 
 ## Findings
-| # | Severity | Current → Updated |
-|---|---|---|
-| 1 | High / Med / Low | |
+| # | Must fix / Suggestion | Severity | Evidence · Current → Updated |
+|---|---|---|---|
+| 1 | Must fix / Suggestion | High / Med / Low | |
 
 ## Recommendation to Field
 <one paragraph>
 
-> Compact audits: AC table + Findings + Recommendation only.
+> Compact audits: retain reviewer/assignment/commit metadata and Evidence Coverage; shorten the body to AC table + Findings + Recommendation.
 > Re-audit after changes: append `## Re-audit — <date> · <sha>` below; don't rewrite the original.
+
+## Evidence Coverage
+- Reviewed work SHA: <S>
+- Sources/diff inspected independently: <paths, ACs>
+- Tests run or independently inspected: <commands, SHA, results, limitations>
+- Audit is committed after S; pre-merge summary must verify S..head contains evidence-only changes (§7).
+- Repeated blocker: <attempts/evidence and decision needed, or none>
+
+## SonarQube Cloud (when the brief requires the gate)
+- Gate result on PR head H: <passed / failed / unavailable = BLOCKED> · link: <SonarQube Cloud PR analysis>
+- New-code coverage, issues, hotspots reviewed: <summary>
+- Any exclusion / "won't fix" / threshold change approved by Field: <reference or none>

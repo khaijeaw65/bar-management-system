@@ -1,7 +1,7 @@
 # CLAUDE.md — AI-Powered Bar Management System
 
 > Read this file at the start of every session. It is the single source of truth for project context, architecture decisions, and working rules.
-> For full feature scope → `docs/FRD.md`. For schema details → `docs/schema.sql`. For workflow & roles → `docs/rules/workflow.md`. For current state → `docs/state/<person>.md`.
+> For full feature scope → `docs/FRD.md`. For schema details → `docs/schema.sql`. For workflow & roles → `docs/rules/workflow.md`. For current state → `docs/state/<person>/SESSION_STATE.md`.
 
 ---
 
@@ -32,7 +32,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 ├── docs/
 │   ├── rules/              → all agent rules (source of truth) incl. workflow.md
 │   ├── briefs/             → executable briefs (<ID>-<slug>.md) + ui/ design references
-│   ├── state/              → kj.md, methee.md — current progress per person
+│   ├── state/              → kj/SESSION_STATE.md, methee/SESSION_STATE.md — current progress per person
 │   ├── handoffs/ decisions/ audits/
 │   └── FRD.md, schema.sql, erd.html, infra.md, handoff.md (frozen legacy log)
 ├── .cursor/rules/ .agents/rules/ → thin wrappers → docs/rules/
@@ -57,7 +57,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 | Auth | LINE SSO + JWT + refresh token rotation |
 | Payment | PromptPay QR + webhook (GB Prime Pay) |
 | Infra | AWS ECS/ECR, RDS, S3, ElastiCache + Terraform (`infra/terraform/`) |
-| CI/CD | GitHub Actions |
+| CI/CD | GitHub Actions + SonarQube Cloud quality gate (free plan, public repo — set up by the tooling brief) |
 | Local dev | Docker Compose (Postgres + Redis) + ngrok |
 
 ---
@@ -117,14 +117,14 @@ Cross-cutting concerns to resolve:
 
 Approval policy: routine scoped work and Git (including task-branch commit/push/PR creation) proceed without repeated questions; critical decisions, destructive actions, main merges and releases require explicit authority. See `docs/rules/workflow.md` §4. Tool/sandbox permission prompts remain separate.
 
-Chat commands: `onboard kj|methee`, `resume kj|methee`, `ทำ BRIEF-###`, `ตรวจ BRIEF-###`, `สถานะ BRIEF-###`, `handoff` — definitions and limits in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
+Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `audit BRIEF-###` (`ตรวจ`), `สถานะ BRIEF-###`, `handoff`, `อนุมัติ merge BRIEF-###` — definitions and limits in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
 
 @docs/rules/workflow.md
 
 - **Field** (KJ) is the only decision authority. Any new dependency, brief deviation, flow/architecture change, schema change, or auth/payment/PDPA change → needs approval: an exact Pre-decided item in the Ready brief, or an Approved DR. Neither → raise a DR and stop that path. Never decide alone.
 - **Roles:** Cowork = auditor + decision partner (no app code). Claude Code / Cursor / Antigravity / Codex = executors (only inside a `Ready` brief).
-- **Lifecycle:** executor marks `Implemented` → Cowork audits → Field sets `Done`. Executors never set Done.
-- **Every implementation session:** read `docs/state/<person>.md` + run the checkout check at start, overwrite state at end.
+- **Lifecycle:** executor marks `Implemented` → assigned auditor reviews → merge: Field's own PRs pre-approved once audit PASS + checks green on the audited head; Methee's PRs need Field's `อนุมัติ merge` for the exact head → merged PR means `Done`.
+- **Every implementation session:** read `docs/state/<person>/SESSION_STATE.md` + run the checkout check at start, overwrite state at end.
 
 ---
 

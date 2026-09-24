@@ -2,8 +2,11 @@
 
 | | |
 |---|---|
-| **Status** | Draft · Ready · Done  ← Field only (Cowork sets Ready on Field's approval) |
-| **Implementer** | Field / เมธี |
+| **Status** | Draft · Ready — approval status; merged PR is authoritative for Done |
+| **Implementer** | kj / methee |
+| **Assigned auditor** | Cowork (default) / Codex (Field-assigned fallback) |
+| **Auditor assignment** | Field instruction/date; fallback reason or none |
+| **PR** | <link, executor may fill this field only> |
 | **Affected apps** | backend / frontend / mobile / contracts / tooling (select all in scope) |
 | **Revision** | 1 |
 | **Depends on** | <brief IDs, or none> |
@@ -48,6 +51,11 @@ pnpm --filter <pkg> test:e2e   # if the brief has e2e ACs
 ```
 A required script that doesn't exist yet = **BLOCKED** — report it, never skip silently.
 
+### Coverage / SonarQube Cloud gate
+- Sonar gate: **required** / **deferred** — <reason; deferred until the tooling brief merges>
+- Coverage command(s) for touched packages: <exact>
+- Approved exclusions / threshold changes: <none, or Field-approved reference>
+
 ## 6. Constraints
 <Rules that matter most for this brief — e.g. `save()` not `update()`, `.js` import extensions, `PermissionsGuard` only, Thai hardcoded strings.>
 
@@ -60,6 +68,12 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - `none`
 
 ---
+
+## Ready Checklist
+- [ ] Named implementer and auditor; scope/ACs/contracts/references complete
+- [ ] Exact gates and evidence; dependencies have completion conditions
+- [ ] No unresolved decision blocking the main outcome
+- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
