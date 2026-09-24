@@ -31,25 +31,33 @@ src/
 │       └── transform-response.interceptor.ts ← success envelope (see API Response)
 │
 ├── providers/                        ← infra wiring only — no domain logic, no controllers
-│   ├── config/
-│   │   ├── config.module.ts          ← global; wraps ConfigModule.forRoot({ validate })
-│   │   ├── config.schema.ts          ← Zod schema for ALL env vars, parsed once at boot
-│   │   └── config.service.ts         ← AppConfigService: typed getters per domain (db, app, auth, …)
-│   ├── orm/
-│   │   ├── typeorm.module.ts         ← TypeOrmModule.forRootAsync + CLS transactional plugin
-│   │   ├── data-source.ts            ← standalone DataSource for the TypeORM CLI (same options)
-│   │   ├── migrations.ts             ← THE single migrations array (used by typeorm.module + data-source)
+│   ├── config/                       ← one folder per config domain, same 3 files each
+│   │   ├── app/
+│   │   │   ├── configuration.ts      ← registerAs('app', …) + Zod parse of NODE_ENV, PORT
+│   │   │   ├── config.service.ts     ← AppConfigService: typed getters (nodeEnv, port)
+│   │   │   └── config.module.ts      ← ConfigModule.forFeature(configuration), exports the service
+│   │   ├── database/                 ← PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE
+│   │   │   ├── configuration.ts
+│   │   │   ├── config.service.ts     ← DatabaseConfigService
+│   │   │   └── config.module.ts
+│   │   ├── jwt/                      (planned — auth brief)
+│   │   ├── gen-ai/                   (planned — AI brief, OpenAI)
+│   │   ├── queue/                    (planned — payment brief; Redis for BullMQ)
+│   │   └── storage/                  (planned — first upload brief, S3)
+│   ├── database/
+│   │   ├── database.module.ts        ← TypeOrmModule.forRootAsync (via DatabaseConfigService) + CLS transactional plugin
+│   │   ├── data-source.ts            ← standalone DataSource for the TypeORM CLI
+│   │   ├── migrations.ts             ← THE single migrations array (database.module + data-source)
 │   │   ├── migrations/               ← <timestamp>-<Name>.ts
 │   │   ├── snake-naming.strategy.ts
 │   │   └── subscribers/
 │   │       └── audit.subscriber.ts
-│   ├── redis/                        (planned — IAM cache brief)
-│   │   ├── redis.module.ts
-│   │   └── redis.service.ts
-│   └── infrastructures/              (planned — first AWS brief)
-│       ├── aws/
-│       │   └── s3.adapter.ts
-│       └── infrastructure.module.ts
+│   └── infrastructures/              ← vendor adapters that implement a module's port
+│       ├── gen-ai/
+│       │   └── openai-llm-client.service.ts      (planned)
+│       ├── queue/                                (planned — adapter chosen by the payment brief)
+│       └── storage/
+│           └── aws-s3-storage.service.ts         (planned)
 │
 ├── modules/                          ← domain modules (hexagonal per module)
 │   ├── health/                       ← infra-only (controller + service, no domain/ports)
@@ -67,15 +75,35 @@ src/
 |---|---|---|
 | `bootstrap/` | App-level setup shared by `main.ts` and tests | Business logic |
 | `common/` | Decorators, guards, filters, interceptors, base entity, constants | Business logic, domain imports |
-| `providers/` | Config, ORM, Redis, AWS adapters | Domain logic, controllers, services with business rules |
+| `providers/` | Config (per domain), database (TypeORM, migrations), vendor adapters | Domain logic, controllers, services with business rules |
 | `modules/` | All domain features (hexagonal) + infra-only modules (`health`, `auth`, `notifications`) | Direct infra imports across modules |
 
 ## providers/ Rules
-- `config/config.schema.ts` validates **all** env vars at startup with Zod — the app crashes immediately if any are missing, and the error names the variable.
-- `config/config.service.ts` is the only way code reads config: inject `AppConfigService` and use its typed getters (`config.database`, `config.app.port`, …). **No `process.env` outside `config.schema.ts` / `data-source.ts`**, no module-level cached state.
-- `orm/` owns `AuditSubscriber` — registered once globally, never per module. It owns the migration pipeline too: **one** `migrations.ts` list, imported by both `typeorm.module.ts` and `data-source.ts`.
-- `infrastructures/infrastructure.module.ts` is an **aggregator module** (a Nest module that imports/exports the adapters) — imported once in `AppModule`. Not an `index.ts` re-export (`core.md` bans those).
-- `redis/redis.service.ts` is global — shared by IAM cache, BullMQ and the socket.io adapter.
+
+### config/<domain>/
+- **Three files per domain, always the same names:** `configuration.ts` (`export default registerAs('<domain>', () => …)`), `config.service.ts` (`<Domain>ConfigService`), `config.module.ts` (`<Domain>ConfigModule`).
+- `configuration.ts` reads `process.env`, parses with a **Zod schema local to that domain**, and throws `Validate <domain> config error: …` (`z.prettifyError`) — the app fails at boot and the message names the variable.
+- `config.service.ts` exposes **typed getters only** (`get host(): string`) reading `this.configService.getOrThrow('<domain>.<key>')` — optional values use `get`. String keys live only here.
+- `config.module.ts` = `imports: [ConfigModule.forFeature(configuration)]`, `providers/exports: [<Domain>ConfigService]`. A feature module imports **only the config modules it needs**.
+- `AppModule` calls `ConfigModule.forRoot({ isGlobal: true })` once (loads `.env` locally); no global schema — each domain validates itself.
+- **`process.env` is read only in `config/*/configuration.ts`.** The TypeORM CLI (`database/data-source.ts`) gets its values by calling the factory directly: `databaseConfiguration()` — no second copy of env parsing.
+- Adding a domain = adding its folder with all three files in the brief that first needs it. Env var names are part of the brief contract.
+
+### database/
+- `database.module.ts` owns `TypeOrmModule.forRootAsync` (injects `DatabaseConfigService`), `ClsModule` + transactional plugin, and provides `AuditSubscriber` — imported once in `AppModule`.
+- `synchronize: false`, `autoLoadEntities: true` — **no hand-written `entities: [...]` list**. SSL decided from `AppConfigService.nodeEnv`, never `process.env` here.
+- One `migrations.ts` list, imported by `database.module.ts` and `data-source.ts`.
+- `AuditSubscriber`: Nest provider that pushes itself onto the `DataSource` — **no `@EventSubscriber()`** (double registration) and not in TypeORM `subscribers`.
+
+### infrastructures/<domain>/
+- One file per vendor adapter: `<vendor>-<purpose>.service.ts` (e.g. `aws-s3-storage.service.ts`), `@Injectable()`, **implements the port interface** from the owning module (`modules/<m>/domain/ports/…`), injects its `<Domain>ConfigService`.
+- Cloud credentials: pass access keys only when both are set (local dev); otherwise use the default chain (ECS task role).
+- No business logic — translate between the port and the SDK only.
+
+### Differences from the reference project (don't copy these)
+- ESM: relative imports with `.js`, no `src/...` absolute paths (`core.md`).
+- No `typeorm-naming-strategies` (TypeORM 0.3 only) — use `database/snake-naming.strategy.ts`.
+- Queue = **BullMQ on Redis** (locked stack), not SQS, unless a DR changes it.
 
 ## API Response
 
@@ -282,9 +310,7 @@ export type CreateOrderDto = z.infer<typeof CreateOrderSchema>;
 
 ## Config
 
-See **providers/ Rules** above: `providers/config/` (`config.module.ts` + `config.schema.ts` + `AppConfigService`).
-Getter domains: `app`, `database`, `redis`, `auth`, `jwt`, `payment`, `openai` — each added by the brief that needs it (schema + getter together).
-No hardcoded values; no `registerAs` / `ConfigService.get('x.y')` string lookups in feature code.
+See **providers/ Rules → config/<domain>/**. Domains now: `app`, `database`. Planned: `jwt`, `gen-ai`, `queue`, `storage` (plus `line`, `payment` when those briefs land) — each added with its three files by the brief that needs it.
 
 ---
 
@@ -297,7 +323,7 @@ No hardcoded values; no `registerAs` / `ConfigService.get('x.y')` string lookups
 
 ---
 
-## AuditSubscriber (`providers/orm/subscribers/`)
+## AuditSubscriber (`providers/database/subscribers/`)
 
 - Registered once globally: a Nest provider that pushes itself onto the `DataSource` (no `@EventSubscriber()`, not listed in TypeORM `subscribers`)
 - Listens to `beforeInsert` + `beforeUpdate` on all `BaseEntity` subclasses

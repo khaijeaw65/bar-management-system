@@ -5,7 +5,7 @@
 | **Status** | Ready |
 | **Implementer** | Field (Cursor primary) |
 | **Affected apps** | backend · infra (`infra/docker-compose.yml`) |
-| **Revision** | 2 |
+| **Revision** | 3 |
 | **Depends on** | BRIEF-003 (Done). **Runs in parallel with BRIEF-005** (workflow §4 exception: own worktree, own agent) — no shared files except `pnpm-lock.yaml` (see §6) |
 | **References** | `docs/rules/backend.md` (Config, TypeORM, AuditSubscriber, Transaction) · DR-001 (`infra/`) · DR-004 (one Zod version) · `docs/infra.md` (PG 16) |
 | **Audit depth** | Full — every later backend brief builds on this |
@@ -105,6 +105,14 @@ pnpm --filter @bar/backend build
 
 **AC changes:** AC-3 → body is `{ status: 200, message: 'success', data: { status: 'ok', db: 'up' } }`; AC-4 → 503 body `{ status: 503, message: <text>, data: null }`. **New AC-10** — unit tests: interceptor wraps a value; filter maps an `HttpException` to the error envelope. **New AC-11** — `grep -rn "process.env" app/backend/src` only hits `config.schema.ts` / `data-source.ts`. All other ACs unchanged. No new packages.
 
+## Rev 3 — config structure per domain (Field, 2026-09-24)
+`docs/rules/backend.md` → providers/ Rules now uses one folder per config domain (Field's reference structure). Apply in this PR, replacing the Rev 2 config layout:
+1. **Config:** delete `providers/config/{config.module,config.schema,config.service}.ts`. Create `providers/config/app/` and `providers/config/database/`, each with `configuration.ts` (`registerAs` + local Zod schema, throws `Validate <domain> config error: …`), `config.service.ts` (`AppConfigService` / `DatabaseConfigService`, typed getters via `getOrThrow('<domain>.<key>')`), `config.module.ts` (`ConfigModule.forFeature`). `AppModule`: `ConfigModule.forRoot({ isGlobal: true })`. Env var names unchanged (`NODE_ENV`, `PORT`, `PG*`).
+2. **Database:** rename `providers/orm/` → `providers/database/`; `typeorm.module.ts` → `database.module.ts` (`DatabaseModule`), building TypeORM options from `DatabaseConfigService` + `AppConfigService.nodeEnv` (SSL). `data-source.ts` builds the same options by calling `databaseConfiguration()` and `appConfiguration()` directly. Move `databaseOptions()` out of config into `providers/database/` (closes audit F10).
+3. **Carry-over fixes (audit re-check):** F8 — `HttpExceptionFilter` becomes `@Catch()`; unknown errors → `500 { status: 500, message: 'Internal server error', data: null }` + stack log; unit test. F9 — interceptor reads `statusCode` inside `map()`; test with a `201` route.
+
+**AC changes:** AC-5 → missing `PGHOST` makes `databaseConfiguration()` throw with a message naming `PGHOST`. AC-11 → `process.env` appears only in `providers/config/*/configuration.ts`. **New AC-12** — F8 + F9 tests pass. All other ACs unchanged. No new packages.
+
 ---
 
 ## Changelog
@@ -113,3 +121,4 @@ pnpm --filter @bar/backend build
 | 1 | 2026-09-24 | Initial draft (Cowork) |
 | 1 | 2026-09-24 | Ready — approved by Field in session 2026-09-24 (parallel via workflow Rev 13) |
 | 2 | 2026-09-24 | Changes requested: providers/ layout, AppConfigService, single migration list, API envelope, `RequirePermissions` rename (audit F1/F5/F6 + backend.md update). Approved by Field in session |
+| 3 | 2026-09-24 | Changes requested: config per domain (`config/<domain>/{configuration,config.service,config.module}.ts`), `providers/database/`, audit F8–F10 folded in. Field's reference structure, approved in session |

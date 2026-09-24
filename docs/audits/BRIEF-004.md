@@ -74,3 +74,6 @@ Field updated `docs/rules/backend.md` (providers/ layout, `AppConfigService`, AP
 | — | Info | `AuthModule` stub uses a literal JWT secret `'stub'`; it is not imported anywhere. The auth brief replaces it with `AppConfigService`. |
 
 F8–F10 are carried as ACs into the next backend brief (auth) rather than another Rev here — the scaffold's contract (layout, config, migrations, envelope shape) is correct and every Rev 2 item is met.
+
+## Update — 2026-09-24
+Field replaced the config layout with a per-domain structure (`backend.md` → providers/ Rules) → BRIEF-004 **Rev 3 — changes requested**. F8, F9, F10 are folded into Rev 3 (items 2–3). Re-audit after Cursor's Rev 3 commit.
