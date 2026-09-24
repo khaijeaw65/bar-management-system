@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Ready |
+| **Status** | Done |
 | **Implementer** | Field (Cursor primary) |
 | **Affected apps** | backend · infra (`infra/docker-compose.yml`) |
 | **Revision** | 3 |
@@ -122,3 +122,4 @@ pnpm --filter @bar/backend build
 | 1 | 2026-09-24 | Ready — approved by Field in session 2026-09-24 (parallel via workflow Rev 13) |
 | 2 | 2026-09-24 | Changes requested: providers/ layout, AppConfigService, single migration list, API envelope, `RequirePermissions` rename (audit F1/F5/F6 + backend.md update). Approved by Field in session |
 | 3 | 2026-09-24 | Changes requested: config per domain (`config/<domain>/{configuration,config.service,config.module}.ts`), `providers/database/`, audit F8–F10 folded in. Field's reference structure, approved in session |
+| 3 | 2026-09-24 | Done — merged in PR #16 (re-audit Rev 3 PASS). Set by Cowork on Field's explicit instruction |

@@ -1,26 +1,96 @@
 @import "tailwindcss";
+@import "@heroui/styles";
+
+/*
+ * Design-system tokens. Dark is the default (:root). .light overrides the same
+ * names. HeroUI semantic variables point at these tokens so its components
+ * follow the palette without dark: color utilities.
+ */
+:root,
+.dark {
+  color-scheme: dark;
+  --color-bg: #1c1610;
+  --color-surface: #2c2318;
+  --color-surface-raised: #3a2f22;
+  --color-border: #4a3b2a;
+  --color-text-primary: #f0e6d0;
+  --color-text-secondary: #a89070;
+  --color-text-disabled: #6b5a48;
+  --color-accent: #d4872a;
+  --color-accent-text: #d4872a;
+  --color-accent-subtle: #3d2810;
+  --color-success: #4caf7d;
+  --color-success-subtle: #1a2d20;
+  --color-warning: #e8a838;
+  --color-warning-subtle: #3d2810;
+  --color-error: #e05a5a;
+  --color-error-subtle: #3a1c1c;
+  --color-bottle-keep: #8b93d4;
+  --color-bottle-keep-subtle: #262840;
+}
+
+.light {
+  color-scheme: light;
+  --color-bg: #faf6ef;
+  --color-surface: #fffdf9;
+  --color-surface-raised: #f2eadd;
+  --color-border: #e3d6c2;
+  --color-text-primary: #2a2016;
+  --color-text-secondary: #735e49;
+  --color-text-disabled: #a8977f;
+  --color-accent: #d4872a;
+  --color-accent-text: #a5601a;
+  --color-accent-subtle: #f6e6cf;
+  --color-success: #2a8055;
+  --color-success-subtle: #e3f1e8;
+  --color-warning: #9a6512;
+  --color-warning-subtle: #f8ebd3;
+  --color-error: #c23b3b;
+  --color-error-subtle: #f9e1e1;
+  --color-bottle-keep: #5a62b0;
+  --color-bottle-keep-subtle: #e6e8f6;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--color-bg);
+  --foreground: var(--color-text-primary);
+  --surface: var(--color-surface);
+  --surface-foreground: var(--color-text-primary);
+  --overlay: var(--color-surface-raised);
+  --overlay-foreground: var(--color-text-primary);
+  --default: var(--color-surface-raised);
+  --default-foreground: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
+  --accent: var(--color-accent);
+  --accent-foreground: #1c1610;
+  --border: var(--color-border);
+  --separator: var(--color-border);
+  --focus: var(--color-accent);
+  --link: var(--color-accent-text);
+  --success: var(--color-success);
+  --danger: var(--color-error);
+  --warning: var(--color-warning);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-sarabun), ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--color-bg);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-disabled: var(--color-text-disabled);
+  --color-accent-text: var(--color-accent-text);
+  --color-accent-subtle: var(--color-accent-subtle);
+  --color-success-subtle: var(--color-success-subtle);
+  --color-warning-subtle: var(--color-warning-subtle);
+  --color-error: var(--color-error);
+  --color-error-subtle: var(--color-error-subtle);
+  --color-bottle-keep: var(--color-bottle-keep);
+  --color-bottle-keep-subtle: var(--color-bottle-keep-subtle);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
 }

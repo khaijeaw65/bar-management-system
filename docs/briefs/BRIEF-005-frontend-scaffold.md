@@ -5,7 +5,7 @@
 | **Status** | Ready |
 | **Implementer** | Field (executor agent — see §6 for running it next to BRIEF-004) |
 | **Affected apps** | frontend |
-| **Revision** | 2 |
+| **Revision** | 3 |
 | **Depends on** | none. **Runs in parallel with BRIEF-004** (workflow §4 exception: own worktree, own agent) — no shared files except `pnpm-lock.yaml` (see §6) |
 | **References** | DR-002 (stack — **overrides `docs/rules/frontend.md` where they conflict**) · DR-004 (one Zod version) · `docs/design-system.md` (tokens, theming) · UI brief `docs/briefs/ui/pos-desktop.md` Screen 5 (menu) · BRIEF-001 audit F2 (typed routes) |
 | **Audit depth** | Compact (UI scaffold) — but check the data-layer pattern carefully; every later screen copies it |
@@ -111,10 +111,23 @@ pnpm --filter @bar/frontend test:e2e   # local
 ## 8. Unlocked Protected Files
 - `none`
 
+## Rev 3 — audit fixes before merge (Field, 2026-09-24)
+Apply in this PR (no new packages):
+1. **F3 — page props:** pages/layouts that don't use `params` / `searchParams` take **no props** (remove `PageProps<…>` + `void params` from `src/app/page.tsx`, `src/app/pos/menu/page.tsx` and any other). Keep `LayoutProps<'/'>` on the root layout (it uses `children`).
+2. **F4 — no theme flash / no console error:** the saved theme class must be on `<html>` before first paint **in both normal and MSW dev mode**, with no React warning about the `next-themes` script. Likely cause: `Providers` returns `null` until MSW is ready, so `ThemeProvider` (and its init script) isn't in the server HTML in mock mode. Keep `ThemeProvider` outside the MSW gate (gate only the data tree), then verify. If it still needs a hand-written init script in `layout.tsx`, that's allowed (≤ 15 lines, reads the same `theme` localStorage key).
+3. **F5 — pnpm drift:** remove `"packageManager": "pnpm@11.21.0"` from `app/frontend/package.json` and delete `app/frontend/pnpm-lock.yaml` (root `pnpm-lock.yaml` + root `packageManager` pnpm 10 are the only source). Add the missing newline at the end of `package.json`.
+
+**New ACs:**
+- **AC-12** — no page/layout declares unused props; `grep -rn "void params" app/frontend/src` → no matches.
+- **AC-13** — with a saved light theme: reload shows light from the first frame in `pnpm dev` **and** `NEXT_PUBLIC_API_MOCKING=enabled pnpm dev`; browser console has no `next-themes` / script warning. Evidence: short screen recording or two screenshots + console screenshot.
+- **AC-14** — `app/frontend/package.json` has no `packageManager`; `app/frontend/pnpm-lock.yaml` is gone; `pnpm install --frozen-lockfile` at root still passes.
+
+F1 (`apiFetch` body handling) is **not** fixed here — DR-007 replaces `fetch` with axios in the frontend auth brief. F2 is fixed in `docs/rules/frontend.md` (this commit).
+
 ---
 
 ## After Done (Field, manual — protected files)
-- Apply DR-002 follow-ups to `docs/rules/frontend.md` (Stack, PWA section removed, theming, wrapper rule, `proxy.ts`, route tree to plain segments `/pos`, `/staff`), and "Next.js 16 PWA" → "web app" in CLAUDE.md / AGENTS.md / `core.md`.
+- ~~Apply DR-002 follow-ups to `frontend.md` and PWA wording in CLAUDE.md / AGENTS.md / `core.md`~~ ✅ done 2026-09-24 with Rev 3.
 
 ---
 
@@ -124,3 +137,4 @@ pnpm --filter @bar/frontend test:e2e   # local
 | 1 | 2026-09-24 | Initial draft (Cowork) · implementer changed เมธี → Field (Field, same session) |
 | 1 | 2026-09-24 | Ready — approved by Field in session 2026-09-24 (parallel via workflow Rev 13) |
 | 2 | 2026-09-24 | API envelope `{ status, message, data }` (backend.md → API Response): `apiFetch` unwraps `data`, mocks return the envelope, AC-5 updated. Approved by Field in session |
+| 3 | 2026-09-24 | Changes requested (audit F3, F4, F5) — AC-12..14. F2 fixed in `frontend.md`; F1 moved to DR-007 (axios, auth brief). Approved by Field in session |
