@@ -40,3 +40,5 @@
 
 ## Recommendation to Field
 **PASS.** All 7 ACs met with real evidence; deps and unlocks exact; the tool works end-to-end on the first try with the default gate. S1 is worth doing now (a wrong stop command would take down the dev DB) — say "approve S1" and Cowork updates the README on this branch. Field's own PR: mergeable under §7 once `ci` is green on the final head.
+
+**Update 2026-09-25:** S1 applied to `docs/quality/README.md` on Field's approval (docs-only; S..H stays evidence/docs-only).
