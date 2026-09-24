@@ -1,22 +1,22 @@
 import {
   EntitySubscriberInterface,
-  EventSubscriber,
   InsertEvent,
   UpdateEvent,
   DataSource,
 } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
-import { BaseEntity } from '../base/base.entity.js';
+import { BaseEntity } from '../../../common/base/base.entity.js';
 
 /**
  * Global TypeORM subscriber.
- * Stamps createdBy / updatedBy from the CLS (AsyncLocalStorage) context
- * so application code never needs to pass the current user manually.
+ * Stamps createdBy / updatedBy from the CLS context so application code
+ * never passes the current user manually.
  *
- * TODO: also append to audit_log table once it's defined.
+ * Registered once: Nest constructs this provider and the constructor pushes
+ * it onto the DataSource. Not listed in TypeORM `subscribers`, and not
+ * decorated with `@EventSubscriber()`.
  */
-@EventSubscriber()
 export class AuditSubscriber implements EntitySubscriberInterface {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,

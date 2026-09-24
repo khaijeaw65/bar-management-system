@@ -10,7 +10,7 @@ export const PERMISSIONS_KEY = 'permissions';
 
 /**
  * IAM guard — AWS-style most-permissive-wins.
- * Reads required permission(s) from @RequirePermission() decorator,
+ * Reads required permission(s) from @RequirePermissions() decorator,
  * then checks computed effective permissions from Redis ACL cache.
  *
  * Full implementation in iam module. This is the stub wired at app level.

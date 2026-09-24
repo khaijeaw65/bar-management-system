@@ -1,0 +1,93 @@
+# Audit — BRIEF-004 Backend scaffold
+
+| | |
+|---|---|
+| **Auditor** | Cowork |
+| **Date** | 2026-09-24 |
+| **PR / commit** | #16 · code `2e6d3e4` · handoff `4a06b70` |
+| **Depth** | Full |
+| **Brief revision** | 1 |
+| **Recommendation** | **PASS WITH NOTES** ← Field makes the final call |
+
+> Findings describe code and documents, not people. "Current → Updated" framing.
+
+## Acceptance Criteria
+| AC | Met? | Evidence | Note |
+|---|---|---|---|
+| AC-1 | ✅ | migration:run applied InitExtensions; 2nd run "No migrations are pending" | Manual evidence, local Docker |
+| AC-2 | ✅ | migration:revert dropped extension + migrations row | |
+| AC-3 | ✅ | `test/health.e2e-spec.ts` — 200 `{ status: 'ok', db: 'up' }` | Runs in CI against `postgres:16-alpine` |
+| AC-4 | ✅ | `health.service.spec.ts` (down on throw) + `health.controller.spec.ts` (503 body) | |
+| AC-5 | ✅ | `env.schema.spec.ts` — error names `PGHOST` | |
+| AC-6 | ✅ | e2e asserts exactly one `AuditSubscriber` on `dataSource.subscribers` | `@EventSubscriber()` removed as the brief allowed |
+| AC-7 | ✅ | `database.config.spec.ts` checks Nest factory **and** `AppDataSource` | |
+| AC-8 | ✅ | lint/typecheck/test (5)/e2e (2)/build exit 0; `ci` run 35947457811 green | |
+| AC-9 | ✅ | pnpm 10.0.0, frozen install OK; new deps = §7 exactly (`zod` pinned `4.6.5`) | |
+
+## Rule Check
+| Rule | OK? | Note |
+|---|---|---|
+| Scope | ✅ | No domain module, no Redis client, no auth wiring; starter controller removed |
+| Deps | ✅ | Exactly §7; no naming-strategy package, no CLI loader |
+| `synchronize: false` / migrations only | ✅ | Tested in both places |
+| ESM `.js` imports | ✅ | |
+| Protected files | ✅ | Only `infra/docker-compose.yml` (unlocked) |
+| Same app setup in tests and prod | ✅ | `configureApp()` used by `main.ts`, unit and e2e |
+
+## Test Quality
+Good. The e2e boots the real `AppModule`, runs migrations and hits the real DB in CI, so BRIEF-001's Postgres service is now actually exercised. The 503 path is tested at controller level with the global filter in place, which matters because `@Res({ passthrough: true })` is the only thing stopping the filter from rewriting the body.
+
+## Findings
+| # | Severity | Current → Updated |
+|---|---|---|
+| F1 | Med | **Current:** the migration list is written twice — `migrations: [InitExtensions…]` in `app.module.ts` **and** in `data-source.ts`. Every domain brief adds migrations; forgetting one side means the CLI and the app disagree about the schema. → **Updated:** one `src/database/migrations.ts` exporting `export const migrations = [InitExtensions1758662400000]`, imported by both. ~5 lines; do it in this PR before merge. |
+| F2 | Low | **Current:** `SnakeNamingStrategy` imports `typeorm/util/StringUtils.js`, an internal path. → **Updated:** acceptable — the unit test fails loudly if a TypeORM upgrade moves it. No change now. |
+| F3 | Low | **Current:** migration scripts use `node --env-file=.env`, which assumes a `.env` file; ECS injects env vars instead. → **Updated:** the deploy brief (Nov) adds a production migration command without `--env-file` (e.g. `migration:run:prod`). Note only. |
+| F5 | Med | **Current:** config values reach the app through a hidden module-level cache — `validateEnv()` stores `booted`, and `app.config.ts`, `database.config.ts` and `data-source.ts` call `getEnv()`, which silently re-parses `process.env` if the cache is empty. Tests depend on call order (`database.config.spec` calls `validateEnv` first so `data-source.ts` finds the cache). → **Updated:** no global state. Keep `parseEnv(source)` pure; `validateEnv = parseEnv` for `ConfigModule`; each `registerAs` factory and `data-source.ts` calls `parseEnv(process.env)` itself (cheap, fails fast the same way). Delete `booted` + `getEnv`. |
+| F6 | Low | **Current:** `app.module.ts` types the injected config as `ReturnType<typeof databaseConfig>`. → **Updated:** use Nest's `ConfigType<typeof databaseConfig>` (the documented idiom for `registerAs` injection). |
+| F7 | Low (rules gap) | **Current:** `backend.md` → Config says "Per-module: `registerAs('domain', …)`" and lists domains `database, redis, auth, jwt, payment, openai`, but doesn't say *where* the files live; the source tree also has new top-level folders (`config/`, `database/`, `bootstrap/`, `health/`) that the rules don't describe. The code follows the brief, so this is a rules gap, not an implementation error. → **Updated:** `backend.md` states: app-wide infra config (`app`, `database`, later `redis`) lives in `src/config/`; config owned by one module (`auth`, `jwt`, `payment`, `openai`) lives in that module (`modules/<m>/<m>.config.ts`, loaded with `ConfigModule.forFeature`); env schema validated once at boot in `src/config/env.schema.ts`; plus a short `src/` layout list. |
+| F4 | Info | **Current:** `NODE_ENV` is required; CI passes because Vitest sets `NODE_ENV=test`. → **Updated:** intended fail-fast behavior — keep; `.env.example` documents it. |
+
+## Recommendation to Field
+**PASS WITH NOTES.** All 9 ACs met with real evidence; the scaffold is clean, small and matches `backend.md`. Fix F1 (single migration list), F5 (remove the global env cache) and F6 before merge — all small, and every next backend brief copies this config pattern. F7 is a rules update for Field. F2–F4 need no change now.
+
+## Update — 2026-09-24 · `94c7438`
+Field updated `docs/rules/backend.md` (providers/ layout, `AppConfigService`, API envelope) and moved BRIEF-004 to **Rev 2 — changes requested**. F1, F5 are folded into Rev 2 items 2–3; F6 is superseded by `AppConfigService`; F7 is resolved by the rule update. Re-audit follows Cursor's Rev 2 commit.
+
+## Re-audit — 2026-09-24 · `5e4f08c` (handoff `2c44cc8`, CI run 35950209362 green)
+**Recommendation: PASS WITH NOTES — ready to merge.**
+
+| Rev 2 item | Met? | Evidence |
+|---|---|---|
+| 1 Layout | ✅ | `providers/config/{config.module,config.schema,config.service}.ts`, `providers/orm/{typeorm.module,data-source,migrations,snake-naming.strategy}.ts` + `subscribers/`, `modules/health/` with `health.module.ts`; `AppModule` is 3 imports + CLS interceptor |
+| 2 One migration list | ✅ | `providers/orm/migrations.ts` imported by `typeorm.module.ts` and `data-source.ts` (F1 closed) |
+| 3 No global env state | ✅ | `parseEnv` is pure; `booted`/`getEnv` gone; `AppConfigService` reads through Nest `ConfigService` (F5 closed); `process.env` only in `data-source.ts` (AC-11) |
+| 4 Envelope | ✅ | Interceptor + filter registered in `configureApp`; health 503 via `ServiceUnavailableException`; AC-3/AC-4/AC-10 tests updated |
+| 5 Rename | ✅ | `require-permissions.decorator.ts` / `RequirePermissions`; no old references left |
+
+### New findings (Current → Updated)
+| # | Severity | Current → Updated |
+|---|---|---|
+| F8 | Med | **Current:** `HttpExceptionFilter` is `@Catch(HttpException)` only, so an unexpected error (e.g. TypeORM `QueryFailedError`) returns Nest's default `{ statusCode, message }` — not the envelope `backend.md` promises. → **Updated:** `@Catch()` all; non-`HttpException` → `500 { status: 500, message: 'Internal server error', data: null }` + log the stack. Add a unit test. |
+| F9 | Low | **Current:** `TransformResponseInterceptor` reads `statusCode` before the handler runs; a route using `@HttpCode(201)` (or Nest's POST default) could report `status: 200` in the body while HTTP says 201. → **Updated:** read `statusCode` inside `map()` and add a test with a POST route (`201`). |
+| F10 | Low | **Current:** `databaseOptions()` (TypeORM options + naming strategy) lives in `providers/config/config.service.ts`, so config imports ORM code. → **Updated:** move it to `providers/orm/database-options.ts`; `AppConfigService.database` returns plain connection settings. Cosmetic cohesion, no behavior change. |
+| — | Info | `AuthModule` stub uses a literal JWT secret `'stub'`; it is not imported anywhere. The auth brief replaces it with `AppConfigService`. |
+
+F8–F10 are carried as ACs into the next backend brief (auth) rather than another Rev here — the scaffold's contract (layout, config, migrations, envelope shape) is correct and every Rev 2 item is met.
+
+## Update — 2026-09-24
+Field replaced the config layout with a per-domain structure (`backend.md` → providers/ Rules) → BRIEF-004 **Rev 3 — changes requested**. F8, F9, F10 are folded into Rev 3 (items 2–3). Re-audit after Cursor's Rev 3 commit.
+
+## Re-audit — 2026-09-24 · `d325061` (handoff `4a637a0`, CI run 36013669823 green)
+**Recommendation: PASS — ready to merge.**
+
+| Rev 3 item | Met? | Evidence |
+|---|---|---|
+| 1 Config per domain | ✅ | `providers/config/{app,database}/{configuration,config.service,config.module}.ts`; each `configuration.ts` has its own Zod schema and throws `Validate <domain> config error`; `AppModule` = `ConfigModule.forRoot({ isGlobal: true })` + domain modules |
+| 2 `providers/database/` | ✅ | `database.module.ts` builds options from `DatabaseConfigService` + `AppConfigService.nodeEnv`; `data-source.ts` calls `appConfiguration()` / `databaseConfiguration()` — no second env parse; `database-options.ts` lives here (F10 closed) |
+| 3 F8 / F9 | ✅ | Filter `@Catch()` all → plain `Error` = 500 envelope + stack log (test); interceptor reads `statusCode` inside `map()`, `@HttpCode(201)` POST test returns `status: 201` |
+| AC-5 / AC-11 / AC-12 | ✅ | `process.env` only in the two `configuration.ts` files; tests as listed in the handoff |
+
+**Info (no change needed now):** the handoff says the auth brief will replace the `'stub'` JWT secret "via `AppConfigService`" — under the new rule it will be a `JwtConfigService` in `providers/config/jwt/`. The auth brief states this.
+
+All findings F1–F10 are closed. Field may merge #16.
