@@ -1,0 +1,164 @@
+/*
+ * The Loft Bar — design tokens v2 (source: Claude Design CD-00, 2026-09-27).
+ * Single source of truth for token VALUES. docs/design-system.md explains usage.
+ * app/frontend/src/app/globals.css copies these blocks (BRIEF-008); keep them in sync.
+ * Theme selector: .dark / .light (next-themes) — [data-theme] kept for the CD project.
+ */
+
+/* ===== DARK (default) ===== */
+:root, [data-theme="dark"], .dark {
+  color-scheme: dark;
+  /* surfaces */
+  --bg-app: #1C1610;
+  --bg-sunken: #12100C;
+  --surface-card: #2C2318;
+  --surface-raised: #362B1E;
+  --surface-overlay: #241D15;
+  --surface-input: #241D15;
+  --surface-hover: #423424;
+  --surface-press: #362B1E;
+  --surface-bar: rgba(28,22,16,.9);
+  --scrim: rgba(12,10,8,.72);
+  /* text */
+  --text-body: #F0E6D0;
+  --text-muted: #C4B698;
+  --text-faint: #A39377;
+  --text-on-accent: #241608;
+  --text-accent: #E3A75B;
+  --text-danger: #E0745C;
+  /* lines */
+  --line-hairline: rgba(240,230,208,.07);
+  --line: rgba(240,230,208,.12);
+  --line-strong: rgba(240,230,208,.22);
+  --line-accent: #D4872A;
+  --line-accent-soft: rgba(212,135,42,.35);
+  --focus-ring: #E3A75B;
+  /* accent */
+  --accent: #D4872A;
+  --accent-hover: #E3A75B;
+  --accent-press: #B87020;
+  --accent-soft: rgba(212,135,42,.14);
+  --accent-soft-strong: rgba(212,135,42,.24);
+  /* status: --status-x = dot/fill, -bg = chip fill, -fg = chip text, -border = tile/ticket border */
+  --status-new: #E3A11B;    --status-new-bg: #40300B;    --status-new-fg: #E3A11B;    --status-new-border: rgba(227,161,27,.5);
+  --status-making: #6E93A8; --status-making-bg: #1E2F38; --status-making-fg: #8DB0C4; --status-making-border: rgba(110,147,168,.5);
+  --status-served: #7FA85C; --status-served-bg: #2E3A20; --status-served-fg: #98BF76; --status-served-border: rgba(127,168,92,.45);
+  --status-void: #C4503A;   --status-void-bg: #40190F;   --status-void-fg: #E88A73;   --status-void-border: rgba(196,80,58,.5);
+  --status-neutral-bg: #362B1E; --status-neutral-fg: #C4B698; --status-neutral-border: rgba(240,230,208,.12);
+  /* bottle keep */
+  --bottle-keep: #9A9CE0; --bottle-keep-bg: #25264A; --bottle-keep-border: rgba(154,156,224,.45);
+  /* feedback */
+  --success: #7FA85C; --success-fg: #98BF76; --success-bg: #2E3A20;
+  --warning: #E3A11B; --warning-fg: #E3A11B; --warning-bg: #40300B;
+  --info: #6E93A8;    --info-fg: #8DB0C4;    --info-bg: #1E2F38;
+  --danger: #C4503A;  --danger-fg: #F3C9BD;  --danger-bg: #40190F; --danger-bg-hover: #52200F; --danger-border: rgba(196,80,58,.5);
+  /* shadows / effects */
+  --shadow-none: none;
+  --shadow-card: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-raised: 0 4px 14px rgba(0,0,0,.45);
+  --shadow-sheet: 0 -8px 32px rgba(0,0,0,.55);
+  --shadow-dialog: 0 24px 64px rgba(0,0,0,.6);
+  --shadow-accent: 0 4px 16px rgba(212,135,42,.28);
+  --highlight-top: inset 0 1px 0 rgba(240,230,208,.06);
+  --glow-focus: 0 0 0 2px rgba(212,135,42,.55);
+  --blur-overlay: blur(12px);
+  --blur-bar: blur(18px);
+}
+
+/* ===== LIGHT — warm paper ===== */
+[data-theme="light"], .light {
+  color-scheme: light;
+  --bg-app: #F6EFE2;
+  --bg-sunken: #EDE3D1;
+  --surface-card: #FCF8F0;
+  --surface-raised: #F2E9D8;
+  --surface-overlay: #FFFBF4;
+  --surface-input: #FFFBF4;
+  --surface-hover: #EBE0CB;
+  --surface-press: #E3D6BE;
+  --surface-bar: rgba(246,239,226,.9);
+  --scrim: rgba(42,32,22,.42);
+  --text-body: #2A2016;
+  --text-muted: #5C4A35;
+  --text-faint: #6E5A42;
+  --text-on-accent: #241608;
+  --text-accent: #8A4E12;
+  --text-danger: #A0351F;
+  --line-hairline: rgba(42,32,22,.08);
+  --line: rgba(42,32,22,.14);
+  --line-strong: rgba(42,32,22,.26);
+  --line-accent: #B87020;
+  --line-accent-soft: rgba(184,112,32,.45);
+  --focus-ring: #B87020;
+  --accent: #D4872A;
+  --accent-hover: #E3A75B;
+  --accent-press: #B87020;
+  --accent-soft: rgba(212,135,42,.14);
+  --accent-soft-strong: rgba(212,135,42,.26);
+  --status-new: #E3A11B;    --status-new-bg: #F5E4BE;    --status-new-fg: #7A5200;    --status-new-border: rgba(122,82,0,.35);
+  --status-making: #6E93A8; --status-making-bg: #DCE8EE; --status-making-fg: #2E5A72; --status-making-border: rgba(46,90,114,.35);
+  --status-served: #7FA85C; --status-served-bg: #E1EBD3; --status-served-fg: #3F6526; --status-served-border: rgba(63,101,38,.35);
+  --status-void: #C4503A;   --status-void-bg: #F5DCD4;   --status-void-fg: #A0351F;   --status-void-border: rgba(160,53,31,.35);
+  --status-neutral-bg: #EBE0CB; --status-neutral-fg: #5C4A35; --status-neutral-border: rgba(42,32,22,.14);
+  --bottle-keep: #3F3F9A; --bottle-keep-bg: #E3E2F4; --bottle-keep-border: rgba(63,63,154,.35);
+  --success: #7FA85C; --success-fg: #3F6526; --success-bg: #E1EBD3;
+  --warning: #E3A11B; --warning-fg: #7A5200; --warning-bg: #F5E4BE;
+  --info: #6E93A8;    --info-fg: #2E5A72;    --info-bg: #DCE8EE;
+  --danger: #A0351F;  --danger-fg: #8E2A17;  --danger-bg: #F5DCD4; --danger-bg-hover: #F0CEC3; --danger-border: rgba(160,53,31,.4);
+  --shadow-card: 0 1px 2px rgba(60,40,20,.08);
+  --shadow-raised: 0 4px 14px rgba(60,40,20,.12);
+  --shadow-sheet: 0 -8px 32px rgba(60,40,20,.16);
+  --shadow-dialog: 0 24px 64px rgba(60,40,20,.22);
+  --shadow-accent: 0 4px 16px rgba(184,112,32,.28);
+  --highlight-top: inset 0 1px 0 rgba(255,255,255,.7);
+  --glow-focus: 0 0 0 2px rgba(184,112,32,.7);
+}
+
+/* ===== theme-independent ===== */
+:root {
+  --qr-bg: #FFFDF7; --qr-ink: #12100C;                                          /* QR must scan */
+  --brand-line: #06C755; --brand-line-hover: #05B34D; --brand-line-fg: #FFFFFF; /* LINE login button */
+  --num: tabular-nums;                                                          /* font-variant-numeric */
+  --z-base: 0; --z-raised: 10; --z-sticky: 20; --z-dropdown: 30; --z-scrim: 40; --z-dialog: 50; --z-toast: 60;
+}
+
+/*
+ * ===== HeroUI v3 theme variables → tokens (both themes) =====
+ * Names verified against @heroui/styles 3.2.6 themes/default/variables.css.
+ * HeroUI already uses --accent, --accent-hover, --accent-soft, --success, --warning,
+ * --danger, --surface-hover with the SAME meaning as ours, so those need no mapping.
+ */
+:root {
+  --background: var(--bg-app);
+  --foreground: var(--text-body);
+  --surface: var(--surface-card);
+  --surface-foreground: var(--text-body);
+  --surface-secondary: var(--surface-raised);
+  --surface-secondary-foreground: var(--text-body);
+  --surface-tertiary: var(--surface-hover);
+  --surface-tertiary-foreground: var(--text-body);
+  --surface-shadow: var(--shadow-card);
+  --overlay: var(--surface-overlay);
+  --overlay-foreground: var(--text-body);
+  --backdrop: var(--scrim);
+  --muted: var(--text-faint);
+  --default: var(--surface-raised);
+  --default-foreground: var(--text-body);
+  --accent-foreground: var(--text-on-accent);
+  --accent-soft-foreground: var(--text-accent);
+  --success-soft: var(--success-bg);   --success-soft-foreground: var(--success-fg);
+  --warning-soft: var(--warning-bg);   --warning-soft-foreground: var(--warning-fg);
+  --danger-soft: var(--danger-bg);     --danger-soft-foreground: var(--danger-fg);
+  --danger-foreground: var(--danger-fg);
+  --field-background: var(--surface-input);
+  --field-foreground: var(--text-body);
+  --field-placeholder: var(--text-faint);
+  --field-border: var(--line);
+  --field-radius: 10px;
+  --field-shadow: none;
+  --border: var(--line);
+  --separator: var(--line-hairline);
+  --focus: var(--focus-ring);
+  --link: var(--text-accent);
+  --radius: 12px;
+}

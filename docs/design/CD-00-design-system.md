@@ -1,6 +1,6 @@
 # CD-00 — Design system gap-fill (light theme, HeroUI alignment, feedback kit)
 
-**Status:** Ready for Claude Design · **Surface:** all · **Used by:** every CD brief and every frontend/mobile brief
+**Status:** Done 2026-09-27 — handoff `docs/design/CD-00-handoff.md`, values `docs/design/tokens-v2.css` · **Surface:** all · **Used by:** every CD brief and every frontend/mobile brief
 **Decisions:** Field A–G, 2026-09-27 (see `docs/design-system.md` → Decisions)
 
 ## Attach
