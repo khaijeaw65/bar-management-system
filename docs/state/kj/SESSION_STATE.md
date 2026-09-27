@@ -12,6 +12,7 @@ Updated: 2026-09-27 · Agent: Cowork (planning)
 - Done: BRIEF-001, 003, 004, 005, 006 · Draft: BRIEF-002 (Expo)
 
 ## Design session — tasks (inputs → output)
+- **CD brief series:** `docs/design/README.md` (CD-00…CD-11). Written: CD-00 design system + feedback kit, CD-01 POS login/shell/menu. One CD brief = one Claude Design session.
 1. **Design system** — `docs/design-system.md`, HeroUI mapping in `app/frontend/src/app/globals.css` → type scale (rem), spacing, component states (focus/disabled/loading/error), status colors (order/payment/bottle-keep), Expo token parity (HeroUI Native + Uniwind). Output: updated `design-system.md`.
 2. **Web UX/UI** — `docs/briefs/ui/pos-desktop.md`, `customer-qr.md`, `/pos/menu` screen → screen list + flows for Sprint 2–3 (login + not-registered, POS shell, menu, table/session board). Output: updated UI briefs + mockups (Design artifact).
 3. **Mobile UX/UI** — `docs/briefs/ui/staff-mobile.md`, CLAUDE.md mobile scope (7 features), DR-005 login → screen list + flows. Output: updated UI brief + mockups; then `docs/rules/mobile.md`.
