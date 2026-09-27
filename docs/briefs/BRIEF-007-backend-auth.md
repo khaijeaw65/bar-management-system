@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Draft — **ON HOLD** (Field, 2026-09-27: design work first so Methee can start) |
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |
@@ -125,3 +125,4 @@ pnpm --filter @bar/backend build
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-25 | Initial draft (Cowork). Mobile auth split out (DR-005 later), frontend = BRIEF-008, IAM = BRIEF-009 |
+| 1 | 2026-09-27 | On hold — Field switched priority to UX/UI design; D1–D4 still open |
