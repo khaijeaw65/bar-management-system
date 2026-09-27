@@ -1,32 +1,33 @@
 # State — KJ
-Updated: 2026-09-25 · Agent: Cursor
+Updated: 2026-09-27 · Agent: Cowork (planning)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
-Cowork runs `audit BRIEF-006` on PR #20. Work SHA `b95df84`.
+**Design session (priority):** produce the designs + one Ready brief Methee can start on **2026-09-28**. BRIEF-007 is ON HOLD.
 
 ## Active
-- Brief: BRIEF-006 — local SonarQube · Revision: 1
-- Brief file: docs/briefs/BRIEF-006-local-sonar.md
-- Stage: Implemented
-- Branch: feat/BRIEF-006-local-sonar
-- Work commit: b95df84
-- PR: https://github.com/khaijeaw65/bar-management-system/pull/20
+- Stage: planning — UX/UI design
+- Branch: docs/brief-007-auth (holds BRIEF-007 Draft + this state) · push + merge as docs
+- ON HOLD: BRIEF-007 backend auth (Draft, D1–D4 open: staff seed CLI · refresh tokens in Redis · JWT `{ sub }` · drop passport)
+- Done: BRIEF-001, 003, 004, 005, 006 · Draft: BRIEF-002 (Expo)
 
-## Working tree
-- Uncommitted: clean
-- Checks: on b95df84, `pnpm lint && pnpm typecheck && pnpm test` exit 0 (17 tests); `pnpm sonar` exit 0, gate PASSED; `pnpm sonar:report` exit 0
+## Design session — tasks (inputs → output)
+1. **Design system** — `docs/design-system.md`, HeroUI mapping in `app/frontend/src/app/globals.css` → type scale (rem), spacing, component states (focus/disabled/loading/error), status colors (order/payment/bottle-keep), Expo token parity (HeroUI Native + Uniwind). Output: updated `design-system.md`.
+2. **Web UX/UI** — `docs/briefs/ui/pos-desktop.md`, `customer-qr.md`, `/pos/menu` screen → screen list + flows for Sprint 2–3 (login + not-registered, POS shell, menu, table/session board). Output: updated UI briefs + mockups (Design artifact).
+3. **Mobile UX/UI** — `docs/briefs/ui/staff-mobile.md`, CLAUDE.md mobile scope (7 features), DR-005 login → screen list + flows. Output: updated UI brief + mockups; then `docs/rules/mobile.md`.
+4. **Methee's first brief (must be Ready by 09-28):** a frontend brief he can build with **MSW mocks only** (no backend auth needed yet) — e.g. POS shell + one Sprint-2 screen from task 2. Implementer `methee`, auditor Cowork, learning mode, local Sonar scan required. Next free ID: **BRIEF-008**.
+- Rules: UI briefs are design inputs, not executable briefs · Thai-primary strings · tokens only (no hex, no `dark:` colors).
 
-## Progress
-- Completed: AC-1 through AC-7 locally. Image `sonarqube:26.9.0.129388-community`. Gate PASSED. 15 existing issues listed, not fixed.
-- Remaining: Cowork audit. `ci` passed on `2a91496`: https://github.com/khaijeaw65/bar-management-system/actions/runs/36037116559
-
-## Next steps
-1. Cowork runs `audit BRIEF-006` on PR #20 (`b95df84`).
-2. Cowork runs `audit BRIEF-006`.
-3. After audit PASS, merge under Field's pre-approved path.
+## Methee onboarding (before he executes)
+- `onboard methee` in his own clone → sets `.agent-local.json`, reads `docs/state/methee/SESSION_STATE.md` (placeholder)
+- Needs: Docker (SonarQube), `pnpm install`, `docs/quality/README.md` one-time Sonar setup
 
 ## Blockers / Coordination
-- None. No DR.
-- Shared files: root `package.json`, `pnpm-lock.yaml`, `infra/docker-compose.yml`
-- Review queue: this PR, once opened
+- Pending docs: schema.sql + erd (+ `notification`, `staff_push_token`), FRD §13, `docs/rules/mobile.md`
+- Review queue: this docs branch (not pushed)
+
+## Queue (planning)
+1. Design tasks 1–3 + Methee's BRIEF-008 (Ready by 09-28)
+2. Resume BRIEF-007 (Field answers D1–D4)
+3. Frontend login + axios (DR-007) · IAM (groups/policies/PermissionsGuard) — IDs allocated when drafted
+4. BRIEF-002 Expo scaffold after mobile UX/UI + mobile.md
