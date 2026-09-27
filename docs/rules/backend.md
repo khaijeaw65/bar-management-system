@@ -111,15 +111,26 @@ Every HTTP response uses one envelope. Decided by Field 2026-09-24.
 
 ```typescript
 // success — TransformResponseInterceptor wraps whatever the controller returns
-{ status: number; message: 'success'; data: T }        // status = response.statusCode
+{ status: number; code: ''; message: 'success'; data: T }   // status = response.statusCode, code always ''
 
 // error — HttpExceptionFilter
-{ status: number; message: string | string[]; data: null }
+{ status: number; code: string; message: string | string[]; data: null }   // code: UPPER_SNAKE, never '' (D1)
 ```
+- **Standard envelope — the same four keys on every response:** `status`, `code`, `message`, `data`. `code` is `''` on success and a non-empty UPPER_SNAKE code on error. Clients read `response.code` / `response.data` directly — never optional chaining or non-null assertions on envelope fields (`response.data?.code`, `response.data!.code` are review findings).
 - Controllers return the plain response DTO; they never build the envelope themselves.
 - Non-2xx responses always go through `HttpExceptionFilter` (throw an `HttpException`, don't set `res.status()` and return a body).
+- Every error carries a `code`: the filter derives a generic one from the status (`VALIDATION_ERROR`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `RATE_LIMITED`, `INTERNAL_ERROR`); domain errors throw `DomainException(code, message, status)` with a code from `ErrorCodeSchema` in `@bar/contracts`.
 - The envelope type/schema lives in `@bar/contracts` (`ApiResponse<T>` / `apiResponseSchema(dataSchema)`, DR-004) once a frontend brief consumes it; the frontend `apiFetch` unwraps `data`.
 - Webhook endpoints (payment gateway) may answer in the format the gateway requires — document the exception in that brief.
+
+## OpenAPI (DR-004 Amendment 1)
+
+The backend publishes an OpenAPI 3.0 document **generated from the `@bar/contracts` Zod schemas** — never hand-written.
+- **Tooling:** `@nestjs/swagger` builds the document; request/response schemas come from Zod via `z.toJSONSchema(schema, { target: 'openapi-3.0' })` in one helper (`common/openapi/`). No `class-validator` / `class-transformer` DTOs. `nestjs-zod` is not used (no NestJS 12 support).
+- **Coverage (audit Must fix if missing):** every endpoint has a tag (module name), summary, request body / params / query, success response **wrapped in the envelope** `{ status, message, data }`, error responses (envelope with `data: null`) for the status codes it can return, and its auth requirement (access cookie or `Bearer`) + required permission in the description.
+- **Serving:** Swagger UI `GET /api/docs`, JSON `GET /api/docs-json`. Controlled by `OPENAPI_ENABLED` in `providers/config/openapi/` — `true` locally and on staging, **`false` in production**.
+- **Committed copy:** `pnpm --filter @bar/backend openapi:export` writes `docs/api/openapi.json` (stable key order). Run it whenever an endpoint or contract changes and commit the result in the same PR; CI fails when the committed file is stale.
+- Conventions (naming, errors, paging, money/date, WS events): `docs/api/README.md`.
 
 ---
 

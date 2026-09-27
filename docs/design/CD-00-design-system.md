@@ -1,6 +1,6 @@
 # CD-00 — Design system gap-fill (light theme, HeroUI alignment, feedback kit)
 
-**Status:** Ready for Claude Design · **Surface:** all · **Used by:** every CD brief and every frontend/mobile brief
+**Status:** Done 2026-09-27 — handoff `docs/design/CD-00-handoff.md`, values `docs/design/tokens-v2.css` · **Surface:** all · **Used by:** every CD brief and every frontend/mobile brief
 **Decisions:** Field A–G, 2026-09-27 (see `docs/design-system.md` → Decisions)
 
 ## Attach
@@ -9,6 +9,8 @@
 
 ## Paste into Claude Design
 > Extend **this** design system (The Loft Bar). Keep every existing token name and dark value unless listed below. Thai-first copy.
+>
+> **CD-01 already exists in this project** (dark only) and created some components (Skeleton, Alert/Banner, Table rows, PosRail, NotificationBell, Toast). **Reuse and refine those — don't create duplicates.** When done, add the light theme to the CD-01 artboards too.
 >
 > **Library constraint (important):** the product is built with **HeroUI v3** (web, React Aria) and **HeroUI Native** (Expo staff app). Every general component must correspond to a HeroUI component and its theme variables — Button, TextField, Select, SearchField, Checkbox, RadioGroup, Switch, Tabs (also as segmented control), Chip, Badge, Card, Table, Modal / AlertDialog / drawer-sheet, Toast, Tooltip, Popover, Dropdown, Skeleton, Spinner, Avatar, Alert. Match their anatomy, sizes and states; do not invent interaction patterns HeroUI can't do. Only these are custom: MenuItemCard, OrderTicket, CartLine, QuantityStepper, TableTile, StatTile, PosRail, NotificationBell/Feed, PromptPay QR panel. Label each DS component with its HeroUI counterpart.
 >

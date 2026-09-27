@@ -1,7 +1,7 @@
 # Design System — The Loft Bar (v2)
 
 **Source of truth for visuals:** Claude Design project https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 — this file mirrors it in text for agents and code.
-**Status:** v2 — 2026-09-27. Reconciled from the CD export (2026-09-27) with Field's decisions A–G. Dark theme defined; **light theme pending CD-00**.
+**Status:** v2.1 — 2026-09-27. CD export + Field decisions A–G + **CD-00 (light theme, feedback kit)**. **Token values live in `docs/design/tokens-v2.css`** (dark, light, HeroUI mapping) — this file explains names and usage; if the two disagree, `tokens-v2.css` wins.
 **Aesthetic:** cozy loft — warm clay neutrals, amber accent, calm motion (no bounce).
 **Component libraries:** web = **HeroUI v3** (`@heroui/react`, React Aria) · Expo = **HeroUI Native** + Uniwind. Designs must use components these libraries provide (see §5 mapping); custom components only for bar-specific pieces listed in §6.
 **Older canvas (superseded):** https://claude.ai/artifact/3bffc3c8-7223-4803-bd39-bb74de243226
@@ -38,39 +38,42 @@
 | | | | `--slate-400` / `--slate-700` | `#6E93A8` / `#1E2F38` |
 | | | | `--indigo-400` / `--indigo-700` *(new — bottle keep)* | `#8B93D4` / `#262840` |
 
-Light-theme primitives (lighter clay ramp etc.) → **CD-00**.
+Light theme: defined in CD-00 (warm paper) — semantic values in `tokens-v2.css`; light ramps (`--paper-*`, `--ink-*`) stay in Claude Design only.
 
 ### Semantic tokens (components use only these)
-| Token | Dark | Light | Usage |
+| Token | Dark | Light (`tokens-v2.css`) | Usage |
 |---|---|---|---|
-| `--bg-app` | `clay-950` | CD-00 | Screen background |
-| `--bg-sunken` | `clay-1000` | CD-00 | Behind frames, POS rail |
-| `--surface-card` | `clay-850` | CD-00 | Cards |
-| `--surface-raised` | `clay-800` | CD-00 | Secondary button, raised card, tag |
-| `--surface-overlay` | `clay-900` | CD-00 | Dialog, toast, sheet |
-| `--surface-input` | `clay-900` | CD-00 | Inputs, select, stepper, segmented, checkbox, radio |
-| `--surface-hover` | `clay-750` | CD-00 | Hover fill |
-| `--surface-press` | `clay-800` | CD-00 | Pressed fill |
-| `--surface-bar` *(new)* | `rgba(28,22,16,.82)` | CD-00 | TopBar / TabBar / cart bar (replaces 3 hard-coded values) |
-| `--scrim` | `rgba(12,10,8,.72)` | CD-00 | Dialog backdrop |
-| `--text-body` | `clay-100` | CD-00 | Primary text |
-| `--text-muted` | `clay-300` | CD-00 | Secondary text |
-| `--text-faint` | `clay-500` | CD-00 | Tertiary text, inactive nav |
-| `--text-on-accent` | `#241608` | CD-00 | Text on amber |
-| `--text-accent` | `amber-300` | CD-00 | Prices, active nav, links |
-| `--text-danger` | `#E0745C` | CD-00 | Field error message |
-| `--line-hairline` / `--line` / `--line-strong` | `rgba(240,230,208,.07/.12/.22)` | CD-00 | Dividers / borders / control borders |
-| `--accent` / `-hover` / `-press` | `amber-400` / `amber-300` / `amber-500` | CD-00 | Primary CTA, checked controls |
-| `--accent-soft` / `--accent-soft-strong` | `rgba(212,135,42,.14/.24)` | CD-00 | Accent tints, active nav |
-| `--focus-ring` | `amber-300` | CD-00 | Focus-visible outline (must be used by every control) |
-| `--success` / `--warning` / `--danger` / `--info` | `leaf-400` / `honey-400` / `brick-400` / `slate-400` | CD-00 | Toast tones, deltas |
-| `--danger-fg` / `--danger-bg` / `--danger-border` *(new)* | `#F3C9BD` / `brick-700` / `rgba(196,80,58,.5)` | CD-00 | Danger button (replaces hard-coded values) |
-| `--bottle-keep` / `--bottle-keep-bg` *(new)* | `indigo-400` / `indigo-700` | CD-00 | Bottle-keep chips/icons only |
+| `--bg-app` | `clay-950` | ✓ | Screen background |
+| `--bg-sunken` | `clay-1000` | ✓ | Behind frames, POS rail |
+| `--surface-card` | `clay-850` | ✓ | Cards |
+| `--surface-raised` | `clay-800` | ✓ | Secondary button, raised card, tag |
+| `--surface-overlay` | `clay-900` | ✓ | Dialog, toast, sheet |
+| `--surface-input` | `clay-900` | ✓ | Inputs, select, stepper, segmented, checkbox, radio |
+| `--surface-hover` | `clay-750` | ✓ | Hover fill |
+| `--surface-press` | `clay-800` | ✓ | Pressed fill |
+| `--surface-bar` *(new)* | `rgba(28,22,16,.9)` | ✓ | TopBar / TabBar / cart bar (replaces 3 hard-coded values) |
+| `--scrim` | `rgba(12,10,8,.72)` | ✓ | Dialog backdrop |
+| `--text-body` | `clay-100` | ✓ | Primary text |
+| `--text-muted` | `clay-300` | ✓ | Secondary text |
+| `--text-faint` | `#A39377` (was clay-500; contrast fix, CD-00) | ✓ | Tertiary text, inactive nav |
+| `--text-on-accent` | `#241608` | ✓ | Text on amber |
+| `--text-accent` | `amber-300` | ✓ | Prices, active nav, links |
+| `--text-danger` | `#E0745C` | ✓ | Field error message |
+| `--line-hairline` / `--line` / `--line-strong` | `rgba(240,230,208,.07/.12/.22)` | ✓ | Dividers / borders / control borders |
+| `--accent` / `-hover` / `-press` | `amber-400` / `amber-300` / `amber-500` | ✓ | Primary CTA, checked controls |
+| `--accent-soft` / `--accent-soft-strong` | `rgba(212,135,42,.14/.24)` | ✓ | Accent tints, active nav |
+| `--focus-ring` | `amber-300` | ✓ | Focus-visible outline (must be used by every control) |
+| `--success` / `--warning` / `--danger` / `--info` | `leaf-400` / `honey-400` / `brick-400` / `slate-400` | ✓ | Toast tones, deltas |
+| `--success-bg` / `--warning-bg` / `--info-bg` *(new)* | `leaf-700` / `honey-700` / `slate-700` | ✓ | Chip / alert backgrounds for feedback tones |
+| `--danger-fg` / `--danger-bg` / `--danger-border` *(new)* | `#F3C9BD` / `brick-700` / `rgba(196,80,58,.5)` | ✓ | Danger button (replaces hard-coded values) |
+| `--bottle-keep` / `--bottle-keep-bg` / `--bottle-keep-border` *(new)* | `#9A9CE0` / `#25264A` / `rgba(154,156,224,.45)` | ✓ | Bottle-keep chips/icons only |
+
+Also defined (CD-00): `--status-{new,making,served,void}` + `-bg` / `-fg` / `-border`, `--status-neutral-*`, `--success/warning/info-fg`, `--danger-bg-hover`, `--line-accent(-soft)`, `--qr-bg/-ink`, `--brand-line*`, `--num`, z-index. Chip text uses `-fg`, never the dot colour.
 
 Light theme rule: same token names, every text/status token ≥ 4.5:1 on `bg-app` and `surface-card`; `--text-on-accent` stays dark on amber in both themes.
 
 ### HeroUI v3 mapping (web — `app/frontend/src/app/globals.css`)
-`--background`→`bg-app` · `--foreground`→`text-body` · `--surface`/`--surface-foreground`→`surface-card`/`text-body` · `--overlay`/`--overlay-foreground`→`surface-overlay`/`text-body` · `--default`/`--default-foreground`→`surface-raised`/`text-body` · `--muted`→`text-muted` · `--accent`/`--accent-foreground`→`accent`/`text-on-accent` · `--border`/`--separator`→`line` · `--focus`→`focus-ring` · `--link`→`text-accent` · `--success`/`--warning`/`--danger`→ same names. Expo (HeroUI Native + Uniwind) uses the same semantic names in its theme.
+Exact mapping block: **`docs/design/tokens-v2.css`** (bottom). Summary: `--background`→`bg-app` · `--foreground`→`text-body` · `--surface`→`surface-card` · `--surface-secondary`→`surface-raised` · `--surface-tertiary`→`surface-hover` · `--overlay`→`surface-overlay` · `--backdrop`→`scrim` · `--muted`→`text-faint` · `--default`→`surface-raised` · `--accent-foreground`→`text-on-accent` · `--field-*`→`surface-input` / `line` / `text-faint` · `--border`→`line` · `--separator`→`line-hairline` · `--focus`→`focus-ring` · `--link`→`text-accent` · `*-soft`→`*-bg` / `*-fg`. HeroUI already owns `--accent`, `--accent-hover`, `--accent-soft`, `--success`, `--warning`, `--danger`, `--surface-hover` with the same meaning as ours. Expo (HeroUI Native + Uniwind) uses the same semantic names.
 
 ## 2. Typography
 Stack: `"Noto Sans Thai", "Sarabun", system-ui, sans-serif` (Noto Sans Thai 400/600/700 loaded via `next/font` / `@expo-google-fonts`). Numbers: same font with **`font-variant-numeric: tabular-nums`** for prices, totals, counts, times.
@@ -92,22 +95,13 @@ Buttons: sm 600/13 · md 600/15 · lg 700/17.
 ## 3. Space, shape, elevation, motion, layers
 - **Spacing** `--sp-0…12`: 0 · 2 · 4 · 6 · 8 · 12 · 16 · 20 · 24 · 32 · 40 · 48 · 64. Aliases: gutter phone 16 / desktop 24 · card-pad 16 (lg 20) · stack 8/12/20 · section-gap 32 · tap-min **44** · tap-comfortable 52 · POS key 64 · bar-height 56 · sheet-grab 36.
 - **Radius**: xs 6 · sm 8 · btn/input 10 · card 12 · card-lg 16 · sheet 20 · pill 999. Border 1 px, strong 1.5 px (selected).
-- **Shadows**: card `0 1px 2px rgba(0,0,0,.4)` · raised `0 4px 14px rgba(0,0,0,.45)` · sheet `0 -8px 32px rgba(0,0,0,.55)` · dialog `0 24px 64px rgba(0,0,0,.6)` · accent `0 4px 16px rgba(212,135,42,.28)` · highlight-top inset · glow-focus `0 0 0 2px rgba(212,135,42,.55)`. Blur: overlay 12 px, bar 18 px. Light-theme shadows → CD-00.
+- **Shadows**: card `0 1px 2px rgba(0,0,0,.4)` · raised `0 4px 14px rgba(0,0,0,.45)` · sheet `0 -8px 32px rgba(0,0,0,.55)` · dialog `0 24px 64px rgba(0,0,0,.6)` · accent `0 4px 16px rgba(212,135,42,.28)` · highlight-top inset · glow-focus `0 0 0 2px rgba(212,135,42,.55)`. Blur: overlay 12 px, bar 18 px. Light-theme shadows: `tokens-v2.css`.
 - **Motion**: instant 90 ms · fast 140 · base 200 · slow 300 · sheet 340; ease-out `cubic-bezier(.2,0,0,1)` · in-out `(.4,0,.2,1)` · sheet `(.22,1,.36,1)`; press scale .97. Bottom sheet uses sheet duration/easing for enter + exit.
 - **Z-index tokens** *(new)*: base 0 · raised 10 · sticky 20 (top bar, tab bar) · dropdown/tooltip 30 · scrim 40 · dialog/sheet 50 · toast 60.
-- **Icons**: Lucide, one pinned version per app; sizes 16 / 20 (default) / 24; stroke **1.75** everywhere; chevrons and check marks are Lucide icons, not Unicode glyphs.
+- **Icons**: Lucide, one pinned version per app; sizes 16 / 20 (default) / 24 only (POS rail uses 24); stroke **1.75** everywhere; chevrons and check marks are Lucide icons, not Unicode glyphs.
 
-## 4. Status chips (from `docs/schema.sql`)
-| Domain | Enum value → Thai label | Tone (bg / text) |
-|---|---|---|
-| Order (`order_status`) | `pending` ใหม่ · `accepted` กำลังทำ · `ready` พร้อมเสิร์ฟ · `sent` เสิร์ฟแล้ว · `issue` มีปัญหา | honey · slate · leaf · neutral (surface-raised / text-muted) · brick |
-| Order item (`order_item_status`) | `pending` รอ · `preparing` กำลังทำ · `ready` พร้อม · `cancelled` ยกเลิก (struck through, stays visible) | honey · slate · leaf · brick |
-| Visit / table (`visit_state`) | no visit ว่าง · `open` เปิดแล้ว · `active` มีแขก · `idle` ไม่มีความเคลื่อนไหว · `closed` ปิดโต๊ะ · `abandoned` ทิ้งโต๊ะ | neutral · accent-soft · leaf · honey · faint · brick |
-| Call staff (flag) | เรียกพนักงาน | honey + pulse dot |
-| Payment (`payment_status`) | `pending` รอชำระ · `completed` ชำระแล้ว · `failed` ไม่สำเร็จ · `refunded` คืนเงินแล้ว | honey · leaf · brick · neutral |
-| Bottle keep (`bottle_keep_status`) | `active` ฝากอยู่ · `finished` หมดขวด · `expired` หมดอายุ | indigo · neutral · brick |
-| Menu | 86'd หมด | faint, name struck through |
-Tones map to `status/feedback` tokens — CD-00 finalises exact `-bg` pairs and light values.
+## 4. Status chips
+Labels, tones and schema enum mapping: **`docs/design/CD-00-handoff.md` §2**. Code always keys chips by the **schema enum value** (`order_status`, `order_item_status`, `visit_state`, `payment_status`, `bottle_keep_status`, `menu_item.is_available`), never by CD's display names.
 
 ## 5. Component → library mapping
 | Need | Web (HeroUI v3) | Expo (HeroUI Native) | CD project component |
@@ -118,14 +112,14 @@ Tones map to `status/feedback` tokens — CD-00 finalises exact `-bg` pairs and 
 | Segmented control / tabs | `Tabs` (segmented style) | `Tabs` | SegmentedControl, Tabs |
 | Chips / badges | `Chip`, `Badge` | `Chip` | Badge, Tag |
 | Card | `Card` | `Card` | Card |
-| Data table | `Table` | list rows | *missing → CD-00* |
+| Data table | `Table` | list rows | CD-00 ✓ |
 | Dialog / bottom sheet | `Modal`, `AlertDialog`, drawer/sheet | `Dialog`, `BottomSheet` | Dialog (center / sheet) |
 | Toast | HeroUI toast | HeroUI Native toast | Toast |
 | Tooltip / popover / dropdown | `Tooltip`, `Popover`, `Dropdown` | `Popover` | Tooltip |
-| Skeleton / spinner | `Skeleton`, `Spinner` | `Skeleton`, `Spinner` | *missing → CD-00* |
-| Avatar | `Avatar` | `Avatar` | *missing → CD-00* |
-| Banner / alert | `Alert` | `Alert` | *missing → CD-00* |
-Exact component names are verified against the installed HeroUI version during implementation; designs must not require behaviour these components can't express without a DR.
+| Skeleton / spinner | `Skeleton`, `Spinner` | `Skeleton`, `Spinner` | CD-00 ✓ |
+| Avatar | `Avatar` | `Avatar` | CD-00 ✓ |
+| Banner / alert | `Alert` | `Alert` | CD-00 ✓ |
+Full map incl. HeroUI Native gaps: `docs/design/CD-00-handoff.md` §1. Exact component names are verified against the installed HeroUI version during implementation; designs must not require behaviour these components can't express without a DR.
 
 ## 6. Bar-specific components (custom, built on HeroUI primitives)
 MenuItemCard (row / tile / sold-out) · OrderTicket · CartLine · QuantityStepper · TableTile (free / open / active / idle / call-staff / paid / selected) · StatTile · PosRail (88 px icon rail) · NotificationBell + NotificationFeed *(CD-00)* · PromptPay QR panel.
@@ -137,5 +131,6 @@ MenuItemCard (row / tile / sold-out) · OrderTicket · CartLine · QuantityStepp
 ## 8. Voice
 Thai-primary, short, friendly, never blaming the user ("ลองอีกครั้ง", not "คุณทำผิด"). English loanwords as-is.
 
-## 9. Open gaps → CD-00
-Light theme (all tokens) · banner, skeleton, error state, notification bell/feed, avatar, data table rows, PosRail as a DS component · loading state on all components · hover/focus/disabled on IconButton, Segmented, Checkbox, Radio, Tag, Select + Select error · z-index + new tokens in the CD project · tabular numerals · icon stroke/version pinning · status chips for order (5), payment, bottle keep, visit.
+## 9. Open gaps
+- CD-00 boards to be eyeballed for blank cards (CD-00 handoff §4 #12).
+- Older CD guideline cards are dark-only (cosmetic).

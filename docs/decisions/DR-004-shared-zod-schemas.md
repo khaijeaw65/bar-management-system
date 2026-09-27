@@ -1,8 +1,8 @@
-# DR-004 — Request/response Zod schemas live in `@bar/contracts`
+# DR-004 — Request/response Zod schemas live in `@bar/contracts` (+ generated OpenAPI spec)
 
 | | |
 |---|---|
-| **Status** | Approved |
+| **Status** | Approved · Amendment 1 (OpenAPI via Swagger) approved 2026-09-28 |
 | **Raised by** | Field via Cowork · 2026-09-23 |
 | **Brief** | none (lands with the contracts-enum / config-truth brief or the backend scaffold brief) |
 | **Category** | Flow/Architecture |
@@ -34,3 +34,31 @@ The backend already uses Zod DTOs (`docs/rules/backend.md` — no class-validato
 **Decision:** Approved: A
 **Why:** Backend, web and mobile are all TypeScript in one pnpm workspace, so one shared Zod schema per endpoint removes FE/BE shape drift at almost no cost.
 **Date:** 2026-09-24 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR
+
+---
+
+## Amendment 1 — Backend publishes an OpenAPI spec (Swagger) · 2026-09-28
+
+**Field decision (in session):** "backend has to provide OpenAPI spec using swagger."
+
+**Reading (Cowork, confirm by merging):** this **adds** OpenAPI on top of option A — it does not switch to option C. Zod schemas in `@bar/contracts` stay the single source of truth; the OpenAPI document is **generated from them**, never hand-written, so the two cannot drift.
+
+### Rules
+- **Generation:** backend builds an OpenAPI 3.x document with `@nestjs/swagger`, fed from the contracts Zod schemas through a Zod → OpenAPI bridge (Zod 4 JSON Schema output, or a library such as `nestjs-zod`). Exact package + version is pre-decided in the brief that adds it — if the bridge can't express a schema, raise a DR, don't hand-write the spec.
+- **Coverage:** every endpoint a brief adds appears in the spec with request body, query/params, success response **inside the envelope** `{ status, message, data }`, error envelope, and auth requirement (access cookie / `Bearer`). A missing or wrong spec entry is a Must fix in audit.
+- **Serving:** Swagger UI at `/api/docs`, JSON at `/api/docs-json`. On in local + staging; **off in production** (env flag in `providers/config`), so the API surface isn't advertised publicly.
+- **Committed copy:** `pnpm --filter @bar/backend openapi:export` writes `docs/api/openapi.json`. CI fails if the committed file is out of date — reviewers and Methee can read the contract in the PR diff without running the backend.
+- **Frontend / mobile:** keep importing Zod schemas from `@bar/contracts`; **no client codegen** from OpenAPI. MSW mocks must match the spec shapes.
+- **Tags** per domain (`auth`, `menu`, `visit`, `order`, `payment`, …) matching backend modules.
+
+### Why
+The advisor grades system design; a live, browsable API spec is standard evidence and makes FE/BE handoff concrete (Methee builds against mocks while the backend lags). Generating it from the shared Zod schemas gets the documentation without a second source of truth.
+
+### Consequences / follow-ups
+- New backend dependency `@nestjs/swagger` (+ bridge) — through **BRIEF-009** (contracts + OpenAPI foundation).
+- `docs/api/README.md` — ✅ drafted 2026-09-28: conventions (envelope, errors, money/date, naming, paging, auth, WS event names) + Phase-1 endpoint catalog.
+- `docs/rules/backend.md` → "OpenAPI" section — ✅ added 2026-09-28 by Cowork (Field approved the protected-file edit in session).
+- Brief template §3 Contract: OpenAPI line — ✅ added 2026-09-28.
+
+**Decision:** Approved — OpenAPI via Swagger, generated from `@bar/contracts` Zod schemas.
+**Date:** 2026-09-28 · recorded by Cowork on Field's explicit instruction; Field signs off by merging the PR
