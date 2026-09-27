@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | methee |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -100,9 +100,10 @@ pnpm sonar && pnpm sonar:report        # local, before each commit you push
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-27 | Initial draft (Cowork) from CD-01 handoff + design-system v2; updated same day with CD-00 final tokens (`tokens-v2.css`), rail icon 24, no temporary light values |
+| 1 | 2026-09-28 | Ready — approved by Field in session ("approve B8") |
