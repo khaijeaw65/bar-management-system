@@ -91,6 +91,8 @@ Components: Alert, Skeleton (shimmer `sk-shimmer` 1.5 s), Avatar (xs 20 / sm 24 
 | 7 | Row height ≈ 41 | Accept |
 | 8 | English sub-name under Thai menu name | **Drop** — `menu_item` has no English name column |
 | 9 | Filter chips hard-coded | Build chips from the categories in the data |
+| 10 | `08-menu-error.png` shows the error Alert **and** the empty state (ยังไม่มีเมนู + เพิ่มเมนูแรก) | **Design bug** — in code the error state shows the Alert + retry only; the empty state appears only on a successful empty response |
+| 11 | "ARTBOARD STATE" switcher row on the menu artboards | Annotation only — **never build it** |
 
 ## 6. Screenshots (`docs/design/assets/CD-01/`, dark)
-`01-login-states.png` · `02-not-registered.png` · `03-shell-floor.png` · `04-shell-notifications-open.png` · `05-menu-loaded.png` · `06-menu-loading.png` · `07-menu-empty.png` · `08-menu-error.png` · `09-menu-no-result.png` · `10-session-expired.png`
+`01-login-states.png` · `02-not-registered.png` · `03-shell-floor.png` · `04-shell-notifications-open.png` · `05-menu-loaded.png` · `06-menu-loading.png` · `07-menu-empty.png` · `08-menu-error.png` · `09-menu-no-result.png` · `10-session-expired.png` — all present (2026-09-27). Menu screenshots include the annotation switcher row (§5 #11).
