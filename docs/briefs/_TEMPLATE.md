@@ -31,6 +31,8 @@
 - **WS events:** `<event.name>` → payload
 - **Contracts changes:** <enum/type additions, or none>
 - **Permissions:** <policy action required by `PermissionsGuard`>
+- **OpenAPI:** every endpoint above appears in `docs/api/openapi.json` (regenerated with `openapi:export`, committed in this PR) — standard AC for backend briefs
+- **Conventions:** `docs/api/README.md`
 
 ## 4. Acceptance Criteria
 - **AC-1** — Given <state>, when <action>, then <result>.

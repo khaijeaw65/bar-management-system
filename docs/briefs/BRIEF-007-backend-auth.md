@@ -16,7 +16,7 @@
 ---
 
 ## 1. Goal
-A pre-registered staff member signs in with LINE on the web, receives HttpOnly JWT cookies, stays signed in through refresh-token rotation, and every non-public endpoint requires a valid access token. First sprint-2 building block; frontend login (BRIEF-008) and IAM permissions (BRIEF-009) build on it.
+A pre-registered staff member signs in with LINE on the web, receives HttpOnly JWT cookies, stays signed in through refresh-token rotation, and every non-public endpoint requires a valid access token. First sprint-2 building block; frontend login and IAM permissions (later briefs, numbers TBD) build on it.
 
 ## 2. Scope
 ### In
@@ -27,7 +27,7 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
   - `app` — add `FRONTEND_URL` (CORS origin + post-login redirect)
 - **Redis provider:** `providers/redis/redis.module.ts` (global) + `redis.service.ts` exposing one `ioredis` client; closed on shutdown.
 - **Migration** `…-StaffIdentity.ts`: `identity_provider` enum, `staff_user`, `staff_user_identity` — **exactly as `docs/schema.sql`**.
-- **IAM module (minimal):** `modules/iam/` — `StaffUser`, `StaffUserIdentity` entities; repository port + TypeORM adapter; `StaffUserService` with `findByIdentity(provider, externalId)` and `findActiveById(id)`. No groups/policies yet (BRIEF-009). These two tables have no audit columns in `schema.sql` → the entities do **not** extend `BaseEntity`.
+- **IAM module (minimal):** `modules/iam/` — `StaffUser`, `StaffUserIdentity` entities; repository port + TypeORM adapter; `StaffUserService` with `findByIdentity(provider, externalId)` and `findActiveById(id)`. No groups/policies yet (IAM brief, TBD). These two tables have no audit columns in `schema.sql` → the entities do **not** extend `BaseEntity`.
 - **Auth module** (replace the passport stubs):
   - `LineClient` behind a port: build authorize URL, exchange code (`https://api.line.me/oauth2/v2.1/token`), verify ID token (`POST https://api.line.me/oauth2/v2.1/verify` with `nonce`). Plain `fetch`.
   - `TokenService`: access JWT (HS256, payload `{ sub }`, TTL from config) via `@nestjs/jwt`; **opaque refresh tokens** (32 random bytes) stored in Redis **hashed** (`refresh:<sha256>` → `{ userId, familyId }`, TTL = refresh TTL); rotation on every use; **reuse of an already-rotated token revokes the whole family**.
@@ -51,7 +51,7 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 ### Out (do NOT build here)
 - Mobile endpoints (`/auth/mobile/token`, `/auth/mobile/refresh`, PKCE) — with the Expo auth brief (DR-005).
 - Frontend login page, axios, 401 interceptor — BRIEF-008.
-- Groups, policies, `PermissionsGuard`, permission cache — BRIEF-009.
+- Groups, policies, `PermissionsGuard`, permission cache — IAM brief (TBD).
 - `notification` / `staff_push_token` tables — with the notifications brief.
 - Rate limiting, account linking, phone OTP, customer login.
 
@@ -124,5 +124,5 @@ pnpm --filter @bar/backend build
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
-| 1 | 2026-09-25 | Initial draft (Cowork). Mobile auth split out (DR-005 later), frontend = BRIEF-008, IAM = BRIEF-009 |
+| 1 | 2026-09-25 | Initial draft (Cowork). Mobile auth split out (DR-005 later), frontend + IAM = later briefs (BRIEF-008/009 numbers since reused, 2026-09-28) |
 | 1 | 2026-09-27 | On hold — Field switched priority to UX/UI design; D1–D4 still open |

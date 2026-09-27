@@ -32,7 +32,7 @@ The POS web app wears the new design: design-system v2 token names, Noto Sans Th
 5. **Tests (Methee writes them):** `PosRail.test.tsx` (order, active state, disabled items), `LiveClock.test.tsx` (fake timers: shows time, updates after a minute), update `e2e/menu.spec.ts` (rail visible, เมนู has `aria-current="page"`). Existing tests stay green.
 
 ### Out (do NOT build here)
-- Menu-list redesign (search, category chips, no-result, new states) → **BRIEF-009**.
+- Menu-list redesign (search, category chips, no-result, new states) → **BRIEF-010** (after BRIEF-009 contracts).
 - Shift chip, notification bell, avatar / sign-out, rail log-out, rail badges → need auth / shift / notification data (BRIEF-007 and later).
 - Login, not-registered, session-expired screens → with BRIEF-007 frontend.
 - Floor view (StatTile / TableTile) → CD-02.

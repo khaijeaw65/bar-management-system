@@ -55,10 +55,10 @@ The backend already uses Zod DTOs (`docs/rules/backend.md` — no class-validato
 The advisor grades system design; a live, browsable API spec is standard evidence and makes FE/BE handoff concrete (Methee builds against mocks while the backend lags). Generating it from the shared Zod schemas gets the documentation without a second source of truth.
 
 ### Consequences / follow-ups
-- New backend dependency `@nestjs/swagger` (+ bridge) — through a brief (proposed: contracts-foundation / API-conventions brief before BRIEF-009, or the next backend brief, whichever lands first).
-- `docs/api/README.md` — conventions (envelope, errors, money/date, naming, paging, auth, WS event names) + Phase-1 endpoint catalog.
-- `docs/rules/backend.md` → add "OpenAPI" section (coverage rule, export command, prod flag) — **Field, manual** (protected file).
-- Brief template §3 Contract: "endpoint appears in `docs/api/openapi.json`" becomes a standard AC for backend briefs.
+- New backend dependency `@nestjs/swagger` (+ bridge) — through **BRIEF-009** (contracts + OpenAPI foundation).
+- `docs/api/README.md` — ✅ drafted 2026-09-28: conventions (envelope, errors, money/date, naming, paging, auth, WS event names) + Phase-1 endpoint catalog.
+- `docs/rules/backend.md` → "OpenAPI" section — ✅ added 2026-09-28 by Cowork (Field approved the protected-file edit in session).
+- Brief template §3 Contract: OpenAPI line — ✅ added 2026-09-28.
 
 **Decision:** Approved — OpenAPI via Swagger, generated from `@bar/contracts` Zod schemas.
 **Date:** 2026-09-28 · recorded by Cowork on Field's explicit instruction; Field signs off by merging the PR
