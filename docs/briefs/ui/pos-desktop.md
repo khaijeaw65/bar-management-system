@@ -2,7 +2,7 @@
 **Surface:** POS Desktop (เจ้าของ / ผู้จัดการ)
 **Device:** Desktop monitor or tablet (landscape). Min width 1280px.
 **Mode:** Dark only
-**Font:** Sarabun
+**Font:** Noto Sans Thai (Sarabun fallback) — tokens per `docs/design-system.md` v2; components HeroUI v3
 **Language:** Thai-primary
 **Auth:** LINE SSO → HttpOnly cookie → JWT. Login required.
 
@@ -16,7 +16,7 @@
 POS uses a persistent shell:
 ```
 [Top bar — full width, 56px]
-[Left sidebar 220px] [Main content area flex:1]
+[Left icon rail 88px] [Main content area flex:1]
 ```
 No bottom nav. Left sidebar = primary navigation.
 
@@ -40,7 +40,7 @@ No bottom nav. Left sidebar = primary navigation.
 - Center: shift info chip — **"กะเปิด 18:00 · Beam (Manager)"** (13px, textMuted, surface bg chip)
 - Right: live clock **"20:34"** (20px/700, amber) + notification bell (badge count) + avatar circle (staff photo/initial)
 
-### Left sidebar (220px, surface bg, border-right faint)
+### Left icon rail (88px PosRail, bg-sunken, border-right line-hairline; items 64×64 icon + label)
 Nav items (vertical list, 48px each):
 - 🗺 **โต๊ะ** (active = amber left-border + amber text)
 - 🧾 **ออเดอร์**

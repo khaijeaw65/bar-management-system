@@ -12,7 +12,9 @@ Updated: 2026-09-27 · Agent: Cowork (planning)
 - Done: BRIEF-001, 003, 004, 005, 006 · Draft: BRIEF-002 (Expo)
 
 ## Design session — tasks (inputs → output)
-- **CD brief series:** `docs/design/README.md` (CD-00…CD-11). Written: CD-00 design system + feedback kit, CD-01 POS login/shell/menu. One CD brief = one Claude Design session.
+- **CD brief series:** `docs/design/README.md` (CD-00…CD-11). Written: CD-00 gap-fill (light theme, HeroUI alignment, feedback kit, notifications), CD-01 POS login/shell/menu (88 px rail). One CD brief = one Claude Design session.
+- **Design system v2 done (2026-09-27):** `docs/design-system.md` rewritten from the CD export with Field decisions A–G (Noto Sans Thai + Sarabun fallback, CD token names, schema statuses, CD colours, light theme required, 88 px POS rail, staff app = Expo). HeroUI v3 / HeroUI Native mandated in every CD brief. Light values + new tokens come back from CD-00 → Cowork merges into `design-system.md`.
+- **Next:** Field runs CD-00 then CD-01 in the base CD project → pastes Result back → Cowork writes BRIEF-008 (Methee). Frontend token migration (`globals.css` → v2 names + Noto Sans Thai) = part of BRIEF-008 or a small separate brief — decide when writing it.
 1. **Design system** — `docs/design-system.md`, HeroUI mapping in `app/frontend/src/app/globals.css` → type scale (rem), spacing, component states (focus/disabled/loading/error), status colors (order/payment/bottle-keep), Expo token parity (HeroUI Native + Uniwind). Output: updated `design-system.md`.
 2. **Web UX/UI** — `docs/briefs/ui/pos-desktop.md`, `customer-qr.md`, `/pos/menu` screen → screen list + flows for Sprint 2–3 (login + not-registered, POS shell, menu, table/session board). Output: updated UI briefs + mockups (Design artifact).
 3. **Mobile UX/UI** — `docs/briefs/ui/staff-mobile.md`, CLAUDE.md mobile scope (7 features), DR-005 login → screen list + flows. Output: updated UI brief + mockups; then `docs/rules/mobile.md`.

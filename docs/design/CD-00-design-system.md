@@ -1,34 +1,42 @@
-# CD-00 — Design system: gap check + feedback kit
+# CD-00 — Design system gap-fill (light theme, HeroUI alignment, feedback kit)
 
-**Status:** Ready for Claude Design · **Surface:** all (web dark/light, phone, Expo) · **Used by:** every CD brief and every frontend/mobile brief
+**Status:** Ready for Claude Design · **Surface:** all · **Used by:** every CD brief and every frontend/mobile brief
+**Decisions:** Field A–G, 2026-09-27 (see `docs/design-system.md` → Decisions)
 
 ## Attach
-**Open inside the existing Claude Design project:** https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
-`docs/design-system.md` · older canvas https://claude.ai/artifact/3bffc3c8-7223-4803-bd39-bb74de243226 (reference only) · screenshot `docs/handoffs/assets/BRIEF-005/menu-dark.png` and `menu-light.png` (what's already built)
+**Open inside the existing Claude Design project:** https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 (extend it; do not start a new project)
+`docs/design-system.md` (v2)
 
 ## Paste into Claude Design
-> **Step 1 — gap check.** This project already contains The Loft Bar design system. Compare it with the attached `design-system.md` and list: (a) artboards below that already exist and are complete, (b) ones missing or only partly done (e.g. missing light theme, missing states), (c) any token/value that differs from `design-system.md`. **Don't redraw what exists** — only fill the gaps in step 2. If a value differs, keep the project's value only if it's clearly better and list it for Field.
+> Extend **this** design system (The Loft Bar). Keep every existing token name and dark value unless listed below. Thai-first copy.
 >
-> **Step 2 — fill gaps** in the design system for **The Loft Bar**, a bar-management product for small counter bars in Thailand. Aesthetic: cozy loft — warm neutrals, amber accent, calm (no bouncy motion). Font **Sarabun**; all UI copy in **Thai**, English loanwords as-is (Menu, QR, Happy Hour). Two themes with the same token names: **dark (default)** and **light**. Use only the tokens in the attached `design-system.md` — no new hex values; if you need a new token, name it and propose both theme values.
+> **Library constraint (important):** the product is built with **HeroUI v3** (web, React Aria) and **HeroUI Native** (Expo staff app). Every general component must correspond to a HeroUI component and its theme variables — Button, TextField, Select, SearchField, Checkbox, RadioGroup, Switch, Tabs (also as segmented control), Chip, Badge, Card, Table, Modal / AlertDialog / drawer-sheet, Toast, Tooltip, Popover, Dropdown, Skeleton, Spinner, Avatar, Alert. Match their anatomy, sizes and states; do not invent interaction patterns HeroUI can't do. Only these are custom: MenuItemCard, OrderTicket, CartLine, QuantityStepper, TableTile, StatTile, PosRail, NotificationBell/Feed, PromptPay QR panel. Label each DS component with its HeroUI counterpart.
 >
-> Produce these artboards, each in **dark and light** side by side:
-> 1. **DS-colors** — every token swatch with name + both values; contrast note for text tokens.
-> 2. **DS-type** — the 7 type styles in Thai + English sample lines; show a rem equivalent (base 16px).
-> 3. **DS-spacing-radius-elevation** — spacing scale, radius scale, shadow per theme, z-index layers.
-> 4. **DS-controls** — Button (primary, secondary, ghost, danger) × (default, hover, pressed, focus-visible, disabled, loading); icon button; Input, Select, Textarea, Search (default, focus, filled, error with message, disabled); Checkbox, Radio, Switch; Segmented control (used for ธีมมืด / ธีมสว่าง / ตามระบบ).
-> 5. **DS-data** — Card; Table row (default, hover, selected); Status chips for order (PENDING, ACCEPTED, READY, SENT, ISSUE), table (ว่าง, มีแขก, รอชำระ, ปิดโต๊ะ), payment (รอชำระ, ชำระแล้ว, ล้มเหลว), bottle-keep (indigo); 86'd item style; cancelled item style; price display `฿1,234.00`; avatar/initials.
-> 6. **DS-feedback** — **Toast** (success, info, warning, error; with/without action; stacked max 3; position top-right desktop, top-center phone; auto-dismiss 4s, error stays until closed); **Inline banner** (page-level: offline/reconnecting, permission denied); **Confirm dialog** (normal + destructive); **Bottom sheet** (phone); **Empty state**, **Loading skeleton**, **Error state with retry** (use the `/pos/menu` wording: ยังไม่มีเมนู · เกิดข้อผิดพลาด · ลองอีกครั้ง).
-> 7. **DS-notifications** — Notification **bell** with unread badge (0, 3, 99+); **feed panel** (desktop dropdown / phone full screen) with items: ออเดอร์ใหม่, อาหารพร้อมเสิร์ฟ, ชำระเงินสำเร็จ, โต๊ะไม่มีความเคลื่อนไหว, ขอเติมสต็อก, เรียกพนักงาน — each with icon, title, one-line body, time-ago, unread dot, click target; "อ่านทั้งหมด"; empty feed; **phone push notification** preview (lock-screen style, no guest personal data in the text).
-> 8. **DS-icons** — Lucide icons used in nav and statuses at 16/20/24px, stroke 1.5.
+> 1. **Light theme** — define light values for every semantic token (bg, surface-*, text-*, line-*, accent-*, status, feedback, shadows). Warm paper/cream, not white-grey; amber stays the accent; `text-on-accent` stays dark. All text and status colours ≥ 4.5:1. Add a theme switch and show **every DS artboard in dark and light**.
+> 2. **New tokens** — `--surface-bar` (replaces rgba .82/.9/.92 bars), `--danger-fg/-bg/-border` (replaces hard-coded danger button colours), `--bottle-keep`/`-bg` (indigo), z-index scale (base 0, raised 10, sticky 20, dropdown 30, scrim 40, dialog 50, toast 60). Replace every remaining hard-coded colour (TableTile borders, accent card border, QR panel) with tokens.
+> 3. **Numbers** — `tabular-nums` on price, totals, counts, times.
+> 4. **Icons** — Lucide, pinned version, stroke 1.75 everywhere, sizes 16/20/24; Select chevron and checkbox tick use Lucide icons.
+> 5. **Missing states** — hover / pressed / focus-visible (`focus-ring`) / disabled / loading for Button, IconButton, SegmentedControl, Checkbox, Radio, Switch, Tag, Select, Input; Select error state.
+> 6. **Status chips** — exact labels:
+>    - Order: ใหม่ (pending) · กำลังทำ (accepted) · พร้อมเสิร์ฟ (ready) · เสิร์ฟแล้ว (sent) · มีปัญหา (issue)
+>    - Item: รอ · กำลังทำ · พร้อม · ยกเลิก (struck through)
+>    - Table/visit: ว่าง · เปิดแล้ว · มีแขก · ไม่มีความเคลื่อนไหว · ปิดโต๊ะ · ทิ้งโต๊ะ · เรียกพนักงาน (pulse dot)
+>    - Payment: รอชำระ · ชำระแล้ว · ไม่สำเร็จ · คืนเงินแล้ว
+>    - Bottle keep (indigo): ฝากอยู่ · หมดขวด · หมดอายุ
+>    - Menu: หมด (86'd)
+> 7. **Missing components** — Alert/Banner (info, success, warning, danger; dismissible), Skeleton (row, card, tile), Error state (icon, "เกิดข้อผิดพลาด", "ลองอีกครั้ง"), Avatar (image, initials, sizes 24/32/40), Table rows (header, row, hover, selected, sortable header, pagination) for POS, **PosRail** (88 px, items 64×64, icon + label 10 px, active = accent-soft + text-accent, badge).
+> 8. **Feedback kit** — Toast (success / error / info / warning, with action, stacking, top-right desktop / top phone, auto-dismiss 4 s), Dialog (confirm, destructive), Bottom sheet, Empty / Loading / Error trio.
+> 9. **Notifications** — NotificationBell (0, 3, 99+), NotificationFeed panel (unread/read, grouped Today/Earlier, mark all read) with the 6 triggers: new order, order ready, call staff, payment received, payment failed, bottle keep expiring; lock-screen push mock for the Expo app.
 >
-> Keep components HeroUI-v3-compatible (web) and HeroUI-Native-compatible (Expo): standard React Aria patterns, no exotic widgets.
+> Artboards: `CD-00/DS-colors`, `DS-type`, `DS-space-radius-elevation-z`, `DS-controls`, `DS-status-chips`, `DS-data` (table, avatar, skeleton), `DS-feedback`, `DS-notifications`, `DS-icons`, `DS-heroui-map` (one table: DS component → HeroUI v3 → HeroUI Native).
 
-## Acceptance (Field checks before marking Done)
-- Both themes on every artboard; only existing/proposed tokens; Thai copy.
-- Every control shows focus-visible and disabled; toast/dialog/empty/loading/error all present.
-- Proposed new tokens (if any) listed with both values → copied into `design-system.md`.
+## Acceptance (Field checks)
+- Light values exist for every semantic token; every DS artboard shown in both themes.
+- No hard-coded colours left in components; z-index tokens exist.
+- Every general component names its HeroUI counterpart (`DS-heroui-map`).
+- Status chip labels exactly as listed.
 
-## Result
-- Gap-check list (step 1): <paste>
+## Result (paste back for Cowork)
 - Claude Design link: <paste>
-- design-system.md changes: <none / PR link>
+- Export of **new/changed tokens only** (light values, new tokens) as text: <paste>
+- Anything that couldn't match HeroUI: <none / list>

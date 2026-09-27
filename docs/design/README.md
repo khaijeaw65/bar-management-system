@@ -6,6 +6,8 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 
 **Claude Design project (base):** https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 — existing design system by Field. Every CD session works **inside this project**, extending it; never start a new one.
 
+**Component libraries (all briefs):** web = **HeroUI v3** (`@heroui/react`), staff app = **HeroUI Native** (Expo + Uniwind). Designs must use components those libraries provide and map to their theme variables (`docs/design-system.md` §1, §5); only the bar-specific components in §6 are custom. Every CD prompt restates this.
+
 **Sources of truth:** `docs/design-system.md` (tokens, type, spacing, components) · `docs/briefs/ui/*.md` (screen content per surface) · `docs/FRD.md` (behaviour). If a CD session changes a token or component, update `design-system.md` in the same PR.
 
 **Output per brief:** artboards named `CD-##/<artboard-id>` in the Claude Design project, a link written back into the brief's **Result** section, and any design-system changes as a diff to `design-system.md`.
@@ -13,7 +15,7 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 ## Series (order = priority)
 | ID | Brief | Surface | Why first |
 |---|---|---|---|
-| CD-00 | Design system refresh: tokens (dark + light), type, components, **feedback kit** (toast, banner, dialog, empty/loading/error, notification bell + feed) | all | Every screen reuses it |
+| CD-00 | Design system gap-fill: **light theme**, HeroUI alignment, missing components/states, status chips, **feedback kit** + notifications | all | Every screen reuses it |
 | CD-01 | POS: login, not-registered, app shell, **menu list** | web desktop | Methee's first brief (BRIEF-008) |
 | CD-02 | POS: table grid + session detail panel + open-table dialog | web desktop | Sprint 3 core |
 | CD-03 | POS: payment (PromptPay QR, cash, split, in-flight collision) | web desktop | core vertical |
