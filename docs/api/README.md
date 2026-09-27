@@ -24,12 +24,13 @@ This file holds the **rules every endpoint follows** and the **planned endpoint 
 ### Envelope (already decided — `backend.md` → API Response)
 ```jsonc
 // success
-{ "status": 200, "message": "success", "data": { /* resource */ } }
+{ "status": 200, "code": "", "message": "success", "data": { /* resource */ } }
 // list
-{ "status": 200, "message": "success", "data": { "items": [ /* … */ ], "nextCursor": null } }
+{ "status": 200, "code": "", "message": "success", "data": { "items": [ /* … */ ], "nextCursor": null } }
 // error
 { "status": 409, "code": "PAYMENT_IN_FLIGHT", "message": "โต๊ะนี้มีการชำระเงินค้างอยู่", "data": null }
 ```
+- **Standard envelope:** every response has exactly `status`, `code`, `message`, `data`. `code` = `''` on success, non-empty on error. Types make all four required — client code reads `res.code` / `res.data` with no `?.` or `!` on envelope fields.
 - Lists are always `data.items` (+ `nextCursor` only on paged lists).
 - Validation errors: `400`, `code: "VALIDATION_ERROR"`, `message` = string array (one per issue).
 - **Error `code` (D1):** UPPER_SNAKE, machine-readable, always present. Generic codes from the status: `VALIDATION_ERROR` 400 · `UNAUTHORIZED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `CONFLICT` 409 · `RATE_LIMITED` 429 · `INTERNAL_ERROR` 5xx. Domain codes (e.g. `PAYMENT_IN_FLIGHT`, `INVALID_STATE_TRANSITION`, `NOT_REGISTERED`, `ITEM_UNAVAILABLE`) are added to `ErrorCodeSchema` in contracts by the brief that first throws them. The UI branches on `code`, shows `message`.
@@ -144,7 +145,7 @@ Notifications feed (`/api/notifications`, DR-003) · guest profile + AI summary 
 ## 3. Decisions (Field, 2026-09-28)
 | # | Decision |
 |---|---|
-| D1 | **Approved** — error envelope gets a machine-readable `code` (§1 Envelope). |
+| D1 | **Approved** — machine-readable `code` is part of the **standard envelope** on every response: `''` on success, UPPER_SNAKE on error (§1 Envelope). |
 | D2 | **No** URL versioning in Phase 1. |
 | D3 | **Yes** — `Idempotency-Key` on order + payment creation only (§1 Idempotency). |
 | D4 | **Yes** — menu list returns `basePrice` + `variants[]` (id, name, price, isAvailable); POS shows "from ฿x" when variant prices differ. Seed rule: every orderable item has ≥ 1 variant. |

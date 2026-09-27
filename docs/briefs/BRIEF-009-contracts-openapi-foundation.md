@@ -24,7 +24,7 @@
    - Add `zod` `4.6.5` (exact, DR-004). Align `typescript` with the workspace version.
    - Build: `tsc` → `dist/` (ESM + `.d.ts`); `package.json` `exports` → `dist`; scripts `build`, `typecheck`. Backend (NodeNext ESM, runs compiled JS) and frontend both import `@bar/contracts` at runtime. Frontend: `transpilePackages` **not** needed if it consumes `dist` — choose one path, prove it (AC-2), note it.
    - **Replace `src/enums.ts`** (stale: `CONFIRMED`, `SERVED`, `SessionState`, `StaffRole`) with `src/schemas/enums.ts`: one `z.enum` + inferred type per `schema.sql` enum — `identityProvider`, `visitState`, `itemType`, `orderStatus`, `orderItemStatus`, `paymentMethod`, `paymentStatus`, `bottleKeepStatus`, `invCategory`, `invTxType`. Values exactly as SQL (lowercase). Naming: `OrderStatusSchema` + `type OrderStatus`.
-   - `src/schemas/common.ts`: `UuidSchema`, `MoneySchema` (`/^\d+\.\d{2}$/`), `IsoDateTimeSchema`, `apiResponseSchema(data)`, `ApiErrorSchema` (`{ status, code, message, data: null }`), `listSchema(item)` (`{ items, nextCursor? }`).
+   - `src/schemas/common.ts`: `UuidSchema`, `MoneySchema` (`/^\d+\.\d{2}$/`), `IsoDateTimeSchema`, `apiResponseSchema(data)` (`{ status, code: '' , message: 'success', data }` — `code` is `z.literal('')`), `ApiErrorSchema` (`{ status, code: ErrorCode, message, data: null }`); all four keys required in both, `listSchema(item)` (`{ items, nextCursor? }`).
    - `src/schemas/errors.ts`: `ErrorCodeSchema` = the generic codes (`VALIDATION_ERROR`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `RATE_LIMITED`, `INTERNAL_ERROR`) + `IDEMPOTENCY_KEY_REUSED`. Later briefs append domain codes.
    - `src/schemas/menu.ts`: `MenuCategorySchema`, `MenuItemVariantSchema`, `MenuItemSummarySchema` (per `docs/api/README.md` D4), `MenuItemListResponseSchema`, `MenuCategoryListResponseSchema`.
    - `src/index.ts` re-exports; unit tests for money regex, enum values vs SQL, envelope helper.
@@ -33,7 +33,7 @@
    - `src/common/openapi/`: helper that turns a contracts Zod schema into an OpenAPI schema via `z.toJSONSchema(schema, { target: 'openapi-3.0' })`, plus decorators/helpers to declare an enveloped success response and the standard error responses (`400/401/403/404/409`) on a route. Registers reusable components (`ApiError`, envelope).
    - `providers/config/openapi/{configuration,config.service,config.module}.ts` — `OPENAPI_ENABLED` (Zod-validated boolean; default `true`; `.env.example` notes prod = `false`).
    - `bootstrap/configure-app.ts`: when enabled, build the document (title "The Loft Bar API", version from package.json, cookie + bearer security schemes, tags per module) and serve UI at `/api/docs`, JSON at `/api/docs-json`.
-   - **Error `code` (D1):** `HttpExceptionFilter` adds `code` (generic from status; `DomainException(code, message, status)` in `common/` for domain errors); Zod validation failures → `VALIDATION_ERROR`. Update filter tests.
+   - **Standard envelope (D1):** `TransformResponseInterceptor` adds `code: ''` to every success response; `HttpExceptionFilter` adds `code` (generic from status; `DomainException(code, message, status)` in `common/` for domain errors); Zod validation failures → `VALIDATION_ERROR`. Update filter tests.
    - Document `GET /api/health` with the helper (the only live endpoint) — proves the pipeline end to end.
    - `scripts/openapi-export.ts` + script `openapi:export` → writes `docs/api/openapi.json` (sorted keys, 2-space JSON) **without** a DB/Redis connection (build the Nest app with a test module or `NestFactory` + `abortOnError: false` and mocked providers — document the choice).
 3. **CI** (`.github/workflows/ci.yml`): step runs `openapi:export` and fails on `git diff --exit-code docs/api/openapi.json` when backend or contracts changed.
@@ -49,7 +49,7 @@
 
 ## 3. Contract
 - **Contracts exports:** `*Schema` Zod objects + `z.infer` types from `@bar/contracts`; no Nest/Next/TypeORM imports (DR-004 rule).
-- **Error envelope (D1 approved):** `{ status, code, message, data: null }`.
+- **Standard envelope (D1):** success `{ status, code: '', message: 'success', data }` · error `{ status, code, message, data: null }` — same four keys always; no optional envelope fields in types.
 - **Menu (for BRIEF-010 mocks):** `GET /api/menu/items` → `{ status, message, data: { items: MenuItemSummary[] } }`; `GET /api/menu/categories` → `{ …, data: { items: MenuCategory[] } }`. Field names camelCase from `schema.sql` (`categoryId`, `basePrice`, `isAvailable`, `itemType`, `sortOrder`, `variants[]`).
 - **OpenAPI:** 3.0.x; `/api/docs`, `/api/docs-json`; `OPENAPI_ENABLED`.
 - **Env:** `OPENAPI_ENABLED` (new).
@@ -62,7 +62,7 @@
 - **AC-5** — `openapi:export` runs with no database or Redis and writes a stable `docs/api/openapi.json` (running it twice = no diff).
 - **AC-6** — CI fails when `openapi.json` is stale (show one red run on a throwaway commit, or a script test) and passes when it is regenerated.
 - **AC-7** — The Zod→OpenAPI helper is unit-tested with a nested object, enum, nullable, array and money-string schema.
-- **AC-8** — Success envelope unchanged; every error response has `code` — 400 Zod failure → `VALIDATION_ERROR` (string[] message), unknown route → `NOT_FOUND`, thrown `DomainException('CONFLICT', …, 409)` → `CONFLICT`, unexpected error → `INTERNAL_ERROR` 500 (filter unit + e2e tests).
+- **AC-8** — Every success response is `{ status, code: '', message: 'success', data }` (interceptor test + health e2e); every error response has a non-empty `code` — 400 Zod failure → `VALIDATION_ERROR` (string[] message), unknown route → `NOT_FOUND`, thrown `DomainException('CONFLICT', …, 409)` → `CONFLICT`, unexpected error → `INTERNAL_ERROR` 500 (filter unit + e2e tests).
 - **AC-9** — `lint`, `typecheck`, `test`, `build` for contracts + backend exit 0; `test:e2e` backend passes; `ci` green; `pnpm install --frozen-lockfile` passes.
 
 ## 5. Test Gate
@@ -115,4 +115,5 @@ A required script that doesn't exist yet (e.g. contracts `test`) = add it in thi
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-28 | Initial draft (Cowork) after DR-004 Amendment 1 |
+| 1 | 2026-09-28 | Standard envelope: `code: ''` on success too (Field) |
 | 1 | 2026-09-28 | D1–D4 decided (D1 yes, D2 no, D3 yes, D4 yes); Ready — approved by Field in session ("approve b9") |

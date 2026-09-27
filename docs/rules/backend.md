@@ -111,11 +111,12 @@ Every HTTP response uses one envelope. Decided by Field 2026-09-24.
 
 ```typescript
 // success — TransformResponseInterceptor wraps whatever the controller returns
-{ status: number; message: 'success'; data: T }        // status = response.statusCode
+{ status: number; code: ''; message: 'success'; data: T }   // status = response.statusCode, code always ''
 
 // error — HttpExceptionFilter
-{ status: number; code: string; message: string | string[]; data: null }   // code: UPPER_SNAKE (D1, docs/api/README.md)
+{ status: number; code: string; message: string | string[]; data: null }   // code: UPPER_SNAKE, never '' (D1)
 ```
+- **Standard envelope — the same four keys on every response:** `status`, `code`, `message`, `data`. `code` is `''` on success and a non-empty UPPER_SNAKE code on error. Clients read `response.code` / `response.data` directly — never optional chaining or non-null assertions on envelope fields (`response.data?.code`, `response.data!.code` are review findings).
 - Controllers return the plain response DTO; they never build the envelope themselves.
 - Non-2xx responses always go through `HttpExceptionFilter` (throw an `HttpException`, don't set `res.status()` and return a body).
 - Every error carries a `code`: the filter derives a generic one from the status (`VALIDATION_ERROR`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `RATE_LIMITED`, `INTERNAL_ERROR`); domain errors throw `DomainException(code, message, status)` with a code from `ErrorCodeSchema` in `@bar/contracts`.
