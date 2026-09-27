@@ -1,7 +1,8 @@
 # Design System — The Loft Bar
 
 **Status:** Established 2026-09-20  
-**Canvas:** https://claude.ai/artifact/3bffc3c8-7223-4803-bd39-bb74de243226  
+**Claude Design project (current):** https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457  
+**Canvas (older artifact):** https://claude.ai/artifact/3bffc3c8-7223-4803-bd39-bb74de243226  
 **Aesthetic:** Cozy loft — warm neutrals, amber accent. **Dark (default) + light theme**  
 **Updated:** 2026-09-23 — light theme added (see DR-002)
 

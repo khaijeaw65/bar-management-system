@@ -1,12 +1,15 @@
-# CD-00 — Design system refresh + feedback kit
+# CD-00 — Design system: gap check + feedback kit
 
 **Status:** Ready for Claude Design · **Surface:** all (web dark/light, phone, Expo) · **Used by:** every CD brief and every frontend/mobile brief
 
 ## Attach
-`docs/design-system.md` · existing canvas https://claude.ai/artifact/3bffc3c8-7223-4803-bd39-bb74de243226 · screenshot `docs/handoffs/assets/BRIEF-005/menu-dark.png` and `menu-light.png` (what's already built)
+**Open inside the existing Claude Design project:** https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
+`docs/design-system.md` · older canvas https://claude.ai/artifact/3bffc3c8-7223-4803-bd39-bb74de243226 (reference only) · screenshot `docs/handoffs/assets/BRIEF-005/menu-dark.png` and `menu-light.png` (what's already built)
 
 ## Paste into Claude Design
-> Refresh the design system for **The Loft Bar**, a bar-management product for small counter bars in Thailand. Aesthetic: cozy loft — warm neutrals, amber accent, calm (no bouncy motion). Font **Sarabun**; all UI copy in **Thai**, English loanwords as-is (Menu, QR, Happy Hour). Two themes with the same token names: **dark (default)** and **light**. Use only the tokens in the attached `design-system.md` — no new hex values; if you need a new token, name it and propose both theme values.
+> **Step 1 — gap check.** This project already contains The Loft Bar design system. Compare it with the attached `design-system.md` and list: (a) artboards below that already exist and are complete, (b) ones missing or only partly done (e.g. missing light theme, missing states), (c) any token/value that differs from `design-system.md`. **Don't redraw what exists** — only fill the gaps in step 2. If a value differs, keep the project's value only if it's clearly better and list it for Field.
+>
+> **Step 2 — fill gaps** in the design system for **The Loft Bar**, a bar-management product for small counter bars in Thailand. Aesthetic: cozy loft — warm neutrals, amber accent, calm (no bouncy motion). Font **Sarabun**; all UI copy in **Thai**, English loanwords as-is (Menu, QR, Happy Hour). Two themes with the same token names: **dark (default)** and **light**. Use only the tokens in the attached `design-system.md` — no new hex values; if you need a new token, name it and propose both theme values.
 >
 > Produce these artboards, each in **dark and light** side by side:
 > 1. **DS-colors** — every token swatch with name + both values; contrast note for text tokens.
@@ -26,5 +29,6 @@
 - Proposed new tokens (if any) listed with both values → copied into `design-system.md`.
 
 ## Result
+- Gap-check list (step 1): <paste>
 - Claude Design link: <paste>
 - design-system.md changes: <none / PR link>

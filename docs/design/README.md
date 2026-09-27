@@ -4,6 +4,8 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 
 **Purpose:** designs are used for (1) development — the executable briefs reference artboards by ID — and (2) the advisor presentation — flows, states, feedback and notifications must be shown, not only happy-path screens.
 
+**Claude Design project (base):** https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 — existing design system by Field. Every CD session works **inside this project**, extending it; never start a new one.
+
 **Sources of truth:** `docs/design-system.md` (tokens, type, spacing, components) · `docs/briefs/ui/*.md` (screen content per surface) · `docs/FRD.md` (behaviour). If a CD session changes a token or component, update `design-system.md` in the same PR.
 
 **Output per brief:** artboards named `CD-##/<artboard-id>` in the Claude Design project, a link written back into the brief's **Result** section, and any design-system changes as a diff to `design-system.md`.
