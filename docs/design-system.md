@@ -64,6 +64,7 @@ Light-theme primitives (lighter clay ramp etc.) → **CD-00**.
 | `--accent-soft` / `--accent-soft-strong` | `rgba(212,135,42,.14/.24)` | CD-00 | Accent tints, active nav |
 | `--focus-ring` | `amber-300` | CD-00 | Focus-visible outline (must be used by every control) |
 | `--success` / `--warning` / `--danger` / `--info` | `leaf-400` / `honey-400` / `brick-400` / `slate-400` | CD-00 | Toast tones, deltas |
+| `--success-bg` / `--warning-bg` / `--info-bg` *(new)* | `leaf-700` / `honey-700` / `slate-700` | CD-00 | Chip / alert backgrounds for feedback tones |
 | `--danger-fg` / `--danger-bg` / `--danger-border` *(new)* | `#F3C9BD` / `brick-700` / `rgba(196,80,58,.5)` | CD-00 | Danger button (replaces hard-coded values) |
 | `--bottle-keep` / `--bottle-keep-bg` *(new)* | `indigo-400` / `indigo-700` | CD-00 | Bottle-keep chips/icons only |
 
