@@ -1,6 +1,6 @@
 # API — conventions + Phase 1 endpoint catalog
 
-**Status:** Draft v1 · 2026-09-28 · Cowork (open decisions §3 need Field)
+**Status:** v1 · 2026-09-28 · D1–D4 decided by Field (§3)
 **Source of truth for shapes:** Zod schemas in `app/packages/contracts/src/schemas/<domain>.ts` (DR-004). **Generated spec:** `docs/api/openapi.json` + Swagger UI `/api/docs` (non-prod) — DR-004 Amendment 1, `docs/rules/backend.md` → OpenAPI.
 This file holds the **rules every endpoint follows** and the **planned endpoint list**. Field-level shapes are written in the brief that builds each endpoint, as contracts schemas.
 
@@ -28,10 +28,11 @@ This file holds the **rules every endpoint follows** and the **planned endpoint 
 // list
 { "status": 200, "message": "success", "data": { "items": [ /* … */ ], "nextCursor": null } }
 // error
-{ "status": 409, "message": "โต๊ะนี้มีการชำระเงินค้างอยู่", "data": null }
+{ "status": 409, "code": "PAYMENT_IN_FLIGHT", "message": "โต๊ะนี้มีการชำระเงินค้างอยู่", "data": null }
 ```
 - Lists are always `data.items` (+ `nextCursor` only on paged lists).
-- Validation errors: `400`, `message` = string array (one per issue).
+- Validation errors: `400`, `code: "VALIDATION_ERROR"`, `message` = string array (one per issue).
+- **Error `code` (D1):** UPPER_SNAKE, machine-readable, always present. Generic codes from the status: `VALIDATION_ERROR` 400 · `UNAUTHORIZED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `CONFLICT` 409 · `RATE_LIMITED` 429 · `INTERNAL_ERROR` 5xx. Domain codes (e.g. `PAYMENT_IN_FLIGHT`, `INVALID_STATE_TRANSITION`, `NOT_REGISTERED`, `ITEM_UNAVAILABLE`) are added to `ErrorCodeSchema` in contracts by the brief that first throws them. The UI branches on `code`, shows `message`.
 
 ### Status codes
 | Code | When |
@@ -69,7 +70,13 @@ Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_
 - Event schemas live in `contracts/src/events/<domain>.ts`.
 
 ### Concurrency
-Server re-validates state on every transition and returns `409` with a Thai message; the client refetches. No ETags in Phase 1.
+Server re-validates state on every transition and returns `409` with a `code` + Thai message; the client refetches. No ETags in Phase 1.
+
+### Idempotency (D3)
+`POST /api/visits/:visitId/orders`, `POST /api/public/visits/:id/orders` and `POST /api/visits/:visitId/payments` accept an `Idempotency-Key` header (UUID, generated per user action on the client). Same key + same body within 24 h → the original response is replayed; same key + different body → `409 IDEMPOTENCY_KEY_REUSED`. Stored in Redis. Other endpoints ignore the header.
+
+### Versioning (D2)
+No URL version in Phase 1 (`/api/...`). Breaking changes go through a DR; add `/api/v2` only once real installs depend on the old shape.
 
 ---
 
@@ -134,10 +141,10 @@ Notifications feed (`/api/notifications`, DR-003) · guest profile + AI summary 
 
 ---
 
-## 3. Open decisions (Field)
-| # | Question | Recommendation | Why |
-|---|---|---|---|
-| D1 | Add a machine-readable `code` to the error envelope (`{ status, code, message, data: null }`, e.g. `PAYMENT_IN_FLIGHT`, `NOT_REGISTERED`)? | **Yes** | UI must branch on *which* 409/403 happened; parsing Thai messages is fragile. Small, additive change to the approved envelope. |
-| D2 | URL versioning (`/api/v1`)? | **No** in Phase 1 | One team, one monorepo, Expo OTA updates; add `/v2` only for a breaking change once real installs exist. |
-| D3 | `Idempotency-Key` header on `POST …/orders` and `POST …/payments`? | **Yes** (those two only) | Double-taps / retries on bad bar Wi-Fi must not create duplicate orders or payment attempts. Stored in Redis 24 h. |
-| D4 | Menu list price: `menu_item.base_price` or variants' `price`? | List returns `basePrice` + `variants[]` (id, name, price, isAvailable); POS shows base price, "from ฿x" when variants differ | Schema has both; ordering always uses a variant id. Needs a quick check that every item has ≥ 1 variant (seed rule). |
+## 3. Decisions (Field, 2026-09-28)
+| # | Decision |
+|---|---|
+| D1 | **Approved** — error envelope gets a machine-readable `code` (§1 Envelope). |
+| D2 | **No** URL versioning in Phase 1. |
+| D3 | **Yes** — `Idempotency-Key` on order + payment creation only (§1 Idempotency). |
+| D4 | **Yes** — menu list returns `basePrice` + `variants[]` (id, name, price, isAvailable); POS shows "from ฿x" when variant prices differ. Seed rule: every orderable item has ≥ 1 variant. |

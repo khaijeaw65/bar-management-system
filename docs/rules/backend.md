@@ -114,10 +114,11 @@ Every HTTP response uses one envelope. Decided by Field 2026-09-24.
 { status: number; message: 'success'; data: T }        // status = response.statusCode
 
 // error — HttpExceptionFilter
-{ status: number; message: string | string[]; data: null }
+{ status: number; code: string; message: string | string[]; data: null }   // code: UPPER_SNAKE (D1, docs/api/README.md)
 ```
 - Controllers return the plain response DTO; they never build the envelope themselves.
 - Non-2xx responses always go through `HttpExceptionFilter` (throw an `HttpException`, don't set `res.status()` and return a body).
+- Every error carries a `code`: the filter derives a generic one from the status (`VALIDATION_ERROR`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `RATE_LIMITED`, `INTERNAL_ERROR`); domain errors throw `DomainException(code, message, status)` with a code from `ErrorCodeSchema` in `@bar/contracts`.
 - The envelope type/schema lives in `@bar/contracts` (`ApiResponse<T>` / `apiResponseSchema(dataSchema)`, DR-004) once a frontend brief consumes it; the frontend `apiFetch` unwraps `data`.
 - Webhook endpoints (payment gateway) may answer in the format the gateway requires — document the exception in that brief.
 
