@@ -50,6 +50,7 @@ Summarise CD-## for a developer handoff, as plain text:
 4. BRIEF-002 Expo scaffold after CD-08 + `docs/rules/mobile.md`.
 
 ## Decisions to remember (2026-09-27/28)
+- CD-02 (2026-09-28): Q1 `table_seat.kind` (table|counter) added to schema · Q2 option A — tables always shared (merge / split-equal), separate = counter seats only; FRD §3/§7 updated · Q3 QR reprint (client) + `POST /api/tables/:id/qr/regenerate` added to API catalog. CD-02 brief Ready.
 - Design system v2.1: values in `docs/design/tokens-v2.css`; Field A–G (Noto Sans Thai, CD token names, schema statuses, CD colours, light theme, 88 px rail, staff = Expo).
 - API: standard envelope `{ status, code, message, data }` on every response, `code: ''` on success; D1 error codes · D2 no URL version · D3 Idempotency-Key on order/payment create · D4 menu `basePrice` + `variants[]`. OpenAPI via Swagger generated from contracts Zod (DR-004 A1).
 

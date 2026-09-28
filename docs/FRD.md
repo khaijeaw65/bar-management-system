@@ -45,7 +45,7 @@ Roles can be combined on one user (small bar: owner also bartends). Only Owner/M
 ## 3. Table & Session Management
 
 ### Core principle
-- **Session ties to the table/seat, NOT to a person.** QR resolves to the session; scanning (or sharing) attaches a person to that session. Names are labels on orders within the session. One table = one session = one bill (unless separate per-seat QR chosen at open).
+- **Session ties to the table/seat, NOT to a person.** QR resolves to the session; scanning (or sharing) attaches a person to that session. Names are labels on orders within the session. One table = one session = one bill. Separate bills = counter seats (one person per seat); tables settle by merge or split-equal (CD-02 Q2, 2026-09-28).
 
 ### QR
 - **Tables:** static QR printed per table → resolves to `/(table)/{id}`.
@@ -59,14 +59,14 @@ Roles can be combined on one user (small bar: owner also bartends). Only Owner/M
 - **Closes** when: staff closes after payment OR ignored idle notification auto-closes.
 - **Idle handling:** after inactivity threshold, notify POS to check table. If ignored for a further period → auto-close.
 
-### Separate vs shared — decided ONCE at table open
+### Separate vs shared
 - **Shared (default):** one QR for the table/seat. Can be **shared to friends** (like Wongnai's "แชร์ QR ให้เพื่อน") → everyone who scans joins the **same** session → all orders → same table → **one bill**. Each person can still enter their own name (shown on their order items) so staff knows whose drink is whose.
-- **Separate:** staff issues **per-seat QR** at open → each person gets their own session, own bill, no cross-attribution. For strangers sharing a counter, or groups who want individual tabs from the start.
+- **Separate:** **counter seats only** — each counter seat has its own paper QR → own session, own bill. Strangers at the counter are separate by default. Tables have no per-seat QR in Phase 1; a table group that wants to pay separately uses split-equal (§7). *(Upgrade path, not Phase 1: several visits on one table, each with its own QR.)*
 - **No nested sessions, no runtime break-out.** The separate-or-shared choice is made at open (which QR you scan), never retrofitted after orders pool. "Pooled then want to separate" resolves via split-equal or private settle (see §7), not item attribution.
 
 ### Concurrency at open / scan
 - **Open race (staff-open vs first-order-open on same table):** first successful write wins; a concurrent second attempt attaches to the existing session rather than creating a duplicate.
-- **Paper QR scanned by a different device while session is ACTIVE:** treated as another person joining the same session (shared model) — consistent with share-QR. If the intent was a fresh separate tab, staff issues a new per-seat QR.
+- **Paper QR scanned by a different device while session is ACTIVE:** treated as another person joining the same session (shared model) — consistent with share-QR. If the intent was a fresh separate tab, staff seats the guest at a different counter seat.
 - **Reprint collision (old + new paper QR both in circulation):** a reprint re-binds to the **same** session by default; a **regenerate** issues a new token and **invalidates the old** (old paper → "invalid, ask staff").
 
 ### Guest attach (optional)
@@ -207,7 +207,7 @@ Both real bars observed rely on **manual slip verification** (staff looks at a p
 - **Merge bill** (one QR) OR **Split bill** (equal, separate QR per person). **No item-level split** (out of scope — izakaya continuous ordering makes per-item attribution unrealistic, and pooled orders can't be cleanly attributed).
 - Follows the session model (§3):
   - **Shared session** (one QR) → merge (one payment) OR split-equal at checkout. "Pooled but someone wants their own" → split-equal or private settle, NOT item attribution.
-  - **Separate per-seat sessions** → each pays their own naturally.
+  - **Separate counter-seat sessions** → each pays their own naturally.
 - **Counter tabs:** staff asks combine or split at checkout.
 - **Charge-type items (puke fine, corkage, etc.) are assigned to a specific tab**, NOT included in split-equal math. (If sober friends want to cover it, they pay that person's bill — a payment choice, not a split calculation.)
 

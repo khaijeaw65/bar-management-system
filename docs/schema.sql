@@ -8,6 +8,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ── Enums ────────────────────────────────────────────────────
 CREATE TYPE identity_provider   AS ENUM ('line', 'phone_otp');
+CREATE TYPE table_seat_kind     AS ENUM ('table', 'counter');
 CREATE TYPE visit_state         AS ENUM ('open', 'active', 'idle', 'closed', 'abandoned');
 CREATE TYPE item_type           AS ENUM ('simple', 'recipe', 'charge');
 CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue');
@@ -38,6 +39,7 @@ CREATE TABLE venue (
 CREATE TABLE table_seat (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   label       VARCHAR(50) NOT NULL,
+  kind        table_seat_kind NOT NULL DEFAULT 'table',   -- POS grid section (CD-02 Q1)
   sort_order  SMALLINT NOT NULL DEFAULT 0,
   qr_code     VARCHAR(500),
   is_active   BOOLEAN NOT NULL DEFAULT TRUE,
