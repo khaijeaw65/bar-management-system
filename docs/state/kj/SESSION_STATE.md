@@ -10,7 +10,7 @@ Updated: 2026-09-28 · Agent: Cowork (planning)
 - Branch: `docs/ui-design-screens` (from main after PR #23) · state + CD briefs go here · push + merge as docs
 - In progress (engineering, not this session): **BRIEF-008** Methee (POS shell + tokens v2, Ready) · **BRIEF-009** kj agent (contracts + OpenAPI foundation, Ready) — run in parallel
 - ON HOLD: BRIEF-007 backend auth (Draft, D1–D4 open)
-- Done: BRIEF-001, 003, 004, 005, 006 · Draft: BRIEF-002 (Expo)
+- Done: BRIEF-001, 003, 004, 005, 006 · Ready: BRIEF-002 Rev 2 (Expo scaffold, Methee — runs before BRIEF-008)
 
 ## UI design session — how to run it
 **Goal:** screens + flows + states for every Phase-1 surface, usable for (1) Methee's development and (2) the advisor presentation.
@@ -47,7 +47,7 @@ Summarise CD-## for a developer handoff, as plain text:
 1. BRIEF-010 menu-list redesign (Methee) — after BRIEF-009 merges; MSW mock on contracts shape incl. `code: ''`; CD-01 menu states (error state = Alert + retry only).
 2. Resume BRIEF-007 (Field answers D1–D4) — auth endpoints use the OpenAPI helper from BRIEF-009.
 3. Frontend login + axios (DR-007) · IAM (groups/policies/PermissionsGuard) — IDs allocated when drafted.
-4. BRIEF-002 Expo scaffold after CD-08 + `docs/rules/mobile.md`.
+4. `docs/rules/mobile.md` + wrappers after BRIEF-002 is Done (brief follow-up), before any mobile feature brief.
 
 ## Decisions to remember (2026-09-27/28)
 - CD-02 (2026-09-28): Q1 `table_seat.kind` (table|counter) added to schema · Q2 option A — tables always shared (merge / split-equal), separate = counter seats only; FRD §3/§7 updated · Q3 QR reprint (client) + `POST /api/tables/:id/qr/regenerate` added to API catalog. CD-02 brief Ready.
