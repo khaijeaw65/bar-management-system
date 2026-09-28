@@ -2,18 +2,18 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | เมธี (an executor agent may run the setup commands in his session) |
 | **Affected apps** | mobile · tooling (`pnpm-workspace.yaml`) |
-| **Revision** | 1 |
-| **Depends on** | none (can run in parallel with the backend / frontend scaffold briefs). Merge after `docs/fe-stack-decisions` (DR-002/003/004) |
+| **Revision** | 2 |
+| **Depends on** | none — DR-002/003/004/005 are Approved on `main`. Runs in parallel with BRIEF-008 |
 | **References** | CLAUDE.md "Architecture → Shape" (mobile scope) · DR-002 (HeroUI, Lucide, dual theme) · DR-004 (contracts) · DR-005 (URL scheme `barapp`) · `docs/design-system.md` · UI brief: `docs/briefs/ui/staff-mobile.md` (reference only — no screens built here) |
 | **Audit depth** | Compact — tooling scaffold, no business logic |
 
 ---
 
 ## 1. Goal
-`app/mobile/` exists as a working Expo SDK 57 app inside the pnpm workspace: it builds, runs on an Android dev build, renders one placeholder screen with HeroUI Native + Uniwind + Lucide + Sarabun, reads an enum from `@bar/contracts`, and passes `lint` + `typecheck` + `test`.
+`app/mobile/` exists as a working Expo SDK 57 app inside the pnpm workspace: it builds, runs on an Android dev build, renders one placeholder screen with HeroUI Native + Uniwind + Lucide + Noto Sans Thai, reads an enum from `@bar/contracts`, and passes `lint` + `typecheck` + `test`.
 
 ## 2. Scope
 ### In
@@ -22,8 +22,8 @@
 - Expo Router setup (manual install per Expo docs) with routes under `app/mobile/src/app/`.
 - `app/mobile/app.config.ts` — replaces `app.json` (see §3).
 - `app/mobile/metro.config.js` — Expo default config wrapped with Uniwind (`withUniwindConfig`, CSS entry `./src/global.css`).
-- `app/mobile/src/global.css` — Tailwind v4 + Uniwind + HeroUI Native styles (exact imports from HeroUI Native quick start), Sarabun mapped as the default sans font; `@source` path must resolve `heroui-native/lib` under pnpm.
-- `app/mobile/src/app/_layout.tsx` — `GestureHandlerRootView` → `HeroUINativeProvider` → `Stack`. Loads Sarabun (Regular, SemiBold, Bold) with `useFonts`; renders nothing until loaded.
+- `app/mobile/src/global.css` — Tailwind v4 + Uniwind + HeroUI Native styles (exact imports from HeroUI Native quick start), Noto Sans Thai mapped as the default sans font; `@source` path must resolve `heroui-native/lib` under pnpm.
+- `app/mobile/src/app/_layout.tsx` — `GestureHandlerRootView` → `HeroUINativeProvider` → `Stack`. Loads Noto Sans Thai (Regular 400, SemiBold 600, Bold 700) with `useFonts`; renders nothing until loaded.
 - `app/mobile/src/app/index.tsx` — placeholder home: title **"ระบบจัดการบาร์"**, one HeroUI Native `Button` **"เข้าสู่ระบบด้วย LINE"** (no handler — label only), one Lucide icon, and the text of one `@bar/contracts` enum value (proves workspace resolution).
 - `app/mobile/tsconfig.json` — extends `expo/tsconfig.base`, `strict: true`, `noUncheckedIndexedAccess: true`, path alias `@/*` → `./src/*`.
 - Jest: `jest-expo` preset + `@testing-library/react-native`; one smoke test in `app/mobile/src/__tests__/home.test.tsx`.
@@ -62,7 +62,7 @@
 ## 4. Acceptance Criteria
 - **AC-1** — Given a fresh clone, when `pnpm install` runs at the repo root, then it completes with `app/mobile` as workspace package `@bar/mobile` and no peer-dependency errors for the §7 packages.
 - **AC-2** — Given the scaffold, when `pnpm --filter @bar/mobile export:check` runs, then Metro bundles Android JS successfully (proves Expo Router + Uniwind + HeroUI Native + `@bar/contracts` resolve under pnpm).
-- **AC-3** — Given an Android emulator or device, when the dev build is installed (`pnpm --filter @bar/mobile android`) and started, then the home screen shows the Thai title in Sarabun, the HeroUI Button, the Lucide icon and the contracts enum value, with no red-box error and no "Invalid hook call".
+- **AC-3** — Given an Android emulator or device, when the dev build is installed (`pnpm --filter @bar/mobile android`) and started, then the home screen shows the Thai title in Noto Sans Thai, the HeroUI Button, the Lucide icon and the contracts enum value, with no red-box error and no "Invalid hook call".
 - **AC-4** — Given the phone is switched between dark and light mode, then the home screen follows it (HeroUI Native theme changes) without a restart.
 - **AC-5** — Given the smoke test, when `pnpm --filter @bar/mobile test` runs, then the home screen renders and the Thai title text is found.
 - **AC-6** — `lint` and `typecheck` pass for `@bar/mobile`.
@@ -116,7 +116,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
   | `react-native-screens` | `~4.26.0` | expo install |
   | `expo-dev-client` | `~57.0.19` | expo install |
   | `expo-font` | `~57.0.4` | expo install |
-  | `@expo-google-fonts/sarabun` | `^0.4.1` | pnpm add |
+  | `@expo-google-fonts/noto-sans-thai` | `^0.4.2` | pnpm add |
   | `heroui-native` | `1.0.10` (exact) | pnpm add |
   | `react-native-reanimated` | `4.5.1` | expo install |
   | `react-native-worklets` | `0.10.1` | expo install |
@@ -145,6 +145,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 ---
 
 ## Before Ready (Field)
+- ~~Rev 2 approved Ready by Field~~ ✅ 2026-09-28
 - ~~DR-002 approved~~ ✅ 2026-09-23
 - ~~DR-005 approved~~ ✅ 2026-09-23
 
@@ -161,3 +162,4 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 |---|---|---|
 | 1 | 2026-09-23 | Initial draft (Cowork) as MB-000 |
 | 1 | 2026-09-24 | Renamed MB-000 → BRIEF-002 (ID convention, workflow Rev 9); added Affected apps. No scope change |
+| 2 | 2026-09-28 | Font Sarabun → Noto Sans Thai (design system v2.1, Field decision A); `@expo-google-fonts/noto-sans-thai ^0.4.2`; Depends-on updated (DRs approved on main). No scope change (Cowork) |

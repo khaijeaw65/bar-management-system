@@ -112,7 +112,8 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 ### Tables & visits
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
-| GET | `/api/tables` | floor: seats + current visit summary (state, total, since) | `tables:read` |
+| GET | `/api/tables` | floor: seats (`kind`: table \| counter) + current visit summary (state, total, since) | `tables:read` |
+| POST | `/api/tables/:id/qr/regenerate` | new signed QR token, old one invalid (FRD §3); reprint = same token, client-only | `tables:manage` |
 | POST | `/api/visits` | open visit `{ tableSeatId }` — first write wins, second attaches (FRD §3) | `visits:open` |
 | GET | `/api/visits/:id` | visit detail: orders, items, totals, payments | `visits:read` |
 | POST | `/api/visits/:id/close` | close (409 if payment in flight) | `visits:close` |
