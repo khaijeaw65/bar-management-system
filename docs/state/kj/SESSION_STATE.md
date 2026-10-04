@@ -3,7 +3,18 @@ Updated: 2026-10-04 · Agent: Cowork (planning)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
-**Timeline slipped (work + midterms) — sprint dates need re-planning by Field; nothing in flight is blocked.** Next: Field answers **CD-03 Q1–Q3** (`docs/design/CD-03-pos-payment.md`) → Cowork sets Ready → Field runs it in Claude Design → paste handoff summary back → Cowork writes `CD-03-handoff.md`.
+**Re-plan (Field, 2026-10-04): build restarts 12 Oct; 70% co-op gate fixed 8 Nov = core slice order → pay → close.** Week 0 (5–11 Oct) = midterms + task clearing; Methee runs BRIEF-008 alone. Next for Cowork: CD-03 Q1–Q3 → Ready; Methee's next brief must be Ready by each Sunday.
+
+## Plan (to 8 Nov)
+| Week | KJ | Methee (after 20:00, ~1 brief/wk ≤10 h, MSW mocks, async review) |
+|---|---|---|
+| 0 · 5–11 Oct | push branch, CD-03 Qs, BRIEF-002 PR | BRIEF-008 POS shell |
+| 1 · 12–18 Oct | BRIEF-009 contracts → BRIEF-007 auth → PermissionsGuard | BRIEF-010 menu list |
+| 2 · 19–25 Oct | tables/visits/orders API + WS · run CD-03 | table grid + TableCard |
+| 3 · 26 Oct–1 Nov | payment + GB Prime Pay webhook + close | drawer + checkout UI |
+| 4 · 2–8 Nov | integration, seed, demo script — no new features | fixes, states |
+| 9–20 Nov | AWS deploy · bottle keep if time | polish |
+If ahead: pull in bottle keep → dashboard → customer QR (needs CD-06). LINE OA → Sem 2. Keep Methee's weekly brief even if KJ is faster.
 
 ## Active
 - Stage: planning — UI design series (CD-02 → CD-11)
