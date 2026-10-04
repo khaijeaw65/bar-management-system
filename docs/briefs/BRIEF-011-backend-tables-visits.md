@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft — Q1–Q2 open (Field) |
+| **Status** | Ready — Q1, Q2 decided + approved by Field 2026-10-04 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -94,11 +94,11 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - Thai user-facing `message` strings in errors (e.g. "สถานะโต๊ะไม่ถูกต้อง"), English `code`.
 
 ## 7. Decision Points (Field Guard)
-- **Q1 — Schema additions (schema change). Recommend all three:**
+- **Q1 — Schema additions. ✅ Decided (Field, 2026-10-04): all three** (applied to `schema.sql`):
   1. `CREATE UNIQUE INDEX uq_visit_live_per_seat ON visit(table_seat_id) WHERE state IN ('open','active','idle');` — makes "first write wins, second attaches" a DB guarantee (FRD §3 concurrency) instead of app locking.
   2. `table_seat.qr_code` → rename **`qr_token VARCHAR(64) UNIQUE`** holding an opaque random token (base64url, 32 bytes); regenerate = replace. *Why:* lookup by token, old token dies by replacement — no signing keys to manage. (QR image encodes `<customer web URL>/q/<token>`.)
   3. `visit.guest_label VARCHAR(100) NULL` — CD-02 open-table has "ชื่อแขก (ไม่บังคับ)" and the card shows a name before any order; today there is no column for it.
-- **Q2 — Where visits live. Recommend `modules/venue/`** (seat + its visits = one aggregate; `GET /tables` joins them; avoids a venue↔visit cycle). *Alternative:* new `modules/visit/` (cleaner name, one more module, cross-module call for the summary).
+- **Q2 — Where visits live. ✅ Decided (Field, 2026-10-04): `modules/venue/`** (seat + its visits = one aggregate; `GET /tables` joins them; avoids a venue↔visit cycle). *Alternative:* new `modules/visit/` (cleaner name, one more module, cross-module call for the summary).
 - **Pre-decided packages (exact major, verify with `pnpm view` before install; different major → stop, DR):** `@nestjs/websockets` + `@nestjs/platform-socket.io` `^12` (= `@nestjs/core` major) · `socket.io` `^4` · `@socket.io/redis-adapter` `^8` · dev `socket.io-client` `^4` (e2e).
 - **Known gap (not blocking):** no IAM brief yet → `@RequirePermissions` is metadata only; any authenticated staff can call these endpoints until the IAM brief lands. Acceptable for the gate (seeded staff only); IAM brief must land before any real-bar pilot.
 - **Likely DRs:** socket.io cookie auth across ports in dev · TypeORM partial index syntax in migration.
@@ -111,10 +111,11 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 ## Ready Checklist
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
-- [ ] No unresolved decision blocking the main outcome (Q1, Q2)
-- [ ] Field explicitly approved this revision
+- [x] No unresolved decision blocking the main outcome (Q1, Q2 decided)
+- [x] Field explicitly approved this revision (2026-10-04)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-04 | Initial draft (Cowork) — split from "tables/visits/orders": orders → BRIEF-012, payment → BRIEF-013 |
+| 1 | 2026-10-04 | Ready — Q1 (3 schema additions), Q2 (venue module) decided by Field |

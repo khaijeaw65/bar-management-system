@@ -41,7 +41,7 @@ CREATE TABLE table_seat (
   label       VARCHAR(50) NOT NULL,
   kind        table_seat_kind NOT NULL DEFAULT 'table',   -- POS grid section (CD-02 Q1)
   sort_order  SMALLINT NOT NULL DEFAULT 0,
-  qr_code     VARCHAR(500),
+  qr_token    VARCHAR(64) UNIQUE,                         -- opaque random token; regenerate = replace (BRIEF-011 Q1, Field 2026-10-04)
   is_active   BOOLEAN NOT NULL DEFAULT TRUE,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -79,6 +79,7 @@ CREATE TABLE visit (
   table_seat_id  UUID NOT NULL REFERENCES table_seat(id),
   customer_id    UUID REFERENCES customer(id),   -- nullable — linked post-hoc
   state          visit_state NOT NULL DEFAULT 'open',
+  guest_label    VARCHAR(100),                    -- optional name at open (CD-02 open-table; BRIEF-011 Q1)
   opened_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   closed_at      TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -404,6 +405,7 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_visit_table_seat   ON visit(table_seat_id);
 CREATE INDEX idx_visit_customer      ON visit(customer_id) WHERE customer_id IS NOT NULL;
 CREATE INDEX idx_visit_state         ON visit(state);
+CREATE UNIQUE INDEX uq_visit_live_per_seat ON visit(table_seat_id) WHERE state IN ('open','active','idle');  -- one live visit per seat (BRIEF-011 Q1)
 
 -- Order lookups
 CREATE INDEX idx_order_visit         ON order_record(visit_id);

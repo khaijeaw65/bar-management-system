@@ -1,5 +1,5 @@
 # State — KJ
-Updated: 2026-10-04 · Agent: Cowork (planning)
+Updated: 2026-10-04 17:50 · Agent: Cowork (planning)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
@@ -18,14 +18,16 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 DR-009 surfaces: gate = POS full slice (incl. order for customer) + mobile login + order queue (bonus). No CD-08 — mobile uses HeroUI Native + CD-02 content. Seeded menu/tables/staff for the gate.
 
 ## Active
-- Stage: planning — UI design series (CD-02 → CD-11)
-- Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · PR open, docs only
-- Done: CD-00, CD-01, **CD-02** (handoff + F1–F4 decided, 2026-09-28) · CD-03 **Draft**
-- Engineering: BRIEF-002 Expo scaffold implemented on `feat/BRIEF-002-expo-scaffold` (0a95185) — **no PR yet, needs audit** · BRIEF-008 (Metee) / BRIEF-009 (kj agent) Ready, not started per evidence · BRIEF-007 ON HOLD — its own auth D1–D4 (provisioning, refresh store, JWT payload, no passport) still open (not the API D1–D4)
+- Stage: planning — briefs for the gate (session 2026-10-04)
+- Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · **not pushed** — Field: `git push -u origin docs/ui-design-cd03` + PR
+- Decisions today: DR-008 (Metee = mobile), DR-009 (surfaces), DR-005 A1 (`sid` session check), CD-03 Q1–Q3, CD-04 Q1, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`
+- **Ready:** CD-03 payment · CD-04 POS order entry · BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell (→ kj) · BRIEF-009 · **BRIEF-010 mobile shell/queue (Metee)** · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`
+- **Next briefs (not written):** BRIEF-012 backend orders (place, queue, state machine, totals, `open→active`, WS) · BRIEF-013 backend payment + GB Prime Pay webhook + 409 in-flight · IAM brief (groups/policies/PermissionsGuard — ID by Field) · web briefs after CD runs (grid+panel, order entry, checkout) · Metee Week 1 (status actions + order detail)
+- Engineering: BRIEF-002 implemented on `feat/BRIEF-002-expo-scaffold` (0a95185) — **no PR, needs audit; blocks BRIEF-010**
 - Done briefs: 001, 003, 004, 005, 006
 
 ## Field to-do (small, any order)
-1. Answer CD-03 Q1 (`cancelled` payment status), Q2 (charge items in split), Q3 (manual confirm, PIN or not).
+1. Edit CLAUDE.md / AGENTS.md (Methee→Metee, mobile owner, drop web `/staff`) + `frontend.md` Target Surfaces (`/staff` row) + `.cursor/.agents` wrappers for `mobile.md` — protected.
 2. Export CD-02 screenshots → `docs/design/assets/CD-02/` (list in handoff §7) — not blocking.
 3. Open PR for BRIEF-002 + assign auditor.
 4. Re-plan sprint dates after midterms.
@@ -46,5 +48,5 @@ Remaining order: CD-03 payment · CD-04 menu mgmt · CD-05 dashboard · CD-06/07
 1. BRIEF-010 menu-list redesign (Metee) after BRIEF-009 · 2. Resume BRIEF-007 auth · 3. Frontend login + axios, IAM · 4. `docs/rules/mobile.md` after BRIEF-002 Done · 5. TableCard build replaces TableTile (CD-02 F4).
 
 ## Blockers / Coordination
-- Pending docs: schema.sql + erd (`notification`, `staff_push_token`, Q1 outcome), FRD §13, `docs/rules/mobile.md`
+- Pending docs: erd.html (`notification`, `staff_push_token`, `payment_status.cancelled`, `visit.guest_label`, live-visit index), FRD §13, `docs/rules/mobile.md`
 - Stale remote branches to clean up (Field): `docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`
