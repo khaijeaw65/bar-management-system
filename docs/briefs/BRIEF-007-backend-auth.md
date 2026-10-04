@@ -2,14 +2,14 @@
 
 | | |
 |---|---|
-| **Status** | Draft — D1–D4 decided 2026-10-04 · Field approval of Rev 2 pending · Week 1 (after BRIEF-009) |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-04 · Week 1, runs after BRIEF-009 |
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |
 | **PR** | <executor fills> |
 | **Affected apps** | backend · infra/CI (Redis service) |
 | **Revision** | 2 |
-| **Depends on** | BRIEF-004 (Done), BRIEF-006 (Done) |
+| **Depends on** | BRIEF-004 (Done), BRIEF-006 (Done), **BRIEF-009 merged** (envelope `code`, OpenAPI helper) |
 | **References** | handoff 2026-09-20 "Auth & Session Architecture" · DR-005 (mobile auth — **not** in this brief) · DR-007 (frontend axios — BRIEF-008) · `docs/rules/backend.md` · `docs/schema.sql` (`identity_provider`, `staff_user`, `staff_user_identity`) · LINE Login v2.1 |
 | **Audit depth** | Full — auth |
 
@@ -120,7 +120,7 @@ pnpm --filter @bar/backend build
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome (D1–D4 decided 2026-10-04)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-04)
 
 ## Changelog
 | Rev | Date | Change |
@@ -129,3 +129,4 @@ pnpm --filter @bar/backend build
 | 1 | 2026-09-27 | On hold — Field switched priority to UX/UI design; D1–D4 still open |
 | 1 | 2026-10-04 | Off hold. D1 pre-registered, D3 `{ sub }`, D4 keep passport (passport-jwt strategy) — Field. D2 open |
 | 2 | 2026-10-04 | D2 decided: Redis session + per-request `sid` check; D3 payload `{ sub, sid }`; AC-7 extended |
+| 2 | 2026-10-04 | Ready — approved by Field in session; depends on BRIEF-009 |

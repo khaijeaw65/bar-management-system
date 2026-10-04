@@ -1,6 +1,6 @@
 # CD-04 — POS: order for customer (menu → variant/modifiers → cart → send)
 
-**Status:** Draft — Q1 open (Field) · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (DR-009 gate: order entry lives on the POS) — opened from CD-02 panel "สั่งแทนลูกค้า" / open-table success
+**Status:** Ready — Q1 decided by Field (2026-10-04) · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (DR-009 gate: order entry lives on the POS) — opened from CD-02 panel "สั่งแทนลูกค้า" / open-table success
 
 > Replaces the old CD-04 slot (menu management) — menu management moves after the gate as **CD-12** (back office).
 
@@ -16,7 +16,7 @@
 - Realtime `menu.availability_changed` (item turns หมด while the screen is open)
 
 ## Decisions needed (Field)
-- **Q1 — Where order entry lives.** **Recommend: full content area** (`/pos/tables/:id/order`), menu tiles left + cart column right (360 px); the CD-02 drawer closes, back arrow "กลับไปที่โต๊ะ T3". *Why:* a 400 px drawer is too narrow for a tap-fast tile grid; full width fits "3 taps per drink" (FRD §6). *Alternative:* wide drawer (720 px) over the grid — keeps context, cramped at 1024.
+- **Q1 — Where order entry lives. ✅ Decided (Field, 2026-10-04): full content area.** **Recommend: full content area** (`/pos/tables/:id/order`), menu tiles left + cart column right (360 px); the CD-02 drawer closes, back arrow "กลับไปที่โต๊ะ T3". *Why:* a 400 px drawer is too narrow for a tap-fast tile grid; full width fits "3 taps per drink" (FRD §6). *Alternative:* wide drawer (720 px) over the grid — keeps context, cramped at 1024.
 
 Defaults (no decision needed unless Field objects):
 - Menu = **tiles** (name, price, หมด state), not CD-01's table — that table stays the back-office management view.
