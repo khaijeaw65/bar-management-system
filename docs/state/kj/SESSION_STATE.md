@@ -44,9 +44,6 @@ Summarise CD-## for a developer handoff, as plain text:
 ```
 Remaining order: CD-03 payment · CD-04 menu mgmt · CD-05 dashboard · CD-06/07 customer QR · CD-08/09 staff app · CD-10 notifications · CD-11 journeys. Stale inputs: `docs/briefs/ui/*.md` (old tokens, PWA), FRD §13/§15 PWA wording.
 
-## Engineering queue (after design)
-1. BRIEF-010 menu-list redesign (Metee) after BRIEF-009 · 2. Resume BRIEF-007 auth · 3. Frontend login + axios, IAM · 4. `docs/rules/mobile.md` after BRIEF-002 Done · 5. TableCard build replaces TableTile (CD-02 F4).
-
 ## Blockers / Coordination
 - Pending docs: erd.html (`notification`, `staff_push_token`, `payment_status.cancelled`, `visit.guest_label`, live-visit index), FRD §13, `docs/rules/mobile.md`
 - Stale remote branches to clean up (Field): `docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`
