@@ -10,7 +10,7 @@
 
 ## 1. Overview
 
-A unified bar management platform for small-to-medium counter bars. Unlike generic POS systems, it integrates order management, inventory cost tracking, guest intelligence, and PromptPay payment into one system. Built as a PWA (mobile for floor staff, desktop/tablet for POS).
+A unified bar management platform for small-to-medium counter bars. Unlike generic POS systems, it integrates order management, inventory cost tracking, guest intelligence, and PromptPay payment into one system. Web app (customer QR, POS on counter tablet/desktop, responsive back office) + Expo staff app for floor staff (DR-002, DR-009).
 
 **Design philosophy:**
 - Identity is a benefit customers *choose*, never a gate.
@@ -33,12 +33,12 @@ A unified bar management platform for small-to-medium counter bars. Unlike gener
 ### Default roles
 | Role | Devices | Responsibilities |
 |------|---------|-----------------|
-| Owner | Desktop + Tablet | Full access — reports, pricing, staff, settings |
-| Manager | Desktop + Tablet | Floor + back-office — inventory, voids/discounts, reports, shifts |
-| Bartender | Mobile | Orders, bar tab, guest notes, receipts, payments |
-| Waiter | Mobile | Orders, tables, request bill handoff |
+| Owner | Back office (laptop + phone) · POS | Full access — reports, pricing, staff, settings |
+| Manager | POS + back office · staff app optional | Floor + back-office — inventory, voids/discounts, reports, shifts |
+| Bartender | Staff app · POS at the counter (payments, close) | Orders, bar tab, guest notes, receipts, payments |
+| Waiter | Staff app | Orders, tables, request bill handoff |
 
-Roles can be combined on one user (small bar: owner also bartends). Only Owner/Manager can assign group memberships.
+Roles can be combined on one user (small bar: owner also bartends). Surface by context, access by permission — see DR-009. Only Owner/Manager can assign group memberships.
 
 ---
 
@@ -305,8 +305,8 @@ Comps/voids totals grouped by reason; flag abnormal spikes by person/reason. **N
 
 ## 13. Notifications
 
-- **Channels:** WebSocket (in-app, real-time), Web Push (PWA backgrounded), LINE OA (customer-facing, Semester 2).
-- **Priority routing:** active in PWA → WebSocket; backgrounded → Web Push.
+- **Channels:** WebSocket (in-app, real-time, web + staff app), Expo push (staff app backgrounded, DR-003 `staff_push_token`), LINE OA (customer-facing, Semester 2).
+- **Routing per surface:** see DR-009 Notifications table.
 - **Triggers:** idle table, new table opened, restock request, low stock, payment confirmed, new QR order, food ready, **call staff (customer → POS via bell)**.
 
 ---
@@ -322,7 +322,6 @@ Comps/voids totals grouped by reason; flag abnormal spikes by person/reason. **N
 
 **Deferred (Semester 2 or later):**
 - LINE OA (customer): promo broadcast, reservation, business-day announcements, "My Bottle" button, bottle expiry reminders.
-- React Native app (if PWA UX insufficient).
 - Loyalty / stamp cards.
 - Phone OTP identity (model is provider-agnostic to allow this later).
 - EKS migration (after ECS is solid).

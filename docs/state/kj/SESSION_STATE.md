@@ -15,7 +15,7 @@ Updated: 2026-10-04 · Agent: Cowork (planning)
 | 4 · 2–8 Nov | integration, seed, demo — no new features | fixes; demo: phone order → POS live |
 | 9–20 Nov | AWS deploy · bottle keep if time | polish |
 Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core slice. If ahead: bottle keep → dashboard → customer QR. LINE OA → Sem 2.
-**Open (Field):** mobile gate slice = login → table list → take order? · CD-08 small run or HeroUI Native defaults?
+DR-009 surfaces: gate = POS full slice (incl. order for customer) + mobile login + order queue (bonus). No CD-08 — mobile uses HeroUI Native + CD-02 content. Seeded menu/tables/staff for the gate.
 
 ## Active
 - Stage: planning — UI design series (CD-02 → CD-11)
