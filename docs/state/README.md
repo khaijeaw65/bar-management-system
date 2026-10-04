@@ -2,7 +2,7 @@
 
 Use `kj/SESSION_STATE.md` and `methee/SESSION_STATE.md`. Each developer (or their current agent) writes only their own state. The initial migration was explicitly authorized by Field; it does not grant ongoing cross-owner edits.
 
-State is tracked on the brief branch. Commit/push it with work or as a scoped state-only commit; do not open a separate state PR or push directly to main. Failed/unrun tests are permitted on Draft WIP when disclosed. Implemented and merge still require gates. KJ reads Methee's branch/Draft PR to see the latest published progress.
+State is tracked on the brief branch. Commit/push it with work or as a scoped state-only commit; do not open a separate state PR or push directly to main. Failed/unrun tests are permitted on Draft WIP when disclosed. Implemented and merge still require gates. KJ reads Metee's branch/Draft PR to see the latest published progress.
 
 Onboard sets the gitignored root `.agent-local.json` to `{"developer":"kj"}` or `{"developer":"methee"}`. This is a checkout preference, not authentication, authorization or progress. Explicit session identity wins; clarify conflicts. Never infer identity from Git author or tool account.
 
@@ -21,7 +21,7 @@ Cowork updates `docs/state/kj/SESSION_STATE.md` only on the currently open task/
 Separate developers use separate clones/worktrees. Field's existing two-brief exception requires separate worktrees/agents and no shared implementation files except pnpm-lock.yaml. Each worktree holds its own state snapshot. On integration, reconcile KJ's state explicitly, preserve both briefs' blockers/progress and choose the still-active brief as Resume. Never blindly choose ours/theirs. The second PR reconciles the lockfile and reruns affected gates.
 
 ## Migration
-Old ignored `docs/state/kj.md` / `methee.md` are legacy local files, not current state. Leave local originals intact during transition to avoid losing uncommitted history, but agents must read the tracked folders. This migration records a stale KJ snapshot as historical context; actual Git shows PR #17 merged. Methee's folder is an unverified onboarding placeholder because no local state existed here.
+Old ignored `docs/state/kj.md` / `methee.md` are legacy local files, not current state. Leave local originals intact during transition to avoid losing uncommitted history, but agents must read the tracked folders. This migration records a stale KJ snapshot as historical context; actual Git shows PR #17 merged. Metee's folder is an unverified onboarding placeholder because no local state existed here.
 
 **Expect `main` to be one step behind.** The snapshot on `main` is the last pre-merge state (e.g. "awaiting audit"); closure rides the next task commit. Treat merged PRs as the truth and refresh state as the first commit of the next task branch.
 

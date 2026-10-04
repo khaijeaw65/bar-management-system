@@ -1,6 +1,6 @@
 # CD-01 — POS: login, not-registered, app shell, menu list
 
-**Status:** Done (dark-first, run before CD-00, 2026-09-27) — light theme added by CD-00 · **Surface:** web desktop/tablet (min width 1280 px; also show 1024 px) · **Used by:** BRIEF-008 (Methee, first frontend brief) and BRIEF-007 (auth redirects)
+**Status:** Done (dark-first, run before CD-00, 2026-09-27) — light theme added by CD-00 · **Surface:** web desktop/tablet (min width 1280 px; also show 1024 px) · **Used by:** BRIEF-008 (Metee, first frontend brief) and BRIEF-007 (auth redirects)
 
 ## Attach
 **Open inside the existing Claude Design project:** https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457

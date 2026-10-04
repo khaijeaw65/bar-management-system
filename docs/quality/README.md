@@ -20,7 +20,7 @@
 
 ## Who fixes
 - Agents may run the scan and explain issues.
-- **Methee fixes his own issues.** Agents write code only when he is blocked (counts toward his ≤ 20%, workflow §8).
+- **Metee fixes his own issues.** Agents write code only when he is blocked (counts toward his ≤ 20%, workflow §8).
 - "Won't fix" / "false positive" / exclusions / gate changes → Field's approval first.
 
 ## Never

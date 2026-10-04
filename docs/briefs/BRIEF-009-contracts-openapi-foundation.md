@@ -9,14 +9,14 @@
 | **PR** | <executor fills> |
 | **Affected apps** | contracts / backend / tooling |
 | **Revision** | 1 |
-| **Depends on** | BRIEF-004 (Done — backend scaffold, envelope). Runs **in parallel with BRIEF-008** (Methee, frontend only) — no shared files except `pnpm-lock.yaml` (lockfile rule from BRIEF-005 §6) |
+| **Depends on** | BRIEF-004 (Done — backend scaffold, envelope). Runs **in parallel with BRIEF-008** (Metee, frontend only) — no shared files except `pnpm-lock.yaml` (lockfile rule from BRIEF-005 §6) |
 | **References** | DR-004 + Amendment 1 · `docs/api/README.md` (conventions, catalog, D1–D4) · `docs/rules/backend.md` → API Response, OpenAPI · `docs/schema.sql` enums · `docs/design/CD-00-handoff.md` §2 (chips key on schema enums) |
 | **Audit depth** | Full (contract layer every later brief depends on) |
 
 ---
 
 ## 1. Goal
-`@bar/contracts` becomes the real, schema-aligned source of truth (Zod enums, envelope, menu schemas) that both apps can import, and the backend serves a generated OpenAPI spec (`/api/docs`) with a committed, CI-checked `docs/api/openapi.json`. After this, BRIEF-010 (menu-list redesign, Methee) builds its MSW mock on the real contract.
+`@bar/contracts` becomes the real, schema-aligned source of truth (Zod enums, envelope, menu schemas) that both apps can import, and the backend serves a generated OpenAPI spec (`/api/docs`) with a committed, CI-checked `docs/api/openapi.json`. After this, BRIEF-010 (menu-list redesign, Metee) builds its MSW mock on the real contract.
 
 ## 2. Scope
 ### In
@@ -41,7 +41,7 @@
 
 ### Out
 - Real menu endpoints / migrations / seed (backend menu brief).
-- Frontend changes (`lib/api/menu.ts`, MSW) → **BRIEF-010** (Methee) — avoids conflicts with BRIEF-008.
+- Frontend changes (`lib/api/menu.ts`, MSW) → **BRIEF-010** (Metee) — avoids conflicts with BRIEF-008.
 - Auth endpoints and their spec entries (BRIEF-007 adds them using this helper).
 - WebSocket event schemas (first realtime brief).
 - `Idempotency-Key` implementation (D3 = yes) — built in the first order/payment brief per `docs/api/README.md` §1; only the error code is added here.

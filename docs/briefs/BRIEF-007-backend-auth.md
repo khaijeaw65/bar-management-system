@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft — **ON HOLD** (Field, 2026-09-27: design work first so Methee can start) |
+| **Status** | Draft — **ON HOLD** (Field, 2026-09-27: design work first so Metee can start) |
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |

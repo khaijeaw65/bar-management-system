@@ -6,7 +6,7 @@
 ## 1. People, Roles, Session Types
 
 - **Field (KJ):** decision authority, backend lead and final merge approver. Cursor is the primary executor; Claude Code is a fallback. Field may authorize an agent to perform the approved merge.
-- **Methee (เมธี):** frontend/web and mobile developer; learning mode (§8) applies.
+- **Metee (เมธี):** frontend/web and mobile developer; learning mode (§8) applies.
 - **Executors (Cursor, Claude Code, Antigravity, Codex):** scoped code/tests, own state, handoffs, Pending DRs and brief-unlocked paths. Never approve their own work or change brief scope/status, DR decisions or rules on their own initiative.
 - **Cowork:** planning partner and default auditor. May create Draft briefs, record explicit Field decisions, and revise/set Ready after Field reviews and explicitly approves. No app code.
 - **Codex auditor:** fallback when Cowork usage is exhausted and Field explicitly assigns Codex; never switch automatically. Field may also request an additional cross-check. If Codex implemented the work, use a separate audit session.
@@ -48,7 +48,7 @@ For product/technical decisions: Approved DR > approved brief > rules > state. T
 
 Brief IDs use one project-wide `BRIEF-###` sequence allocated by Field. One testable outcome may span apps only with one implementer responsible for all parts; otherwise split and link dependencies. Target size: at most three working days. See §10 for retired IDs. UI briefs are design inputs, not executable briefs.
 
-State is a branch snapshot, not a live lock. KJ reads Methee's latest state from the task branch/Draft PR without switching checkout. No CLAIMS file or additional project-wide session log. See `docs/state/README.md` for migration and concurrent-work rules.
+State is a branch snapshot, not a live lock. KJ reads Metee's latest state from the task branch/Draft PR without switching checkout. No CLAIMS file or additional project-wide session log. See `docs/state/README.md` for migration and concurrent-work rules.
 
 ## 3. Lifecycle and Ready Checklist
 
@@ -159,15 +159,15 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 
 - **G1:** exact commands in the Ready brief, normally lint/typecheck/tests for affected packages. Explicitly justified package-specific/manual evidence is allowed.
 - **G2:** applicable required CI checks on the current PR head, including the brief's integration/e2e coverage. Verify current workflows and scripts; historical setup notes are not evidence that CI exists or passes.
-- **G3:** assigned audit PASS, all ACs supported, no unresolved Must fix/unapproved deviation, handoff/state present, and Field review. Methee's walkthrough remains required.
+- **G3:** assigned audit PASS, all ACs supported, no unresolved Must fix/unapproved deviation, handoff/state present, and Field review. Metee's walkthrough remains required.
 
 ### Local SonarQube scan (pre-commit habit, not a CI gate)
 
-Field decided 2026-09-25: **local SonarQube Community Build** in Docker. Purpose: every developer — **required for Methee's work** — scans before committing and fixes what it flags; Field reads the result in the PR. Not enforced by CI. Hosting a shared SonarQube (EC2 or a cloud plan) is reconsidered with cloud provisioning in November.
+Field decided 2026-09-25: **local SonarQube Community Build** in Docker. Purpose: every developer — **required for Metee's work** — scans before committing and fixes what it flags; Field reads the result in the PR. Not enforced by CI. Hosting a shared SonarQube (EC2 or a cloud plan) is reconsidered with cloud provisioning in November.
 - **Not live until BRIEF-006 merges** (Compose service, `pnpm sonar`, report script). Until then the handoff says "not available yet".
 - **Before each commit that changes code:** start SonarQube, run `pnpm sonar`, fix findings, re-scan until the Quality Gate passes **or** every remaining issue has a written reason.
 - **Handoff → Sonar section:** gate result, issue counts by severity, remaining issues + reason (output of `pnpm sonar:report`). Field reviews it in the PR.
-- **Who fixes:** an agent may **run** the scan and **explain** each issue. In Methee's sessions **Methee fixes the issues himself**; the agent helps with code only when he is blocked, and that help counts toward his ≤ 20% (§8).
+- **Who fixes:** an agent may **run** the scan and **explain** each issue. In Metee's sessions **Metee fixes the issues himself**; the agent helps with code only when he is blocked, and that help counts toward his ≤ 20% (§8).
 - Never mark issues "won't fix"/"false positive", add exclusions or change the gate to get a pass without Field's approval.
 - Setup and procedure: `docs/quality/README.md`.
 
@@ -199,14 +199,14 @@ The audit reviews implementation commit S. The audit file itself is committed la
 
 **Merge authority (Field, 2026-09-24):**
 - **Field's own PRs** (brief Implementer = kj): pre-approved. The agent may merge once the assigned audit is **PASS** with zero Must fix, S..H is evidence-only, and required checks are green on H. No separate `อนุมัติ merge` needed; the agent reports PR, H and merge SHA afterwards.
-- **Methee's PRs:** always need Field's explicit `อนุมัติ merge BRIEF-###` for the exact head H, plus the G3 walkthrough.
+- **Metee's PRs:** always need Field's explicit `อนุมัติ merge BRIEF-###` for the exact head H, plus the G3 walkthrough.
 - **Remote protection (confirmed 2026-09-23/24):** `main` requires a PR + 1 approval, CODEOWNERS = Field, admin bypass allowed for Field, required status check `ci`. Before relying on bypass, verify the live settings still match.
 
-For Methee's PRs, before Field approval present exact PR, brief revision, head H, assigned audit/result, G1/G2 evidence, zero unresolved Must fix findings, and remaining limitations. Field's `อนุมัติ merge BRIEF-###` approves the presented PR/head, not an unspecified future head.
+For Metee's PRs, before Field approval present exact PR, brief revision, head H, assigned audit/result, G1/G2 evidence, zero unresolved Must fix findings, and remaining limitations. Field's `อนุมัติ merge BRIEF-###` approves the presented PR/head, not an unspecified future head.
 
 Immediately before merging, verify head H is unchanged, applicable gates pass, no unresolved conflicts/reviews and no new blocker. If head changes after approval (including state/docs), show the delta and request approval for the new head; code-affecting changes also need re-audit. Use an expected-head merge check where supported. Never silently merge a different head or bypass failing checks.
 
-Field may always merge directly. Admin bypass is used only for Field's own PRs under the merge-authority conditions above; normal Git permission never grants bypass. Methee's PRs never use bypass.
+Field may always merge directly. Admin bypass is used only for Field's own PRs under the merge-authority conditions above; normal Git permission never grants bypass. Metee's PRs never use bypass.
 
 After verified merge: report merge SHA/PR and **Done**. The PR is authoritative; no status-only brief PR. Optionally remove the merged task branch only when no work is lost and sync the local checkout safely. Update own state locally with the result; include it in the next suitable task commit, never commit directly to main just to publish closure. Closed/unmerged PRs remain incomplete. No release tag or deployment is included in merge approval.
 

@@ -8,7 +8,7 @@
 | **Category** | Flow/Architecture |
 
 ## Context
-DR-008 split ownership (Methee = Expo app, Field = backend + web). Surfaces were still blurry: CLAUDE.md planned a web `/staff` segment as well as the Expo app, FRD §2 put Bartender on "Mobile" including payments, and nothing owned order entry for the 8 Nov gate (customer QR ordering is after the gate).
+DR-008 split ownership (Metee = Expo app, Field = backend + web). Surfaces were still blurry: CLAUDE.md planned a web `/staff` segment as well as the Expo app, FRD §2 put Bartender on "Mobile" including payments, and nothing owned order entry for the 8 Nov gate (customer QR ordering is after the gate).
 
 ## Decision rule
 **Surface by context (where the person is working), access by IAM permission (who they are).** Roles are default groups, never hard-coded; every screen and action is gated by `PermissionsGuard` permissions. A user in several groups (owner who bartends) uses whichever surface fits the moment.
@@ -17,7 +17,7 @@ DR-008 split ownership (Methee = Expo app, Field = backend + web). Surfaces were
 | Surface | Route / app | Device | Context | Owner |
 |---|---|---|---|---|
 | Customer web | `/q/:token` (LINE OA / LIFF in S2) | guest phone, no login | ordering & paying for themselves | Field |
-| Staff app | Expo `app/mobile/` | staff's own phone | moving on the floor | Methee (Field reviews) |
+| Staff app | Expo `app/mobile/` | staff's own phone | moving on the floor | Metee (Field reviews) |
 | POS web | `/pos` | counter tablet / desktop, **≥ 1024 px only** | fixed station | Field |
 | Back-office web | `/admin` | laptop + phone (**responsive**) | managing the business | Field |
 
@@ -55,7 +55,7 @@ POS: open table → order for customer → payment (PromptPay sandbox / cash) �
 ## Refinement
 This is the high-level boundary. Details found while writing briefs are added as a brief **Pre-decided** item (within these boundaries) or as an amendment to this DR (if they move a feature between surfaces or phases).
 
-**Follow-ups:** FRD §1/§2/§13/§14 updated in this PR · CLAUDE.md "Shape" (drop web `/staff`, mobile exists, Methee = mobile) — Field edits (protected) · `docs/briefs/ui/staff-mobile.md` stale (PWA, old tokens) — reference only.
+**Follow-ups:** FRD §1/§2/§13/§14 updated in this PR · CLAUDE.md "Shape" (drop web `/staff`, mobile exists, Metee = mobile) — Field edits (protected) · `docs/briefs/ui/staff-mobile.md` stale (PWA, old tokens) — reference only.
 
 ---
 
