@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — approved by Field 2026-10-04 |
 | **Implementer** | metee (learning mode — writes ≥ 70 % himself; agent ≤ 20 %) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -117,7 +117,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions (BRIEF-002 merged)
 - [x] No unresolved decision blocking the main outcome
-- [ ] Field explicitly approved this revision
+- [x] Field explicitly approved this revision (2026-10-04, with `docs/rules/mobile.md`)
 
 ## Changelog
 | Rev | Date | Change |

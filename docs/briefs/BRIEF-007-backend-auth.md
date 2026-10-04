@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft — **ON HOLD** (Field, 2026-09-27: design work first so Metee can start) |
+| **Status** | Draft — D1, D3, D4 decided 2026-10-04 · **D2 open** · Week 1 (after BRIEF-009) |
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |
@@ -28,11 +28,11 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 - **Redis provider:** `providers/redis/redis.module.ts` (global) + `redis.service.ts` exposing one `ioredis` client; closed on shutdown.
 - **Migration** `…-StaffIdentity.ts`: `identity_provider` enum, `staff_user`, `staff_user_identity` — **exactly as `docs/schema.sql`**.
 - **IAM module (minimal):** `modules/iam/` — `StaffUser`, `StaffUserIdentity` entities; repository port + TypeORM adapter; `StaffUserService` with `findByIdentity(provider, externalId)` and `findActiveById(id)`. No groups/policies yet (IAM brief, TBD). These two tables have no audit columns in `schema.sql` → the entities do **not** extend `BaseEntity`.
-- **Auth module** (replace the passport stubs):
+- **Auth module** (replace the unused strategy stubs with one real JWT strategy):
   - `LineClient` behind a port: build authorize URL, exchange code (`https://api.line.me/oauth2/v2.1/token`), verify ID token (`POST https://api.line.me/oauth2/v2.1/verify` with `nonce`). Plain `fetch`.
   - `TokenService`: access JWT (HS256, payload `{ sub }`, TTL from config) via `@nestjs/jwt`; **opaque refresh tokens** (32 random bytes) stored in Redis **hashed** (`refresh:<sha256>` → `{ userId, familyId }`, TTL = refresh TTL); rotation on every use; **reuse of an already-rotated token revokes the whole family**.
   - OAuth `state` + `nonce` in Redis (`oauth:<state>`, 10 min, single use).
-  - `JwtAuthGuard` registered as `APP_GUARD`; reads cookie `access_token`, then `Authorization: Bearer` (DR-005 extractor order); `@Public()` decorator in `common/decorators/public.decorator.ts`; `HealthController` marked `@Public()`. `CurrentUser` decorator returns `{ sub }`.
+  - `JwtStrategy` (`passport-jwt`, `ExtractJwt.fromExtractors([cookie access_token, fromAuthHeaderAsBearerToken()])` — DR-005 extractor order); `JwtAuthGuard extends AuthGuard('jwt')` registered as `APP_GUARD`, skips routes marked `@Public()` via `Reflector`. LINE OAuth stays custom (state/nonce in Redis) — no passport LINE strategy; `@Public()` decorator in `common/decorators/public.decorator.ts`; `HealthController` marked `@Public()`. `CurrentUser` decorator returns `{ sub }`.
   - `cookie-parser` in `bootstrap/configure-app.ts`; `enableCors({ origin: FRONTEND_URL, credentials: true })`.
 - **Endpoints** (`/api/auth`, envelope applies except redirects):
   | Method | Path | Auth | Behaviour |
@@ -46,7 +46,7 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 - **Staff provisioning CLI:** `pnpm --filter @bar/backend seed:staff -- --line-user-id <sub> --name "<display name>"` — standalone script using the CLI `DataSource`; idempotent (existing identity → prints "already registered").
 - **CI:** add a `redis:7-alpine` service + test env values (`REDIS_URL`, dummy `JWT_ACCESS_SECRET`, dummy `LINE_*`, `FRONTEND_URL`) to `.github/workflows/ci.yml`.
 - `.env.example` (backend) updated; `README` auth section (how to provision the first owner).
-- Remove `@nestjs/passport`, `passport` and the three strategy stubs (no longer used) — closes the 4 unused-import Sonar issues too.
+- Keep `@nestjs/passport` + `passport` (D4); add `passport-jwt`; delete the unused strategy stubs except the one `JwtStrategy` — closes the unused-import Sonar issues too.
 
 ### Out (do NOT build here)
 - Mobile endpoints (`/auth/mobile/token`, `/auth/mobile/refresh`, PKCE) — with the Expo auth brief (DR-005).
@@ -71,7 +71,7 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 - **AC-8** — Any non-`@Public` route without a token → 401 envelope; with `Authorization: Bearer <access>` it passes (extractor order); `/api/health` stays public.
 - **AC-9** — Refresh tokens are never stored in plain text (Redis key is a hash); tokens/secrets never logged.
 - **AC-10** — `seed:staff` creates the user + identity; second run reports "already registered".
-- **AC-11** — `@nestjs/passport`, `passport` and strategy stubs removed; lint 0 warnings in `modules/auth`.
+- **AC-11** — Exactly one passport strategy (`jwt`) remains; unused stubs removed; lint 0 warnings in `modules/auth`.
 - **AC-12** — lint / typecheck / test / test:e2e / build exit 0; `ci` green with the Redis service.
 
 ## 5. Test Gate
@@ -104,10 +104,11 @@ pnpm --filter @bar/backend build
 ## 7. Decision Points (Field Guard)
 - **Proposed for Field review before Ready** (become Pre-decided when approved):
   - **D1 Staff provisioning:** only pre-registered LINE identities can sign in; the first owner is created with `seed:staff`; the LINE `sub` of a rejected login is logged so the owner can register staff. (Invite links come later with IAM.)
-  - **D2 Refresh tokens:** opaque, hashed in Redis with family rotation + reuse detection (no DB table, no JWT refresh). Flushing Redis signs everyone out — acceptable.
-  - **D3 JWT payload** `{ sub }` only — no `venueId` (DB-per-venue). `backend.md` Auth line updated with this brief.
-  - **D4 No passport:** custom `JwtAuthGuard` with `@nestjs/jwt`; remove `@nestjs/passport` + `passport`.
-- **Pre-decided packages (exact):** `ioredis` `^5.11.1` (BullMQ uses ioredis 5 — not 6.0), `cookie-parser` `^1.4.7`, dev `@types/cookie-parser` `^1.4.10`. Removed: `@nestjs/passport`, `passport`.
+  - **D2 Refresh tokens — OPEN (Field wants to discuss, 2026-10-04).** Current draft: opaque, hashed in Redis with family rotation + reuse detection (no DB table, no JWT refresh).
+  - **D1 ✅ Decided (Field, 2026-10-04): pre-registered only** — as described above.
+  - **D3 ✅ Decided (Field, 2026-10-04): JWT payload `{ sub }` only** — no `venueId` (DB-per-venue). `backend.md` Auth line updated with this brief.
+  - **D4 ✅ Decided (Field, 2026-10-04): keep passport** — `@nestjs/passport` + `passport-jwt` `JwtStrategy` with cookie-then-Bearer extractors; `@nestjs/jwt` signs tokens.
+- **Pre-decided packages (exact):** `ioredis` `^5.11.1` (BullMQ uses ioredis 5 — not 6.0), `cookie-parser` `^1.4.7`, dev `@types/cookie-parser` `^1.4.10`. Added: `passport-jwt` `^4.0.1`, dev `@types/passport-jwt` `^4.0.1` (verify with `pnpm view` before install; different major → stop, DR). Kept: `@nestjs/passport`, `passport`.
 - **Likely DRs:** LINE verify endpoint behaviour differs from docs · need for a `staff_refresh_token` DB table after all · CORS/cookie issues across ports in dev.
 
 ## 8. Unlocked Protected Files
@@ -126,3 +127,4 @@ pnpm --filter @bar/backend build
 |---|---|---|
 | 1 | 2026-09-25 | Initial draft (Cowork). Mobile auth split out (DR-005 later), frontend + IAM = later briefs (BRIEF-008/009 numbers since reused, 2026-09-28) |
 | 1 | 2026-09-27 | On hold — Field switched priority to UX/UI design; D1–D4 still open |
+| 1 | 2026-10-04 | Off hold. D1 pre-registered, D3 `{ sub }`, D4 keep passport (passport-jwt strategy) — Field. D2 open |

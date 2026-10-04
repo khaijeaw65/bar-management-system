@@ -21,7 +21,7 @@ DR-009 surfaces: gate = POS full slice (incl. order for customer) + mobile login
 - Stage: planning — UI design series (CD-02 → CD-11)
 - Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · PR open, docs only
 - Done: CD-00, CD-01, **CD-02** (handoff + F1–F4 decided, 2026-09-28) · CD-03 **Draft**
-- Engineering: BRIEF-002 Expo scaffold implemented on `feat/BRIEF-002-expo-scaffold` (0a95185) — **no PR yet, needs audit** · BRIEF-008 (Metee) / BRIEF-009 (kj agent) Ready, not started per evidence · BRIEF-007 ON HOLD (D1–D4 now decided → can resume)
+- Engineering: BRIEF-002 Expo scaffold implemented on `feat/BRIEF-002-expo-scaffold` (0a95185) — **no PR yet, needs audit** · BRIEF-008 (Metee) / BRIEF-009 (kj agent) Ready, not started per evidence · BRIEF-007 ON HOLD — its own auth D1–D4 (provisioning, refresh store, JWT payload, no passport) still open (not the API D1–D4)
 - Done briefs: 001, 003, 004, 005, 006
 
 ## Field to-do (small, any order)

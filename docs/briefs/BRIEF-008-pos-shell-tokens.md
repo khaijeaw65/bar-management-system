@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Ready |
-| **Implementer** | methee |
+| **Implementer** | kj (reassigned from metee — DR-008, 2026-10-04) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **PR** | <executor fills> |
@@ -107,3 +107,4 @@ pnpm sonar && pnpm sonar:report        # local, before each commit you push
 |---|---|---|
 | 1 | 2026-09-27 | Initial draft (Cowork) from CD-01 handoff + design-system v2; updated same day with CD-00 final tokens (`tokens-v2.css`), rail icon 24, no temporary light values |
 | 1 | 2026-09-28 | Ready — approved by Field in session ("approve B8") |
+| 1 | 2026-10-04 | Implementer metee → kj (DR-008 ownership split). Scope unchanged |
