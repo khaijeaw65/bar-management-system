@@ -18,7 +18,7 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 | CD-00 | Design system gap-fill: **light theme**, HeroUI alignment, missing components/states, status chips, **feedback kit** + notifications | all | Every screen reuses it |
 | CD-01 | POS: login, not-registered, app shell, **menu list** | web desktop | Methee's first brief (BRIEF-008) |
 | CD-02 | POS: table grid + session detail panel + open-table dialog | web desktop | Sprint 3 core |
-| CD-03 | POS: payment (PromptPay QR, cash, split, in-flight collision) | web desktop | core vertical |
+| CD-03 | POS: payment (PromptPay QR, cash, split, in-flight collision) — `CD-03-pos-payment.md` | web desktop | core vertical |
 | CD-04 | POS: menu management, 86'd, restock requests | web desktop | |
 | CD-05 | POS: owner / manager dashboard | web desktop | presentation |
 | CD-06 | Customer QR: name → menu → item → cart → order status | phone web | core vertical |
