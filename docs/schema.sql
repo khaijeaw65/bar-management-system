@@ -14,7 +14,7 @@ CREATE TYPE item_type           AS ENUM ('simple', 'recipe', 'charge');
 CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue');
 CREATE TYPE order_item_status   AS ENUM ('pending', 'preparing', 'ready', 'cancelled');
 CREATE TYPE payment_method      AS ENUM ('promptpay', 'cash');
-CREATE TYPE payment_status      AS ENUM ('pending', 'completed', 'failed', 'refunded');
+CREATE TYPE payment_status      AS ENUM ('pending', 'completed', 'failed', 'refunded', 'cancelled');  -- cancelled = staff cancel or 15-min QR timeout (CD-03 Q1, Field 2026-10-04)
 CREATE TYPE bottle_keep_status  AS ENUM ('active', 'finished', 'expired');
 CREATE TYPE inv_category        AS ENUM ('A', 'B', 'C');
 CREATE TYPE inv_tx_type         AS ENUM ('purchase', 'usage', 'adjustment', 'void');
