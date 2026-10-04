@@ -65,3 +65,11 @@ App                                   Backend                         LINE
 **Decision:** Approved: A
 **Why:** The standard native-app OAuth pattern (system browser + app redirect + PKCE). Two new endpoints, no change to the web cookie flow.
 **Date:** 2026-09-23 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR
+
+---
+
+## Amendment 1 — session check (Field, 2026-10-04, via BRIEF-007 D2/D3)
+- JWT payload is `{ sub, sid }` (`sid` = refresh-token family id) for web **and** mobile.
+- Every authenticated request (cookie or Bearer) checks `session:<sid>` in Redis; missing → 401. Mobile logout (revoke refresh family) therefore ends the session immediately, not after the access-token TTL.
+- `POST /api/auth/mobile/token` and `/mobile/refresh` create/rotate the same family + session record as the web flow.
+**Why:** instant per-device logout with no extra infrastructure (Redis already on the request path).
