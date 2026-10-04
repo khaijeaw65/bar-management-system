@@ -19,7 +19,7 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 | CD-01 | POS: login, not-registered, app shell, **menu list** | web desktop | Metee's first brief (BRIEF-008) |
 | CD-02 | POS: table grid + session detail panel + open-table dialog | web desktop | Sprint 3 core |
 | CD-03 | POS: payment (PromptPay QR, cash, split, in-flight collision) — `CD-03-pos-payment.md` | web desktop | core vertical |
-| CD-04 | POS: menu management, 86'd, restock requests | web desktop | |
+| CD-04 | POS: **order for customer** (menu tiles → variant/modifiers → cart → send) — `CD-04-pos-order-entry.md` | web desktop | gate: order entry on POS (DR-009) |
 | CD-05 | POS: owner / manager dashboard | web desktop | presentation |
 | CD-06 | Customer QR: name → menu → item → cart → order status | phone web | core vertical |
 | CD-07 | Customer QR: payment intent, split, PDPA consent | phone web | |
@@ -27,5 +27,6 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 | CD-09 | Staff app: guest profile + AI summary, bottle keep, payment handoff, split | Expo mobile | differentiators |
 | CD-10 | Notifications end-to-end (push, in-app feed, toast, call-staff) across surfaces | all | presentation |
 | CD-11 | Journey boards for the presentation: guest-in → order → pay → close (all roles) | all | presentation |
+| CD-12 | Back office: menu management, 86'd, restock requests (was CD-04) | web responsive | after gate |
 
 Status per brief lives in its own file (`Status:` line).
