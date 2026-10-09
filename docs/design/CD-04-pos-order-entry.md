@@ -1,6 +1,6 @@
 # CD-04 — POS: order for customer (menu → variant/modifiers → cart → send)
 
-**Status:** Ready — Q1 decided by Field (2026-10-04) · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (DR-009 gate: order entry lives on the POS) — opened from CD-02 panel "สั่งแทนลูกค้า" / open-table success
+**Status:** Done (2026-10-09) — handoff `CD-04-handoff.md`; review items F1–F4 open for Field · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (DR-009 gate: order entry lives on the POS) — opened from CD-02 panel "สั่งแทนลูกค้า" / open-table success
 
 > Replaces the old CD-04 slot (menu management) — menu management moves after the gate as **CD-12** (back office).
 
@@ -47,5 +47,5 @@ Defaults (no decision needed unless Field objects):
 - No out-of-scope items appear.
 
 ## Result
-- Claude Design link: <after run>
+- Claude Design link: https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 (`ui_kits/pos-v2/cd-04/`, 7 boards + state boards, dark + light)
 - Handoff: `docs/design/CD-04-handoff.md` · screenshots `docs/design/assets/CD-04/`
