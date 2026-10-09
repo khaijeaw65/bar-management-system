@@ -179,6 +179,21 @@ CREATE TABLE user_policy (
   PRIMARY KEY (user_id, policy_id)
 );
 
+-- Pending sign-in requests from LINE accounts that are not registered yet (CD-13 Q1, Field 2026-10-09).
+-- Owner/manager approves (creates staff_user + identity + memberships) or rejects.
+CREATE TABLE staff_access_request (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  provider      identity_provider NOT NULL,
+  external_id   VARCHAR(300) NOT NULL,
+  display_name  VARCHAR(200),
+  avatar_url    VARCHAR(500),
+  status        VARCHAR(20) NOT NULL DEFAULT 'pending',   -- pending | approved | rejected
+  requested_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  decided_at    TIMESTAMPTZ,
+  decided_by    UUID REFERENCES staff_user(id),
+  UNIQUE (provider, external_id)
+);
+
 -- ============================================================
 -- 4. MENU
 -- ============================================================

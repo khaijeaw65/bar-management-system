@@ -1,6 +1,6 @@
 # CD-12 — Back office: responsive shell + menu management (items, photos, variants, modifiers, categories, 86'd)
 
-**Status:** Draft — defaults D1–D4 for Field · **Surface:** web, responsive — desktop/tablet 1280 (also 1024) **and phone 390** · **Used by:** S1 back-office menu brief · DR-009 (back office = responsive) · CD-06 Q1 (photos)
+**Status:** Ready — D1–D4 accepted by Field (2026-10-09) · **Surface:** web, responsive — desktop/tablet 1280 (also 1024) **and phone 390** · **Used by:** S1 back-office menu brief · DR-009 (back office = responsive) · CD-06 Q1 (photos)
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
