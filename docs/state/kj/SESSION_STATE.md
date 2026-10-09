@@ -1,5 +1,5 @@
 # State — KJ
-Updated: 2026-10-04 17:50 · Agent: Cowork (planning)
+Updated: 2026-10-09 · Agent: Cowork (planning)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
@@ -23,7 +23,8 @@ DR-009 surfaces: gate = POS full slice (incl. order for customer) + mobile login
 - Stage: planning — briefs for the gate (session 2026-10-04)
 - Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · **not pushed** — Field: `git push -u origin docs/ui-design-cd03` + PR
 - Decisions today: DR-008 (Metee = mobile), DR-009 (surfaces), DR-005 A1 (`sid` session check), CD-03 Q1–Q3, CD-04 Q1, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`
-- **Ready:** CD-03 payment · CD-04 POS order entry · BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell (→ kj) · BRIEF-009 · **BRIEF-010 mobile shell/queue (Metee)** · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`
+- **Design done (2026-10-09):** CD-03 payment + CD-04 order entry — handoffs written, review F1–F4 accepted; CD-03 F1 (payment `confirmed_via` / `status_reason` / `status_note`) → BRIEF-013. Screenshots pending (`assets/CD-03`, `CD-04`).
+- **Ready:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell (→ kj) · BRIEF-009 · **BRIEF-010 mobile shell/queue (Metee)** · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`
 - **Next briefs (not written):** BRIEF-012 backend orders (place, queue, state machine, totals, `open→active`, WS) · BRIEF-013 backend payment + GB Prime Pay webhook + 409 in-flight · IAM brief (groups/policies/PermissionsGuard — ID by Field) · web briefs after CD runs (grid+panel, order entry, checkout) · Metee Week 1 (status actions + order detail)
 - Engineering: BRIEF-002 implemented on `feat/BRIEF-002-expo-scaffold` (0a95185) — **no PR, needs audit; blocks BRIEF-010**
 - Done briefs: 001, 003, 004, 005, 006

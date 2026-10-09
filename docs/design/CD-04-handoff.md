@@ -4,7 +4,7 @@ Source: Claude Design project https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc
 Screenshots: `docs/design/assets/CD-04/`.
 **Do not port Claude Design's JSX.** Build with HeroUI v3 + our tokens. Menu/cart values are sample data.
 
-## 0. Cowork review — decisions for Field
+## 0. Cowork review — ✅ all accepted by Field (2026-10-09)
 | # | Item | Recommendation |
 |---|---|---|
 | F1 | **Swipe-to-remove** (state 7) on a POS that also runs on desktop with a mouse. | Build **✕ only** for the gate; swipe = touch nice-to-have later. No confirm Modal on remove (as drawn). |

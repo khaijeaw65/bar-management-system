@@ -4,13 +4,13 @@ Source: Claude Design project https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc
 Screenshots: `docs/design/assets/CD-03/` — **re-export after the CD bundle refreshes** (the summary says PromptPayPanel QR + `completed`/`cancelled` chips render as placeholder / "—" until then).
 **Do not port Claude Design's JSX.** Build with HeroUI v3 + our tokens. All amounts, names and QR art are sample data (QR = placeholder, not EMVCo).
 
-## 0. Cowork review — decisions for Field
+## 0. Cowork review — ✅ all accepted by Field (2026-10-09)
 | # | Item | Recommendation |
 |---|---|---|
-| F1 | **Payment needs to store *how* it was confirmed and *why* it was cancelled.** Boards show "ยืนยันด้วยตนเอง" + a reason (manual-confirm), and "QR หมดเวลา" vs "ยกเลิกแล้ว" for the same `cancelled` status. `payment` has no column for either (Q1 said "from the audit reason" — too awkward to query for a list). | Add to `payment`: `confirmed_via` enum (`webhook` \| `manual` \| `cash`, null while pending) · `status_reason VARCHAR(50)` (`expired` \| `staff_cancel` \| manual-confirm reason code) · `status_note TEXT` (the "อื่นๆ" detail). Decide in **BRIEF-013** (schema change). |
+| F1 | **Payment needs to store *how* it was confirmed and *why* it was cancelled.** Boards show "ยืนยันด้วยตนเอง" + a reason (manual-confirm), and "QR หมดเวลา" vs "ยกเลิกแล้ว" for the same `cancelled` status. `payment` has no column for either (Q1 said "from the audit reason" — too awkward to query for a list). | Add to `payment`: `confirmed_via` enum (`webhook` \| `manual` \| `cash`, null while pending) · `status_reason VARCHAR(50)` (`expired` \| `staff_cancel` \| manual-confirm reason code) · `status_note TEXT` (the "อื่นๆ" detail). Accepted — goes into **BRIEF-013** as a Pre-decided schema change. |
 | F2 | **Split locks the whole bill** while any part is `pending` (in-flight board shows one lock for the table). Cancelling one part's QR only unlocks when no part is pending. | Accept — simplest consistent rule with FRD §7 "freeze what must be frozen". Record in BRIEF-013. |
 | F3 | Manual-confirm "อื่นๆ" → `รายละเอียด` field. | **Required** when อื่นๆ is chosen (otherwise the audit flag has no content). |
-| F4 | `cancelled` chip (neutral) is new in the DS StatusChip. | Update `docs/design-system.md` + `CD-00-handoff.md` §2 payment row: add `cancelled` ยกเลิกแล้ว neutral. Done in this PR. |
+| F4 | `cancelled` chip (neutral) is new in the DS StatusChip. | Update `docs/design-system.md` + `CD-00-handoff.md` §2 payment row: add `cancelled` ยกเลิกแล้ว neutral. Done (CD-00 §2 updated). |
 
 ## 1. Design notes (not blocking)
 - Sample data is not internally consistent (receipt shows เนโกรนี ฿280.00 and ยำหมูยอ ฿180.00 vs menu ฿240.00 / ฿150.00 + หมด in CD-04; split state 2 total ฿1,540.00 vs checkout ฿1,240.00). Use the **rules**, not the sample numbers: split = `floor(nonCharge×100/n)/100`, last part = remainder; charge items added to their assigned part.

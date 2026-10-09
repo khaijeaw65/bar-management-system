@@ -1,6 +1,6 @@
 # CD-04 — POS: order for customer (menu → variant/modifiers → cart → send)
 
-**Status:** Done (2026-10-09) — handoff `CD-04-handoff.md`; review items F1–F4 open for Field · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (DR-009 gate: order entry lives on the POS) — opened from CD-02 panel "สั่งแทนลูกค้า" / open-table success
+**Status:** Done (2026-10-09) — handoff `CD-04-handoff.md`; review F1–F4 accepted by Field 2026-10-09 · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (DR-009 gate: order entry lives on the POS) — opened from CD-02 panel "สั่งแทนลูกค้า" / open-table success
 
 > Replaces the old CD-04 slot (menu management) — menu management moves after the gate as **CD-12** (back office).
 

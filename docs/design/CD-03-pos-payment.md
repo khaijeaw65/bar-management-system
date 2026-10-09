@@ -1,6 +1,6 @@
 # CD-03 — POS: payment (PromptPay QR, cash, manual confirm, split-equal, in-flight collision)
 
-**Status:** Done (2026-10-09) — handoff `CD-03-handoff.md`; review items F1–F4 open for Field · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (order → **pay** → close) — opened from CD-02 panel "ชำระเงิน" and close-confirm "ไปชำระเงิน"
+**Status:** Done (2026-10-09) — handoff `CD-03-handoff.md`; review F1–F4 accepted by Field 2026-10-09 · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (order → **pay** → close) — opened from CD-02 panel "ชำระเงิน" and close-confirm "ไปชำระเงิน"
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System, not the home "What should we create?" box): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
