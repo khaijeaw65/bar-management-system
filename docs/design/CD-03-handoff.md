@@ -283,3 +283,11 @@ Kit-local (not in the DS bundle): RadioCard (Radio inside 56px card), BillSummar
 - PromptPayPanel chip is the panel's own; payment chips appear on the board without a separate HeroUI label.
 - QR art is the CD-02 QRMock placeholder (module grid), not a real EMVCo payload.
 ```
+
+## 4. Port to Design canvas (2026-10-09)
+Canvas: **CD-03 POS Payment** https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb (DS "The Loft Bar Design System", theme tweak dark/light per board). Supersedes the Claude Design project as the visual reference; §0–§3 and the verbatim summary still apply.
+- Shared pieces: `PosFrame`, `Grid` (from CD-02), `Panel` with CD-03 modes `active` / `locked` / `lockedNew` / `paid` / `manualPaid`.
+- Boards (all full size, no zoomed state boards): checkout (3), split (3), promptpay (6), split-progress (3), cash (3), manual-confirm (3), in-flight (3), done (2), flow.
+- P1: sample data made consistent — receipt and drawer both total ฿1,240.00 (non-cancelled items only); split state 2 stays ฿1,540.00 because of the ฿300.00 charge item (rule unchanged, §1).
+- P2: QR art is a placeholder image (not EMVCo), uploaded to the canvas.
+- P3: manual-confirm state 3 shows the receipt with Badge "ยืนยันด้วยตนเอง" + a success Toast.
