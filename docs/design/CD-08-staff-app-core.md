@@ -1,6 +1,6 @@
 # CD-08 — Staff app (Expo): login, order queue, order detail + status, tables, more
 
-**Status:** Draft — defaults D1–D4 for Field · **Surface:** Expo staff app, phone 390×844 (also 360×780) · **Used by:** BRIEF-010 (Metee, Week 0 — login + queue), next mobile briefs (status actions, detail, tables) · DR-009 staff-app scope
+**Status:** Ready — D1–D4 accepted by Field (2026-10-09) · **Surface:** Expo staff app, phone 390×844 (also 360×780) · **Used by:** BRIEF-010 (Metee, Week 0 — login + queue), next mobile briefs (status actions, detail, tables) · DR-009 staff-app scope
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System, not the home "What should we create?" box): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
