@@ -1,6 +1,6 @@
 # CD-08 — Staff app (Expo): login, order queue, order detail + status, tables, more
 
-**Status:** Ready — D1–D4 accepted by Field (2026-10-09) · **Surface:** Expo staff app, phone 390×844 (also 360×780) · **Used by:** BRIEF-010 (Metee, Week 0 — login + queue), next mobile briefs (status actions, detail, tables) · DR-009 staff-app scope
+**Status:** Done (2026-10-09, Cowork Design canvas) — handoff `CD-08-handoff.md`, review R1–R5 pending Field · **Surface:** Expo staff app, phone 390×844 (also 360×780) · **Used by:** BRIEF-010 (Metee, Week 0 — login + queue), next mobile briefs (status actions, detail, tables) · DR-009 staff-app scope
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System, not the home "What should we create?" box): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -39,5 +39,5 @@
 - No out-of-scope items appear.
 
 ## Result
-- Claude Design link: <after run>
+- Design canvas: https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB (8 boards, Theme tweak dark/light)
 - Handoff: `docs/design/CD-08-handoff.md` · screenshots `docs/design/assets/CD-08/`
