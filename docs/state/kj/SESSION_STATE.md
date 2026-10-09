@@ -5,6 +5,8 @@ Updated: 2026-10-04 17:50 · Agent: Cowork (planning)
 ## Resume
 **Re-plan (Field, 2026-10-04): build restarts 12 Oct; 70% co-op gate fixed 8 Nov = core slice order → pay → close.** Week 0 (5–11 Oct) = midterms + task clearing; Metee starts on mobile (DR-008). Next for Cowork: CD-03 Q1–Q3 → Ready; Metee's next brief must be Ready by each Sunday.
 
+**Field = full reviewer mode (2026-10-09): 0% hand-coding; every kj brief is executed by an agent, Field reviews/approves/merges.**
+
 ## Plan (to 8 Nov) — DR-008: Metee = Expo mobile, KJ = backend + web, reviews mobile
 | Week | KJ | Metee (mobile, after 20:00, ~1 brief/wk ≤10 h, contracts fixtures) |
 |---|---|---|

@@ -134,7 +134,7 @@ Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `a
 
 - **Finish core vertical slice first:** order → pay → close. No scope expansion mid-build.
 - **Simple before complex.** No premature abstractions.
-- AI split: Field 20–30% / agents 70–80% (reviewer mode). เมธี 70–80% / agents ≤ 20% (learning mode). Humans own architecture, integration, edge cases.
+- AI split (Field, 2026-10-09): **Field 0% coding / agents 100% — full reviewer mode** (Field writes no app code; owns architecture, decisions, brief approval, audit review and merge). Metee 70–80% / agents ≤ 20% (learning mode). Humans own architecture, integration, edge cases.
 - EKS is a stretch goal — only after ECS is solid. Do not touch Kubernetes in Semester 1.
 - Infra features cut from scope (see `docs/FRD.md`): offline mode, member QR, staff performance analytics. Do not reintroduce.
 - Break tasks into small steps. Do not dump full solutions.
