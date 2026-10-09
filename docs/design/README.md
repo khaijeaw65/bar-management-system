@@ -23,10 +23,12 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 | CD-05 | POS: owner / manager dashboard | web desktop | presentation |
 | CD-06 | Customer QR: name → menu → item → cart → order status | phone web | core vertical |
 | CD-07 | Customer QR: payment intent, split, PDPA consent | phone web | |
-| CD-08 | Staff app: login, order queue, order detail, new order | Expo mobile | unblocks BRIEF-002 + `mobile.md` |
-| CD-09 | Staff app: guest profile + AI summary, bottle keep, payment handoff, split | Expo mobile | differentiators |
+| CD-08 | Staff app: login, order queue, order detail + status/issue, tables (read-only), more, notifications — `CD-08-staff-app-core.md` | Expo mobile | Metee BRIEF-010 + next mobile briefs |
+| CD-09 | Staff app: guest profile + AI summary, bottle keep, payment handoff, split | Expo mobile | differentiators **(S2 — deferred)** |
 | CD-10 | Notifications end-to-end (push, in-app feed, toast, call-staff) across surfaces | all | presentation |
 | CD-11 | Journey boards for the presentation: guest-in → order → pay → close (all roles) | all | presentation |
 | CD-12 | Back office: menu management, 86'd, restock requests (was CD-04) | web responsive | after gate |
+| CD-13 | Back office: tables/QR setup + staff & IAM (groups, time-bound membership) | web responsive | S1, IAM brief |
+| CD-14 | Staff app: new order (order taking on the phone) | Expo mobile | S1 |
 
 Status per brief lives in its own file (`Status:` line).
