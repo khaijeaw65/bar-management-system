@@ -1,6 +1,6 @@
 # CD-05 — Back office: dashboard (owner money view · manager action view · comps/voids)
 
-**Status:** Draft — defaults D1–D3 for Field · **Surface:** web responsive 1280 (also 1024) + 390 phone (owner checks from the phone — DR-009) · **Used by:** S1 dashboard brief (if time) + advisor presentation · FRD §12
+**Status:** Ready — D1–D3 accepted by Field (2026-10-09) · **Surface:** web responsive 1280 (also 1024) + 390 phone (owner checks from the phone — DR-009) · **Used by:** S1 dashboard brief (if time) + advisor presentation · FRD §12
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
