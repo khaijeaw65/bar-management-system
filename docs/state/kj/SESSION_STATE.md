@@ -1,5 +1,5 @@
 # State — KJ
-Updated: 2026-10-09 · Agent: Cowork (planning)
+Updated: 2026-10-09 23:00 · Agent: Cowork (planning)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
@@ -23,7 +23,7 @@ DR-009 surfaces: gate = POS full slice (incl. order for customer) + mobile login
 - Stage: planning — briefs for the gate (session 2026-10-04)
 - Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · **not pushed** — Field: `git push -u origin docs/ui-design-cd03` + PR
 - Decisions today: DR-008 (Metee = mobile), DR-009 (surfaces), DR-005 A1 (`sid` session check), CD-03 Q1–Q3, CD-04 Q1, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`
-- **Design done (2026-10-09):** CD-03 payment + CD-04 order entry — handoffs written, review F1–F4 accepted; CD-03 F1 (payment `confirmed_via` / `status_reason` / `status_note`) → BRIEF-013. Screenshots pending (`assets/CD-03`, `CD-04`).
+- **Design (Field: finish all S1 UI before dev, 2026-10-09):** Done CD-00–04 (CD-03/04 handoffs, F1–F4 accepted). **Ready to run, in order:** CD-08 staff app → CD-14 staff new order → CD-06 customer QR → CD-07 customer pay → CD-15 POS orders/issues → CD-12 back-office shell + menu → CD-13 tables/staff/IAM (full policy editor) → CD-05 dashboard → **CD-11 journeys + notifications last** (CD-10 merged). CD-09 = S2. Schema added today: `menu_item.image_key`, `staff_access_request`. Pending: CD-03 F1 payment columns → BRIEF-013; screenshots for CD-02/03/04.
 - **Ready:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell (→ kj) · BRIEF-009 · **BRIEF-010 mobile shell/queue (Metee)** · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`
 - **Next briefs (not written):** BRIEF-012 backend orders (place, queue, state machine, totals, `open→active`, WS) · BRIEF-013 backend payment + GB Prime Pay webhook + 409 in-flight · IAM brief (groups/policies/PermissionsGuard — ID by Field) · web briefs after CD runs (grid+panel, order entry, checkout) · Metee Week 1 (status actions + order detail)
 - Engineering: BRIEF-002 implemented on `feat/BRIEF-002-expo-scaffold` (0a95185) — **no PR, needs audit; blocks BRIEF-010**

@@ -1,6 +1,6 @@
 # CD-11 — Journey boards + notifications end-to-end (CD-10 merged in) — presentation set
 
-**Status:** Draft — run **last**, after every other CD handoff exists · **Surface:** presentation boards 1920×1080 composed from existing artboards · **Used by:** 8 Nov gate demo + advisor presentation · CD-10 merged here (Field, 2026-10-09)
+**Status:** Ready (Field, 2026-10-09) — run **last**, after every other CD handoff exists · **Surface:** presentation boards 1920×1080 composed from existing artboards · **Used by:** 8 Nov gate demo + advisor presentation · CD-10 merged here (Field, 2026-10-09)
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457

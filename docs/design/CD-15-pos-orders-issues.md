@@ -1,6 +1,6 @@
 # CD-15 — POS: orders page + issue resolution (escalated from the staff app)
 
-**Status:** Draft — defaults D1–D3 for Field · **Surface:** web POS 1280 (also 1024) · **Used by:** S1 POS orders brief · closes the gap from CD-08 D2 ("ส่งให้ POS") · FRD §6 ISSUE resolution, §8 void/comp
+**Status:** Ready — D1–D3 accepted by Field (2026-10-09) · **Surface:** web POS 1280 (also 1024) · **Used by:** S1 POS orders brief · closes the gap from CD-08 D2 ("ส่งให้ POS") · FRD §6 ISSUE resolution, §8 void/comp
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
