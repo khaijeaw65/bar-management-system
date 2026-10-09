@@ -199,6 +199,7 @@ CREATE TABLE menu_item (
   category_id  UUID NOT NULL REFERENCES menu_category(id),
   name         VARCHAR(200) NOT NULL,
   description  TEXT,
+  image_key    VARCHAR(500),            -- S3 object key of the menu photo, NULL = no photo (CD-06 Q1, Field 2026-10-09)
   base_price   NUMERIC(10,2) NOT NULL DEFAULT 0,
   item_type    item_type NOT NULL DEFAULT 'simple',
   kitchen_tag  VARCHAR(50),

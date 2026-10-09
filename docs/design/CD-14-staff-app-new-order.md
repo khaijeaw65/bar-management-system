@@ -1,6 +1,6 @@
 # CD-14 — Staff app (Expo): new order (order taking on the phone)
 
-**Status:** Draft — defaults D1–D3 for Field · **Surface:** Expo staff app 390×844 (also 360×780) · **Used by:** S1 mobile brief "take order" (DR-009) · same rules as CD-04 (POS order entry), phone layout
+**Status:** Ready — D1–D3 accepted by Field (2026-10-09) · **Surface:** Expo staff app 390×844 (also 360×780) · **Used by:** S1 mobile brief "take order" (DR-009) · same rules as CD-04 (POS order entry), phone layout
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457

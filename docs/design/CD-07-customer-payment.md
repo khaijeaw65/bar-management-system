@@ -1,6 +1,6 @@
 # CD-07 — Customer QR: pay from the phone (PromptPay merge / split-equal, cash via staff)
 
-**Status:** Draft — Q1 + defaults for Field · **Surface:** customer phone web (390×844; also 360×780) · **Used by:** S1 customer payment brief · FRD §7 · rules from CD-03 (F1–F4)
+**Status:** Ready — Q1 (no claiming) + D1–D4 accepted by Field (2026-10-09) · **Surface:** customer phone web (390×844; also 360×780) · **Used by:** S1 customer payment brief · FRD §7 · rules from CD-03 (F1–F4)
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -11,7 +11,7 @@
 - Realtime `/customer`: `payment.status_changed`, `visit.state_changed`.
 
 ## Decisions (Field)
-- **Q1 — How does each friend get their part in a split?** **Recommend: no claiming.** Whoever starts the split picks n; every phone on the table sees the same part list; tap any unpaid part → its QR. Two people opening the same part see the same QR — only one payment settles it (webhook), the other phone flips to "ส่วนนี้ชำระแล้ว". *Why:* no reservation state, no timeouts to manage. *Alternative:* claim/reserve a part per phone for the QR lifetime (more state, prevents double-scan confusion).
+- **Q1 — How does each friend get their part in a split? ✅ Decided (Field, 2026-10-09): no claiming.** Whoever starts the split picks n; every phone on the table sees the same part list; tap any unpaid part → its QR. Two people opening the same part see the same QR — only one payment settles it (webhook), the other phone flips to "ส่วนนี้ชำระแล้ว". *Why:* no reservation state, no timeouts to manage. *Alternative:* claim/reserve a part per phone for the QR lifetime (more state, prevents double-scan confusion).
 
 ## Defaults
 - **D1 — Start screen = bottom sheet "จ่ายอย่างไร?"**: รวมบิล · หารเท่ากัน (stepper 2–10, "฿x ต่อคน" live) · **"จ่ายเงินสดกับพนักงาน"** (= call staff with reason "ขอเช็คบิล").
