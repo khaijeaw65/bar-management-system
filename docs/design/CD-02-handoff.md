@@ -149,3 +149,12 @@ Not used: Tooltip (removed — touch tablet, no hover).
 
 ## 7. Screenshots (`docs/design/assets/CD-02/`)
 Pending — Field to export: `grid-dark.png`, `grid-light.png`, `grid-1024.png`, `grid-states-loading.png`, `grid-states-error.png`, `panel-dark.png`, `panel-light.png`, `panel-states.png`, `open-table.png`, `open-table-qr.png`, `close-confirm.png`, `void-comp.png`, `qr-actions.png`, `realtime.png`, `flow.png`.
+
+## 8. Port to Design canvas (2026-10-09)
+Canvas: **CD-02 POS Tables Session** https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG (DS "The Loft Bar Design System", theme tweak dark/light per board). This supersedes the Claude Design project as the visual reference; §0–§6 still apply.
+- Shared pieces: `PosFrame` (rail + top bar), `Grid` (props mode / disconnected / calling / selected / t3 / t5), `Panel` (drawer, modes active / open / loading / blocked / idle). Every state board composes these.
+- Boards: grid (1280 + 1024), grid-states (4), panel (5), open-table (6, incl. QR), close-confirm (3), void-comp (3), qr-actions (3), realtime (2), flow.
+- §1 close-confirm copy fix is **applied** in the canvas.
+- P1 (port note): boards are now full size (no scaled boards) — §6 item 4 no longer applies.
+- P2: void-comp item picker drawn as selectable rows with Checkbox (both allowed by §6 item 8).
+- QR codes remain placeholders.
