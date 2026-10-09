@@ -10,7 +10,7 @@ Source: Design canvas "CD-08 Staff App Core" https://claude.ai/artifact/E1EzrLh3
 | R1 | **Not-registered login** now says "ส่งคำขอเข้าใช้งานถึงเจ้าของร้านแล้ว" (ties to CD-13 Q1 access requests) instead of "ติดต่อเจ้าของร้าน". | Accept — the rejected LINE login creates a `staff_access_request`. |
 | R2 | **LINE button** = `--brand-line` with white text (~2:1 contrast). Brand-mandated by LINE, kept as the DS defines it. | Accept (third-party brand rule). |
 | R3 | DS **Button has no success variant** → "เสิร์ฟแล้ว" uses `primary` (still the one committing action). | Accept. |
-| R4 | **Phone seat tiles are a custom SeatTile** (Card + StatusChip), not DS `TableCard` — TableCard compact is 120 px wide, 4 per row doesn't fit 358 px. Compact chips use the DS short labels (ไม่เคลื่อนไหว · เรียก, F2). | Accept; build `SeatTile` in `app/mobile/src/components/table/`. |
+| R4 | **Phone seat tiles are a custom SeatTile** (Card + StatusChip), not DS `TableCard` — TableCard compact is 120 px wide and doesn't fit a phone. **Counters 3 per row** (fixed 2026-10-09: at 4 per row the ไม่เคลื่อนไหว chip overflowed), tables 2 per row; chip max-width 100% of the tile. Compact chips use the DS short labels (ไม่เคลื่อนไหว · เรียก, F2). | Accept; build `SeatTile` in `app/mobile/src/components/table/`. |
 | R5 | **Escalated issue**: info chip "ส่งให้ POS แล้ว", only "แก้แล้ว ทำต่อ" remains. | Accept (POS side = CD-15). |
 
 ## 1. Boards (all 390×844, states side by side)
@@ -20,7 +20,7 @@ Source: Design canvas "CD-08 Staff App Core" https://claude.ai/artifact/E1EzrLh3
 | `queue` | loaded (oldest first, filter chips with counts, issue dot) · loading Skeleton · empty "ยังไม่มีออเดอร์ใหม่" · error Alert + "ลองอีกครั้ง" · new order (Toast info "ออเดอร์ใหม่ T5", new card accent border, tab badge) · disconnected Alert warning |
 | `detail` | ใหม่ · กำลังทำ · พร้อมเสิร์ฟ (one primary) · เสิร์ฟแล้ว (no actions, "เสิร์ฟเมื่อ …") · isPending · 409 Toast "ออเดอร์นี้ถูกอัปเดตจากเครื่องอื่นแล้ว" |
 | `issue` | report BottomSheet (reason Radio ของหมด/อุปกรณ์มีปัญหา/อื่นๆ, item Radio, TextField required for อื่นๆ) · issue state (Alert, "ส่งให้ POS" / "แก้แล้ว ทำต่อ", helper "การลบหรือยกเลิกรายการทำที่ POS") · escalated |
-| `tables` | loaded (counters 4/row, tables 2/row) · call-staff (T2 accent skin + sticky Toast "รับทราบ") · T3 summary BottomSheet ("ชำระเงินและปิดโต๊ะทำที่ POS") · loading · empty |
+| `tables` | loaded (counters 3/row, tables 2/row) · call-staff (T2 accent skin + sticky Toast "รับทราบ") · T3 summary BottomSheet ("ชำระเงินและปิดโต๊ะทำที่ POS") · loading · empty |
 | `more` | profile (Avatar, role chip, shift) · list (การแจ้งเตือน, ธีม ตามระบบ, เวอร์ชัน) · logout Dialog "ออกจากระบบ?" |
 | `notifications` | first-run permission · lock-screen push copy (3 examples) · in-app sticky call-staff Toast |
 | `flow` | 3 rows: bartender main path · shortcuts/status · tables & account |
