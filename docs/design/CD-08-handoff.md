@@ -1,35 +1,160 @@
-# CD-08 — Developer handoff: Staff app core (Cowork Design canvas, 2026-10-09)
+---
+id: CD-08
+title: Staff app — login, order queue, order detail + status, tables, more
+revision: 2
+status: review            # rev 1 approved 2026-10-10 (R1–R5); rev 2 = CD template retrofit, R7–R11 open
+approved_by: Field        # rev 1
+approved_on: 2026-10-10   # rev 1
+canvas: https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB
+canvas_version: 1791624602-d597
+ds_version: 1791561405-c72e
+source: docs/design/source/CD-08/   # taken after rev 2 approval (§11)
+surfaces: [expo-staff]
+sizes: [390x844, 360x780]
+brief: CD-08-staff-app-core.md
+drs: [DR-002, DR-003, DR-005, DR-009]
+depends_on: [CD-00, CD-02, CD-14, CD-15]
+supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
+---
 
-Source: Design canvas "CD-08 Staff App Core" https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB (built by Cowork on The Loft Bar Design System https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D, real DS components mounted) · brief `CD-08-staff-app-core.md` (D1–D4).
-**Status: Field OK — R1–R5 accepted (2026-10-10).** Every board has a **Theme tweak (dark / light)** — flip it in the Tweaks panel; light boards are not drawn separately.
-**Do not port the canvas markup.** Build with HeroUI Native + Uniwind + tokens (`docs/rules/mobile.md`). Sample data only.
+# CD-08 — Staff app: login, queue, detail, tables, more
 
-## 0. Review items for Field — all accepted by Field 2026-10-10
+Built on The Loft Bar Design System (real DS components mounted; every board has a dark/light Theme tweak). **Do not port canvas markup** — build with HeroUI Native + Uniwind + tokens (`docs/rules/mobile.md`). Sample data only. Template: `cd-template.md` · board rules: `board-convention.md` · reference example: `CD-14-handoff.md`.
+
+## 0. Review items
+Rev 1 items R1–R5 accepted by Field 2026-10-10 (summary in §10). Rev-2 items (✓ = accepted):
+
 | # | Item | Recommendation |
 |---|---|---|
-| R1 | **Not-registered login** now says "ส่งคำขอเข้าใช้งานถึงเจ้าของร้านแล้ว" (ties to CD-13 Q1 access requests) instead of "ติดต่อเจ้าของร้าน". | Accept — the rejected LINE login creates a `staff_access_request`. |
-| R2 | **LINE button** = `--brand-line` with white text (~2:1 contrast). Brand-mandated by LINE, kept as the DS defines it. | Accept (third-party brand rule). |
-| R3 | DS **Button has no success variant** → "เสิร์ฟแล้ว" uses `primary` (still the one committing action). | Accept. |
-| R4 | **Phone seat tiles are a custom SeatTile** (Card + StatusChip), not DS `TableCard` — TableCard compact is 120 px wide and doesn't fit a phone. **Counters 3 per row** (fixed 2026-10-09: at 4 per row the ไม่เคลื่อนไหว chip overflowed), tables 2 per row; chip max-width 100% of the tile. Compact chips use the DS short labels (ไม่เคลื่อนไหว · เรียก, F2). | Accept; build `SeatTile` in `app/mobile/src/components/table/`. |
-| R5 | **Escalated issue**: info chip "ส่งให้ POS แล้ว", only "แก้แล้ว ทำต่อ" remains. | Accept (POS side = CD-15). |
+| R6 ✓ | **Pain point = field research at both bars** (Field 2026-10-10, not an assumption). Same root as CD-14 R8: orders on paper or verbal, no single place everyone sees. For CD-08: staff don't know which table is waiting, or what has already been served. | Done. |
+| R7 | **Queue gets the "+ ออเดอร์" FAB** on every state — entry 1 of CD-14 (CD-14 J1 E1 draws it; rev-1 CD-08 had no entry). Hidden without `orders:create` (CD-14 R7). | Accept — consistency with the approved CD-14. |
+| R8 | **Table summary sheet** gets the primary "สั่งออเดอร์" (CD-14 R4, already accepted) **and a new "เสิร์ฟแล้ว" section** listing the visit's served orders (time served + items). Answers "what has already been served". Data: `GET /orders?visitId=` (planned BRIEF-012). | Accept. |
+| R9 | **After "เสิร์ฟแล้ว"**: success Toast "เสิร์ฟ #0041 แล้ว · C2" and the card leaves the queue. **No undo** — there is no API to revert `sent`; a mis-tap is fixed at the POS. One tap, no confirm (speed at the bar). | Accept for S1. |
+| R10 | **Needs API** (not in any brief yet): (1) `GET /orders/:id` — push tap when the order is not in the queue cache (e.g. already served) → BRIEF-012; (2) staff acknowledge of a call-staff ("รับทราบ") — clears `staffCalled` → customer-QR brief; (3) register Expo push token (DR-003 `staff_push_token`) → notifications brief; (4) realtime room for the staff app — BRIEF-011 emits to room `pos` only → BRIEF-012. | Accept; Cowork adds them when writing those briefs. |
+| R11 | **Filter behaviour**: single select, "ทั้งหมด" default; when an action moves a card out of the active filter it leaves the list at once, counts update, the Toast confirms (no lingering card). | Accept. |
 
-## 1. Boards (all 390×844, states side by side)
-| Board | States |
-|---|---|
-| `login` | default · signing in (Spinner, label kept) · error Alert danger "เข้าสู่ระบบไม่สำเร็จ" · not registered (request sent, LINE name chip, "กลับไปหน้าเข้าสู่ระบบ") |
-| `queue` | loaded (oldest first, filter chips with counts, issue dot) · loading Skeleton · empty "ยังไม่มีออเดอร์ใหม่" · error Alert + "ลองอีกครั้ง" · new order (Toast info "ออเดอร์ใหม่ T5", new card accent border, tab badge) · disconnected Alert warning |
-| `detail` | ใหม่ · กำลังทำ · พร้อมเสิร์ฟ (one primary) · เสิร์ฟแล้ว (no actions, "เสิร์ฟเมื่อ …") · isPending · 409 Toast "ออเดอร์นี้ถูกอัปเดตจากเครื่องอื่นแล้ว" |
-| `issue` | report BottomSheet (reason Radio ของหมด/อุปกรณ์มีปัญหา/อื่นๆ, item Radio, TextField required for อื่นๆ) · issue state (Alert, "ส่งให้ POS" / "แก้แล้ว ทำต่อ", helper "การลบหรือยกเลิกรายการทำที่ POS") · escalated |
-| `tables` | loaded (counters 3/row, tables 2/row) · call-staff (T2 accent skin + sticky Toast "รับทราบ") · T3 summary BottomSheet ("ชำระเงินและปิดโต๊ะทำที่ POS") · loading · empty |
-| `more` | profile (Avatar, role chip, shift) · list (การแจ้งเตือน, ธีม ตามระบบ, เวอร์ชัน) · logout Dialog "ออกจากระบบ?" |
-| `notifications` | first-run permission · lock-screen push copy (3 examples) · in-app sticky call-staff Toast |
-| `flow` | 3 rows: bartender main path · shortcuts/status · tables & account |
+## 1. Overview
+- **Goal:** staff see every order and every table in one place, change status in one tap, and know at once which table is waiting and what has been served.
+- **Pain point (field research, 2 bars — R6):** orders written on paper or said aloud; nowhere everyone can see → staff don't know which table is waiting or what has already been served. Root shared with CD-14 R8.
+- **User + context:** bartender / server · Friday 22:00, full bar, dim light, wet hands, one hand on the phone; works the queue first-in first-out.
+- **Entry → exit:** open app → LINE login → queue · push tap → order detail. Exit: new order → CD-14 · issue that can't be fixed on the phone → POS (CD-15) · payment / close table → POS.
+- **Outcome:** 1 tap per status change from the queue card (assumes the order needs no detail check); new orders appear without refresh (realtime + push); two devices pressing at once always end on the latest state (409).
+- **Out of scope:** new order (CD-14), payment, close table, reject / remove / void items (POS), guest profile, AI summary, bottle keep (CD-09, S2), iPad layouts.
+- **Journeys:** J1 #0041 C2: accept → ready → served → visible as served in the C2 summary (E1–E5) · J2 #0040 T2 ยำหมูยอ sold out: report issue → send to POS (E1–E4, alternate "แก้แล้ว ทำต่อ").
 
-## 2. Strings (exact)
-Tabs: ออเดอร์ · โต๊ะ · อื่นๆ. Filters: ทั้งหมด n · ใหม่ n · กำลังทำ n · พร้อมเสิร์ฟ n · มีปัญหา n. Card actions: รับออเดอร์ · พร้อมแล้ว · เสิร์ฟแล้ว · ดูปัญหา. Detail footer: รายงานปัญหา + (รับออเดอร์ | พร้อมแล้ว) · เสิร์ฟแล้ว. Issue: รายงานปัญหา · สาเหตุ · ของหมด · อุปกรณ์มีปัญหา · อื่นๆ · รายการที่มีปัญหา (ไม่บังคับ) · รายละเอียด ("ต้องกรอกเมื่อเลือก อื่นๆ") · ยกเลิก · มีปัญหากับออเดอร์นี้ · แก้แล้ว ทำต่อ · ส่งให้ POS · ส่งให้ POS แล้ว. Toasts: ออเดอร์ใหม่ T5 / "3 รายการ · ต่อท้ายคิวแล้ว" · T2 เรียกพนักงาน + รับทราบ · ออเดอร์นี้ถูกอัปเดตจากเครื่องอื่นแล้ว / "แสดงสถานะล่าสุดแล้ว ตรวจก่อนกดอีกครั้ง". Alerts: โหลดออเดอร์ไม่สำเร็จ · การเชื่อมต่อขาด / "ข้อมูลอาจไม่อัปเดต กำลังเชื่อมต่อใหม่". Push: "ออเดอร์ใหม่ · T5" "สิงห์ดราฟต์ 2× · โอลด์แฟชั่น" · "T2 เรียกพนักงาน" "ขอเช็คบิล" · "ออเดอร์ #0042 พร้อมเสิร์ฟ" "T3 · ต้น". Permission: เปิดการแจ้งเตือน · "รับแจ้งเมื่อมีออเดอร์ใหม่หรือลูกค้าเรียกพนักงาน แม้ไม่ได้เปิดแอป" · ไว้ทีหลัง · "เปลี่ยนได้ภายหลังที่ อื่นๆ › การแจ้งเตือน". Logout: ออกจากระบบ? · "เครื่องนี้จะไม่ได้รับการแจ้งเตือนออเดอร์จนกว่าจะเข้าสู่ระบบอีกครั้ง".
+## 2. Boards
+Images: none exported for rev 2 (optional, presentation only). Rev-1 screenshots in `docs/design/assets/CD-08/` are **stale**.
 
-## 3. Layout
-Header top pad 56 (safe area), title `--text-title`; filter chips 44 high pill; cards `Card` padding 14, gap 12, gutter 16; tab bar `--surface-bar` + blur, 3 items, icon 20, label micro; sticky footer padding 12/16/28 with `--shadow-sheet`, buttons lg 52 (row: danger flex 1 + primary flex 1.4); BottomSheet radius `--r-sheet` 20, grab 36×4; seat tiles 84 (counter) / 104 (table) high, radius `--r-card`.
+| Board | Type | States |
+|---|---|---|
+| `overview` | OVERVIEW | goal, pain point, user/context, outcome, entry/exit, journeys, out of scope, key decisions |
+| `journey-1` | JOURNEY | queue (E1 รับออเดอร์) → กำลังทำ (E2 พร้อมแล้ว) → พร้อมเสิร์ฟ (E3 เสิร์ฟแล้ว) → Toast + card gone (E4 tab โต๊ะ) → tables (E5 C2) → summary: #0041 under เสิร์ฟแล้ว |
+| `journey-2` | JOURNEY | queue (E1 card #0040) → detail ใหม่ (E2 รายงานปัญหา) → sheet ของหมด + ยำหมูยอ (E3) → issue state (E4 ส่งให้ POS; alt แก้แล้ว ทำต่อ) → escalated |
+| `login` | STATES | 1 default · 2 signing in · 3 failed · 4 not registered (request sent) · 5 session expired (401) |
+| `queue` | STATES | 1 loaded · 2 loading · 3 empty (filter ใหม่) · 4 error + retry · 5 new order (realtime) · 6 disconnected · 7 409 from a card · 8 no `orders:update_status` (read-only) · 9 360×780 + long Thai |
+| `detail` | STATES | 1 ใหม่ · 2 กำลังทำ · 3 พร้อมเสิร์ฟ · 4 เสิร์ฟแล้ว · 5 pending · 6 409 · 7 loading (from push) · 8 network failure · 9 read-only · 10 360×780 + long Thai |
+| `issue` | STATES | 1 report sheet · 2 issue state · 3 escalated · 4 อื่นๆ without detail (validation) + keyboard open |
+| `tables` | STATES | 1 loaded · 2 call-staff (T2) · 3 summary sheet (ยังไม่เสิร์ฟ / เสิร์ฟแล้ว / สั่งออเดอร์) · 4 loading · 5 empty · 6 error + retry · 7 disconnected · 8 360×780 |
+| `more` | STATES | 1 list · 2 logout dialog |
+| `notifications` | STATES | a first-run permission · b lock-screen push copy · c in-app call-staff Toast |
+| `flow` | FLOW MAP | bartender main path · shortcuts/status · tables & account · to CD-14 (FAB, สั่งออเดอร์) |
 
-## 4. Components → HeroUI Native
-Button (primary/secondary/ghost/danger, md 44 / lg 52, isPending) · Card · Chip (StatusChip order/item/table/menu, Badge info) · Alert · Toast (duration 0 for call-staff + 409) · Skeleton · BottomSheet · Dialog · RadioGroup · TextField · Avatar · Spinner · Expo Router Tabs (themed). Custom: **SeatTile**, order card composition, lock-screen preview (copy only).
+## 3. State coverage
+✓ = drawn (board · state) · n/a = does not apply (reason) · shared = drawn elsewhere.
+
+| State | Login | Queue | Detail | Issue sheet | Tables | Summary sheet | More |
+|---|---|---|---|---|---|---|---|
+| default | ✓ ·1 | ✓ ·1 | ✓ ·1–4 | ✓ ·1 | ✓ ·1 | ✓ tables·3 | ✓ ·1 |
+| loading | ✓ ·2 | ✓ ·2 | ✓ ·7 | n/a (local form) | ✓ ·4 | shared tables·4 pattern (Skeleton cards in sheet) | n/a |
+| empty | n/a | ✓ ·3 | n/a (order ≥ 1 item) | n/a | ✓ ·5 | ✓ J1·6 "ไม่มีออเดอร์ค้าง" | n/a |
+| error + retry | ✓ ·3 | ✓ ·4 | shared queue·4 (Alert + ลองอีกครั้ง) | n/a | ✓ ·6 | shared tables·6 (Alert in sheet) | n/a |
+| validation | n/a | n/a | n/a | ✓ ·4 | n/a | n/a | n/a |
+| pending | ✓ ·2 | shared detail·5 (card button isPending) | ✓ ·5 | shared detail·5 (danger button isPending) | n/a | n/a | n/a |
+| success feedback | n/a (lands on queue) | ✓ J1·4 Toast · in-place chip change J1·2–3 | ✓ in-place chip change | ✓ ·2 / ·3 | n/a | n/a | n/a |
+| failure per reason | ✓ ·3 ·4 | ✓ ·7 (409) | ✓ ·6 (409) ·8 (network) | shared detail·6 / ·8 | ✓ ·6 | shared tables·6 | n/a |
+| stale / conflict | n/a | ✓ ·7 | ✓ ·6 | shared detail·6 | realtime (rule §9) | realtime (rule §9) | n/a |
+| disconnected | n/a | ✓ ·6 | shared queue·6 banner | n/a | ✓ ·7 | shared tables·7 | n/a |
+| permission denied | ✓ ·4 (not registered) | ✓ ·8 | ✓ ·9 | n/a (entry hidden with ·9) | n/a (`tables:read` is base) | rule R7: "สั่งออเดอร์" hidden without `orders:create` | n/a |
+| long Thai text | n/a (fixed copy) | ✓ ·9 | ✓ ·10 | shared detail·10 (wraps) | rule §9 (guest line 1 line) | rule §9 | n/a |
+| smallest size | shared (centred, fits 360) | ✓ ·9 | ✓ ·10 | rule §9 (body scrolls, footer fixed) | ✓ ·8 | rule §9 | shared |
+| keyboard open | n/a | n/a | n/a | ✓ ·4 | n/a | n/a | n/a |
+| session expired | ✓ ·5 — global: any 401 → login·5 | ← | ← | ← | ← | ← | ← |
+
+## 4. Action table
+| Action | API (status) | Permission | Success → UI | Failure → UI | Recovery | Data kept | Idempotency |
+|---|---|---|---|---|---|---|---|
+| Log in with LINE | `POST /auth/mobile/token` (planned, mobile auth brief — DR-005) | public | first run → notifications·a, else queue | `login_failed` → login·3 · `NOT_REGISTERED` → login·4 (access request: `staff_access_request`, creation planned with CD-13/IAM) | retry · wait for owner | — | n/a |
+| Load queue | `GET /orders?status=pending,accepted,ready,issue` (planned BRIEF-012; mocked in BRIEF-010) | `orders:read` | queue·1, oldest first | network → queue·4 · socket down → queue·6 | ลองอีกครั้ง / pull-to-refresh; socket auto-reconnect then refetch | filter | n/a |
+| Receive new order / status change | WS `order.created`, `order.status_changed` (planned BRIEF-012; staff-app room = R10-4) | `orders:read` | card inserted at its time position, highlighted + Toast + tab badge (queue·5) | socket down → queue·6 | reconnect + refetch | — | event carries the order id; client upserts by id |
+| Accept / ready / served (card or detail) | `POST /orders/:id/accept` · `/ready` · `/send` (planned BRIEF-012) | `orders:update_status` | chip + button change in place (J1·2–3); `send` → success Toast, card leaves queue (J1·4, R9) | `409 INVALID_STATE_TRANSITION` → warning Toast + latest state (queue·7 / detail·6) · `403` → read-only (queue·8 / detail·9) · network / timeout → danger Toast, state unchanged (detail·8) · `401` → login·5 | tap again after checking · ask manager | — | state-checked server side: a replayed transition returns 409 and the UI shows the latest state — never a double change |
+| Open detail | from queue cache; from push → `GET /orders/:id` (**needs API**, R10-1) | `orders:read` | detail | loading → detail·7 · not found / network → Alert + ลองอีกครั้ง (queue·4 pattern) | retry · back | — | n/a |
+| Report issue | `POST /orders/:id/flag-issue {reason, itemId?, note?}` (planned BRIEF-012) | `orders:update_status` | sheet closes → issue·2 (all devices via `order.status_changed`) | `อื่นๆ` without note → issue·4 · 409 / network → as above, sheet stays open | fill note · retry | sheet input | as above |
+| Resolve issue | `POST /orders/:id/resolve {resolution: substitute \| escalate, note?}` (planned BRIEF-012) | `orders:update_status` | `substitute` → กำลังทำ · `escalate` → issue·3 + badge "ส่งให้ POS แล้ว" (J2·5) | 409 / network → as above | retry | — | as above |
+| Load tables | `GET /tables` (available, BRIEF-011) | `tables:read` | tables·1 | network → tables·6 · socket down → tables·7 | retry · reconnect | — | n/a |
+| Live seats | WS `visit.opened`, `visit.state_changed` (BRIEF-011, room `pos` — staff room R10-4) | `tables:read` | tile updates | — | refetch on reconnect | — | n/a |
+| Open table summary | `currentVisit` from `/tables` + `GET /orders?visitId=` (planned BRIEF-012) | `orders:read` | tables·3: ยังไม่เสิร์ฟ / เสิร์ฟแล้ว (R8) | network → Alert + retry in sheet (tables·6 pattern) | retry | — | n/a |
+| สั่งออเดอร์ (summary) | client nav → CD-14 menu for this visit | `orders:create` (hidden without, R7) | CD-14 J1·3 | — | — | — | — |
+| + ออเดอร์ (queue FAB) | client nav → CD-14 seat sheet | `orders:create` (hidden without) | CD-14 J1·2 | — | — | — | — |
+| Acknowledge call-staff | **needs API** (R10-2); `staffCalled` placeholder in BRIEF-011, filled by customer-QR brief | — | sticky Toast closes, T2 back to normal skin | — | — | — | — |
+| Enable notifications | OS permission (expo-notifications) + register token — **needs API** (R10-3, DR-003) | — | queue; More shows "เปิดอยู่" | denied → More "ปิดอยู่" → opens OS settings | อื่นๆ › การแจ้งเตือน | — | token upsert (UNIQUE `expo_push_token`) |
+| Log out | `POST /auth/logout` (BRIEF-007; mobile variant with DR-005 brief) | session | dialog → login | network → still clear local session, go to login | — | — | n/a |
+
+## 5. e2e script
+- **J1** E1 tap "รับออเดอร์" on #0041 → chip กำลังทำ, button "พร้อมแล้ว", count ใหม่ −1 · E2 tap "พร้อมแล้ว" → chip พร้อมเสิร์ฟ, button "เสิร์ฟแล้ว" · E3 tap "เสิร์ฟแล้ว" → Toast "เสิร์ฟ #0041 แล้ว · C2", #0041 not in the queue, ทั้งหมด 2 · E4 tap tab โต๊ะ → grid · E5 tap C2 → sheet "เคาน์เตอร์ C2", #0041 under "เสิร์ฟแล้ว" with time; exactly one `POST /orders/:id/accept`, `/ready`, `/send` each.
+- **J2** E1 tap card #0040 → detail #0040 chip ใหม่ · E2 tap "รายงานปัญหา" → sheet · E3 choose ของหมด + 1× ยำหมูยอ, tap "รายงานปัญหา" → chip มีปัญหา, Alert "ยำหมูยอ · ของหมด" · E4 tap "ส่งให้ POS" → badge "ส่งให้ POS แล้ว", only "แก้แล้ว ทำต่อ" left; one `flag-issue` + one `resolve {escalate}` · alt: tap "แก้แล้ว ทำต่อ" → chip กำลังทำ.
+- **Edge:** second device accepts first → this device's tap shows the 409 Toast and the latest state, no second transition · อื่นๆ without detail → submit blocked with field error · read-only account → no action buttons anywhere.
+
+## 6. Strings & sample data
+Sample data lives in each board's `renderVals()` (Journey1, Detail, Tables) or literal markup (Queue, Issue, Journey2).
+- **Tabs / header:** ออเดอร์ · โต๊ะ · อื่นๆ · FAB "ออเดอร์" (+ icon).
+- **Filters:** ทั้งหมด n · ใหม่ n · กำลังทำ n · พร้อมเสิร์ฟ n · มีปัญหา n (red dot when > 0).
+- **Card / detail actions:** รับออเดอร์ · พร้อมแล้ว · เสิร์ฟแล้ว · ดูปัญหา · รายงานปัญหา · "เสิร์ฟเมื่อ 20:41 น. · ไม่มีการทำงานต่อ".
+- **Toasts:** ออเดอร์ใหม่ T5 / "3 รายการ · ต่อท้ายคิวแล้ว" · **เสิร์ฟ #0041 แล้ว · C2 / "1× โอลด์แฟชั่น · ดูได้ที่สรุปโต๊ะ"** · ออเดอร์นี้ถูกอัปเดตจากเครื่องอื่นแล้ว / "แสดงสถานะล่าสุดแล้ว ตรวจก่อนกดอีกครั้ง" (queue: "#0039 พร้อมเสิร์ฟแล้ว · ตรวจก่อนกดอีกครั้ง") · **บันทึกไม่สำเร็จ / "สถานะยังไม่เปลี่ยน ตรวจการเชื่อมต่อแล้วกดอีกครั้ง"** · T2 เรียกพนักงาน + รับทราบ.
+- **Alerts:** โหลดออเดอร์ไม่สำเร็จ · การเชื่อมต่อขาด / "ข้อมูลอาจไม่อัปเดต กำลังเชื่อมต่อใหม่" · **โหลดโต๊ะไม่สำเร็จ / "ตรวจการเชื่อมต่อแล้วลองอีกครั้ง"** · **การเชื่อมต่อขาด / "สถานะโต๊ะอาจไม่ล่าสุด กำลังเชื่อมต่อใหม่"** · ลองอีกครั้ง.
+- **Read-only:** **"บัญชีนี้ดูคิวได้อย่างเดียว — เปลี่ยนสถานะไม่ได้ ให้ผู้จัดการตรวจสิทธิ์"** · **"บัญชีนี้ดูได้อย่างเดียว — ให้ผู้จัดการตรวจสิทธิ์"**.
+- **Login:** เข้าสู่ระบบด้วย LINE · เฉพาะพนักงาน The Loft Bar · กำลังเปิด LINE เพื่อยืนยันตัวตน · เข้าสู่ระบบไม่สำเร็จ / "ลองอีกครั้ง หากยังไม่ได้ ให้ตรวจว่าเปิดแอป LINE ในเครื่องนี้แล้ว" · บัญชี LINE นี้ยังไม่ได้ลงทะเบียน / "ส่งคำขอเข้าใช้งานถึงเจ้าของร้านแล้ว เข้าสู่ระบบอีกครั้งเมื่อได้รับอนุมัติ" · กลับไปหน้าเข้าสู่ระบบ · ติดต่อเจ้าของร้านหากรอนาน · **เซสชันหมดอายุ / "เข้าสู่ระบบอีกครั้งเพื่อทำงานต่อ — ตะกร้าที่ยังไม่ได้ส่งจะไม่ถูกเก็บไว้"**.
+- **Issue:** รายงานปัญหา · สาเหตุ · ของหมด · อุปกรณ์มีปัญหา · อื่นๆ · รายการที่มีปัญหา (ไม่บังคับ) · รายละเอียด / "ต้องกรอกเมื่อเลือก อื่นๆ" · **error "กรอกรายละเอียดเมื่อเลือก อื่นๆ"** · ยกเลิก · มีปัญหากับออเดอร์นี้ · แก้แล้ว ทำต่อ · ส่งให้ POS · ส่งให้ POS แล้ว · "การลบหรือยกเลิกรายการทำที่ POS" · "ถ้าแก้เองได้แล้ว กดเพื่อทำต่อ — POS จะเห็นว่าแก้แล้ว".
+- **Tables / summary:** โต๊ะ · เคาน์เตอร์ · "ใช้งาน 9 · ว่าง 4" · ยังไม่มีโต๊ะ · **ยังไม่เสิร์ฟ · เสิร์ฟแล้ว · "ไม่มีออเดอร์ค้าง" · "#0041 · เสิร์ฟ 21:22 น."** · **สั่งออเดอร์** · ชำระเงินและปิดโต๊ะทำที่ POS.
+- **More / notifications:** unchanged from rev 1 (การแจ้งเตือน เปิดอยู่/ปิดอยู่ · ธีม ตามระบบ · เวอร์ชันแอป · ออกจากระบบ? · "เครื่องนี้จะไม่ได้รับการแจ้งเตือนออเดอร์จนกว่าจะเข้าสู่ระบบอีกครั้ง" · เปิดการแจ้งเตือน · ไว้ทีหลัง · push copy "ออเดอร์ใหม่ · T5" / "T2 เรียกพนักงาน" / "ออเดอร์ #0042 พร้อมเสิร์ฟ").
+Bold = new in rev 2.
+
+## 7. Layout & tokens
+Tab screens: header top pad 56, title `--text-title`, clock `--text-small` tabular. Filter chips 44 high pill, horizontal scroll, gap 8. Cards: DS `Card` padding 14, list gap 12, gutter 16; seat line `--text-subhead` 1 line; items `--text-small` 1 line each, max 3 + "+ n รายการ"; action row min 44 (Button md). FAB: primary lg (52), right 16, 92 above bottom, `--shadow-raised`, above the list, below Toasts. Tab bar `--surface-bar` + `--blur-bar`, icon 20, label `--fs-micro`. Detail (pushed, no tab bar): header top pad 48, qty pill 36×28 `--accent-soft-strong`; sticky footer padding 12/16/28, `--shadow-sheet`, buttons lg 52 (danger flex 1 + primary flex 1.4). BottomSheet radius `--r-sheet`, grab 36×4, `--surface-overlay` over `--scrim`; sheet rises above the keyboard. Seat tiles 84 (counter, 3/row) / 104 (table, 2/row), radius `--r-card`. Smallest size 360×780. Tailwind mapping: `app/frontend/src/app/globals.css` (BRIEF-014) — Expo theme mapping is the mobile brief's job.
+
+## 8. Components → platform
+| Design system | Expo (HeroUI Native) | Notes |
+|---|---|---|
+| Button | Button (primary / secondary / ghost / danger; md 44, lg 52; `isPending`) | DS has no success variant → "เสิร์ฟแล้ว" = primary (R3) |
+| Card | Card / Pressable | `selected` = new-order highlight |
+| StatusChip | Chip (custom tones) | order / item / table / menu sets, CD-00 §2 |
+| Badge | Chip size sm | DS tone `info` = alias of `making` ("ส่งให้ POS แล้ว") |
+| Alert · Toast · Skeleton · EmptyState · Spinner · Avatar | same names | Toast duration 0 for call-staff and 409 |
+| Radio / Input | RadioGroup / TextField | `error` text under the field |
+| Dialog | Dialog (alert) | logout |
+| — | BottomSheet | issue report, table summary |
+| — | Expo Router Tabs (themed) | 3 tabs |
+| custom | `SeatTile` (`app/mobile/src/components/table/`) | R4; shared with CD-14 (`compact` 72) |
+| custom | `OrderCard`, filter chip row | BRIEF-010 already names `OrderCard` |
+
+## 9. Behaviour rules
+- **Queue:** oldest first (FIFO). `sent` orders never show. One primary button per card = the next status. A card tap (outside the button) opens detail. New orders insert at their time position, highlighted (Card `selected`) until acted on or the user leaves the tab, + info Toast + tab badge.
+- **Filters (R11):** single select; "ทั้งหมด" default and always available; tapping the active chip does nothing. Counts always reflect the whole queue. When an action moves a card out of the active filter, it leaves the list immediately; the Toast confirms. Empty filter → EmptyState for that filter.
+- **Status:** per order (D3). No reject / remove / void on the phone (D1, D2). Served = one tap, no confirm, no undo (R9).
+- **Conflict:** every transition is checked server side; a 409 shows the warning Toast and the refetched order — the user must look before tapping again. Network failure leaves the state unchanged and says so.
+- **Permissions (known at login, ACL cache):** without `orders:update_status` action buttons are replaced by the read-only line; without `orders:create` the FAB and "สั่งออเดอร์" are hidden; a mid-session 403 switches to read-only after refetching permissions.
+- **Realtime:** reconnect → refetch queue/tables; banner shows while disconnected; actions stay enabled (server re-validates).
+- **Tables:** read-only grid. Summary sheet lists the visit's orders split ยังไม่เสิร์ฟ / เสิร์ฟแล้ว (served: newest first, time served), body scrolls when long; payment and close stay at the POS. Call-staff tile = accent skin + sticky Toast "รับทราบ" (ack needs API, R10-2).
+- **Long Thai / small screen:** seat and item lines 1 line with ellipsis on cards; detail wraps names and notes fully; at 360×780 the list and sheet bodies scroll, footers stay fixed; guest names on tiles 1 line.
+- **Session:** any 401 → login·5; nothing is kept (CD-14 R6).
+- **Standard questions (`cd-template.md` §5):** Filters → above. Search → n/a (no search in CD-08). Long and short → 360×780 smallest, 390×844 design size; truncation as above; 0 orders → EmptyState. Interaction → DS Button pressed/disabled/pending states; DS motion tokens, no custom animation; new-card highlight only. Accessibility → filter row = group "ตัวกรองสถานะ"; each card's accessible name = "#0041 C2 ฟ้า ใหม่ 1 รายการ"; FAB label "ออเดอร์ใหม่"; seat tiles labelled with seat + state; reading order header → filters → list → FAB → tabs. Data → number/status/tableLabel/createdAt/items/orderedByName from `GET /orders`; "n นาทีที่แล้ว" client `timeAgo()`; seats + guestLabel from `GET /tables`; missing `orderedByName` → seat line shows the table only; missing `guestLabel` → no name line.
+- **User-mindset checks:** ✓ one dominant action per screen · ✓ targets ≥ 44 / primary 52, FAB and footers in thumb reach · ✓ acknowledgement < 1 s (in-place chip change / pending / Toast) · ✓ meaningful loss: none on the phone (no void); served without undo accepted as R9 · ✓ every error says how to fix · ✓ task cost "1 tap per status from the card" · ✓ status never by colour alone (chips carry text) · ✓ long Thai drawn (queue·9, detail·10) · ☐ walkthrough with staff (before the final presentation).
+
+## 10. Revisions
+| Rev | Date | Change | Authority |
+|---|---|---|---|
+| 1 | 2026-10-09 | First canvas: login, queue, detail, issue, tables, more, notifications, flow (brief D1–D4) | Cowork, brief defaults |
+| 1 | 2026-10-10 | R1 not-registered → access request sent · R2 LINE brand button · R3 served = primary · R4 custom SeatTile, counters 3/row · R5 escalated keeps only "แก้แล้ว ทำต่อ" — **approved** | Field |
+| 2 | 2026-10-10 | CD template retrofit: overview + journeys J1/J2, STATES / FLOW MAP pills; FAB (R7); summary sheet "สั่งออเดอร์" + "เสิร์ฟแล้ว" (R8); served Toast (R9); new states login·5, queue·7–9, detail·7–10, issue·4, tables·6–8; flow row to CD-14; `style` on DS buttons moved to wrappers (canvas gotcha); R6 pain point; R10 API gaps; R11 filter rule | Field (R6) · R7–R11 pending |
+
+## 11. Source snapshot
+Pending — taken after Field approves rev 2 (`cd-template.md` §6): version pin, byte copy to `docs/design/source/CD-08/`, inventory + SHA-256, dependency closure (Lucide blob `/_blob/50b4e33ae4752b698e43636e0482591d`, CD-08 only), repo drift vs the Expo theme.

@@ -1,6 +1,6 @@
 # CD-08 — Staff app (Expo): login, order queue, order detail + status, tables, more
 
-**Status:** Done (2026-10-09, Cowork Design canvas) — handoff `CD-08-handoff.md`, review R1–R5 pending Field · **Surface:** Expo staff app, phone 390×844 (also 360×780) · **Used by:** BRIEF-010 (Metee, Week 0 — login + queue), next mobile briefs (status actions, detail, tables) · DR-009 staff-app scope
+**Status:** Done (2026-10-09, Cowork Design canvas) — rev 1 approved by Field 2026-10-10 (R1–R5); **rev 2 (CD template retrofit) in review** — handoff `CD-08-handoff.md` wins where it differs (see Revisions) · **Surface:** Expo staff app, phone 390×844 (also 360×780) · **Used by:** BRIEF-010 (Metee, Week 0 — login + queue), next mobile briefs (status actions, detail, tables) · DR-009 staff-app scope
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System, not the home "What should we create?" box): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -41,3 +41,11 @@
 ## Result
 - Design canvas: https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB (8 boards, Theme tweak dark/light)
 - Handoff: `docs/design/CD-08-handoff.md` · screenshots `docs/design/assets/CD-08/`
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 1 | 2026-10-10 | Not-registered copy = access request sent (R1); counters 3/row, custom SeatTile (R4); escalated keeps only "แก้แล้ว ทำต่อ" (R5) | handoff §0, §10 |
+| 2 | 2026-10-10 | D4 "no FAB" superseded: queue gets "+ ออเดอร์" → CD-14 (R7) · table summary gets "สั่งออเดอร์" + "เสิร์ฟแล้ว" section (R8, CD-14 R4) · served Toast, no undo (R9) · filter rule (R11) · added states (session expired, 409 on card, read-only, loading from push, network failure, validation + keyboard, tables error/disconnected, 360×780) · API gaps listed (R10) | handoff §0–§9 (rev 2, review) |
