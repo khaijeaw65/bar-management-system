@@ -1,6 +1,6 @@
 # CD-02 — POS: table grid, session panel, open-table
 
-**Status:** Ready — Q1–Q3 decided by Field (2026-09-28) · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** Sprint 3 (session + order flow) — POS home `/pos/tables`
+**Status:** Done (2026-09-28) — handoff `CD-02-handoff.md`; F1–F4 decided · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** Sprint 3 (session + order flow) — POS home `/pos/tables`
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System, not the home "What should we create?" box): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -41,5 +41,5 @@
 - No out-of-scope items appear.
 
 ## Result
-- Claude Design link: <after run>
+- Claude Design link: https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 (`ui_kits/pos-v2/cd-02/`, 12 boards dark + light)
 - Handoff: `docs/design/CD-02-handoff.md` · screenshots `docs/design/assets/CD-02/`

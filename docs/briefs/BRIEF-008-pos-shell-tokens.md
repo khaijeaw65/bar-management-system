@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Ready |
-| **Implementer** | methee |
+| **Implementer** | kj (reassigned from metee — DR-008, 2026-10-04) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **PR** | <executor fills> |
@@ -29,7 +29,7 @@ The POS web app wears the new design: design-system v2 token names, Noto Sans Th
    - `PosRail.tsx` — width 88, bg `bg-sunken`, right border `line-hairline`. **Top section 56 px** (lines up with the top bar, bottom border `line-hairline`): two-line mark "THE / LOFT" (700 12 px, letter-spacing .08em, `text-text-accent`). Bottom section (log-out) is **not** built here. Nav padding 8 0, gap 2; items 64×64, radius 10, Lucide icon **24 px** stroke 1.75 + label 600 10 px. Items in this order: โต๊ะ `Grid2x2` · ออเดอร์ `ReceiptText` · ชำระเงิน `Banknote` · เมนู `BookOpen` · แขก `Users` · รายงาน `ChartColumn` · ตั้งค่า `Settings`. Active = `accent-soft` fill + `text-text-accent` (CD-00 PosRail spec); inactive = `text-text-faint`, hover `bg-surface-hover`. Active item from `usePathname()`.
    - Only **เมนู** links (`/pos/menu`). The other six render **disabled** (not links, `aria-disabled="true"`, tooltip/title "เร็ว ๆ นี้") until their screens exist.
    - `<nav aria-label="เมนูหลัก">`; active link has `aria-current="page"`; focus-visible ring uses `--focus-ring`.
-5. **Tests (Methee writes them):** `PosRail.test.tsx` (order, active state, disabled items), `LiveClock.test.tsx` (fake timers: shows time, updates after a minute), update `e2e/menu.spec.ts` (rail visible, เมนู has `aria-current="page"`). Existing tests stay green.
+5. **Tests (Metee writes them):** `PosRail.test.tsx` (order, active state, disabled items), `LiveClock.test.tsx` (fake timers: shows time, updates after a minute), update `e2e/menu.spec.ts` (rail visible, เมนู has `aria-current="page"`). Existing tests stay green.
 
 ### Out (do NOT build here)
 - Menu-list redesign (search, category chips, no-result, new states) → **BRIEF-010** (after BRIEF-009 contracts).
@@ -76,11 +76,11 @@ pnpm sonar && pnpm sonar:report        # local, before each commit you push
 ```
 
 ### Local Sonar scan
-- Required for this brief: **yes** (Methee).
+- Required for this brief: **yes** (Metee).
 - Approved exclusions / "won't fix": none.
 
 ## 6. Constraints
-- **Learning mode (workflow §8):** Methee writes the components and **all tests**; agents explain, review and unblock (≤ 20%). Handoff states AI usage `Low / Medium / High` + one line.
+- **Learning mode (workflow §8):** Metee writes the components and **all tests**; agents explain, review and unblock (≤ 20%). Handoff states AI usage `Low / Medium / High` + one line.
 - **Do not port Claude Design JSX.** Build with HeroUI v3 components where one fits (e.g. `Tooltip`, `Button`) and plain semantic HTML + Tailwind for the rail; tokens only.
 - Rail items are data (an array of `{ key, label, icon, href? }`), rendered by one map — don't repeat 7 blocks of JSX.
 - `'use client'` only where needed (`PosRail` for `usePathname`, `LiveClock`); the top bar and layout stay server components.
@@ -107,3 +107,4 @@ pnpm sonar && pnpm sonar:report        # local, before each commit you push
 |---|---|---|
 | 1 | 2026-09-27 | Initial draft (Cowork) from CD-01 handoff + design-system v2; updated same day with CD-00 final tokens (`tokens-v2.css`), rail icon 24, no temporary light values |
 | 1 | 2026-09-28 | Ready — approved by Field in session ("approve B8") |
+| 1 | 2026-10-04 | Implementer metee → kj (DR-008 ownership split). Scope unchanged |

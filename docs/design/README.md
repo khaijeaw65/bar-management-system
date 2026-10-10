@@ -16,16 +16,20 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 | ID | Brief | Surface | Why first |
 |---|---|---|---|
 | CD-00 | Design system gap-fill: **light theme**, HeroUI alignment, missing components/states, status chips, **feedback kit** + notifications | all | Every screen reuses it |
-| CD-01 | POS: login, not-registered, app shell, **menu list** | web desktop | Methee's first brief (BRIEF-008) |
+| CD-01 | POS: login, not-registered, app shell, **menu list** | web desktop | Metee's first brief (BRIEF-008) |
 | CD-02 | POS: table grid + session detail panel + open-table dialog | web desktop | Sprint 3 core |
-| CD-03 | POS: payment (PromptPay QR, cash, split, in-flight collision) | web desktop | core vertical |
-| CD-04 | POS: menu management, 86'd, restock requests | web desktop | |
-| CD-05 | POS: owner / manager dashboard | web desktop | presentation |
-| CD-06 | Customer QR: name → menu → item → cart → order status | phone web | core vertical |
-| CD-07 | Customer QR: payment intent, split, PDPA consent | phone web | |
-| CD-08 | Staff app: login, order queue, order detail, new order | Expo mobile | unblocks BRIEF-002 + `mobile.md` |
-| CD-09 | Staff app: guest profile + AI summary, bottle keep, payment handoff, split | Expo mobile | differentiators |
-| CD-10 | Notifications end-to-end (push, in-app feed, toast, call-staff) across surfaces | all | presentation |
-| CD-11 | Journey boards for the presentation: guest-in → order → pay → close (all roles) | all | presentation |
+| CD-03 | POS: payment (PromptPay QR, cash, split, in-flight collision) — `CD-03-pos-payment.md` | web desktop | core vertical |
+| CD-04 | POS: **order for customer** (menu tiles → variant/modifiers → cart → send) — `CD-04-pos-order-entry.md` | web desktop | gate: order entry on POS (DR-009) |
+| CD-05 | Back office dashboard: owner money view, manager today, comps/voids — `CD-05-dashboard.md` | web responsive | S1 + presentation |
+| CD-06 | Customer QR: welcome → menu (photos) → item → cart → table tab, call staff — `CD-06-customer-qr-order.md` | phone web | S1 |
+| CD-07 | Customer payment: merge / split (no claiming) / cash via staff — `CD-07-customer-payment.md` (PDPA → S2) | phone web | S1 |
+| CD-08 | Staff app: login, order queue, order detail + status/issue, tables (read-only), more, notifications — `CD-08-staff-app-core.md` | Expo mobile | Metee BRIEF-010 + next mobile briefs |
+| CD-09 | Staff app: guest profile + AI summary, bottle keep, payment handoff | Expo mobile | **S2 — deferred** |
+| CD-10 | ~~Notifications end-to-end~~ → **merged into CD-11** (Field, 2026-10-09) | all | — |
+| CD-11 | Journey boards + notifications matrix (presentation) — `CD-11-journeys-notifications.md` — **run last** | all | gate demo + presentation |
+| CD-12 | Back office: responsive shell + menu management (photos, variants, modifiers, categories, 86'd) — `CD-12-backoffice-menu.md` | web responsive | S1 |
+| CD-13 | Back office: tables/QR, staff access requests, groups, full policy editor — `CD-13-backoffice-tables-staff.md` | web responsive | S1 (IAM) |
+| CD-14 | Staff app: new order — `CD-14-staff-app-new-order.md` | Expo mobile | S1 |
+| CD-15 | POS: orders board + issue resolution (escalations from the staff app) — `CD-15-pos-orders-issues.md` | web desktop | S1 |
 
 Status per brief lives in its own file (`Status:` line).

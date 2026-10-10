@@ -51,4 +51,4 @@
 ## Sonar (local scan)
 - Handoff Sonar section present for the scanned commit = S (or later scan): <yes / no>
 - Remaining issues have reasons; no unapproved "won't fix"/exclusions: <yes / findings>
-- Learning mode respected (Methee fixed his own issues): <yes / notes>
+- Learning mode respected (Metee fixed his own issues): <yes / notes>

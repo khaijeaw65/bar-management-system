@@ -16,7 +16,7 @@
 ---
 
 ## 1. Goal
-Any developer can start SonarQube locally, scan the whole monorepo with one command, see the Quality Gate result in the terminal, and paste a short report into the handoff. Required habit for Methee's briefs; optional for Field.
+Any developer can start SonarQube locally, scan the whole monorepo with one command, see the Quality Gate result in the terminal, and paste a short report into the handoff. Required habit for Metee's briefs; optional for Field.
 
 ## 2. Scope
 ### In

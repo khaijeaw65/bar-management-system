@@ -14,7 +14,7 @@ CREATE TYPE item_type           AS ENUM ('simple', 'recipe', 'charge');
 CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue');
 CREATE TYPE order_item_status   AS ENUM ('pending', 'preparing', 'ready', 'cancelled');
 CREATE TYPE payment_method      AS ENUM ('promptpay', 'cash');
-CREATE TYPE payment_status      AS ENUM ('pending', 'completed', 'failed', 'refunded');
+CREATE TYPE payment_status      AS ENUM ('pending', 'completed', 'failed', 'refunded', 'cancelled');  -- cancelled = staff cancel or 15-min QR timeout (CD-03 Q1, Field 2026-10-04)
 CREATE TYPE bottle_keep_status  AS ENUM ('active', 'finished', 'expired');
 CREATE TYPE inv_category        AS ENUM ('A', 'B', 'C');
 CREATE TYPE inv_tx_type         AS ENUM ('purchase', 'usage', 'adjustment', 'void');
@@ -41,7 +41,7 @@ CREATE TABLE table_seat (
   label       VARCHAR(50) NOT NULL,
   kind        table_seat_kind NOT NULL DEFAULT 'table',   -- POS grid section (CD-02 Q1)
   sort_order  SMALLINT NOT NULL DEFAULT 0,
-  qr_code     VARCHAR(500),
+  qr_token    VARCHAR(64) UNIQUE,                         -- opaque random token; regenerate = replace (BRIEF-011 Q1, Field 2026-10-04)
   is_active   BOOLEAN NOT NULL DEFAULT TRUE,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -79,6 +79,7 @@ CREATE TABLE visit (
   table_seat_id  UUID NOT NULL REFERENCES table_seat(id),
   customer_id    UUID REFERENCES customer(id),   -- nullable — linked post-hoc
   state          visit_state NOT NULL DEFAULT 'open',
+  guest_label    VARCHAR(100),                    -- optional name at open (CD-02 open-table; BRIEF-011 Q1)
   opened_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   closed_at      TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -178,6 +179,21 @@ CREATE TABLE user_policy (
   PRIMARY KEY (user_id, policy_id)
 );
 
+-- Pending sign-in requests from LINE accounts that are not registered yet (CD-13 Q1, Field 2026-10-09).
+-- Owner/manager approves (creates staff_user + identity + memberships) or rejects.
+CREATE TABLE staff_access_request (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  provider      identity_provider NOT NULL,
+  external_id   VARCHAR(300) NOT NULL,
+  display_name  VARCHAR(200),
+  avatar_url    VARCHAR(500),
+  status        VARCHAR(20) NOT NULL DEFAULT 'pending',   -- pending | approved | rejected
+  requested_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  decided_at    TIMESTAMPTZ,
+  decided_by    UUID REFERENCES staff_user(id),
+  UNIQUE (provider, external_id)
+);
+
 -- ============================================================
 -- 4. MENU
 -- ============================================================
@@ -198,6 +214,7 @@ CREATE TABLE menu_item (
   category_id  UUID NOT NULL REFERENCES menu_category(id),
   name         VARCHAR(200) NOT NULL,
   description  TEXT,
+  image_key    VARCHAR(500),            -- S3 object key of the menu photo, NULL = no photo (CD-06 Q1, Field 2026-10-09)
   base_price   NUMERIC(10,2) NOT NULL DEFAULT 0,
   item_type    item_type NOT NULL DEFAULT 'simple',
   kitchen_tag  VARCHAR(50),
@@ -404,6 +421,7 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_visit_table_seat   ON visit(table_seat_id);
 CREATE INDEX idx_visit_customer      ON visit(customer_id) WHERE customer_id IS NOT NULL;
 CREATE INDEX idx_visit_state         ON visit(state);
+CREATE UNIQUE INDEX uq_visit_live_per_seat ON visit(table_seat_id) WHERE state IN ('open','active','idle');  -- one live visit per seat (BRIEF-011 Q1)
 
 -- Order lookups
 CREATE INDEX idx_order_visit         ON order_record(visit_id);

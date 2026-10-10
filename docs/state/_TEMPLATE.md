@@ -1,4 +1,4 @@
-# State — <KJ | Methee>
+# State — <KJ | Metee>
 Updated: YYYY-MM-DD HH:mm · Agent: <tool>
 > Tracked branch snapshot, ≤ 40 lines. Write only your own state; refresh at session end/before changing tools.
 

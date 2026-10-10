@@ -2,14 +2,14 @@
 
 | | |
 |---|---|
-| **Status** | Draft — **ON HOLD** (Field, 2026-09-27: design work first so Methee can start) |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-04 · Week 1, runs after BRIEF-009 |
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |
 | **PR** | <executor fills> |
 | **Affected apps** | backend · infra/CI (Redis service) |
-| **Revision** | 1 |
-| **Depends on** | BRIEF-004 (Done), BRIEF-006 (Done) |
+| **Revision** | 2 |
+| **Depends on** | BRIEF-004 (Done), BRIEF-006 (Done), **BRIEF-009 merged** (envelope `code`, OpenAPI helper) |
 | **References** | handoff 2026-09-20 "Auth & Session Architecture" · DR-005 (mobile auth — **not** in this brief) · DR-007 (frontend axios — BRIEF-008) · `docs/rules/backend.md` · `docs/schema.sql` (`identity_provider`, `staff_user`, `staff_user_identity`) · LINE Login v2.1 |
 | **Audit depth** | Full — auth |
 
@@ -28,11 +28,11 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 - **Redis provider:** `providers/redis/redis.module.ts` (global) + `redis.service.ts` exposing one `ioredis` client; closed on shutdown.
 - **Migration** `…-StaffIdentity.ts`: `identity_provider` enum, `staff_user`, `staff_user_identity` — **exactly as `docs/schema.sql`**.
 - **IAM module (minimal):** `modules/iam/` — `StaffUser`, `StaffUserIdentity` entities; repository port + TypeORM adapter; `StaffUserService` with `findByIdentity(provider, externalId)` and `findActiveById(id)`. No groups/policies yet (IAM brief, TBD). These two tables have no audit columns in `schema.sql` → the entities do **not** extend `BaseEntity`.
-- **Auth module** (replace the passport stubs):
+- **Auth module** (replace the unused strategy stubs with one real JWT strategy):
   - `LineClient` behind a port: build authorize URL, exchange code (`https://api.line.me/oauth2/v2.1/token`), verify ID token (`POST https://api.line.me/oauth2/v2.1/verify` with `nonce`). Plain `fetch`.
-  - `TokenService`: access JWT (HS256, payload `{ sub }`, TTL from config) via `@nestjs/jwt`; **opaque refresh tokens** (32 random bytes) stored in Redis **hashed** (`refresh:<sha256>` → `{ userId, familyId }`, TTL = refresh TTL); rotation on every use; **reuse of an already-rotated token revokes the whole family**.
+  - `TokenService`: access JWT (HS256, payload `{ sub, sid }`, TTL from config; `sid` = refresh family id) via `@nestjs/jwt`; **opaque refresh tokens** (32 random bytes) stored in Redis **hashed** (`refresh:<sha256>` → `{ userId, familyId }`, TTL = refresh TTL); rotation on every use; **reuse of an already-rotated token revokes the whole family**. Session record `session:<familyId>` → `{ userId }` (TTL = refresh TTL, extended on rotation); revoking a family deletes it.
   - OAuth `state` + `nonce` in Redis (`oauth:<state>`, 10 min, single use).
-  - `JwtAuthGuard` registered as `APP_GUARD`; reads cookie `access_token`, then `Authorization: Bearer` (DR-005 extractor order); `@Public()` decorator in `common/decorators/public.decorator.ts`; `HealthController` marked `@Public()`. `CurrentUser` decorator returns `{ sub }`.
+  - `JwtStrategy` (`passport-jwt`, `ExtractJwt.fromExtractors([cookie access_token, fromAuthHeaderAsBearerToken()])` — DR-005 extractor order); `JwtAuthGuard extends AuthGuard('jwt')` registered as `APP_GUARD`, skips routes marked `@Public()` via `Reflector`. `JwtStrategy.validate()` checks `session:<sid>` exists in Redis — missing → 401 (instant logout per device, D2). LINE OAuth stays custom (state/nonce in Redis) — no passport LINE strategy; `@Public()` decorator in `common/decorators/public.decorator.ts`; `HealthController` marked `@Public()`. `CurrentUser` decorator returns `{ sub, sid }`.
   - `cookie-parser` in `bootstrap/configure-app.ts`; `enableCors({ origin: FRONTEND_URL, credentials: true })`.
 - **Endpoints** (`/api/auth`, envelope applies except redirects):
   | Method | Path | Auth | Behaviour |
@@ -46,7 +46,7 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 - **Staff provisioning CLI:** `pnpm --filter @bar/backend seed:staff -- --line-user-id <sub> --name "<display name>"` — standalone script using the CLI `DataSource`; idempotent (existing identity → prints "already registered").
 - **CI:** add a `redis:7-alpine` service + test env values (`REDIS_URL`, dummy `JWT_ACCESS_SECRET`, dummy `LINE_*`, `FRONTEND_URL`) to `.github/workflows/ci.yml`.
 - `.env.example` (backend) updated; `README` auth section (how to provision the first owner).
-- Remove `@nestjs/passport`, `passport` and the three strategy stubs (no longer used) — closes the 4 unused-import Sonar issues too.
+- Keep `@nestjs/passport` + `passport` (D4); add `passport-jwt`; delete the unused strategy stubs except the one `JwtStrategy` — closes the unused-import Sonar issues too.
 
 ### Out (do NOT build here)
 - Mobile endpoints (`/auth/mobile/token`, `/auth/mobile/refresh`, PKCE) — with the Expo auth brief (DR-005).
@@ -67,11 +67,11 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 - **AC-4** — Callback with a registered identity (fake LINE client in e2e) → both cookies with the flags in §2, 302 to `FRONTEND_URL/`; `GET /auth/me` with the cookie returns the user.
 - **AC-5** — Callback with unknown/replayed `state` → `login_failed`; unregistered or inactive identity → `not_registered`, no cookies, LINE `sub` logged.
 - **AC-6** — `POST /auth/refresh` rotates both cookies; using the **old** refresh token again → 401, cookies cleared, and the **new** token of that family is also revoked.
-- **AC-7** — `POST /auth/logout` revokes the family and clears cookies; the old refresh token then fails.
+- **AC-7** — `POST /auth/logout` revokes the family and clears cookies; the old refresh token then fails **and the still-unexpired access token of that session gets 401 on the next request**; another session of the same user keeps working.
 - **AC-8** — Any non-`@Public` route without a token → 401 envelope; with `Authorization: Bearer <access>` it passes (extractor order); `/api/health` stays public.
 - **AC-9** — Refresh tokens are never stored in plain text (Redis key is a hash); tokens/secrets never logged.
 - **AC-10** — `seed:staff` creates the user + identity; second run reports "already registered".
-- **AC-11** — `@nestjs/passport`, `passport` and strategy stubs removed; lint 0 warnings in `modules/auth`.
+- **AC-11** — Exactly one passport strategy (`jwt`) remains; unused stubs removed; lint 0 warnings in `modules/auth`.
 - **AC-12** — lint / typecheck / test / test:e2e / build exit 0; `ci` green with the Redis service.
 
 ## 5. Test Gate
@@ -104,10 +104,11 @@ pnpm --filter @bar/backend build
 ## 7. Decision Points (Field Guard)
 - **Proposed for Field review before Ready** (become Pre-decided when approved):
   - **D1 Staff provisioning:** only pre-registered LINE identities can sign in; the first owner is created with `seed:staff`; the LINE `sub` of a rejected login is logged so the owner can register staff. (Invite links come later with IAM.)
-  - **D2 Refresh tokens:** opaque, hashed in Redis with family rotation + reuse detection (no DB table, no JWT refresh). Flushing Redis signs everyone out — acceptable.
-  - **D3 JWT payload** `{ sub }` only — no `venueId` (DB-per-venue). `backend.md` Auth line updated with this brief.
-  - **D4 No passport:** custom `JwtAuthGuard` with `@nestjs/jwt`; remove `@nestjs/passport` + `passport`.
-- **Pre-decided packages (exact):** `ioredis` `^5.11.1` (BullMQ uses ioredis 5 — not 6.0), `cookie-parser` `^1.4.7`, dev `@types/cookie-parser` `^1.4.10`. Removed: `@nestjs/passport`, `passport`.
+  - **D2 ✅ Decided (Field, 2026-10-04): client holds the tokens, server keeps the session in Redis** — opaque refresh token hashed in Redis with family rotation + reuse detection, **plus a per-request session check** (`session:<sid>`) in `JwtStrategy`. Why: instant per-device logout; Field's proven pattern; cost ≈ 0 because Redis is already on the request path (IAM cache). Flushing Redis signs everyone out — acceptable.
+  - **D1 ✅ Decided (Field, 2026-10-04): pre-registered only** — as described above.
+  - **D3 ✅ Decided (Field, 2026-10-04): JWT payload `{ sub, sid }`** (amended same day with D2) — no `venueId` (DB-per-venue). `backend.md` Auth line updated with this brief.
+  - **D4 ✅ Decided (Field, 2026-10-04): keep passport** — `@nestjs/passport` + `passport-jwt` `JwtStrategy` with cookie-then-Bearer extractors; `@nestjs/jwt` signs tokens.
+- **Pre-decided packages (exact):** `ioredis` `^5.11.1` (BullMQ uses ioredis 5 — not 6.0), `cookie-parser` `^1.4.7`, dev `@types/cookie-parser` `^1.4.10`. Added: `passport-jwt` `^4.0.1`, dev `@types/passport-jwt` `^4.0.1` (verify with `pnpm view` before install; different major → stop, DR). Kept: `@nestjs/passport`, `passport`.
 - **Likely DRs:** LINE verify endpoint behaviour differs from docs · need for a `staff_refresh_token` DB table after all · CORS/cookie issues across ports in dev.
 
 ## 8. Unlocked Protected Files
@@ -118,11 +119,14 @@ pnpm --filter @bar/backend build
 ## Ready Checklist
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
-- [ ] No unresolved decision blocking the main outcome (D1–D4 need Field)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] No unresolved decision blocking the main outcome (D1–D4 decided 2026-10-04)
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-04)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-25 | Initial draft (Cowork). Mobile auth split out (DR-005 later), frontend + IAM = later briefs (BRIEF-008/009 numbers since reused, 2026-09-28) |
 | 1 | 2026-09-27 | On hold — Field switched priority to UX/UI design; D1–D4 still open |
+| 1 | 2026-10-04 | Off hold. D1 pre-registered, D3 `{ sub }`, D4 keep passport (passport-jwt strategy) — Field. D2 open |
+| 2 | 2026-10-04 | D2 decided: Redis session + per-request `sid` check; D3 payload `{ sub, sid }`; AC-7 extended |
+| 2 | 2026-10-04 | Ready — approved by Field in session; depends on BRIEF-009 |

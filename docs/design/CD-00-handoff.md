@@ -36,7 +36,7 @@ Tones (fill / text, dot = `--status-*`): neutral `status-neutral-bg/-fg` · acce
 | Order `order_status` | `pending` ใหม่ new · `accepted` กำลังทำ making · `ready` พร้อมเสิร์ฟ served · `sent` เสิร์ฟแล้ว neutral · `issue` มีปัญหา void |
 | Item `order_item_status` | `pending` (CD `waiting`) รอ neutral · `preparing` (CD `making`) กำลังทำ making · `ready` พร้อม served · `cancelled` ยกเลิก neutral, struck through, no dot |
 | Table / visit | no visit (CD `free`) ว่าง neutral · `open` เปิดแล้ว accent · `active` (CD `seated`) มีแขก served · `idle` ไม่มีความเคลื่อนไหว new · `closed` ปิดโต๊ะ neutral · `abandoned` ทิ้งโต๊ะ void · call-staff flag (CD `calling`) เรียกพนักงาน solid accent + pulse dot |
-| Payment `payment_status` | `pending` รอชำระ new · `completed` (CD `paid`) ชำระแล้ว served · `failed` ไม่สำเร็จ void · `refunded` คืนเงินแล้ว making |
+| Payment `payment_status` | `pending` รอชำระ new · `completed` (CD `paid`) ชำระแล้ว served · `failed` ไม่สำเร็จ void · `refunded` คืนเงินแล้ว making · `cancelled` ยกเลิกแล้ว neutral (added CD-03, 2026-10-09) |
 | Bottle keep `bottle_keep_status` | `active` ฝากอยู่ bottle · `finished` (CD `empty`) หมดขวด neutral · `expired` หมดอายุ void |
 | Menu | `is_available=false` (CD `soldout`) หมด void |
 

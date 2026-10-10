@@ -47,12 +47,12 @@ The backend already uses Zod DTOs (`docs/rules/backend.md` — no class-validato
 - **Generation:** backend builds an OpenAPI 3.x document with `@nestjs/swagger`, fed from the contracts Zod schemas through a Zod → OpenAPI bridge (Zod 4 JSON Schema output, or a library such as `nestjs-zod`). Exact package + version is pre-decided in the brief that adds it — if the bridge can't express a schema, raise a DR, don't hand-write the spec.
 - **Coverage:** every endpoint a brief adds appears in the spec with request body, query/params, success response **inside the envelope** `{ status, message, data }`, error envelope, and auth requirement (access cookie / `Bearer`). A missing or wrong spec entry is a Must fix in audit.
 - **Serving:** Swagger UI at `/api/docs`, JSON at `/api/docs-json`. On in local + staging; **off in production** (env flag in `providers/config`), so the API surface isn't advertised publicly.
-- **Committed copy:** `pnpm --filter @bar/backend openapi:export` writes `docs/api/openapi.json`. CI fails if the committed file is out of date — reviewers and Methee can read the contract in the PR diff without running the backend.
+- **Committed copy:** `pnpm --filter @bar/backend openapi:export` writes `docs/api/openapi.json`. CI fails if the committed file is out of date — reviewers and Metee can read the contract in the PR diff without running the backend.
 - **Frontend / mobile:** keep importing Zod schemas from `@bar/contracts`; **no client codegen** from OpenAPI. MSW mocks must match the spec shapes.
 - **Tags** per domain (`auth`, `menu`, `visit`, `order`, `payment`, …) matching backend modules.
 
 ### Why
-The advisor grades system design; a live, browsable API spec is standard evidence and makes FE/BE handoff concrete (Methee builds against mocks while the backend lags). Generating it from the shared Zod schemas gets the documentation without a second source of truth.
+The advisor grades system design; a live, browsable API spec is standard evidence and makes FE/BE handoff concrete (Metee builds against mocks while the backend lags). Generating it from the shared Zod schemas gets the documentation without a second source of truth.
 
 ### Consequences / follow-ups
 - New backend dependency `@nestjs/swagger` (+ bridge) — through **BRIEF-009** (contracts + OpenAPI foundation).

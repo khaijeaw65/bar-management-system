@@ -54,7 +54,7 @@ pnpm --filter <pkg> test:e2e   # if the brief has e2e ACs
 A required script that doesn't exist yet = **BLOCKED** — report it, never skip silently.
 
 ### Local Sonar scan
-- Required for this brief: yes (always for Methee) / optional — <reason>
+- Required for this brief: yes (always for Metee) / optional — <reason>
 - Approved exclusions / "won't fix": <none, or Field-approved reference>
 
 ## 6. Constraints

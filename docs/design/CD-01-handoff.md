@@ -96,3 +96,10 @@ Components: Alert, Skeleton (shimmer `sk-shimmer` 1.5 s), Avatar (xs 20 / sm 24 
 
 ## 6. Screenshots (`docs/design/assets/CD-01/`, dark)
 `01-login-states.png` · `02-not-registered.png` · `03-shell-floor.png` · `04-shell-notifications-open.png` · `05-menu-loaded.png` · `06-menu-loading.png` · `07-menu-empty.png` · `08-menu-error.png` · `09-menu-no-result.png` · `10-session-expired.png` — all present (2026-09-27). Menu screenshots include the annotation switcher row (§5 #11).
+
+## 7. Ported to a Cowork Design canvas (2026-10-09)
+Canvas "CD-01 POS Login Shell Menu" https://claude.ai/artifact/GDCe3opjPBQ7YxAZ6RwEBo — same screens, CD-08 board format (states side by side, Theme tweak dark/light, real DS components, shared `PosFrame` rail + top bar).
+Changes vs §1 (pending Field review):
+- **P1 — not-registered copy** follows CD-13 Q1 (access requests): "ส่งคำขอเข้าใช้งานถึงเจ้าของร้านแล้ว · เข้าสู่ระบบอีกครั้งเมื่อได้รับอนุมัติ", steps "1. แจ้งเจ้าของร้านว่าส่งคำขอแล้ว · 2. รอเจ้าของร้านอนุมัติและเลือกหน้าที่ · 3. เข้าสู่ระบบใหม่อีกครั้ง". Same change as CD-08 R1.
+- Menu error state = Alert + "ลองอีกครั้ง" button only (§5 #10 design bug applied); English sub-name dropped (§5 #8); category chips include ไฮบอล (from data, §5 #9); no annotation switcher (§5 #11).
+- Shell board shows the content area as a placeholder → floor content is CD-02.
