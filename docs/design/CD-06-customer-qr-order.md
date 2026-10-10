@@ -1,6 +1,6 @@
 # CD-06 — Customer QR: scan → nickname → menu → item → cart → running tab, call staff
 
-**Status:** Ready — Q1 + D1–D4 decided by Field (2026-10-09) · **Surface:** customer phone web `/q/:token` (390×844; also 360×780) · **Used by:** S1 customer-QR briefs (DR-009) · FRD §3, §4, §6
+**Status:** rev 1 canvas in review (2026-10-10) — Q1 + D1–D4 decided by Field (2026-10-09) · **Surface:** customer phone web `/q/:token` (390×844; also 360×780) · **Used by:** S1 customer-QR briefs (DR-009) · FRD §3, §4, §6
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -42,5 +42,12 @@
 - No out-of-scope items appear.
 
 ## Result
-- Claude Design link: <after run>
-- Handoff: `docs/design/CD-06-handoff.md` · screenshots `docs/design/assets/CD-06/`
+- Canvas: https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi (built to `cd-template.md` v2 — no Claude Design run)
+- Handoff: `docs/design/CD-06-handoff.md` · source snapshot after approval
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 1 | 2026-10-10 | Nickname change lives in the cart, not the tab header (R3) · "+" = quick add for no-option items (R2) · promo category + expired-promo cart state (DR-010) · "ของฉัน" filters by phone, not name (R4) · categories drawn as chips · call-staff error state added | handoff §0, §9 |
