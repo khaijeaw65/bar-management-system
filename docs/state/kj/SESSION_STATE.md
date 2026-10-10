@@ -5,7 +5,7 @@ Updated: 2026-10-10 11:20 · Agent: Cowork (design)
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
-Next action: build **CD-06 customer QR order** as a new Design canvas **using `docs/design/board-convention.md`** (Journey / States / Flow map), then CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2.
+Next action: **retrofit CD-01–04 + CD-08 to `docs/design/cd-template.md`** (CD-14 = passed pilot, rev 3), then build **CD-06 customer QR order** to the template, then CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2.
 
 ## Design canvases (claude.ai Artifacts, type Design, DS "The Loft Bar Design System")
 | CD | Canvas | Status |
@@ -53,7 +53,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 
 ## Active
 - Branch: `docs/ui-design-cd06` (from main @ 1e301db, after PR #26 merged 10 Oct) · not pushed yet.
-- Decided 10 Oct: seat-open collision asks before joining (CD-14 J2; apply to CD-02 POS in retrofit; BRIEF-011 attach response needs `openedBy`/`openedVia` — CD-14 R9 pending) · board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
+- Decided 10 Oct: seat-open collision asks before joining (CD-14 J2; apply to CD-02 POS in retrofit; BRIEF-011 Q3 added: `visit.opened_by` + `opened_via`) · board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
 - Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
 - **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
 - **Ready design briefs:** CD-05, 06, 07, 11, 12, 13, 14, 15 (CD-10 merged into CD-11).
@@ -62,7 +62,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 
 ## Field to-do (any order)
 1. Open BRIEF-002 PR + auditor. (PR #26 design canvases merged 10 Oct.)
-2. Review CD-03 + CD-04 canvases; CD-01 P1. DR-010 protected follow-ups: schema.sql, erd.html, CLAUDE.md 33 tables, DR-009 line.
+2. Review CD-03 + CD-04 canvases; CD-01 P1. Protected schema follow-ups (apply by hand): DR-010 `menu_item_availability` + `is_promo`; BRIEF-011 Q3 `visit.opened_by` + `opened_via` + enum `visit_open_source`; erd.html; CLAUDE.md 33 tables; DR-009 line. Export CD-14 board images → docs/design/img/CD-14/.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
 4. Branch protection; delete stale remote branches (`docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`).
 5. (done 10 Oct) stale git locks cleared; delete permission granted per session — ask once at session start.

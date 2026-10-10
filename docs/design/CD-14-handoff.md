@@ -2,9 +2,9 @@
 id: CD-14
 title: Staff app — new order
 revision: 3
-status: review            # rev 3 = CD template pilot; rev 2 was Field OK
-approved_by: Field        # rev 2
-approved_on: 2026-10-10   # rev 2
+status: approved          # rev 3 = CD template pilot, passed
+approved_by: Field
+approved_on: 2026-10-10
 canvas: https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW
 canvas_version: 1791606968-5fa0
 ds_version: 1791561405-c72e
@@ -27,7 +27,7 @@ Rev 2 items R1–R5 accepted by Field 2026-10-10 (summary in §10). Rev-3 pilot 
 |---|---|---|
 | R6 ✓ | **Cart lifetime.** Kept in memory per visit while the app runs or is backgrounded; lost if the app is killed or the session expires (401 → login). No offline ordering (cut scope). | Accept for S1. Persisting drafts = later. |
 | R7 ✓ | **No-permission UI.** Permissions are known at login (ACL cache): without `orders:create` the "+ ออเดอร์" FAB and "สั่งออเดอร์" are hidden; without `visits:open` free seats are locked ("ให้ POS เปิด", seat-sheet 3). The 403 state (cart 11) only covers a permission revoked mid-session. | Accept. |
-| R9 | **Join confirmation needs who opened the table.** Field 2026-10-10: a collision must ask before joining (could be a different group). `POST /visits` → `200 attached:true` creates nothing, so cancelling is free — but the dialog shows "เปิดโดย ต้น · POS · 21:02 · แขก กลุ่มมิ้นท์". BRIEF-011's attach response has `guestLabel` + `openedAt` but no opener. | Amend BRIEF-011 (not implemented yet): attached response adds `openedBy { staffId, displayName }` and `openedVia` (`pos`/`app`/`qr`). Field decides. Same dialog later on POS (CD-02 retrofit). |
+| R9 ✓ | **Join confirmation shows who opened the table.** Approved by Field 2026-10-10 → BRIEF-011 Q3: `visit.opened_by` + `opened_via` (`pos`/`app`/`qr`); attach response returns `openedBy { staffId, displayName }` + `openedVia`. `schema.sql` change applied by Field by hand. Same dialog on POS in the CD-02 retrofit. | Done (brief amended). |
 | R8 ✓ | **Overview pain point** confirmed by Field 2026-10-10: bars without POS / QR take orders on paper or verbally. Consequence (lost orders, under-charging) stated as risk. | Done. |
 
 ## 1. Overview
@@ -131,4 +131,4 @@ Pushed stack screen (no tab bar): header top pad 48, IconButton back + title `--
 |---|---|---|---|
 | 1 | 2026-10-10 | first canvas (pick-seat, menu, item sheet, cart, leave, flow) | Cowork, brief D1–D3 |
 | 2 | 2026-10-10 | Journey pilot (J1, J2), full-width search, **no quick add**, DR-010 promo states, highlight fix; R1 queue keeps CD-08 order · R2 seat tiles 3/row · R3 ice in one row · R4 CD-08 sheet gets "สั่งออเดอร์" · R5 "ค่าบริการ" badge neutral — **approved** | Field |
-| 3 | 2026-10-10 | collision now asks before joining (J2 4b dialog → 5b) — Field · CD template pilot: overview + seat-sheet boards, menu 8–9, cart 10–11, YAML header, state matrix, action table; J2 E3b corrected to `200 attached:true` (BRIEF-011) | Cowork — awaiting Field (R6–R8) |
+| 3 | 2026-10-10 | collision now asks before joining (J2 4b dialog → 5b) — Field · CD template pilot: overview + seat-sheet boards, menu 8–9, cart 10–11, YAML header, state matrix, action table; J2 E3b corrected to `200 attached:true` (BRIEF-011) | Field — approved (R6–R9) |
