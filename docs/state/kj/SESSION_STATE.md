@@ -34,6 +34,8 @@ Handoffs: `docs/design/CD-0#-handoff.md` (each has a "Port to Design canvas" sec
 - Toast body = children (no `description`); `action={{ {label} }}`. Input/Select error = `error="text"` (no `error-message`); Select supports `is-open`, `options=[{value,label}]`. PromptPayPanel: `amount` string, `qr-src`, `qr-size`, `status` (completed/cancelled/expired), `expires-in`.
 - DS Badge tones: neutral · accent · new · making · served · void · bottle (no `info`). StatusChip `kind="menu" status="soldout"` exists.
 - DS `Dialog` takes JSX `actions` → can't set from markup; draw alert dialogs from tokens + DS Buttons.
+- To stretch a DS component (e.g. SearchField) the `x-import` host must be the flex item: wrapper `class="sf"` + helmet `.sf > *{flex:1 1 auto;display:flex;min-width:0}`.
+- Journey phones must match the state boards exactly (same chips/header) — no simplified copies.
 - Never name a DC prop `name` (selects the component) — CD-04 uses `who`.
 - If a publish is refused (Field edited the canvas): `read` the files, re-apply, republish. Field sometimes edits defaults (e.g. Grid default mode) — keep them.
 - Bundle source for prop lookups: `scratchpad/artifact-files/4d243392-…/project/_ds_bundle.js` (re-read the DS `project/_ds_bundle.js` if missing).
