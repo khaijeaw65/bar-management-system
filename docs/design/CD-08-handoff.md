@@ -1,10 +1,10 @@
 # CD-08 — Developer handoff: Staff app core (Cowork Design canvas, 2026-10-09)
 
 Source: Design canvas "CD-08 Staff App Core" https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB (built by Cowork on The Loft Bar Design System https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D, real DS components mounted) · brief `CD-08-staff-app-core.md` (D1–D4).
-**Status: pending Field review.** Every board has a **Theme tweak (dark / light)** — flip it in the Tweaks panel; light boards are not drawn separately.
+**Status: Field OK — R1–R5 accepted (2026-10-10).** Every board has a **Theme tweak (dark / light)** — flip it in the Tweaks panel; light boards are not drawn separately.
 **Do not port the canvas markup.** Build with HeroUI Native + Uniwind + tokens (`docs/rules/mobile.md`). Sample data only.
 
-## 0. Review items for Field
+## 0. Review items for Field — all accepted by Field 2026-10-10
 | # | Item | Recommendation |
 |---|---|---|
 | R1 | **Not-registered login** now says "ส่งคำขอเข้าใช้งานถึงเจ้าของร้านแล้ว" (ties to CD-13 Q1 access requests) instead of "ติดต่อเจ้าของร้าน". | Accept — the rejected LINE login creates a `staff_access_request`. |

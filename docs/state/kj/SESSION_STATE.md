@@ -14,7 +14,7 @@ Next action: build **CD-14 staff new order** as a new Design canvas (brief `docs
 | CD-02 POS tables + session | https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG | ported · Field OK (badge + loading fixes) |
 | CD-03 POS payment | https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb | ported · awaiting Field review |
 | CD-04 POS order entry | https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz | ported · awaiting Field review |
-| CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | built · R1–R5 pending Field |
+| CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | built · Field OK (R1–R5 accepted 10 Oct) |
 Handoffs: `docs/design/CD-0#-handoff.md` (each has a "Port to Design canvas" section). DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e).
 
 ## How to build a canvas (proven recipe)
@@ -56,7 +56,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 
 ## Field to-do (any order)
 1. Push branch + open PR; open BRIEF-002 PR + auditor.
-2. Review CD-03 + CD-04 canvases; CD-08 R1–R5; CD-01 P1.
+2. Review CD-03 + CD-04 canvases; CD-01 P1.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
 4. Branch protection; delete stale remote branches (`docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`).
 5. Git: `.git/stale-*-lock-*` files and tmp objects pile up (no delete permission in Cowork) — safe to delete.
