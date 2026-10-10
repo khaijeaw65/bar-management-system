@@ -3,7 +3,7 @@
 > Status: **v1, approved direction by Field 2026-10-10** (merged from Cowork proposal + Codex review). Pilot: CD-14. After CD-14 passes: retrofit CD-01–04, CD-08; CD-06 onward built to this.
 > Board layout rules: `board-convention.md`. This file says **what** a CD must contain; the convention says **how boards look**.
 
-A CD = **canvas** (Claude Design artifact) + **handoff** (`CD-##-handoff.md`) + **images** (`img/CD-##/`). It is the contract for a screen: inputs, states, transitions, errors, dependencies.
+A CD = **canvas** (Claude Design artifact) + **handoff** (`CD-##-handoff.md`) + **images** (`assets/CD-##/`). It is the contract for a screen: inputs, states, transitions, errors, dependencies.
 
 Consumers: **D** developer · **A** AI agent (cannot open the canvas) · **P** presentation (advisor) · **F** Figma later (exploratory).
 
@@ -46,7 +46,7 @@ supersedes: brief paste text where it conflicts
 |---|---|---|
 | 0 | Review items | R# table (item, recommendation, decision). Empty when approved. |
 | 1 | Overview | same facts as the Overview board, in text (agents read this, not the image) |
-| 2 | Boards & images | board → states list → image path `img/CD-##/<board>.png` |
+| 2 | Boards & images | board → states list → image path `assets/CD-##/<board>.png` |
 | 3 | **State coverage** | screen × state matrix: ✓ drawn / n/a (reason) / shared (where) — see §3 below |
 | 4 | **Action table** | see §4 below — the core contract |
 | 5 | e2e script | J# E# → what the test asserts (from the Journey arrows) |
@@ -96,7 +96,7 @@ Rules: mark each API **available / planned (brief)**; never invent an endpoint �
 - Large-text Thai checked on one board.
 
 ## 6. Evidence (not a gate per CD)
-- **Images:** at approval, Field exports one PNG per board (canvas Share › Export) to `docs/design/img/CD-##/` and sets `canvas_version` — agents implement from images + handoff.
+- **Images:** at approval, Field exports one PNG per board (canvas Share › Export, PNG 1x, dark) to `docs/design/assets/CD-##/`, renamed `<board>.png` (no spaces, no `@1x`), and sets `canvas_version` — agents implement from images + handoff.
 - **Walkthrough:** one short run with a real or stand-in staff member per distinct flow that appears in a demo, before the final presentation. Note observed problems in §0.
 
 ## 7. Approval checklist (Field)

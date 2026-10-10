@@ -6,7 +6,7 @@ status: approved          # rev 3 = CD template pilot, passed
 approved_by: Field
 approved_on: 2026-10-10
 canvas: https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW
-canvas_version: 1791606968-5fa0
+canvas_version: 1791609667-6972
 ds_version: 1791561405-c72e
 surfaces: [expo-staff]
 sizes: [390x844, 360x780]
@@ -39,7 +39,7 @@ Rev 2 items R1–R5 accepted by Field 2026-10-10 (summary in §10). Rev-3 pilot 
 - **Journeys:** J1 seated T3, 2× ช้างดราฟต์ + 1× โอลด์แฟชั่น (E1–E7) · J2 free seat C3: open then order, or POS opened it first → confirm before joining (E1–E4b).
 
 ## 2. Boards & images
-Images: export at approval to `docs/design/img/CD-14/<board>.png` (pending — Field, canvas Share › Export).
+Images: `docs/design/assets/CD-14/<board>.png` (PNG 1x, dark, exported by Field 2026-10-10 from canvas version 1791609667-6972).
 
 | Board | Type | States |
 |---|---|---|
