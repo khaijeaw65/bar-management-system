@@ -5,7 +5,7 @@
 | **Implementer** | kj (Cursor) |
 | **Date** | 2026-10-10 |
 | **Brief revision** | 1 |
-| **Branch / PR** | `poc/BRIEF-900-source-handoff-menu` · PR link filled after push |
+| **Branch / PR** | `poc/BRIEF-900-source-handoff-menu` · https://github.com/khaijeaw65/bar-management-system/pull/28 |
 | **Commit** | `38b6a6f` |
 | **Status** | Implemented — awaiting audit. **Do not merge.** |
 

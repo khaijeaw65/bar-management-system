@@ -5,7 +5,7 @@ Updated: 2026-10-10 14:40 · Agent: Cursor (BRIEF-900)
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief.**
 **Active: BRIEF-900 POC menu — Implemented, awaiting audit. Do not merge.**
-Branch `poc/BRIEF-900-source-handoff-menu` · work SHA `38b6a6f`.
+Branch `poc/BRIEF-900-source-handoff-menu` · PR #28 · work SHA `38b6a6f`.
 Handoff: `docs/handoffs/BRIEF-900.md`.
 Next: `audit BRIEF-900` (Cowork). After the comparison, delete this branch.
 
