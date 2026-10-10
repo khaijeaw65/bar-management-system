@@ -2,11 +2,11 @@
 id: CD-08
 title: Staff app — login, order queue, order detail + status, tables, more
 revision: 2
-status: review            # rev 1 approved 2026-10-10 (R1–R5); rev 2 = CD template retrofit, R6–R7 + R12–R15 decided, R8–R11 open; R16 (DR-012) needs canvas rev 3
+status: review            # rev 1 approved 2026-10-10 (R1–R5); rev 2 = CD template retrofit, R6–R7 + R12–R16 decided, canvas rev 3 drawn; R8–R11 parked (Field 10 Oct)
 approved_by: Field        # rev 1
 approved_on: 2026-10-10   # rev 1
 canvas: https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB
-canvas_version: 1791625986-336c
+canvas_version: 1791642402-add2
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-08/   # taken after rev 2 approval (§11)
 surfaces: [expo-staff]
@@ -57,7 +57,7 @@ Images: none exported for rev 2 (optional, presentation only). Rev-1 screenshots
 | `journey-2` | JOURNEY | queue (E1 card #0040) → detail ใหม่ (E2 รายงานปัญหา) → sheet ของหมด + ยำหมูยอ (E3) → issue state (E4 ส่งให้ POS; alt แก้แล้ว ทำต่อ) → escalated → E5 system: POS cancels ยำหมูยอ → detail กำลังเตรียม, item struck, Toast (success) |
 | `login` | STATES | 1 default · 2 signing in · 3 failed · 4 not registered (request sent) · 5 signed out (401: own logout / device revoked / unused > 30 days — rare, R13) |
 | `queue` | STATES | 1 loaded · 2 loading · 3 empty (filter ใหม่) · 4 error + retry · 5 new order (realtime) · 6 disconnected · 7 accepted by someone else first (409 → info Toast, R14) · 8 no `orders:update_status` (read-only) · 9 360×780 + long Thai · 10 counter seat กำลังเตรียม → เสิร์ฟแล้ว (R15) |
-| `detail` | STATES | 1 ใหม่ · 2 กำลังเตรียม · บีม · 3 พร้อมเสิร์ฟ · 4 เสิร์ฟแล้ว · 5 pending · 6 409 (other change) · 7 loading (from push) · 8 network failure · 9 read-only · 10 360×780 + long Thai · 11 counter กำลังเตรียม → เสิร์ฟแล้ว (R15) · 12 resolved by POS, item cancelled (R12) |
+| `detail` | STATES | 1 ใหม่ · 2 กำลังเตรียม · บีม · 3 พร้อมเสิร์ฟ · 4 เสิร์ฟแล้ว · 5 pending · 6 409 (other change) · 7 loading (from push) · 8 network failure · 9 read-only · 10 360×780 + long Thai · 13 ten-item order, top (header "10 รายการ · 14 ชิ้น") · 14 ten-item order scrolled to the end (back bar fixed, last item clears the footer) · 11 counter กำลังเตรียม → เสิร์ฟแล้ว (R15) · 12 resolved by POS, item cancelled (R12) |
 | `issue` | STATES | 1 report sheet · 2 issue state · 3 escalated · 4 อื่นๆ without detail (validation) + keyboard open |
 | `tables` | STATES | 1 loaded · 2 call-staff (T2) · 3 summary sheet (ยังไม่เสิร์ฟ / เสิร์ฟแล้ว / สั่งออเดอร์) · 4 loading · 5 empty · 6 error + retry · 7 disconnected · 8 360×780 |
 | `more` | STATES | 1 list · 2 logout dialog |
@@ -153,6 +153,8 @@ Tab screens: header top pad 56, title `--text-title`, clock `--text-small` tabul
 - **Permissions (known at login, ACL cache):** without `orders:update_status` action buttons are replaced by the read-only line; without `orders:create` the FAB and "สั่งออเดอร์" are hidden; a mid-session 403 switches to read-only after refetching permissions.
 - **Realtime:** reconnect → refetch queue/tables; banner shows while disconnected; actions stay enabled (server re-validates).
 - **Tables:** read-only grid. Summary sheet lists the visit's orders split ยังไม่เสิร์ฟ / เสิร์ฟแล้ว (served: newest first, time served), body scrolls when long; payment and close stay at the POS. Call-staff tile = accent skin + sticky Toast "รับทราบ" (ack needs API, R10-2).
+- **Long orders:** card shows 3 lines then "+ n รายการ · รวม m ชิ้น" (pieces = sum of quantities); detail header shows "n รายการ · m ชิ้น" (cancelled excluded); detail list scrolls under a fixed back bar and footer with 120 px bottom padding so the last item clears the footer (detail·13–14). Lines keep entry order.
+- **Card tap:** the whole card opens detail; the status button handles only its own press (RN: nested `Pressable` — the inner one wins, no `stopPropagation`; web: `e.stopPropagation()`); pressing the button never shows card pressed feedback; screen readers get the card summary as its label and the status step as an `accessibilityActions` entry.
 - **Long Thai / small screen:** seat and item lines 1 line with ellipsis on cards; detail wraps names and notes fully; at 360×780 the list and sheet bodies scroll, footers stay fixed; guest names on tiles 1 line.
 - **Session (R13):** stays signed in across restarts; access token refreshed silently; refresh 30 days sliding (DR-005 Amendment 2). Only a failed refresh (own logout, device revoked, unused > 30 days, reuse detected) → login·5; nothing unsent is kept (CD-14 R6).
 - **After escalation (R12):** the phone waits for the POS; the result arrives by realtime + push to the staff who escalated; staff tell the guest.
@@ -166,7 +168,7 @@ Tab screens: header top pad 56, title `--text-title`, clock `--text-small` tabul
 | 1 | 2026-10-10 | R1 not-registered → access request sent · R2 LINE brand button · R3 served = primary · R4 custom SeatTile, counters 3/row · R5 escalated keeps only "แก้แล้ว ทำต่อ" — **approved** | Field |
 | 2 | 2026-10-10 | Field review: R7 card layout (status button left ≤ 190 px, chip + acceptor on top, FAB kept) · R12 POS resolution in J2 + detail·12 · R13 persistent session, login·5 relabelled · R14 info Toast + acceptor name · R15 counter seats skip READY (queue·10, detail·11); J1 now follows #0044 at T3 | Field (R6, R7, R12–R15) · R8–R11 pending |
 | 2 | 2026-10-10 | CD template retrofit: overview + journeys J1/J2, STATES / FLOW MAP pills; FAB (R7); summary sheet "สั่งออเดอร์" + "เสิร์ฟแล้ว" (R8); served Toast (R9); new states login·5, queue·7–9, detail·7–10, issue·4, tables·6–8; flow row to CD-14; `style` on DS buttons moved to wrappers (canvas gotcha); R6 pain point; R10 API gaps; R11 filter rule | Field (R6) · R7–R11 pending |
-| 3 | 2026-10-10 | DR-012 (R16): label "กำลังเตรียม" (DR-012 Amendment 1 — was "รับแล้ว"), item chips removed (cancelled only), station tickets (two cards per mixed placement, station label), `cancelled` ticket — **canvas not yet updated** | Field (DR-012) |
+| 3 | 2026-10-10 | DR-012 (R16): label "กำลังเตรียม" (DR-012 Amendment 1 — was "รับแล้ว"), item chips removed (cancelled only), station tickets (two cards per mixed placement, station label), `cancelled` ticket — canvas rev 3 drawn (queue, journeys, detail, issue, tables, flow, overview; J2 #0040 = kitchen ticket ยำหมูยอ + ถั่วทอดสมุนไพร); detail·13–14 long order; card tap rule | Field (DR-012) |
 
 ## 11. Source snapshot
 Pending — taken after Field approves rev 2 (`cd-template.md` §6): version pin, byte copy to `docs/design/source/CD-08/`, inventory + SHA-256, dependency closure (Lucide blob `/_blob/50b4e33ae4752b698e43636e0482591d`, CD-08 only), repo drift vs the Expo theme.

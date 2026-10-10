@@ -2,6 +2,12 @@
 Updated: 2026-10-10 16:10 · Agent: Cowork (design) — session end
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
+## Parked decisions (Field 10 Oct — "park, finish CDs first")
+- Order display number per placement (BRIEF-012; Cowork: one number shared by a placement's tickets).
+- CD-08 R8–R11 (summary "เสิร์ฟแล้ว" section, served Toast/no undo, API gaps list, filter rule) — drawn as proposed, orange on canvas.
+- DS StatusChip label `accepted` = "กำลังเตรียม" (Field to change in the DS; canvases pass `label` meanwhile).
+- CD-14: success state for a cart that splits into 2 tickets (DR-012).
+
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
