@@ -33,7 +33,7 @@ const items: RailItem[] = [
 
 const itemClass = (active: boolean) =>
   cn(
-    "flex size-16 flex-col items-center justify-center gap-0.5 rounded-[10px] text-[10px] font-semibold leading-[1.2]",
+    "flex size-16 flex-col items-center justify-center gap-0.5 rounded-btn text-label",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
     active ? "bg-accent-soft-strong text-text-accent" : "text-text-faint hover:bg-surface-hover",
   );
@@ -46,8 +46,8 @@ export function PosRail() {
   const pathname = usePathname();
 
   return (
-    <div className="flex w-[88px] shrink-0 flex-col border-r border-line-hairline bg-bg-sunken">
-      <div className="flex h-14 flex-col items-center justify-center border-b border-line-hairline text-[12px] font-bold leading-none tracking-[0.08em] text-text-accent">
+    <div className="flex w-22 shrink-0 flex-col border-r border-line-hairline bg-bg-sunken">
+      <div className="flex h-14 flex-col items-center justify-center border-b border-line-hairline text-small font-bold leading-none tracking-caps text-text-accent">
         <span>THE</span>
         <span>LOFT</span>
       </div>

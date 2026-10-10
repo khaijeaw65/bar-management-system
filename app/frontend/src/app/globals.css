@@ -123,6 +123,47 @@
   --brand-line: #06C755; --brand-line-hover: #05B34D; --brand-line-fg: #FFFFFF; /* LINE login button */
   --num: tabular-nums;                                                          /* font-variant-numeric */
   --z-base: 0; --z-raised: 10; --z-sticky: 20; --z-dropdown: 30; --z-scrim: 40; --z-dialog: 50; --z-toast: 60;
+
+  /* DS type / radius / motion. Values copied from the design-system token files.
+     --ease-out and --ease-in-out are not declared: HeroUI uses Tailwind's --ease-out.
+     DS --ease-out lives here as --ease-ds-out. --ls-body is not copied. */
+  --fs-display:34px; /* @kind font */
+  --fs-title:26px; /* @kind font */
+  --fs-heading:21px; /* @kind font */
+  --fs-subhead:17px; /* @kind font */
+  --fs-body:15px; /* @kind font */
+  --fs-small:13px; /* @kind font */
+  --fs-micro:11px; /* @kind font */
+  --fs-price:19px; /* @kind font */
+  --fs-pos-total:40px; /* @kind font */
+  --lh-display:1.35; /* @kind font */
+  --lh-title:1.4; /* @kind font */
+  --lh-heading:1.45; /* @kind font */
+  --lh-body:1.62; /* @kind font */
+  --lh-tight:1.5; /* @kind font */
+  --fw-regular:400; /* @kind font */
+  --fw-semibold:600; /* @kind font */
+  --fw-bold:700; /* @kind font */
+  --ls-display:-0.01em; /* @kind font */
+  --ls-caps:0.08em; /* @kind font */
+  --r-xs:6px;
+  --r-sm:8px;
+  --r-btn:10px;
+  --r-input:10px;
+  --r-card:12px;
+  --r-card-lg:16px;
+  --r-sheet:20px;
+  --r-pill:999px;
+  --border-w:1px; /* @kind other */
+  --border-w-strong:1.5px; /* @kind other */
+  --dur-instant:90ms; /* @kind other */
+  --dur-fast:140ms; /* @kind other */
+  --dur-base:200ms; /* @kind other */
+  --dur-slow:300ms; /* @kind other */
+  --dur-sheet:340ms; /* @kind other */
+  --ease-ds-out:cubic-bezier(.2,0,0,1); /* @kind other */
+  --ease-sheet:cubic-bezier(.22,1,.36,1); /* @kind other */
+  --press-scale:.97; /* @kind other */
 }
 
 /*
@@ -236,6 +277,82 @@
   --color-brand-line: var(--brand-line);
   --color-brand-line-hover: var(--brand-line-hover);
   --color-brand-line-fg: var(--brand-line-fg);
+
+  /*
+   * DS → Tailwind. Type utilities set size, line-height, and weight only
+   * (tracking on text-display). Add tabular-nums in markup for price and pos-total.
+   * Do not name a size "body" — --text-body is the body colour.
+   *
+   * text-display      fs-display / lh-display / fw-bold / ls-display
+   * text-title        fs-title / lh-title / fw-bold
+   * text-heading      fs-heading / lh-heading / fw-semibold
+   * text-subhead      fs-subhead / lh-tight / fw-semibold
+   * text-body-md      fs-body / lh-body / fw-regular
+   * text-body-strong  fs-body / lh-body / fw-semibold
+   * text-small        fs-small / 1.5 / fw-regular
+   * text-label        fs-micro / 1.4 / fw-semibold
+   * text-price        fs-price / 1.3 / fw-bold
+   * text-pos-total    fs-pos-total / 1.1 / fw-bold
+   *
+   * rounded-btn r-btn · rounded-input r-input · rounded-card r-card
+   * rounded-card-lg r-card-lg · rounded-sheet r-sheet · rounded-pill r-pill
+   * rounded-ds-xs r-xs · rounded-ds-sm r-sm
+   *   rounded-xs/sm/md/lg/xl belong to HeroUI — do not override
+   * tracking-caps ls-caps · tracking-display ls-display
+   * border = --border-w (1px) · border-(length:--border-w-strong) = 1.5px
+   *
+   * Spacing is Tailwind's scale (1 = 4px), no new tokens:
+   *   sp-1 0.5 · sp-2 1 · sp-3 1.5 · sp-4 2 · sp-5 3 · sp-6 4
+   *   sp-7 5 · sp-8 6 · sp-9 8 · sp-10 10 · sp-11 12 · sp-12 16
+   *   tap-min 11 · tap-comfortable 13 · bar-height 14 · pos-key 16
+   * duration-(--dur-instant|fast|base|slow|sheet)
+   * ease-ds-out = DS ease-out · ease-sheet = DS ease-sheet
+   *   canvas var(--ease-in-out) → ease-in-out (same curve; do not override)
+   * scale-(--press-scale)
+   */
+  --text-display: var(--fs-display);
+  --text-display--line-height: var(--lh-display);
+  --text-display--font-weight: var(--fw-bold);
+  --text-display--letter-spacing: var(--ls-display);
+  --text-title: var(--fs-title);
+  --text-title--line-height: var(--lh-title);
+  --text-title--font-weight: var(--fw-bold);
+  --text-heading: var(--fs-heading);
+  --text-heading--line-height: var(--lh-heading);
+  --text-heading--font-weight: var(--fw-semibold);
+  --text-subhead: var(--fs-subhead);
+  --text-subhead--line-height: var(--lh-tight);
+  --text-subhead--font-weight: var(--fw-semibold);
+  --text-body-md: var(--fs-body);
+  --text-body-md--line-height: var(--lh-body);
+  --text-body-md--font-weight: var(--fw-regular);
+  --text-body-strong: var(--fs-body);
+  --text-body-strong--line-height: var(--lh-body);
+  --text-body-strong--font-weight: var(--fw-semibold);
+  --text-small: var(--fs-small);
+  --text-small--line-height: 1.5;
+  --text-small--font-weight: var(--fw-regular);
+  --text-label: var(--fs-micro);
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: var(--fw-semibold);
+  --text-price: var(--fs-price);
+  --text-price--line-height: 1.3;
+  --text-price--font-weight: var(--fw-bold);
+  --text-pos-total: var(--fs-pos-total);
+  --text-pos-total--line-height: 1.1;
+  --text-pos-total--font-weight: var(--fw-bold);
+  --radius-btn: var(--r-btn);
+  --radius-input: var(--r-input);
+  --radius-card: var(--r-card);
+  --radius-card-lg: var(--r-card-lg);
+  --radius-sheet: var(--r-sheet);
+  --radius-pill: var(--r-pill);
+  --radius-ds-xs: var(--r-xs);
+  --radius-ds-sm: var(--r-sm);
+  --tracking-caps: var(--ls-caps);
+  --tracking-display: var(--ls-display);
+  --ease-ds-out: cubic-bezier(.2,0,0,1);
+  --ease-sheet: cubic-bezier(.22,1,.36,1);
 }
 
 body {
