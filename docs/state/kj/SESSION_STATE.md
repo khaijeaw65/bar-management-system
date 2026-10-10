@@ -11,7 +11,7 @@ Updated: 2026-10-10 16:10 · Agent: Cowork (design) — session end
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
-**Next action: retrofit CD-01, CD-02, CD-03, CD-04, CD-08 to `docs/design/cd-template.md`** (one batch, ~1 long session). Template is now **v2**: each retrofitted canvas also gets a **source snapshot** (`docs/design/source/CD-##/`, handoff §11, cd-template §6); CD-14 needs its snapshot too. Then CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last) built to the template from the start. CD-09 = S2.
+**Next action:** retrofit batch done 10 Oct (CD-08 rev 3, CD-02 / CD-01 / CD-04 / CD-03 rev 2 — all in review, see table). CD-14 source snapshot taken (`docs/design/source/CD-14/`, handoff §11). Snapshots for the others after Field approves each. Then new CDs to the template: CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2. Parked decisions stay parked.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
 Session start: ask Field once for delete permission on the project folder (git locks), `git status`, branch **`docs/ui-retrofit`** (from main @ ed1ef8a, after PR #30).
 

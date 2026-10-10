@@ -1,0 +1,12 @@
+:root{
+  --r-xs:6px;
+  --r-sm:8px;
+  --r-btn:10px;
+  --r-input:10px;
+  --r-card:12px;
+  --r-card-lg:16px;
+  --r-sheet:20px;
+  --r-pill:999px;
+  --border-w:1px; /* @kind other */
+  --border-w-strong:1.5px; /* @kind other */
+}

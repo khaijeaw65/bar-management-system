@@ -1,0 +1,162 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-10T02:50:00Z"
+  },
+  "title": "CD-14 Staff New Order",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Journey.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 4152,
+      "h": 1100,
+      "title": "CD-14/journey-1"
+    },
+    "Main.dc.html": {
+      "x": 0,
+      "y": 1220,
+      "w": 3100,
+      "h": 1100,
+      "title": "CD-14/journey-2"
+    },
+    "Menu.dc.html": {
+      "x": 0,
+      "y": 2920,
+      "w": 3880,
+      "h": 1020,
+      "title": "CD-14/menu"
+    },
+    "ItemSheet.dc.html": {
+      "x": 0,
+      "y": 4060,
+      "w": 1760,
+      "h": 1020,
+      "title": "CD-14/item-sheet"
+    },
+    "Leave.dc.html": {
+      "x": 1840,
+      "y": 4060,
+      "w": 600,
+      "h": 1020,
+      "title": "CD-14/leave"
+    },
+    "Cart.dc.html": {
+      "x": 0,
+      "y": 5200,
+      "w": 4740,
+      "h": 1020,
+      "title": "CD-14/cart"
+    },
+    "Flow.dc.html": {
+      "x": 0,
+      "y": 7960,
+      "w": 1800,
+      "h": 720,
+      "title": "CD-14/flow"
+    },
+    "Overview.dc.html": {
+      "x": -1840,
+      "y": 0,
+      "w": 1760,
+      "h": 1100,
+      "title": "CD-14/overview"
+    },
+    "SeatSheet.dc.html": {
+      "x": 0,
+      "y": 6340,
+      "w": 1330,
+      "h": 1020,
+      "title": "CD-14/seat-sheet"
+    }
+  },
+  "order": [
+    "Overview.dc.html",
+    "Journey.dc.html",
+    "Main.dc.html",
+    "Menu.dc.html",
+    "ItemSheet.dc.html",
+    "Leave.dc.html",
+    "Cart.dc.html",
+    "SeatSheet.dc.html",
+    "Flow.dc.html"
+  ],
+  "notes": {
+    "cd14title": {
+      "x": -1840,
+      "y": -300,
+      "text": "CD-14 · Journeys — สั่งออเดอร์บนแอปพนักงาน",
+      "kind": "title1",
+      "maxW": 5992
+    },
+    "statesTitle": {
+      "x": 0,
+      "y": 2620,
+      "text": "States — ทุกสถานะของแต่ละหน้าจอ (ไม่ใช่ลำดับ)",
+      "kind": "title1",
+      "maxW": 4740
+    },
+    "flowTitle": {
+      "x": 0,
+      "y": 7660,
+      "text": "Flow map — ภาพรวมทั้งฟีเจอร์",
+      "kind": "title1",
+      "maxW": 1800
+    },
+    "r4": {
+      "x": 4232,
+      "y": 0,
+      "w": 360,
+      "fill": "green",
+      "text": "R4 · Field รับแล้ว 10 ต.ค.\nCD-08 สรุปโต๊ะ ต้องมีปุ่ม \"สั่งออเดอร์\" (ทางเข้าที่ 2 ของ D1) — เพิ่มใน mobile brief ไม่ต้องวาด CD-08 ใหม่"
+    },
+    "r2": {
+      "x": 3180,
+      "y": 1220,
+      "w": 360,
+      "fill": "green",
+      "text": "R2 · Field รับแล้ว 10 ต.ค.\nตัวเลือกโต๊ะ 3 ต่อแถวทั้งเคาน์เตอร์และโต๊ะ สูง 72 แสดงแค่สถานะ — ทั้งร้านอยู่ใน sheet เดียวไม่ต้องเลื่อน (แท็บ โต๊ะ ยังเป็น 2 ต่อแถว)"
+    },
+    "r3": {
+      "x": 2520,
+      "y": 4060,
+      "w": 360,
+      "fill": "green",
+      "text": "R3 · Field รับแล้ว 10 ต.ค.\nระดับน้ำแข็ง 3 ตัวเลือกเรียงในแถวเดียว ให้ sheet พอดี 390×844 · ที่ 360×780 เนื้อหาเลื่อนได้ footer ค้าง"
+    },
+    "r1": {
+      "x": 4820,
+      "y": 5200,
+      "w": 360,
+      "fill": "green",
+      "text": "R1 · Field รับแล้ว 10 ต.ค.\nส่งแล้วกลับคิว: คงกฎ CD-08 (เก่าสุดบน) — เปิดตัวกรอง ใหม่ + ไฮไลต์การ์ดใหม่ แทน \"ใหม่สุดบน\" ตาม brief"
+    },
+    "r5": {
+      "x": 5260,
+      "y": 5200,
+      "w": 360,
+      "fill": "green",
+      "text": "R5 · Field รับแล้ว 10 ต.ค.\nBadge \"ค่าบริการ\" = tone neutral (DS ไม่มี info) — แก้ CD-04 ให้ตรงตอนเขียน web brief"
+    },
+    "r10": {
+      "x": 4232,
+      "y": 560,
+      "w": 360,
+      "fill": "green",
+      "text": "R10 · Field เลือก 10 ต.ค. (rev 4)\nการ์ดในคิวใช้ layout ใหม่จาก CD-08 R7: ชิปสถานะขึ้นบรรทัดบน ปุ่มสถานะชิดซ้าย กว้างไม่เกิน 190 → ไม่อยู่ใต้ปุ่ม + ออเดอร์ (ซึ่งคงไว้ที่เดิม)"
+    }
+  },
+  "designSystems": [
+    {
+      "title": "The Loft Bar Design System",
+      "namespace": "theloftbardesignsystem_99bbff",
+      "artifact": "https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D",
+      "version": "1791561405-c72e",
+      "copiedAt": "2026-10-10T02:50:00Z"
+    }
+  ]
+}

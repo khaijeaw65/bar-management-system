@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>CD-14 สถานะ sheet เลือกโต๊ะ</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/theloftbardesignsystem_99bbff/styles.css">
+<script src="/_blob/55621ac7d8cfe40fb69092b2ed520365"></script>
+<script src="ds/theloftbardesignsystem_99bbff/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--text-accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1330px; height: 1020px; box-sizing: border-box; padding: 40px; background: var(--bg-sunken); color: var(--text-body); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: baseline; gap: 16px; height: 40px">
+    <span style="font: var(--fw-bold) var(--fs-micro)/1 var(--font-ui); letter-spacing: var(--ls-caps); padding: 6px 10px; border-radius: 999px; background: var(--surface-raised); color: var(--text-muted); border: 1px solid var(--line); align-self: center">STATES · ไม่ใช่ลำดับ</span>
+    <h1 style="margin: 0; font: var(--text-heading)">CD-14/seat-sheet</h1>
+    <span style="font: var(--text-small); color: var(--text-muted)">ค่าเริ่มต้น / กำลังเปิด / เข้าร่วมโต๊ะเดิม อยู่ใน Journey 2 · GET /tables (tables:read) · POST /visits (visits:open)</span>
+  </div>
+  <div style="display: flex; gap: 40px; align-items: flex-start">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="3">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font: var(--text-label); color: var(--text-faint)">{{p.label}}</div>
+      <div style="width: 390px; height: 844px; box-sizing: border-box; border-radius: 36px; overflow: hidden; position: relative; isolation: isolate; background: var(--bg-app); border: 1px solid var(--line); box-shadow: var(--shadow-raised)">
+        <div style="padding: 56px 16px 12px"><div style="font: var(--text-title)">ออเดอร์</div></div>
+        <div style="position: absolute; inset: 0; z-index: 10; background: var(--scrim)"></div>
+        <div role="dialog" aria-label="สั่งให้โต๊ะไหน?" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 11; min-height: 420px; background: var(--surface-overlay); border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--shadow-sheet); padding: 10px 16px 28px; display: flex; flex-direction: column; gap: 12px">
+          <div style="align-self: center; width: 36px; height: 4px; border-radius: 999px; background: var(--line-strong)"></div>
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <div style="font: var(--text-heading)">สั่งให้โต๊ะไหน?</div>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="x" label="ปิด"></x-import>
+          </div>
+
+          <sc-if value="{{p.loading}}" hint-placeholder-val="{{ false }}">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="{{w96}}" height="{{h18}}"></x-import>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{six}}" as="k" hint-placeholder-count="6">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="100%" height="{{h72}}" radius="12"></x-import>
+              </sc-for>
+            </div>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="{{w64}}" height="{{h18}}"></x-import>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{three}}" as="k" hint-placeholder-count="3">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="100%" height="{{h72}}" radius="12"></x-import>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{p.error}}" hint-placeholder-val="{{ false }}">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Alert" tone="danger" title="โหลดโต๊ะไม่สำเร็จ">ตรวจการเชื่อมต่อแล้วลองอีกครั้ง</x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="secondary" size="lg" block="{{yes}}" icon-left="rotate-cw">ลองอีกครั้ง</x-import>
+          </sc-if>
+
+          <sc-if value="{{p.grid}}" hint-placeholder-val="{{ false }}">
+            <div style="font: var(--text-subhead); color: var(--text-muted)">เคาน์เตอร์</div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{counters}}" as="s" hint-placeholder-count="6">
+                <button type="button" aria-label="{{s.aria}}" aria-disabled="{{s.off}}" style="height: 72px; min-width: 0; overflow: hidden; box-sizing: border-box; padding: 8px; border-radius: var(--r-card); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; text-align: left; font-family: var(--font-ui); {{s.skin}}">
+                  <span style="font: 700 15px/1.2 var(--font-ui); color: var(--text-body)">{{s.label}}</span>
+                  <span style="display: inline-flex; align-items: center; gap: 4px; font: var(--fw-semibold) var(--fs-small)/1.2 var(--font-ui); color: {{s.subColor}}; white-space: nowrap">
+                    <sc-if value="{{s.lock}}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="lock" size="sm"></x-import></sc-if>{{s.sub}}
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 8px; font: var(--text-small); color: var(--text-muted)">
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="info" size="sm"></x-import>
+              บัญชีนี้สั่งได้เฉพาะโต๊ะที่เปิดแล้ว — โต๊ะว่างให้ POS หรือผู้จัดการเปิด
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":1330,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SEATED = 'background: var(--surface-card); border: 1px solid var(--line); box-shadow: var(--shadow-card), var(--highlight-top);';
+    const LOCKED = 'background: transparent; border: 1px dashed var(--line); opacity: 0.6;';
+    const seat = (label, free) => free
+      ? { label, aria: label + ' ว่าง — ไม่มีสิทธิ์เปิดโต๊ะ', off: true, skin: LOCKED, sub: 'ให้ POS เปิด', subColor: 'var(--text-faint)', lock: true }
+      : { label, aria: label + ' มีแขก', off: false, skin: SEATED, sub: 'มีแขก', subColor: 'var(--text-muted)', lock: false };
+    const counters = [seat('C1'), seat('C2'), seat('C3', true), seat('C4'), seat('C5'), seat('C6', true)];
+    const base = { loading: false, error: false, grid: false };
+    const phones = [
+      { ...base, label: '1 · กำลังโหลดโต๊ะ', loading: true },
+      { ...base, label: '2 · โหลดไม่สำเร็จ', error: true },
+      { ...base, label: '3 · ไม่มีสิทธิ์เปิดโต๊ะ (ไม่มี visits:open)', grid: true }
+    ];
+    return { theme: this.props.theme ?? 'dark', yes: true, phones, counters, six: [1, 2, 3, 4, 5, 6], three: [1, 2, 3], w64: 64, w96: 96, h18: 18, h72: 72 };
+  }
+}
+</script>
+</body>
+</html>

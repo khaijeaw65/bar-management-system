@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>CD-14 เลือกโต๊ะ</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/theloftbardesignsystem_99bbff/styles.css">
+<script src="/_blob/55621ac7d8cfe40fb69092b2ed520365"></script>
+<script src="ds/theloftbardesignsystem_99bbff/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.sf > *{flex:1 1 auto;display:flex;min-width:0}
+a{color:var(--text-accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 3100px; height: 1100px; box-sizing: border-box; padding: 40px; background: var(--bg-sunken); color: var(--text-body); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="font: var(--fw-bold) var(--fs-micro)/1 var(--font-ui); letter-spacing: var(--ls-caps); padding: 6px 10px; border-radius: 999px; background: var(--accent); color: var(--text-on-accent)">JOURNEY 2 · โต๊ะว่าง</span>
+        <h1 style="margin: 0; font: var(--text-heading)">CD-14/journey-2</h1>
+      </div>
+      <div style="font: var(--fw-bold) 28px/1.3 var(--font-ui); color: var(--text-body)">ลูกค้านั่ง C3 ที่ยังว่าง — พนักงานเปิดโต๊ะจากแอปแล้วสั่งต่อทันที (ถ้า POS เปิดชนกัน ต้องถามก่อนว่ากลุ่มเดียวกันไหม)</div>
+      <div style="font: var(--text-body-md); color: var(--text-muted)">first-write-wins · ชนกันไม่แนบเอง — ถามก่อน (อาจเป็นคนละกลุ่ม) · หลังเข้าเมนูไปต่อเหมือน Journey 1 ขั้น 3 · e2e: E1 → E2 → E3a / E3b → E4b</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface-card); flex: 0 0 auto">
+      <div style="font: var(--text-label); color: var(--text-faint)">วิธีอ่าน</div>
+      <div style="display: flex; align-items: center; gap: 10px; font: var(--text-small); color: var(--text-muted)">
+        <svg width="40" height="10" viewBox="0 0 40 10" aria-hidden="true"><line x1="1" y1="5" x2="32" y2="5" stroke="currentColor" stroke-width="1.75"></line><polyline points="28,1 35,5 28,9" fill="none" stroke="currentColor" stroke-width="1.75"></polyline></svg>
+        การกระทำของพนักงาน (ทางหลัก)
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; font: var(--text-small); color: var(--text-muted)">
+        <svg width="40" height="10" viewBox="0 0 40 10" aria-hidden="true"><line x1="1" y1="5" x2="32" y2="5" stroke="currentColor" stroke-width="1.75" stroke-dasharray="5 4"></line><polyline points="28,1 35,5 28,9" fill="none" stroke="currentColor" stroke-width="1.75"></polyline></svg>
+        ทางเลือก / ระบบตอบกลับ
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; font: var(--text-small); color: var(--text-muted)">
+        <span style="width: 34px; height: 18px; box-sizing: border-box; border-radius: 6px; outline: 3px solid var(--accent); outline-offset: 2px; margin: 0 3px"></span>
+        จุดที่แตะ + เลขขั้น (E#)
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; gap: 0; align-items: flex-start">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="6">
+    <sc-if value="{{p.arrow}}" hint-placeholder-val="{{ false }}">
+      <div style="width: 136px; flex: 0 0 auto; margin-top: 440px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-faint)">
+        <span style="font: var(--fw-semibold) var(--fs-small)/1.35 var(--font-ui); color: {{p.arrowColor}}; text-align: center; padding: 0 6px; white-space: pre-line">{{p.arrowLabel}}</span>
+        <svg width="112" height="12" viewBox="0 0 112 12" aria-hidden="true"><line x1="2" y1="6" x2="104" y2="6" stroke="currentColor" stroke-width="1.75" stroke-dasharray="{{p.dash}}"></line><polyline points="98,1 106,6 98,11" fill="none" stroke="currentColor" stroke-width="1.75"></polyline></svg>
+      </div>
+    </sc-if>
+    <div style="display: flex; flex-direction: column; gap: 12px; flex: 0 0 auto">
+      <div style="font: var(--text-label); color: var(--text-faint)">{{p.label}}</div>
+      <div style="width: 390px; height: 844px; box-sizing: border-box; border-radius: 36px; overflow: hidden; position: relative; isolation: isolate; background: var(--bg-app); border: 1px solid var(--line); box-shadow: var(--shadow-raised)">
+
+        <sc-if value="{{p.queue}}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 56px 16px 12px; display: flex; align-items: baseline; justify-content: space-between">
+            <div style="font: var(--text-title)">ออเดอร์</div>
+            <div style="font: var(--text-small); color: var(--text-muted); font-variant-numeric: tabular-nums">21:14 น.</div>
+          </div>
+          <div style="display: flex; gap: 8px; padding: 0 16px 12px; overflow: hidden">
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-accent); background: var(--accent-soft-strong); color: var(--text-accent); font: var(--fw-semibold) var(--fs-small)/1 var(--font-ui); white-space: nowrap; flex: 0 0 auto">ทั้งหมด 4</button>
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--text-muted); font: var(--fw-semibold) var(--fs-small)/1 var(--font-ui); white-space: nowrap; flex: 0 0 auto">ใหม่ 1</button>
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--text-muted); font: var(--fw-semibold) var(--fs-small)/1 var(--font-ui); white-space: nowrap; flex: 0 0 auto">กำลังทำ 2</button>
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--text-muted); font: var(--fw-semibold) var(--fs-small)/1 var(--font-ui); white-space: nowrap; flex: 0 0 auto">พร้อมเสิร์ฟ 1</button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 16px">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Card" padding="14px">
+              <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font: var(--text-small); color: var(--text-faint); font-variant-numeric: tabular-nums">
+                  <span style="display: inline-flex; align-items: center; gap: 8px; min-width: 0"><span>#0039</span><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="order" status="accepted" label="กำลังทำ" size="sm"></x-import></span>
+                  <span style="white-space: nowrap">9 นาทีที่แล้ว</span>
+                </div>
+                <div style="font: var(--text-subhead); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">T3 · ต้น</div>
+                <div style="font: var(--text-small); color: var(--text-muted)"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">2× ช้างดราฟต์</div><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">1× โอลด์แฟชั่น</div><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">1× เนโกรนี</div></div>
+                <div style="display: flex; margin-top: 8px"><div style="display: flex; max-width: 190px"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="md" icon-left="check">พร้อมแล้ว</x-import></div></div>
+              </div>
+            </x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Card" padding="14px">
+              <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font: var(--text-small); color: var(--text-faint); font-variant-numeric: tabular-nums">
+                  <span style="display: inline-flex; align-items: center; gap: 8px; min-width: 0"><span>#0041</span><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="order" status="pending" label="ใหม่" size="sm"></x-import></span>
+                  <span style="white-space: nowrap">6 นาทีที่แล้ว</span>
+                </div>
+                <div style="font: var(--text-subhead); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">C2 · ฟ้า</div>
+                <div style="font: var(--text-small); color: var(--text-muted)"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">1× โอลด์แฟชั่น</div></div>
+                <div style="display: flex; margin-top: 8px"><div style="display: flex; max-width: 190px"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="md" icon-left="play">รับออเดอร์</x-import></div></div>
+              </div>
+            </x-import>
+          </div>
+          <div style="position: absolute; right: 16px; bottom: 92px; z-index: 5; border-radius: var(--r-btn); box-shadow: var(--shadow-raised); {{p.fabRing}}">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="lg" icon-left="plus">ออเดอร์</x-import>
+            <sc-if value="{{p.fabTag}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: -16px; left: -16px; min-width: 28px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: var(--accent); color: var(--text-on-accent); font: 700 11px/22px var(--font-ui); text-align: center">E1</span>
+            </sc-if>
+          </div>
+          <nav style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; background: var(--surface-bar); backdrop-filter: var(--blur-bar); border-top: 1px solid var(--line-hairline); padding: 6px 4px 22px">
+            <button type="button" style="flex: 1; display: grid; justify-items: center; gap: 3px; padding: 6px 0; background: transparent; border: none; color: var(--text-accent)"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="clipboard-list"></x-import><span style="font: var(--fw-semibold) var(--fs-micro)/1.3 var(--font-ui)">ออเดอร์</span></button>
+            <button type="button" style="flex: 1; display: grid; justify-items: center; gap: 3px; padding: 6px 0; background: transparent; border: none; color: var(--text-faint)"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="layout-grid"></x-import><span style="font: var(--fw-semibold) var(--fs-micro)/1.3 var(--font-ui)">โต๊ะ</span></button>
+            <button type="button" style="flex: 1; display: grid; justify-items: center; gap: 3px; padding: 6px 0; background: transparent; border: none; color: var(--text-faint)"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="menu"></x-import><span style="font: var(--fw-semibold) var(--fs-micro)/1.3 var(--font-ui)">อื่นๆ</span></button>
+          </nav>
+        </sc-if>
+
+        <sc-if value="{{p.sheet}}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; inset: 0; z-index: 10; background: var(--scrim)"></div>
+          <div role="dialog" aria-label="สั่งให้โต๊ะไหน?" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 11; background: var(--surface-overlay); border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--shadow-sheet); padding: 10px 16px 28px; display: flex; flex-direction: column; gap: 12px">
+            <div style="align-self: center; width: 36px; height: 4px; border-radius: 999px; background: var(--line-strong)"></div>
+            <div style="display: flex; align-items: center; justify-content: space-between">
+              <div style="font: var(--text-heading)">สั่งให้โต๊ะไหน?</div>
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="x" label="ปิด"></x-import>
+            </div>
+            <div style="font: var(--text-subhead); color: var(--text-muted)">เคาน์เตอร์</div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{p.counters}}" as="s" hint-placeholder-count="8">
+                <button type="button" aria-label="{{s.aria}}" style="height: 72px; min-width: 0; overflow: hidden; box-sizing: border-box; padding: 8px; border-radius: var(--r-card); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; text-align: left; font-family: var(--font-ui); {{s.skin}}">
+                  <span style="font: 700 15px/1.2 var(--font-ui); color: {{s.labelColor}}">{{s.label}}</span>
+                  <sc-if value="{{s.hasChip}}" hint-placeholder-val="{{ true }}">
+                    <div style="max-width: 100%; overflow: hidden; white-space: nowrap">
+                      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="table" status="{{s.state}}" label="{{s.chip}}" size="sm"></x-import>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{s.isFree}}" hint-placeholder-val="{{ false }}">
+                    <span style="font: var(--fw-semibold) var(--fs-small)/1.3 var(--font-ui); color: var(--text-accent); white-space: nowrap">เปิดโต๊ะและสั่ง</span>
+                  </sc-if>
+                  <sc-if value="{{s.isOpening}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; font: var(--fw-semibold) var(--fs-small)/1.3 var(--font-ui); color: var(--text-accent); white-space: nowrap">
+                      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Spinner" size="sm"></x-import>กำลังเปิด…
+                    </span>
+                  </sc-if>
+                </button>
+              </sc-for>
+            </div>
+            <div style="font: var(--text-subhead); color: var(--text-muted); margin-top: 4px">โต๊ะ</div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{p.tables}}" as="s" hint-placeholder-count="6">
+                <button type="button" aria-label="{{s.aria}}" style="height: 72px; min-width: 0; overflow: hidden; box-sizing: border-box; padding: 8px; border-radius: var(--r-card); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; text-align: left; font-family: var(--font-ui); {{s.skin}}">
+                  <span style="font: 700 15px/1.2 var(--font-ui); color: {{s.labelColor}}">{{s.label}}</span>
+                  <sc-if value="{{s.hasChip}}" hint-placeholder-val="{{ true }}">
+                    <div style="max-width: 100%; overflow: hidden; white-space: nowrap">
+                      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="table" status="{{s.state}}" label="{{s.chip}}" size="sm"></x-import>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{s.isFree}}" hint-placeholder-val="{{ false }}">
+                    <span style="font: var(--fw-semibold) var(--fs-small)/1.3 var(--font-ui); color: var(--text-accent); white-space: nowrap">เปิดโต๊ะและสั่ง</span>
+                  </sc-if>
+                </button>
+              </sc-for>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font: var(--text-small); color: var(--text-faint)">
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="info" size="sm"></x-import>
+              แตะโต๊ะที่มีแขกเพื่อสั่งเพิ่ม · โต๊ะว่างจะถูกเปิดให้ก่อน
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.confirm}}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; inset: 0; z-index: 20; background: var(--scrim); backdrop-filter: var(--blur-overlay)"></div>
+          <div role="alertdialog" aria-labelledby="join-t" style="position: absolute; left: 20px; right: 20px; top: 250px; z-index: 21; box-sizing: border-box; padding: 20px; border-radius: var(--r-card); background: var(--surface-overlay); border: 1px solid var(--line); box-shadow: var(--shadow-raised); display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div style="width: 36px; height: 36px; border-radius: 999px; background: var(--warning-bg); color: var(--warning-fg); display: flex; align-items: center; justify-content: center">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="users" size="md"></x-import>
+              </div>
+              <span id="join-t" style="font: var(--text-heading)">C3 เพิ่งถูกเปิดไปแล้ว</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: var(--r-card); background: var(--surface-raised); font: var(--text-body-md); font-variant-numeric: tabular-nums">
+              <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: var(--text-muted)">เปิดโดย</span><span>ต้น · POS</span></div>
+              <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: var(--text-muted)">เวลา</span><span>21:02 น. (เมื่อกี้)</span></div>
+              <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: var(--text-muted)">แขก</span><span>กลุ่มมิ้นท์</span></div>
+            </div>
+            <div style="font: var(--text-body-md); color: var(--text-muted)">ถ้าเป็นลูกค้ากลุ่มเดียวกัน ออเดอร์จะเข้าบิลเดียวกัน — ถ้าเป็นคนละกลุ่ม ให้เลือกโต๊ะอื่น</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
+              <div style="display: flex; position: relative; border-radius: var(--r-btn); {{p.joinRing}}">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="lg" block="{{yes}}">สั่งเข้าโต๊ะเดิม (กลุ่มมิ้นท์)</x-import>
+                <sc-if value="{{p.joinTag}}" hint-placeholder-val="{{ false }}">
+                  <span style="position: absolute; top: -14px; right: -10px; min-width: 28px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: var(--accent); color: var(--text-on-accent); font: 700 11px/22px var(--font-ui); text-align: center">E4b</span>
+                </sc-if>
+              </div>
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="secondary" size="lg" block="{{yes}}">เลือกโต๊ะอื่น</x-import>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.menu}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 48px 8px 4px 4px; display: flex; align-items: center; gap: 4px">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="chevron-left" label="กลับ"></x-import>
+            <div style="font: var(--text-title); flex-grow: 1">สั่งออเดอร์ — C3</div>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="table" status="{{p.menuChip}}" size="sm"></x-import>
+          </div>
+          <div class="sf" style="padding: 4px 16px 10px; display: flex">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.SearchField" placeholder="ค้นหาเมนู" style="{{searchFill}}"></x-import>
+          </div>
+          <div style="display: flex; gap: 8px; padding: 0 16px 8px; overflow: hidden">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag" is-selected="{{yes}}">ทั้งหมด</x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag">เบียร์สด</x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag">ค็อกเทล</x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag">ไฮบอล</x-import>
+          </div>
+          <div style="display: flex; flex-direction: column; padding: 0 16px">
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+              <button type="button" style="min-height: 60px; display: flex; align-items: center; gap: 12px; padding: 0; background: transparent; border: none; border-bottom: 1px solid var(--line-hairline); text-align: left; font-family: var(--font-ui); color: var(--text-body)">
+                <span style="flex-grow: 1; font: var(--fw-semibold) var(--fs-subhead)/1.3 var(--font-ui)">{{r.name}}</span>
+                <span style="font: var(--fw-bold) var(--fs-body)/1.3 var(--font-numeric); color: var(--text-accent); font-variant-numeric: tabular-nums">{{r.price}}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="position: absolute; top: 52px; left: 12px; right: 12px; z-index: 60; display: flex; justify-content: center">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Toast" tone="{{p.toastTone}}" icon="{{p.toastIcon}}" title="{{p.toastTitle}}" duration="{{zero}}">{{p.toastBody}}</x-import>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":3100,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SK = {
+      free: 'background: transparent; border: 1.5px dashed var(--line-accent);',
+      open: 'background: var(--surface-card); border: 1px solid var(--line);',
+      seated: 'background: var(--surface-card); border: 1px solid var(--line); box-shadow: var(--shadow-card), var(--highlight-top);',
+      idle: 'background: var(--warning-bg); border: 1.5px solid var(--status-new-border);',
+      calling: 'background: var(--accent-soft); border: 1.5px solid var(--accent);',
+      opening: 'background: var(--accent-soft); border: 1.5px solid var(--line-accent);'
+    };
+    const DIM = ' opacity: 0.45;';
+    const seat = (label, state, chip, opts) => {
+      const o = opts || {};
+      const st = o.opening ? 'opening' : state;
+      return {
+        label, state, chip,
+        aria: state === 'free' ? label + ' ว่าง — เปิดโต๊ะและสั่ง' : label + ' ' + chip,
+        skin: SK[st] + (o.dim ? DIM : ''),
+        hasChip: state !== 'free',
+        isFree: state === 'free' && !o.opening,
+        isOpening: !!o.opening,
+        labelColor: 'var(--text-body)'
+      };
+    };
+    const TAP = ' box-shadow: 0 0 0 3px var(--accent);';
+    const mkCounters = (openingC3, tapC3) => [
+      seat('C1', 'seated', 'มีแขก', { dim: openingC3 }), seat('C2', 'seated', 'มีแขก', { dim: openingC3 }),
+      (() => { const s = seat('C3', 'free', '', { opening: openingC3 }); if (tapC3) s.skin += TAP; return s; })(), seat('C4', 'open', 'เปิดแล้ว', { dim: openingC3 }),
+      seat('C5', 'idle', 'ไม่เคลื่อนไหว', { dim: openingC3 }), seat('C6', 'free', '', { dim: openingC3 }),
+      seat('C7', 'seated', 'มีแขก', { dim: openingC3 }), seat('C8', 'free', '', { dim: openingC3 })
+    ];
+    const mkTables = (dim) => [
+      seat('T1', 'seated', 'มีแขก', { dim }), seat('T2', 'calling', 'เรียก', { dim }),
+      seat('T3', 'seated', 'มีแขก', { dim }), seat('T4', 'idle', 'ไม่เคลื่อนไหว', { dim }),
+      seat('T5', 'open', 'เปิดแล้ว', { dim }), seat('T6', 'free', '', { dim })
+    ];
+    const seatedC3 = () => mkCounters(false, false).map((s) => s.label === 'C3' ? seat('C3', 'seated', 'มีแขก', { dim: true }) : { ...s, skin: s.skin + ' opacity: 0.45;' });
+    const base = { confirm: false, joinRing: '', joinTag: false, fabRing: '', fabTag: false, queue: true, sheet: false, menu: false, arrow: true, arrowColor: 'var(--text-muted)', dash: '0', counters: mkCounters(false, false), tables: mkTables(false),
+      menuChip: 'open', toastTone: 'success', toastIcon: 'check', toastTitle: '', toastBody: '' };
+    const phones = [
+      { ...base, arrow: false, fabRing: 'outline: 3px solid var(--accent); outline-offset: 4px;', fabTag: true, label: '1 · คิวออเดอร์' },
+      { ...base, sheet: true, counters: mkCounters(false, true), arrowLabel: 'E1\nแตะ + ออเดอร์', label: '2 · เลือกโต๊ะ — C3 ว่าง' },
+      { ...base, sheet: true, counters: mkCounters(true, false), tables: mkTables(true), arrowLabel: 'E2\nแตะ C3\n(เปิดโต๊ะและสั่ง)', label: '3 · กำลังเปิดโต๊ะ C3 — ล็อกโต๊ะอื่น' },
+      { ...base, queue: false, menu: true, menuChip: 'open', arrowLabel: 'E3a · ระบบ\n201 เปิดสำเร็จ', label: '4a · เปิดแล้ว → เมนู C3 (ปกติ)',
+        toastTone: 'success', toastIcon: 'check', toastTitle: 'เปิดโต๊ะ C3 แล้ว', toastBody: 'เลือกเมนูเพื่อเริ่มสั่งได้เลย' },
+      { ...base, sheet: true, confirm: true, counters: seatedC3(), tables: mkTables(true), joinRing: 'outline: 3px solid var(--accent); outline-offset: 3px;', joinTag: true,
+        arrowLabel: 'E3b · หรือ POS เปิดก่อน\n200 โต๊ะเปิดอยู่แล้ว', arrowColor: 'var(--text-faint)', dash: '5 4', label: '4b · ชนกัน → ถามก่อน (ยังไม่ได้แนบ)' },
+      { ...base, queue: false, menu: true, menuChip: 'seated', arrowLabel: 'E4b\nสั่งเข้าโต๊ะเดิม', label: '5b · สั่งเข้าโต๊ะเดิม C3',
+        toastTone: 'info', toastIcon: 'users', toastTitle: 'สั่งเข้าโต๊ะ C3 ของกลุ่มมิ้นท์', toastBody: 'ออเดอร์จะเข้าบิลเดียวกัน · “เลือกโต๊ะอื่น” = กลับไปเลือกใหม่' }
+    ];
+    const rows = [
+      { name: 'ช้างดราฟต์', price: '฿120.00' }, { name: 'สิงห์ดราฟต์', price: '฿140.00' },
+      { name: 'ลีโอขวด', price: '฿100.00' }, { name: 'เนโกรนี', price: '฿240.00' }
+    ];
+    return { theme: this.props.theme ?? 'dark', yes: true, zero: 0, phones, rows, searchFill: { width: '100%', height: 44, boxSizing: 'border-box' } };
+  }
+}
+</script>
+</body>
+</html>

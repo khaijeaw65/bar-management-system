@@ -1,0 +1,37 @@
+/* HeroUI v3 / HeroUI Native theme bridge.
+   HeroUI components read these variable names; each points at a Loft Bar token,
+   so switching data-theme="light|dark" re-themes both libraries at once.
+   --accent, --success, --warning, --danger are shared names and already defined in colors.css. */
+:root,[data-theme="dark"],.dark,[data-theme="light"],.light{
+  --background:var(--bg-app);
+  --foreground:var(--text-body);
+  --surface:var(--surface-card);
+  --surface-foreground:var(--text-body);
+  --surface-secondary:var(--surface-raised);
+  --surface-secondary-foreground:var(--text-body);
+  --surface-tertiary:var(--surface-hover);
+  --surface-tertiary-foreground:var(--text-body);
+  --overlay:var(--surface-overlay);
+  --overlay-foreground:var(--text-body);
+  --backdrop:var(--scrim);
+  --muted:var(--text-faint);
+  --default:var(--surface-raised);
+  --default-foreground:var(--text-body);
+  --accent-foreground:var(--text-on-accent);
+  --success-foreground:var(--text-on-accent);
+  --warning-foreground:var(--text-on-accent);
+  --danger-foreground:var(--danger-fg);
+  --field-background:var(--surface-input);
+  --field-foreground:var(--text-body);
+  --field-placeholder:var(--text-faint);
+  --field-border:var(--line);
+  --field-radius:var(--r-input);
+  --field-border-width:var(--border-w);
+  --border:var(--line);
+  --separator:var(--line-hairline);
+  --focus:var(--focus-ring);
+  --link:var(--text-accent);
+  --radius:12px; /* HeroUI derives xs 3 · sm 6 · md 9 · lg 12 · xl 18 */
+  --surface-shadow:var(--shadow-card);
+  --field-shadow:none;
+}

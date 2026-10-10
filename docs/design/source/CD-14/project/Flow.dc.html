@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>CD-14 โฟลว์</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/theloftbardesignsystem_99bbff/styles.css">
+<script src="/_blob/55621ac7d8cfe40fb69092b2ed520365"></script>
+<script src="ds/theloftbardesignsystem_99bbff/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--text-accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1800px; height: 720px; box-sizing: border-box; padding: 40px; background: var(--bg-sunken); color: var(--text-body); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 36px">
+  <div style="display: flex; align-items: baseline; gap: 16px">
+    <span style="font: var(--fw-bold) var(--fs-micro)/1 var(--font-ui); letter-spacing: var(--ls-caps); padding: 6px 10px; border-radius: 999px; background: var(--surface-raised); color: var(--text-muted); border: 1px solid var(--line); align-self: center">FLOW MAP</span>
+    <h1 style="margin: 0; font: var(--text-heading)">CD-14/flow</h1>
+    <span style="font: var(--text-small); color: var(--text-muted)">ลูกศร = การกระทำ · กรอบเน้น = จุดเริ่ม · กรอบประ = มาจาก CD-08</span>
+  </div>
+  <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font: var(--text-label); color: var(--text-faint)">{{r.title}}</div>
+      <div style="display: flex; align-items: center; gap: 0">
+        <sc-for list="{{r.steps}}" as="s" hint-placeholder-count="6">
+          <div style="display: flex; align-items: center; margin-left: {{s.ml}}">
+            <sc-if value="{{s.arrow}}" hint-placeholder-val="{{ false }}">
+              <div style="width: 116px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-faint)">
+                <span style="font: var(--text-small); color: var(--text-muted); text-align: center; min-height: 20px">{{s.arrowLabel}}</span>
+                <svg width="96" height="12" viewBox="0 0 96 12" aria-hidden="true"><line x1="2" y1="6" x2="88" y2="6" stroke="currentColor" stroke-width="1.75"></line><polyline points="82,1 90,6 82,11" fill="none" stroke="currentColor" stroke-width="1.75"></polyline></svg>
+              </div>
+            </sc-if>
+            <div style="width: 168px; box-sizing: border-box; padding: 12px 14px; border-radius: var(--r-card); {{s.skin}}">
+              <div style="font: var(--text-body-strong)">{{s.name}}</div>
+              <div style="font: var(--text-small); color: var(--text-faint)">{{s.ref}}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":1800,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const CARD = 'background: var(--surface-card); border: 1px solid var(--line); box-shadow: var(--shadow-card), var(--highlight-top);';
+    const KEY = 'background: var(--accent-soft); border: 1.5px solid var(--line-accent);';
+    const OUT = 'background: transparent; border: 1.5px dashed var(--line-strong);';
+    const n = (name, ref, arrowLabel, skin) => ({ name, ref, arrow: arrowLabel !== null, arrowLabel: arrowLabel || '', skin: skin || CARD });
+    const rows = [
+      { title: 'สั่งจากคิว (ยังไม่รู้โต๊ะ)', steps: [
+        n('คิวออเดอร์', 'CD-08/queue', null, OUT),
+        n('เลือกโต๊ะ', 'CD-14/pick-seat', '+ ออเดอร์', KEY),
+        n('เมนู', 'CD-14/menu', 'แตะโต๊ะ / เปิดโต๊ะ'),
+        n('ตะกร้า', 'CD-14/cart', 'ดูตะกร้า'),
+        n('ส่งแล้ว', 'Toast + ไฮไลต์', 'ส่งออเดอร์'),
+        n('คิวออเดอร์', 'ออเดอร์ใหม่ไฮไลต์', 'กลับอัตโนมัติ', OUT)
+      ]},
+      { title: 'สั่งจากโต๊ะ (รู้โต๊ะแล้ว) · เลือกตัวเลือก', steps: [
+        n('สรุปโต๊ะ', 'CD-08/tables · BottomSheet', null, OUT),
+        n('เมนู', 'CD-14/menu', 'สั่งออเดอร์', KEY),
+        n('ตัวเลือกเมนู', 'CD-14/item-sheet', 'แตะเมนูมีตัวเลือก'),
+        n('เมนู', 'แถบตะกร้าอัปเดต', 'เพิ่มลงตะกร้า'),
+        n('คิดกับใคร?', 'CD-14/cart · 2', 'แตะค่าบริการ'),
+        n('ตะกร้า', 'CD-14/cart', 'เลือกชื่อ')
+      ]},
+      { title: 'ออกกลางทางและข้อผิดพลาด', steps: [
+        n('เมนู / ตะกร้า', 'ตะกร้ามีของ', null),
+        n('ยกเลิกตะกร้า?', 'CD-14/leave', 'กลับ'),
+        n('คิวออเดอร์', 'CD-08/queue', 'ทิ้งตะกร้า', OUT),
+        n('ตะกร้า', '409 / เครือข่าย', null),
+        n('แก้แล้วส่งใหม่', 'Idempotency-Key เดิม', 'ลบที่หมด / ลองใหม่'),
+        n('โต๊ะถูกปิด', 'กลับคิว — ไม่ส่ง', '409 INVALID_STATE', OUT)
+      ]}
+    ];
+    rows.forEach((r) => r.steps.forEach((s, i) => { s.ml = (!s.arrow && i > 0) ? '72px' : '0px'; }));
+    return { theme: this.props.theme ?? 'dark', rows };
+  }
+}
+</script>
+</body>
+</html>

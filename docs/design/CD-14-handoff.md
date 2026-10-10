@@ -6,8 +6,9 @@ status: approved          # rev 3 = CD template pilot, passed · rev 4 = queue c
 approved_by: Field
 approved_on: 2026-10-10
 canvas: https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW
-canvas_version: 1791626047-41b2
+canvas_version: 1791626200-39b3   # snapshot version (rev 4 + sticky R10)
 ds_version: 1791561405-c72e
+source: docs/design/source/CD-14/
 surfaces: [expo-staff]
 sizes: [390x844, 360x780]
 brief: CD-14-staff-app-new-order.md
@@ -133,3 +134,42 @@ Pushed stack screen (no tab bar): header top pad 48, IconButton back + title `--
 | 2 | 2026-10-10 | Journey pilot (J1, J2), full-width search, **no quick add**, DR-010 promo states, highlight fix; R1 queue keeps CD-08 order · R2 seat tiles 3/row · R3 ice in one row · R4 CD-08 sheet gets "สั่งออเดอร์" · R5 "ค่าบริการ" badge neutral — **approved** | Field |
 | 3 | 2026-10-10 | collision now asks before joining (J2 4b dialog → 5b) — Field · CD template pilot: overview + seat-sheet boards, menu 8–9, cart 10–11, YAML header, state matrix, action table; J2 E3b corrected to `200 attached:true` (BRIEF-011) | Field — approved (R6–R9) |
 | 4 | 2026-10-10 | Queue cards (J1·1, J1·8, J2 queue phones, cart·4) use the CD-08 R7 layout: status chip on the top row, status button bottom-left ≤ 190 px so it never sits under the "+ ออเดอร์" FAB (FAB position unchanged). No flow change. | Field (CD-08 R7) |
+
+## 11. Source snapshot
+Taken 2026-10-10 from canvas version **1791626200-39b3** (rev 4 approved + sticky R10), DS **1791561405-c72e** (`cd-template.md` §6). 25 files, byte copies read through the artifact service; hashes re-verified on disk after copy (all match).
+
+| Path (under `docs/design/source/CD-14/`) | Bytes | SHA-256 | What |
+|---|---|---|---|
+| `blobs/55621ac7d8cfe40fb69092b2ed520365.js` | 357796 | `3411692820cb8d47543f69496aa25fd603a358f4498046f41c508a5a3342210e` | Lucide icon UMD (blob, all boards) |
+| `project/Cart.dc.html` | 26084 | `813de35d0f963254f110888137368a9e1e9245d6cd3fa677b2fc9700db1443a9` | board |
+| `project/Flow.dc.html` | 5884 | `0322bd88be6eba86eb4ee4cfd4e6b2fc3c34ad5f861bd83256f5b28e024abd79` | board |
+| `project/ItemSheet.dc.html` | 12707 | `b4c44c0a9e5457117cba7974cc5216bfc9301a6156891e983fb949e43fde2418` | board |
+| `project/Journey.dc.html` | 49667 | `500db08d6e3ec70ef1bbe0a81bdff225c6e330f662c30901255a39ee723e3f9f` | board |
+| `project/Leave.dc.html` | 6983 | `29bdfc30522d1e68c9d9f2b5a1d6a5b9b92150f5dfc91571872d0765fe474c05` | board |
+| `project/Main.dc.html` | 28725 | `093baa523d170af742bdbadd47223c7e0f56254eeac3f777442a9def3fb7df9f` | board |
+| `project/Menu.dc.html` | 16087 | `903263e812148802d0ea9596d8048860efefe720bc3497959e8ee3bc408ab77a` | board |
+| `project/Overview.dc.html` | 8320 | `15f886a4c0994aaafeeee9f30d7972b5b8533f4fa31634f4eb24426a5e74d6ab` | board |
+| `project/SeatSheet.dc.html` | 8198 | `cd9eeac2882b3fc64a73e23979c453b1f219521cd649c201beb2d7731f2ca2d3` | board |
+| `project/canvas.json` | 4987 | `c6890bd89d132934e174f8174e5c5380cc284b9dbd0c0f702f092746cda5cae0` | canvas index (boards, notes R1–R10, DS record) |
+| `project/ds/theloftbardesignsystem_99bbff/_ds_bundle.js` | 334785 | `8dabe62f5f9313829b05ac90564785a94d08e508abbe7b33727de87ec5d83aad` | DS component bundle (read for exact component sizes) |
+| `project/ds/theloftbardesignsystem_99bbff/assets/fonts/NotoSansThai-Bold.ttf` | 47480 | `0be544f347b3ab6382bdc2b555a783727a4858a3dc140670406924670967d916` | font |
+| `project/ds/theloftbardesignsystem_99bbff/assets/fonts/NotoSansThai-Regular.ttf` | 47484 | `9acb585d8662ca4ed1b1cf5889dfa1393f8555103b3986e1ea1e3af4faef70bd` | font |
+| `project/ds/theloftbardesignsystem_99bbff/assets/fonts/NotoSansThai-SemiBold.ttf` | 47552 | `2e0c06600ac07f9e22c9d360d3e3b37651af9aff9d2dd4b418ba9fd6856c51ea` | font |
+| `project/ds/theloftbardesignsystem_99bbff/styles.css` | 311 | `7866bbdf568cd66d45e96b2489b917076ee3e7ab42478f8ef7ef2d1b34f9bc1c` | DS token entry (imports tokens/*) |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/base.css` | 852 | `b0dca6d6222bca9864348d20f2d0522d9a428b6b9100d3bba4f434f5d2d917a6` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/colors.css` | 6613 | `99c03da4fee89686b67b4e1ea9a9895d1fa9ab5fdfff6ddb50eb1b4a484be8cf` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/elevation.css` | 1567 | `49d239c658fe4bec8642074191d22011eef872bcefd79f9e8df08120f0f1931e` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/fonts.css` | 691 | `8ab8369728a9af235c3998a3cad388d0c348d802f7e4a9a999cb95e48ce2b30d` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/heroui.css` | 1555 | `7a259174df15534fdab234363690592a165b829732d1724487cd1df4240989cb` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/motion.css` | 415 | `f722b6aff937e6950b8ba19ae2917327f202e3c1b9ebddfbbfde602c1d76b40e` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/radius.css` | 225 | `8a8fa95063c7b34da5520acae8c002430eb799e0b8c913c66a7af97bfb49ee85` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/spacing.css` | 445 | `636c636975a82e319862efceb54e5822da01937eabec0f0b5a1292169b002c52` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/typography.css` | 1727 | `9645fa74a5f12cbea4cfaa7613810ebe4f79db1c5a7b2d93eb5198eb52ec69e2` | DS tokens |
+
+**Dependency closure.** Boards reference only: `./support.js` (editor runtime — not a file; boards are read as text, never opened as HTML) · `ds/theloftbardesignsystem_99bbff/styles.css` (+ `tokens/*.css`, fonts) · `ds/theloftbardesignsystem_99bbff/_ds_bundle.js` · `/_blob/55621ac7d8cfe40fb69092b2ed520365` (→ `blobs/…js`). Nothing missing. No `tokens.json` on this canvas (DS installed as CSS only) — not needed; the CSS tokens are the source.
+
+**Repo drift (D#).**
+| # | Drift | Fix |
+|---|---|---|
+| D1 | **No Expo theme yet** (`app/mobile/` not on this branch, DR-008). CD-14 is `expo-staff`, so there is nothing to diff. | The first mobile feature brief generates the RN theme from this snapshot's `tokens/*.css` (249 tokens, dark + light) — Pre-decided item, not inferred by the executor. |
+| D2 | Web `globals.css` (BRIEF-014) vs snapshot: all shared `:root` values equal; 35 semantic names absent on web (`--sp-*`, `--stack*`, `--tap-min` / `--tap-comfortable`, `--card-pad*`, `--ease-*`, `--font-ui` / `--font-thai` / `--font-numeric`, `--success-foreground`, `--warning-foreground`, `--bar-height`, `--sheet-grab`, `--gutter-*`, `--pos-key`, `--section-gap`, `--field-border-width`, `--ls-body`) + 55 primitives. | Info for CD-14 (mobile). For web CDs: check each name a board uses when writing that web brief; map to Tailwind scale or add to `globals.css` there. |

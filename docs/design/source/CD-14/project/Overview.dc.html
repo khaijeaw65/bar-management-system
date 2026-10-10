@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>CD-14 ภาพรวม</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/theloftbardesignsystem_99bbff/styles.css">
+<script src="/_blob/55621ac7d8cfe40fb69092b2ed520365"></script>
+<script src="ds/theloftbardesignsystem_99bbff/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--text-accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1760px; height: 1100px; box-sizing: border-box; padding: 56px 64px; background: var(--bg-sunken); color: var(--text-body); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 32px">
+
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="font: var(--fw-bold) var(--fs-micro)/1 var(--font-ui); letter-spacing: var(--ls-caps); padding: 6px 10px; border-radius: 999px; background: var(--text-body); color: var(--bg-app)">OVERVIEW</span>
+        <span style="font: var(--text-label); color: var(--text-faint)">CD-14 · rev 2 · แอปพนักงาน (Expo)</span>
+      </div>
+      <h1 style="margin: 0; font: var(--fw-bold) 56px/1.15 var(--font-ui)">สั่งออเดอร์จากมือถือพนักงาน</h1>
+      <div style="font: var(--fw-semibold) 24px/1.4 var(--font-ui); color: var(--text-muted); max-width: 1100px">พนักงานรับออเดอร์ที่โต๊ะหรือเคาน์เตอร์ แล้วส่งเข้าคิวบาร์ได้ทันที โดยไม่ต้องเดินไปที่ POS</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex: 0 0 auto">
+      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="served" size="md">Field OK · 10 ต.ค. 2026</x-import>
+      <span style="font: var(--text-small); color: var(--text-faint)">handoff: docs/design/CD-14-handoff.md</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Card" padding="24px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font: var(--text-label); color: var(--text-faint)">ปัญหาที่แก้ (จากการลงพื้นที่ 2 ร้าน)</div>
+        <div style="font: var(--text-subhead)">เครื่องมือกระจัดกระจาย</div>
+        <div style="font: var(--text-body-md); color: var(--text-muted)">ที่เห็นจริง: ร้านที่ไม่มี POS / QR จดออเดอร์บนกระดาษหรือบอกปากเปล่า → เสี่ยงตกหล่นและคิดเงินไม่ครบ เพราะไม่มีที่เดียวที่ทุกคนเห็น</div>
+      </div>
+    </x-import>
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Card" padding="24px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font: var(--text-label); color: var(--text-faint)">ผู้ใช้ และสถานการณ์</div>
+        <div style="font: var(--text-subhead)">พนักงานเสิร์ฟ / บาร์เทนเดอร์</div>
+        <div style="font: var(--text-body-md); color: var(--text-muted)">คืนศุกร์ 22:00 ร้านเต็ม ไฟสลัว ถือมือถือมือเดียว ลูกค้าสั่งพร้อมกันหลายคน — ต้องเร็ว และไม่พลาด</div>
+      </div>
+    </x-import>
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Card" padding="24px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font: var(--text-label); color: var(--text-faint)">ผลลัพธ์ที่ต้องการ</div>
+        <div style="font: var(--text-subhead)">2 แตะต่อแก้ว · ส่งซ้ำไม่เกิดออเดอร์ซ้ำ</div>
+        <div style="font: var(--text-body-md); color: var(--text-muted)">ออเดอร์ขึ้นคิวบาร์ทันทีพร้อมชื่อคนสั่ง · ของหมด / โปรหมดเวลา ถูกจับได้ก่อนส่ง</div>
+      </div>
+    </x-import>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font: var(--text-label); color: var(--text-faint)">ทางเข้า → ทางออก</div>
+      <div style="font: var(--text-body-md); color: var(--text-body); line-height: 1.7">
+        <div>1 · ปุ่ม “+ ออเดอร์” บนคิว → เลือกโต๊ะ</div>
+        <div>2 · “สั่งออเดอร์” ใน sheet สรุปโต๊ะ (CD-08)</div>
+        <div>ออก: ส่งสำเร็จ → กลับคิว · ทิ้งตะกร้า → กลับคิว</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font: var(--text-label); color: var(--text-faint)">Journeys บน canvas นี้</div>
+      <div style="font: var(--text-body-md); color: var(--text-body); line-height: 1.7">
+        <div><b style="color: var(--text-accent)">J1</b> · โต๊ะ T3 มีแขก: ช้าง 2 + โอลด์แฟชั่น → ส่ง (E1–E7)</div>
+        <div><b style="color: var(--text-accent)">J2</b> · โต๊ะว่าง C3: เปิดโต๊ะแล้วสั่ง / POS เปิดก่อน (E1–E3b)</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font: var(--text-label); color: var(--text-faint)">ไม่อยู่ในขอบเขต</div>
+      <div style="font: var(--text-body-md); color: var(--text-muted); line-height: 1.7">ชำระเงิน · ปิดโต๊ะ · ยกเลิก/คืนรายการ · สั่ง bottle keep · โปรไฟล์ลูกค้า · สั่งผ่าน QR ลูกค้า (CD-06)</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+    <span style="font: var(--text-label); color: var(--text-faint); margin-right: 6px">การตัดสินใจหลัก</span>
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="md">ไม่มีเพิ่มทันที — ทุกเมนูเลือกจำนวนก่อน</x-import>
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="md">คิวเก่าสุดอยู่บน (เหมือน CD-08)</x-import>
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="md">โปรตามช่วงเวลา (DR-010)</x-import>
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="md">เปิดโต๊ะชนกัน = ถามก่อนเข้าโต๊ะเดิม</x-import>
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="md">390×844 · 360×780 · มืด / สว่าง</x-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":1760,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { theme: this.props.theme ?? 'dark' };
+  }
+}
+</script>
+</body>
+</html>
