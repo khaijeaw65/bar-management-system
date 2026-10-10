@@ -47,7 +47,7 @@ Handoffs: `docs/design/CD-0#-handoff.md` (each has a "Port to Design canvas" sec
 Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core slice. If ahead: bottle keep → dashboard → customer QR. LINE OA → Sem 2.
 
 ## Active
-- Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · ~33 commits · **not pushed** — Field: `git push -u origin docs/ui-design-cd03` + PR.
+- Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · 31 commits · **not pushed** — Field: `git push -u origin docs/ui-design-cd03` + PR.
 - Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
 - **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
 - **Ready design briefs:** CD-05, 06, 07, 11, 12, 13, 14, 15 (CD-10 merged into CD-11).
