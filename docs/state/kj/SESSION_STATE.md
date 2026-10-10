@@ -1,5 +1,5 @@
 # State — KJ
-Updated: 2026-10-10 12:30 · Agent: Cowork (design)
+Updated: 2026-10-10 13:10 · Agent: Cowork (design)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume (start here)
@@ -72,7 +72,7 @@ Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV9
 Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core slice. If ahead: bottle keep → dashboard → customer QR. LINE OA → Sem 2.
 
 ## Active
-- Branch: `docs/ui-design-cd06` (from main @ 1e301db, after PR #26 merged 10 Oct) · **not pushed** — commits: CD-14 rev 3, CD template v1, DR-010 amendments, BRIEF-011 Q3. Push + PR when the retrofit batch is done (or before, to back up).
+- Branch: `docs/ui-design-cd06` — **pushed** (origin @ 28bdca1 + this state commit), no PR yet. Holds: CD-14 rev 3 + images, CD template v1, schema.sql/erd (BRIEF-011 Q3, DR-010), rules change (Field-approved edits), DR-009/010, BRIEF-011 Q3. Open the PR when the retrofit batch is done (or now, docs only).
 - Decided 10 Oct: CD template v1 (`docs/design/cd-template.md`, Cowork + Codex review) · CD-14 rev 3 approved (R6 cart in memory · R7 permission UI · R8 pain point = paper/verbal orders · R9 opener on visit) · seat-open collision asks before joining (CD-14 J2; apply to CD-02 POS in retrofit; BRIEF-011 Q3 added: `visit.opened_by` + `opened_via`) · board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
 - Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
 - **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
