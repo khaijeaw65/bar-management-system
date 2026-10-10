@@ -2,7 +2,7 @@
 
 > Proposed rule — lives here because `docs/rules/**` is protected. Field may copy it into `docs/rules/` by hand.
 
-Adopted after the CD-14 pilot. Applies to every Design canvas from CD-06 on; finished canvases (CD-01–04, CD-08) are not retrofitted.
+Adopted after the CD-14 pilot. Applies to every Design canvas. Adoption (Field, 2026-10-10): CD-14 = pilot; CD-01–04 and CD-08 are retrofitted once the CD template is approved; CD-06 onward built to it.
 
 Canvases serve three readers at once: the advisor (presentation), Metee / AI executors (implementation), and e2e tests. Each board is one of three types, marked by a pill next to its title.
 

@@ -2,6 +2,13 @@
 
 **Status:** Ready — D1–D3 accepted by Field (2026-10-09) · **Surface:** Expo staff app 390×844 (also 360×780) · **Used by:** S1 mobile brief "take order" (DR-009) · same rules as CD-04 (POS order entry), phone layout
 
+## Revisions (supersede the paste text and acceptance below — handoff `CD-14-handoff.md` is authoritative)
+| Rev | Date | Change | Authority |
+|---|---|---|---|
+| R-a | 2026-10-10 | No quick add on the staff app: every item opens the item sheet → **2 taps per drink** (FRD ≤ 3). Quick-add Toast + "เลิกทำ" removed. | Field (D2 amended) |
+| R-b | 2026-10-10 | After send: queue keeps CD-08 oldest-first; filter ใหม่ + highlighted card (not "new order on top"). | Field (CD-14 R1) |
+| R-c | 2026-10-10 | Promotions **in scope** for display: promo category, out-of-window greyed, expired promo cart line. | Field (DR-010) |
+
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
 `docs/design/CD-04-handoff.md` (rules: quick add, item sheet, charge, 86'd, idempotency; F1–F4) · `docs/design/CD-08-handoff.md` once it exists (tabs, cards) · FRD §6 "3 taps max per drink"
