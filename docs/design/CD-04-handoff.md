@@ -230,3 +230,11 @@ Candidate for promotion to DS: TextArea (HeroUI TextArea) and a count Badge (Her
 - Charge modal adds helper "ค่าบริการต้องระบุชื่อลูกค้า" and the "ต้องเลือก 1" Chip; cart with charge = ฿920.00 / 5 items.
 - 1024 board is a 1024×768 shell at 88% zoom with a part legend; the 1280 board has no markers.
 ```
+
+## 4. Port to Design canvas (2026-10-10)
+Canvas: **CD-04 POS Order Entry** https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz (DS "The Loft Bar Design System", theme tweak dark/light per board). Supersedes the Claude Design project as the visual reference; §0–§3 and the verbatim summary still apply.
+- Shared pieces: `PosFrame`, `Grid` (CD-02), `Panel` (CD-02 + mode `sent`: new group on top, highlighted, total ฿1,860.00), `Order` (order screen, props `menu` loaded/loading/error/noresult · `cart` loaded/loading/empty/charge/sending/neterr/void/realtime/closed/swipe · `who`).
+- Boards (full size, no zoomed boards, no 1024 marker legend): order 1280 + 1024, item-sheet (3), order-states menu (3) + cart (4), send (3), send-conflicts (3), charge (3), leave-confirm, flow.
+- F4 applied: variant group label is "ตัวเลือก".
+- P1: "+ ชื่อใหม่" popover (F2) still not drawn — build per F2.
+- P2: tabs are drawn as plain markup (no DS Tabs component); build with HeroUI Tabs.

@@ -50,3 +50,8 @@ Remaining order: CD-03 payment · CD-04 menu mgmt · CD-05 dashboard · CD-06/07
 ## Blockers / Coordination
 - Pending docs: erd.html (`notification`, `staff_push_token`, `payment_status.cancelled`, `visit.guest_label`, live-visit index), FRD §13, `docs/rules/mobile.md`
 - Stale remote branches to clean up (Field): `docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`
+
+## 2026-10-10 — CD canvas ports done
+- CD-01 https://claude.ai/artifact/GDCe3opjPBQ7YxAZ6RwEBo · CD-02 https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG · CD-03 https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb · CD-04 https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz · CD-08 https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB
+- Next (new canvases): CD-14 → CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11.
+
