@@ -34,7 +34,7 @@ infra/**                     ← Terraform, docker-compose.yml, all infra files 
 .github/**                   ← workflows, CODEOWNERS, PR template
 ```
 
-### Schema (ERD locked — 33 tables, 9 domains)
+### Schema (ERD locked — 34 tables, 9 domains)
 ```
 docs/schema.sql              ← Field-approved edits by Cowork / Codex allowed (see below)
 docs/erd.html                ← Field-approved edits by Cowork / Codex allowed (see below)

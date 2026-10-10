@@ -58,7 +58,7 @@ Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV9
 - If a publish is refused (Field edited the canvas): `read` the files, re-apply, republish. Field sometimes edits defaults (e.g. Grid default mode) — keep them.
 - Bundle source for prop lookups: `read` any canvas's `project/ds/theloftbardesignsystem_99bbff/_ds_bundle.js` (scratchpad does not survive sessions); grep `function <Comp>(` for props.
 - Row tap ring = overlay span (`left/right -12px, top/bottom 6px`, 2.5 px accent border, radius 12) — not `outline` on the full row.
-- Never write to `docs/rules/**` (protected — even new files). Proposed rules go in `docs/design/` and Field copies them.
+- Never write to `docs/rules/**` (protected — even new files). Exception (Field 10 Oct): Cowork/Codex may edit `docs/schema.sql`, `docs/erd.html`, `CLAUDE.md`, `AGENTS.md` with Field's explicit OK on the exact change; trailer `Approved-by: Field (session)`. Validate schema changes by running the whole file on a throwaway Postgres (binaries are in the cloud container: /usr/lib/postgresql/*/bin, run as user postgres in /var/tmp).
 
 ## Plan (to 8 Nov) — DR-008: Metee = Expo mobile, KJ = backend + web, reviews mobile
 | Week | KJ | Metee (mobile, after 20:00, ~1 brief/wk ≤10 h, contracts fixtures) |
@@ -82,7 +82,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 
 ## Field to-do (any order)
 1. Open BRIEF-002 PR + auditor. (PR #26 design canvases merged 10 Oct.)
-2. Review CD-03 + CD-04 content during the retrofit; CD-01 P1. Protected schema follow-ups (apply by hand): DR-010 `menu_item_availability` + `is_promo`; BRIEF-011 Q3 `visit.opened_by` + `opened_via` + enum `visit_open_source`; erd.html; CLAUDE.md 33 tables; DR-009 line. Export CD-14 board images → docs/design/img/CD-14/.
+2. Review CD-03 + CD-04 content during the retrofit; CD-01 P1. (done 10 Oct: schema.sql DR-010 + BRIEF-011 Q3, erd.html synced incl. staff_access_request, CLAUDE.md 34 tables — Cowork Field-approved edits.) Still open: DR-009 back-office line. Export CD-14 board images → docs/design/img/CD-14/.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
 4. Branch protection; delete stale remote branches (`docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`).
 5. (done 10 Oct) stale git locks cleared; delete permission granted per session — ask once at session start.
