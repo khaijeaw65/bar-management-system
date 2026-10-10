@@ -20,6 +20,6 @@ B. The status follows what really happens at the counter, and fewer taps keeps t
 ---
 
 ## Decision — Field only
-**Decision:** Approved: B — counter seats `accepted → sent` (READY skipped); tables keep รับแล้ว → พร้อมแล้ว → เสิร์ฟแล้ว. The server allows `accepted → sent` only when the ticket's seat is `counter`.
+**Decision:** Approved: B — counter seats `accepted → sent` (READY skipped); tables keep กำลังเตรียม → พร้อมเสิร์ฟ → เสิร์ฟแล้ว (labels per DR-012 Amendment 1). The server allows `accepted → sent` only when the ticket's seat is `counter`.
 **Why:** No pass or runner at the counter; READY there is a wasted tap (CD-08 R15).
 **Date:** 2026-10-10
