@@ -1,10 +1,10 @@
 # CD-14 — Developer handoff: Staff app new order (Cowork Design canvas, 2026-10-10)
 
 Source: Design canvas "CD-14 Staff New Order" https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW (built by Cowork on The Loft Bar Design System https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D, real DS components mounted) · brief `CD-14-staff-app-new-order.md` (D1–D3 accepted) · rules from `CD-04-handoff.md` (F1–F4) · shell from `CD-08-handoff.md`.
-**Status: pending Field review.** Pilot of the Journey / States / Flow-map board convention (10 Oct) — boards carry a type pill, R-items are sticky notes on the canvas. Every board has a **Theme tweak (dark / light)** in the Tweaks panel.
+**Status: Field OK (2026-10-10) — R1–R5 accepted as recommended.** Pilot of the Journey / States / Flow-map board convention (10 Oct) — boards carry a type pill, R-items are sticky notes on the canvas. Every board has a **Theme tweak (dark / light)** in the Tweaks panel.
 **Do not port the canvas markup.** Build with HeroUI Native + Uniwind + tokens (`docs/rules/mobile.md`). Sample data only.
 
-## 0. Review items for Field
+## 0. Review items for Field — all accepted 2026-10-10
 | # | Item | Recommendation |
 |---|---|---|
 | R1 | **Queue order after send.** Brief flow says "new order on top", but CD-08 queue is oldest-first (D-rule). Canvas keeps CD-08: after send, back to queue with filter **ใหม่** active and the new card highlighted (`Card selected`) + success Toast. | Accept — one ordering rule across the app. |
