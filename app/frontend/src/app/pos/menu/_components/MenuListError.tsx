@@ -1,4 +1,4 @@
-export function MenuListError({ onRetry }: { onRetry: () => void }) {
+export function MenuListError({ onRetry }: Readonly<{ onRetry: () => void }>) {
   return (
     <div role="alert" className="flex flex-col items-start gap-3">
       <p className="text-danger">เกิดข้อผิดพลาด</p>

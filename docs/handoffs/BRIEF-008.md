@@ -6,7 +6,7 @@
 | **Date** | 2026-10-10 |
 | **Brief revision** | 1 |
 | **Branch / PR** | `feat/BRIEF-008-pos-shell-tokens` · PR #27 |
-| **Commit** | `98fdcb4` (implementation). Docs/evidence commit follows. |
+| **Commit** | `98fdcb4` (implementation). Follow-up on the same PR marks props `Readonly`, replaces `role="group"` with a `fieldset`, and uses `outline-focus-ring`. |
 | **Status** | Implemented — awaiting audit |
 
 > Created at `Implemented`. Update it if review requests changes. Frozen at merge.
@@ -78,5 +78,6 @@ Every hit is an `@theme inline` `--color-<new-token>` line in `globals.css` (178
 - Disabled rail items are `<span aria-disabled="true" title="เร็ว ๆ นี้">`, not links and not in the tab order. Native `title` is the brief's fallback; HeroUI Tooltip was not used.
 - Active item uses `bg-accent-soft-strong` (AC-2 and CD-01 §2). CD-00's PosRail line says `accent-soft`.
 - HeroUI already emits utilities for `--accent`, `--accent-soft`, `--accent-hover`, `--success`, `--warning`, `--danger`, and `--surface-hover`, so those are not repeated under `@theme`.
+- Follow-up before review: `ThemeToggle` is a `fieldset` (Sonar `typescript:S6819`). Focus rings use `outline-focus-ring`. `MenuItemRow`, `MenuListError`, and `Providers` props are `Readonly` (Sonar `typescript:S6759`).
 - The shell is `min-h-dvh`. `min-h-full` left the rail at the content height, because the body's used height comes from `min-height`, which a child's percentage does not resolve against.
 - Token hex values were compared to `docs/design/tokens-v2.css`: no missing or different custom properties after dropping `[data-theme]` selectors.

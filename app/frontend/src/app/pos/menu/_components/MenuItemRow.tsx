@@ -2,7 +2,7 @@ import { Chip, Table } from "@heroui/react";
 import type { MenuItem } from "@/lib/api/menu";
 import { formatTHB } from "@/lib/utils/format";
 
-export function MenuItemRow({ item }: { item: MenuItem }) {
+export function MenuItemRow({ item }: Readonly<{ item: MenuItem }>) {
   const available = item.isAvailable;
 
   return (

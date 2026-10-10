@@ -34,7 +34,7 @@ const items: RailItem[] = [
 const itemClass = (active: boolean) =>
   cn(
     "flex size-16 flex-col items-center justify-center gap-0.5 rounded-[10px] text-[10px] font-semibold leading-[1.2]",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
     active ? "bg-accent-soft-strong text-text-accent" : "text-text-faint hover:bg-surface-hover",
   );
 
