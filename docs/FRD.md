@@ -166,7 +166,7 @@ Nobody identifies themselves to buy a drink. Identity offered only when it unloc
 - Table: QR self-service OR waiter logs it.
 
 ### Order status state machine
-`PENDING → ACCEPTED (รับแล้ว — someone has taken it) → READY → SENT` · terminal `CANCELLED`
+`PENDING → ACCEPTED (กำลังเตรียม — someone has taken it and is preparing it: fetch, mix or cook) → READY → SENT` · terminal `CANCELLED`
 - **Status is per order ticket, never per item (DR-012).** One tap moves the whole ticket. Items carry no progress — only *cancelled*.
 - **Counter seats skip READY:** `ACCEPTED → SENT` in one tap (bartender hands it over). Tables keep all steps (DR-011).
 - **`CANCELLED`:** set automatically when every item on the ticket is cancelled (at the POS); the ticket leaves the queue.
@@ -189,7 +189,7 @@ Cancelled items stay **visible on the bill, struck through / marked cancelled**,
 
 ### Customer-facing (QR ordering surface)
 - **Call staff (bell):** one tap → notification to POS ("Table 3 needs staff"). The human-fallback escape hatch for QR ordering — special request, confusion, QR issue, or just wanting a person. Aligns with the "never a single point of failure, always a human fallback" principle.
-- **Running tab view (cart):** customer sees their own session's ordered items, running total, **status per ticket** (e.g. "เครื่องดื่ม · พร้อมเสิร์ฟ / อาหาร · รับแล้ว") with cancelled items struck through, and a data-freshness timestamp — same state machine, customer-side. No per-item progress (DR-012). (Observed live in Wongnai's ordering UI.)
+- **Running tab view (cart):** customer sees their own session's ordered items, running total, **status per ticket** (e.g. "เครื่องดื่ม · พร้อมเสิร์ฟ / อาหาร · กำลังเตรียม") with cancelled items struck through, and a data-freshness timestamp — same state machine, customer-side. No per-item progress (DR-012). (Observed live in Wongnai's ordering UI.)
 
 ---
 

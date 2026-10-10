@@ -54,3 +54,10 @@ Open questions for the discussion:
 - Rename the `accepted` label "กำลังทำ" → **"รับแล้ว"** everywhere (DS StatusChip, CD-00 §2, CD-02/04/08/14/15, BRIEF-010 filters, FRD §6).
 **Why:** Per-item taps fail the "faster than walking to the POS" test for a 1–2 staff bar; station tickets keep one tap per ticket while stopping drinks waiting on food.
 **Date:** 2026-10-10
+
+---
+
+## Amendment 1 — `accepted` label = "กำลังเตรียม" (Field, 2026-10-10)
+Supersedes the label in the Decision above: the `accepted` label is **"กำลังเตรียม"**, not "รับแล้ว" — everywhere the Decision lists (DS StatusChip, CD-00 §2, CD-02/04/08/14/15, BRIEF-010 filters, FRD §6); customer side (CD-06/07) reads **"ร้านกำลังเตรียม"**. With the acceptor name (CD-08 R14): "กำลังเตรียม · ชื่อ" (name truncated at 360 px).
+**Why:** "เตรียม" covers every item (taking out a bottle, mixing, cooking), and guests already know "ร้านกำลังเตรียม" from delivery apps; "รับแล้ว" was exact for staff but said little to the guest. Label only — no data or API change.
+**Date:** 2026-10-10 · recorded by Cowork on Field's explicit instruction

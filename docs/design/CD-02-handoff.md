@@ -54,7 +54,7 @@ States: active (มีออเดอร์) · open (ยังไม่มี�
 | โต๊ะ T3 · Chip มีแขก | header |
 | ตัวเลือกเพิ่มเติม (⋯) · ปิด (x) | IconButton labels |
 | เปิด 1:24 · ต้น | meta (clock, user icons) |
-| "19:02 น." + order Chip (ใหม่ / รับแล้ว / เสิร์ฟแล้ว) + station label (บาร์ / ครัว, DR-012) | order group header = one station ticket |
+| "19:02 น." + order Chip (ใหม่ / กำลังเตรียม / เสิร์ฟแล้ว) + station label (บาร์ / ครัว, DR-012) | order group header = one station ticket |
 | item Chip only when cancelled (ยกเลิก, DR-012) · "2× ช้างดราฟต์" · muted "น้ำแข็งก้อนใหญ่ · สั่งโดย บีม" · `฿240.00` | item row; ยกเลิก = struck through, no dot, reason shown ("สั่งผิด · สั่งโดย ต้น") |
 | ยอดรวมย่อย · รวมทั้งสิ้น | footer (total 40/700 accent) |
 | ชำระเงิน | Button primary lg block → CD-03 |

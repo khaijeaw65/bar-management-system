@@ -20,7 +20,7 @@
 > 4. **Icons** — Lucide, pinned version, stroke 1.75 everywhere, sizes 16/20/24; Select chevron and checkbox tick use Lucide icons.
 > 5. **Missing states** — hover / pressed / focus-visible (`focus-ring`) / disabled / loading for Button, IconButton, SegmentedControl, Checkbox, Radio, Switch, Tag, Select, Input; Select error state.
 > 6. **Status chips** — exact labels:
->    - Order: ใหม่ (pending) · รับแล้ว (accepted) · พร้อมเสิร์ฟ (ready) · เสิร์ฟแล้ว (sent) · มีปัญหา (issue)
+>    - Order: ใหม่ (pending) · กำลังเตรียม (accepted) · พร้อมเสิร์ฟ (ready) · เสิร์ฟแล้ว (sent) · มีปัญหา (issue)
 >    - Item: ยกเลิก (struck through) only — no item progress chips (DR-012)
 >    - Table/visit: ว่าง · เปิดแล้ว · มีแขก · ไม่มีความเคลื่อนไหว · ปิดโต๊ะ · ทิ้งโต๊ะ · เรียกพนักงาน (pulse dot)
 >    - Payment: รอชำระ · ชำระแล้ว · ไม่สำเร็จ · คืนเงินแล้ว

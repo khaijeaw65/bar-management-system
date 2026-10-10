@@ -27,7 +27,7 @@ A staff member opens the app, "logs in" with a mock session, and lands on **อ�
 - **Tabs** `src/app/(tabs)/_layout.tsx`: bottom tabs **ออเดอร์** (active, `ClipboardList`) and **อื่นๆ** (`Menu`) only. อื่นๆ screen = staff name + Button "ออกจากระบบ" → `signOut()` → `/login`.
 - **Order queue** `src/app/(tabs)/orders.tsx`:
   - Header "ออเดอร์".
-  - Filter tabs (HeroUI Native `Tabs` or `Chip` row, horizontal scroll): **ทั้งหมด · ใหม่ · รับแล้ว · พร้อมเสิร์ฟ · มีปัญหา** → `all | pending | accepted | ready | issue`. `sent` orders are not shown in the queue. "มีปัญหา" shows a dot when any `issue` exists.
+  - Filter tabs (HeroUI Native `Tabs` or `Chip` row, horizontal scroll): **ทั้งหมด · ใหม่ · กำลังเตรียม · พร้อมเสิร์ฟ · มีปัญหา** → `all | pending | accepted | ready | issue`. `sent` orders are not shown in the queue. "มีปัญหา" shows a dot when any `issue` exists.
   - `FlatList` of **OrderCard** (`src/components/order/OrderCard.tsx`): row 1 order no. "#0042" + time ago "2 นาทีที่แล้ว" · row 2 "T3 · ต้น · บาร์" (table label · first `orderedByName` · station label บาร์ / ครัว from `station`) · items "2× ช้างดราฟต์" max 3 lines then "+ 2 รายการ" · status chip (CD-00 §2 label + tone). Item lines carry no status chip; a cancelled item is struck through (DR-012).
   - Pull-to-refresh (`refetch`).
   - States: loading (Skeleton ×4) · empty per filter "ยังไม่มีออเดอร์" · error Alert "โหลดออเดอร์ไม่สำเร็จ" + Button "ลองอีกครั้ง".
@@ -125,4 +125,4 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-04 | Initial — replaces the old "BRIEF-010 menu-list redesign" (web, now Field's per DR-008) |
-| 2 | 2026-10-10 | DR-012: `accepted` label "รับแล้ว"; card = station ticket (`placementId`, `station`, label บาร์ / ครัว); no item status chips, cancelled struck; `order_status += cancelled`; fixture with a 2-ticket placement (Field approved in session) |
+| 2 | 2026-10-10 | DR-012 + Amendment 1: `accepted` label "กำลังเตรียม"; card = station ticket (`placementId`, `station`, label บาร์ / ครัว); no item status chips, cancelled struck; `order_status += cancelled`; fixture with a 2-ticket placement (Field approved in session) |
