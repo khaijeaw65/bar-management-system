@@ -38,7 +38,7 @@ Known retrofit items per canvas:
 | CD-01 POS login/shell/menu | https://claude.ai/artifact/GDCe3opjPBQ7YxAZ6RwEBo | Field OK (rev 1) · retrofit pending |
 | CD-02 POS tables + session | https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG | Field OK (rev 1) · retrofit pending (+ join confirm) |
 | CD-03 POS payment | https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb | awaiting Field review · retrofit pending |
-| CD-04 POS order entry | https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz | awaiting Field review · retrofit pending (+ promo, badge) |
+| CD-04 POS order entry | https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz | rev 2 retrofit done 10 Oct (review: R1, R6–R8 pending) |
 | CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | Field OK (R1–R5) · retrofit pending (+ สั่งออเดอร์) |
 | CD-14 staff new order | https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW | **rev 3 approved 10 Oct — template reference** (images in docs/design/assets/CD-14/) |
 Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e). CD-14 Lucide blob `/_blob/55621ac7d8cfe40fb69092b2ed520365` (CD-14 only).

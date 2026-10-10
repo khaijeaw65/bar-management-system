@@ -1,6 +1,6 @@
 # CD-04 — POS: order for customer (menu → variant/modifiers → cart → send)
 
-**Status:** Done (2026-10-09) — handoff `CD-04-handoff.md`; review F1–F4 accepted by Field 2026-10-09 · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (DR-009 gate: order entry lives on the POS) — opened from CD-02 panel "สั่งแทนลูกค้า" / open-table success
+**Status:** rev 2 in review (2026-10-10, CD template retrofit) — handoff `CD-04-handoff.md`; rev 1 Q1 + F1–F4 accepted by Field 2026-10-09 · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (DR-009 gate: order entry lives on the POS) — opened from CD-02 panel "สั่งแทนลูกค้า" / open-table success
 
 > Replaces the old CD-04 slot (menu management) — menu management moves after the gate as **CD-12** (back office).
 
@@ -49,3 +49,10 @@ Defaults (no decision needed unless Field objects):
 ## Result
 - Claude Design link: https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 (`ui_kits/pos-v2/cd-04/`, 7 boards + state boards, dark + light)
 - Handoff: `docs/design/CD-04-handoff.md` · screenshots `docs/design/assets/CD-04/`
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 2 | 2026-10-10 | Promotions are now in scope as DR-010 time-windowed items (category "โปรโมชั่น", greyed outside window, expired-in-cart 409 `out_of_window`) — overrides "promotions" in out of scope · send splits into bar / kitchen tickets (DR-012) — overrides "kitchen routing" out of scope (routing is automatic, nothing to choose) · "ค่าบริการ" = Badge neutral, not Chip info · 1024×768 smallest size · disconnected + 403 states · "สั่งแทนลูกค้า" also on panels with orders (pending R6) | handoff §0 R3–R7, §9 |
