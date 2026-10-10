@@ -1,23 +1,23 @@
 # State — KJ
-Updated: 2026-10-10 13:50 · Agent: Cursor (BRIEF-008)
+Updated: 2026-10-10 14:40 · Agent: Cursor (BRIEF-900)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief.**
-**Active: BRIEF-008 POS shell — Implemented, awaiting audit.**
-Branch `feat/BRIEF-008-pos-shell-tokens` · PR #27 · work SHA `98fdcb4`.
-Handoff: `docs/handoffs/BRIEF-008.md`.
-Next: `audit BRIEF-008` (Cowork). Sonar was not run — Docker Desktop is manually paused.
+**Active: BRIEF-900 POC menu — Implemented, awaiting audit. Do not merge.**
+Branch `poc/BRIEF-900-source-handoff-menu` · work SHA `38b6a6f`.
+Handoff: `docs/handoffs/BRIEF-900.md`.
+Next: `audit BRIEF-900` (Cowork). After the comparison, delete this branch.
 
 ## Active
-- BRIEF-008 Rev 1. Shell, v2 tokens, Noto Sans Thai on `/pos/menu`. G1 exit 0 (lint, typecheck, 10 tests, build, e2e 1 passed). `ci` pending on PR #27.
-- No DRs raised. No package changes.
-- Checkout started on `docs/ui-design-cd06` (ahead of origin by 1 at `b3ff208`). This brief branched from `origin/main` `1e301db`.
+- BRIEF-900 Rev 1. Isolated `/poc/menu` from the design snapshot. G1 exit 0 (lint, typecheck, 14 tests, build).
+- No DRs. No package changes. Sonar not required.
+- BRIEF-008 is Done (merged PR #27, `b41ddc6` on main). This branch started from that commit.
 
 ## Coordination
-- Design branch `docs/ui-design-cd06` left at `b3ff208` (unpushed commit `docs(state): branch pushed — session end`). Untracked `docs/design/poc-source-handoff/` is not part of BRIEF-008 and was not committed.
-- Design retrofit (CD-01, 02, 03, 04, 08) is still the next design session, not this branch.
-- Ready after this: BRIEF-007 (after 009) · BRIEF-009 · BRIEF-011. BRIEF-010 is Metee.
+- Untracked and not part of this commit: `docs/design/poc-source-handoff/` and `docs/briefs/BRIEF-900-poc-source-handoff-menu.md`.
+- Design retrofit (CD-01, 02, 03, 04, 08) is the next design session, not this branch.
+- Ready after this experiment: BRIEF-007 (after 009) · BRIEF-009 · BRIEF-011. BRIEF-010 is Metee.
 
 ## Blockers
-- Local Sonar: Docker Desktop paused. Unpause, then `pnpm sonar && pnpm sonar:report` on this branch.
+- None for the POC. Merge is intentionally blocked: throwaway branch.
