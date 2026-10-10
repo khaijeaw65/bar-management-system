@@ -34,7 +34,8 @@ export function ThemeToggle() {
             onClick={() => setTheme(option.value)}
             className={cn(
               "h-10 rounded-md px-3 text-sm font-medium",
-              selected ? "bg-accent-subtle text-accent-text" : "text-text-secondary",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)",
+              selected ? "bg-accent-soft text-text-accent" : "text-text-muted",
             )}
           >
             {option.label}
