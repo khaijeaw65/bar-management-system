@@ -28,7 +28,7 @@ Rev 2 items R1–R5 accepted by Field 2026-10-10 (summary in §10). Rev-3 pilot 
 | R6 ✓ | **Cart lifetime.** Kept in memory per visit while the app runs or is backgrounded; lost if the app is killed or the session expires (401 → login). No offline ordering (cut scope). | Accept for S1. Persisting drafts = later. |
 | R7 ✓ | **No-permission UI.** Permissions are known at login (ACL cache): without `orders:create` the "+ ออเดอร์" FAB and "สั่งออเดอร์" are hidden; without `visits:open` free seats are locked ("ให้ POS เปิด", seat-sheet 3). The 403 state (cart 11) only covers a permission revoked mid-session. | Accept. |
 | R9 | **Join confirmation needs who opened the table.** Field 2026-10-10: a collision must ask before joining (could be a different group). `POST /visits` → `200 attached:true` creates nothing, so cancelling is free — but the dialog shows "เปิดโดย ต้น · POS · 21:02 · แขก กลุ่มมิ้นท์". BRIEF-011's attach response has `guestLabel` + `openedAt` but no opener. | Amend BRIEF-011 (not implemented yet): attached response adds `openedBy { staffId, displayName }` and `openedVia` (`pos`/`app`/`qr`). Field decides. Same dialog later on POS (CD-02 retrofit). |
-| R8 | **Overview pain point** is marked "สมมติฐาน (ยังไม่ยืนยัน)": orders passed by voice/paper get lost. Field research recorded "scattered tools" only. | Field confirms or rewrites from field notes. |
+| R8 ✓ | **Overview pain point** confirmed by Field 2026-10-10: bars without POS / QR take orders on paper or verbally. Consequence (lost orders, under-charging) stated as risk. | Done. |
 
 ## 1. Overview
 - **Goal:** staff take an order at the table/counter on their phone and send it straight to the bar queue, without walking to the POS.
