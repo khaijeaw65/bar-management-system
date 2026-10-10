@@ -700,7 +700,7 @@ erDiagram
         decimal base_price
         string item_type
         string image_key
-        string kitchen_tag
+        string kitchen_tag "bar|food, NULL=charge"
         boolean is_available
         boolean is_promo
         int sort_order
@@ -768,6 +768,8 @@ erDiagram
     order_record {
         uuid id PK
         uuid visit_id FK
+        uuid placement_id
+        string station
         string status
         timestamp created_at
         timestamp updated_at
@@ -1194,7 +1196,7 @@ erDiagram
             <div class="field-row"><span class="field-name">is_promo</span><span class="field-type">boolean</span></div>
             <div class="field-row"><span class="field-name">sort_order</span><span class="field-type">smallint</span></div>
           </div>
-          <div class="field-note">item_type: simple | recipe | charge. kitchen_tag: bar | food | both | n/a. Charge items (puke fine, corkage) permission-gated + audit-logged. is_promo splits promo sales in analytics (DR-010).</div>
+          <div class="field-note">item_type: simple | recipe | charge. kitchen_tag: bar | food (NULL only for charge, DR-012). Charge items (puke fine, corkage) permission-gated + audit-logged. is_promo splits promo sales in analytics (DR-010).</div>
         </div>
 
         <div class="entity-card">
@@ -1353,11 +1355,14 @@ erDiagram
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> visit_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">placement_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">station</span><span class="field-type">enum</span></div>
             <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
           </div>
           <div class="field-note">
+            One row = one station ticket (DR-012): a placement with drinks + food = 2 tickets sharing placement_id. station NULL = charge-only ticket (created SENT). Counter seats ACCEPTED → SENT (DR-011).
             <div class="state-list">
               <span class="state-chip">PENDING</span><span class="state-arrow">→</span>
               <span class="state-chip">ACCEPTED</span><span class="state-arrow">→</span>
@@ -1365,6 +1370,8 @@ erDiagram
               <span class="state-chip">SENT</span>
               <span class="state-arrow">⤳</span>
               <span class="state-chip">ISSUE</span>
+              <span class="state-arrow">⤳</span>
+              <span class="state-chip">CANCELLED</span>
             </div>
           </div>
         </div>

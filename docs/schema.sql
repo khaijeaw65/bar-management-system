@@ -12,8 +12,9 @@ CREATE TYPE table_seat_kind     AS ENUM ('table', 'counter');
 CREATE TYPE visit_state         AS ENUM ('open', 'active', 'idle', 'closed', 'abandoned');
 CREATE TYPE visit_open_source   AS ENUM ('pos', 'app', 'qr');  -- where a visit was opened (BRIEF-011 Q3, Field 2026-10-10)
 CREATE TYPE item_type           AS ENUM ('simple', 'recipe', 'charge');
-CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue');
-CREATE TYPE order_item_status   AS ENUM ('pending', 'preparing', 'ready', 'cancelled');
+CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue', 'cancelled');  -- per station ticket; cancelled = every item on the ticket cancelled (DR-012, Field 2026-10-10)
+CREATE TYPE order_item_status   AS ENUM ('pending', 'preparing', 'ready', 'cancelled');  -- only 'pending' / 'cancelled' are used; no per-item progress (DR-012)
+CREATE TYPE kitchen_station     AS ENUM ('bar', 'food');  -- station ticket routing; 'both' dropped (DR-012)
 CREATE TYPE payment_method      AS ENUM ('promptpay', 'cash');
 CREATE TYPE payment_status      AS ENUM ('pending', 'completed', 'failed', 'refunded', 'cancelled');  -- cancelled = staff cancel or 15-min QR timeout (CD-03 Q1, Field 2026-10-04)
 CREATE TYPE bottle_keep_status  AS ENUM ('active', 'finished', 'expired');
@@ -221,14 +222,15 @@ CREATE TABLE menu_item (
   image_key    VARCHAR(500),            -- S3 object key of the menu photo, NULL = no photo (CD-06 Q1, Field 2026-10-09)
   base_price   NUMERIC(10,2) NOT NULL DEFAULT 0,
   item_type    item_type NOT NULL DEFAULT 'simple',
-  kitchen_tag  VARCHAR(50),
+  kitchen_tag  kitchen_station,          -- NULL only for item_type = 'charge' (DR-012)
   is_available BOOLEAN NOT NULL DEFAULT TRUE,
   is_promo     BOOLEAN NOT NULL DEFAULT FALSE,   -- promo analytics split (DR-010)
   sort_order   SMALLINT NOT NULL DEFAULT 0,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by   UUID REFERENCES staff_user(id),
-  updated_by   UUID REFERENCES staff_user(id)
+  updated_by   UUID REFERENCES staff_user(id),
+  CONSTRAINT chk_menu_item_station CHECK ((item_type = 'charge') = (kitchen_tag IS NULL))  -- DR-012
 );
 
 -- Time windows for an item (DR-010). No rows = always available (subject to is_available).
@@ -342,10 +344,13 @@ CREATE TABLE restock_request (
 -- 6. ORDER
 -- ============================================================
 
+-- One row = one station ticket (DR-012). A placement with drinks + food = 2 rows sharing placement_id.
 CREATE TABLE order_record (
-  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  visit_id    UUID NOT NULL REFERENCES visit(id),
-  status      order_status NOT NULL DEFAULT 'pending',
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  visit_id      UUID NOT NULL REFERENCES visit(id),
+  placement_id  UUID NOT NULL,              -- shared by all tickets of one placement (DR-012)
+  station       kitchen_station,            -- NULL = charge-only ticket, created as 'sent' (DR-012)
+  status        order_status NOT NULL DEFAULT 'pending',
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by  UUID REFERENCES staff_user(id),
@@ -450,6 +455,7 @@ CREATE INDEX idx_menu_item_avail_item ON menu_item_availability(menu_item_id);
 
 -- Order lookups
 CREATE INDEX idx_order_visit         ON order_record(visit_id);
+CREATE INDEX idx_order_placement     ON order_record(placement_id);  -- DR-012
 CREATE INDEX idx_order_item_order    ON order_item(order_id);
 CREATE INDEX idx_order_item_status   ON order_item(status);
 
