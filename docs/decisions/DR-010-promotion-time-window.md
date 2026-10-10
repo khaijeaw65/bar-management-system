@@ -82,7 +82,7 @@ Pros: zero work now. / Cons: menu UI and menu-management CRUD are designed witho
 - [x] `docs/schema.sql` — `menu_item_availability` + `menu_item.is_promo` added 2026-10-10 (Cowork, Field-approved edit; executed clean on Postgres)
 - [x] `docs/erd.html` — table + column added 2026-10-10
 - [x] CLAUDE.md table count → 34 (also counts `staff_access_request`, previously missing) 2026-10-10
-- [ ] DR-009 back-office line "happy hour / promotions S2" — refined by this DR (Field)
+- [x] DR-009 back-office line refined to point here (2026-10-10)
 
 ---
 

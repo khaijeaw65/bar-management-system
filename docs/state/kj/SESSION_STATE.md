@@ -82,7 +82,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 
 ## Field to-do (any order)
 1. Open BRIEF-002 PR + auditor. (PR #26 design canvases merged 10 Oct.)
-2. Review CD-03 + CD-04 content during the retrofit; CD-01 P1. (done 10 Oct: schema.sql DR-010 + BRIEF-011 Q3, erd.html synced incl. staff_access_request, CLAUDE.md 34 tables — Cowork Field-approved edits.) Still open: DR-009 back-office line. Export CD-14 board images → docs/design/img/CD-14/.
+2. Review CD-03 + CD-04 content during the retrofit; CD-01 P1. (done 10 Oct: schema.sql DR-010 + BRIEF-011 Q3, erd.html synced incl. staff_access_request, CLAUDE.md 34 tables — Cowork Field-approved edits.) DR-009 line refined to DR-010. Export CD-14 board images → docs/design/img/CD-14/.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
 4. Branch protection; delete stale remote branches (`docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`).
 5. (done 10 Oct) stale git locks cleared; delete permission granted per session — ask once at session start.

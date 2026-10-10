@@ -88,7 +88,7 @@ A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.
 
 ## Why This Exists
 
-- `docs/schema.sql` is the ERD for 32 tables across 9 domains — silently changing it breaks downstream TypeORM entities, migrations, and the visual ERD.
+- `docs/schema.sql` is the ERD for 34 tables across 9 domains — silently changing it breaks downstream TypeORM entities, migrations, and the visual ERD.
 - Root configs affect every workspace package — a wrong edit breaks the entire monorepo build.
 - Agent rule files must be human-controlled so agents cannot change their own constraints.
 - Infra/CI/enforcement files require deliberate review; an accidental change can break pipelines or remove the review requirement itself.
