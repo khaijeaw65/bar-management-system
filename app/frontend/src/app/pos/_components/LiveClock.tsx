@@ -32,7 +32,7 @@ export function LiveClock() {
   }, []);
 
   return (
-    <time className="text-[13px] font-semibold text-text-muted tabular-nums">
+    <time className="text-small font-semibold text-text-muted tabular-nums">
       {now ? formatBangkok(now) : "--:-- น."}
     </time>
   );
