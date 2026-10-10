@@ -2,13 +2,13 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Field approved in session 2026-10-10 |
+| **Status** | Draft rev 2 — waiting for Field approval (rev 1 was Ready; Phase A findings changed §3.1, §3.4, AC-2, §7) |
 | **Implementer** | kj (Cursor) — Field may reassign |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **PR** | <executor fills> |
 | **Affected apps** | frontend |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | BRIEF-008 (Done — merged PR #27: v2 colour tokens + Noto Sans Thai in `globals.css`) |
 | **References** | DS tokens: `docs/design/poc-source-handoff/source/project/ds/theloftbardesignsystem_99bbff/tokens/{typography,spacing,radius,motion}.css` · `docs/design/tokens-v2.css` · `docs/rules/frontend.md` (Styling) · `docs/design/cd-template.md` §6 · POC finding (BRIEF-900): only colours had utilities, so the agent fell back to `text-[13px]`, `rounded-[10px]`, `duration-[140ms]` |
 | **Audit depth** | Compact (UI tooling, no behaviour change) |
@@ -26,15 +26,15 @@ Every DS type style, radius, tracking and easing token has a Tailwind utility, s
 ### Out (do NOT build here)
 - Changing colours, shadows, z-index, HeroUI variable mapping, `layout.tsx` fonts.
 - Overriding Tailwind / HeroUI's existing scale names (`text-sm`, `rounded-sm/md/lg/xl…`) or resetting default scales.
-- Migrating existing default utilities (`text-sm`, `rounded-lg`, … — 11 usages on main) to DS names. Report them; a later brief decides.
+- Migrating existing default utilities (`text-sm`, `rounded-lg`, … — 9 usages on main, listed in the Phase A report) to DS names. Report them; a later brief decides.
 - Expo / HeroUI Native theme (separate surface).
 - New dependencies (no eslint-plugin-tailwindcss).
 
 ## 3. Contract
 
 ### 3.1 Primitives in `:root` (theme-independent block), copied byte-for-byte from the DS token files
-`--fs-*` (display 34, title 26, heading 21, subhead 17, body 15, small 13, micro 11, price 19, pos-total 40) · `--lh-*` (display 1.35, title 1.4, heading 1.45, body 1.62, tight 1.5) · `--fw-*` (400/600/700) · `--ls-display -0.01em` · `--ls-caps 0.08em` · `--r-*` (xs 6, sm 8, btn 10, input 10, card 12, card-lg 16, sheet 20, pill 999) · `--border-w 1px`, `--border-w-strong 1.5px` · `--dur-*` (instant 90, fast 140, base 200, slow 300, sheet 340 ms) · `--ease-out`, `--ease-in-out`, `--ease-sheet` · `--press-scale .97`.
-Names stay identical to the DS so canvas `var(--…)` references resolve unchanged.
+`--fs-*` (display 34, title 26, heading 21, subhead 17, body 15, small 13, micro 11, price 19, pos-total 40) · `--lh-*` (display 1.35, title 1.4, heading 1.45, body 1.62, tight 1.5) · `--fw-*` (400/600/700) · `--ls-display -0.01em` · `--ls-caps 0.08em` · `--r-*` (xs 6, sm 8, btn 10, input 10, card 12, card-lg 16, sheet 20, pill 999) · `--border-w 1px`, `--border-w-strong 1.5px` · `--dur-*` (instant 90, fast 140, base 200, slow 300, sheet 340 ms) · `--ease-ds-out` (= DS `--ease-out` value) · `--ease-sheet` · `--press-scale .97`.
+Names stay identical to the DS so canvas `var(--…)` references resolve unchanged — **except easing**: DS `--ease-out` / `--ease-in-out` are **not** declared under those names, because an unlayered `:root --ease-out` would override Tailwind's `--ease-out`, which HeroUI 3.2.6 uses in 178 places (modal, alert-dialog, table…). DS `--ease-in-out` equals Tailwind's default, so it is not copied at all. Not copied either: `--ls-body` (0) and `--num` (already in globals.css).
 
 ### 3.2 Type — `@theme inline`, one class = one DS composite style
 | DS (canvas) | Class | size / line-height / weight / tracking |
@@ -51,6 +51,7 @@ Names stay identical to the DS so canvas `var(--…)` references resolve unchang
 | (DS bundle POS total) | `text-pos-total` | fs-pos-total / 1.1 / fw-bold (add `tabular-nums`) |
 
 Form: `--text-label: var(--fs-micro); --text-label--line-height: 1.4; --text-label--font-weight: var(--fw-semibold);` (+ `--letter-spacing` for display).
+Type utilities set size, line-height, weight (and tracking for display) only — the app font is already the body font; numeric styles add `tabular-nums` in markup.
 **Do not** name a size `body` — `--text-body` is already the body **colour** token. That is why the classes mirror the DS composite names.
 
 ### 3.3 Radius and tracking — `@theme inline`
@@ -83,7 +84,7 @@ Borders: `border` (1px) is the DS `--border-w`; `--border-w-strong` (1.5px) → 
 
   Semantic sizes: tap-min 44 → `11` · tap-comfortable 52 → `13` · bar-height 56 → `14` · pos-key 64 → `16`.
 - **Durations:** `duration-(--dur-fast)` etc. (Tailwind v4 has no duration theme namespace; the `(--token)` form references the DS variable, no brackets.)
-- **Easing:** override `--ease-out` and `--ease-in-out` in `@theme inline` with the DS curves and add `--ease-sheet` → `ease-out`, `ease-in-out`, `ease-sheet`. Same meaning as Tailwind's names, DS values.
+- **Easing:** add `--ease-ds-out` and `--ease-sheet` in `@theme inline` → `ease-ds-out`, `ease-sheet`. Canvas `var(--ease-out)` → `ease-ds-out`; canvas `var(--ease-in-out)` → Tailwind `ease-in-out` (same curve). Tailwind's `ease-out` / `ease-in-out` stay untouched so HeroUI motion does not change.
 - **Press scale:** `scale-(--press-scale)`.
 
 ### 3.5 Replace the 6 existing arbitrary values
@@ -107,8 +108,8 @@ No disable comments anywhere in the PR.
 - **Endpoints / WS / contracts / permissions:** none.
 
 ## 4. Acceptance Criteria
-- **AC-1** — Given the new tokens, when a component uses `text-display`, `text-label`, `rounded-card`, `rounded-ds-sm`, `tracking-caps`, `ease-sheet`, `duration-(--dur-fast)`, then the computed styles equal the DS values in §3 (checked in a test or the built CSS).
-- **AC-2** — HeroUI components look unchanged: `rounded-sm/md/lg/xl`, `text-sm/base/lg`, and all colour utilities resolve to the same values as before (diff of the built CSS for those utilities is empty).
+- **AC-1** — Given the new tokens, when a component uses `text-display`, `text-label`, `rounded-card`, `rounded-ds-sm`, `tracking-caps`, `ease-ds-out`, `ease-sheet`, `duration-(--dur-fast)`, then the computed styles equal the DS values in §3 (checked in a test or the built CSS).
+- **AC-2** — HeroUI components look unchanged: `rounded-sm/md/lg/xl`, `text-sm/base/lg`, `ease-out`, `ease-in-out` (and the `--ease-out` variable), and all colour utilities resolve to the same values as before (diff of the built CSS for those utilities is empty).
 - **AC-3** — The 6 usages in §3.5 are replaced; `git grep -nE '\-\[(#|-?\.?[0-9])|\-\[[^]]*px' app/frontend/src` returns nothing.
 - **AC-4** — `pnpm --filter @bar/frontend lint` fails on a file containing `className="text-[13px]"` and passes on `className="text-small"` and on `grid-cols-[auto_1fr]`.
 - **AC-5** — `globals.css` has the mapping comment (§3.2–§3.4 tables, short form).
@@ -142,10 +143,12 @@ pnpm --filter @bar/frontend build
 1. Type classes = DS composite names (§3.2); no `text-body` size.
 2. Radius names (§3.3) incl. `rounded-ds-xs` / `rounded-ds-sm`; HeroUI's `rounded-sm/md/lg/xl` untouched.
 3. Spacing = Tailwind numeric scale, no new spacing tokens (§3.4).
-4. Durations via `duration-(--dur-*)`; easing overrides `--ease-out`, `--ease-in-out`, adds `--ease-sheet`.
+4. Durations via `duration-(--dur-*)`; easing = new `--ease-ds-out` + `--ease-sheet` only; no override of Tailwind/HeroUI `--ease-out` / `--ease-in-out` (rev 2).
 5. Replacements exactly as §3.5, including the two visual changes.
 6. Gate = ESLint `no-restricted-syntax` in `app/frontend/eslint.config.mjs` (§3.6), no new dependency.
 7. Branch `feat/BRIEF-014-design-tokens-tailwind` from main.
+8. Tests as in the Phase A report: Vitest compiles `globals.css` with `@tailwindcss/postcss` + `@source inline(...)` probe classes (AC-1, AC-2 byte-identical selectors); AC-4 via `ESLint.lintText` on a virtual `src/…tsx` path, bad sample built by string concatenation, no failing fixture file.
+9. Phase A inferences accepted: copy only the §3.1 list; `text-pos-total` line-height 1.1; no font-family in type utilities; `docs/design/tokens-v2.css` not edited; DS spacing extras (`--gutter-*`, `--card-pad*`, `--stack*`, `--section-gap`, `--sheet-grab`) not added.
 
 **Likely DRs:** none expected. A HeroUI collision on any new name → report, don't rename on your own.
 
@@ -161,9 +164,10 @@ pnpm --filter @bar/frontend build
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome
-- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-10)
+- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-10 | Initial (from the BRIEF-900 POC finding); Field approved → Ready |
+| 2 | 2026-10-10 | From Cursor Phase A + Cowork check: no `--ease-out`/`--ease-in-out` override (HeroUI uses `--ease-out` 178×) → `ease-ds-out`; usage count 9; Phase A inferences and test approach recorded as Pre-decided 8–9 |
