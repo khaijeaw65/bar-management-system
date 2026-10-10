@@ -1,5 +1,5 @@
 # State — KJ
-Updated: 2026-10-10 16:40 · Agent: Cowork (design)
+Updated: 2026-10-10 16:05 · Agent: Cowork (design) — merged with main (Cursor BRIEF-014 state superseded: merged PR #29)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume (start here)
@@ -7,7 +7,7 @@ Updated: 2026-10-10 16:40 · Agent: Cowork (design)
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
 **Next action: retrofit CD-01, CD-02, CD-03, CD-04, CD-08 to `docs/design/cd-template.md`** (one batch, ~1 long session). Template is now **v2**: each retrofitted canvas also gets a **source snapshot** (`docs/design/source/CD-##/`, handoff §11, cd-template §6); CD-14 needs its snapshot too. Then CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last) built to the template from the start. CD-09 = S2.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
-Session start: ask Field once for delete permission on the project folder (git locks), `git status`, branch `docs/ui-design-cd06`.
+Session start: ask Field once for delete permission on the project folder (git locks), `git status`, new branch from main (e.g. `docs/ui-retrofit`) once the cd06 PR is merged.
 
 ## Retrofit checklist (per canvas, from cd-template.md)
 1. `read` the canvas `project/canvas.json` + boards (Field may have edited — keep his edits). Re-upload Lucide only if adding boards that need it (blob ids are per canvas; existing boards already reference their own blob).
@@ -73,7 +73,7 @@ Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV9
 Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core slice. If ahead: bottle keep → dashboard → customer QR. LINE OA → Sem 2.
 
 ## Active
-- Branch: `docs/ui-design-cd06` — **pushed** (origin @ 28bdca1 + this state commit), no PR yet. Holds: CD-14 rev 3 + images, CD template v1, schema.sql/erd (BRIEF-011 Q3, DR-010), rules change (Field-approved edits), DR-009/010, BRIEF-011 Q3. Open the PR when the retrofit batch is done (or now, docs only).
+- Branch: `docs/ui-design-cd06` — pushed, **PR to main open (docs only)**. Holds: CD-14 rev 3 + images, CD template v2, POC worked example + BRIEF-900, BRIEF-014 rev 2 (merged as PR #29), schema.sql/erd (BRIEF-011 Q3, DR-010), agent-boundaries (Field-approved edits, snapshot protection), DR-009/010, BRIEF-011 Q3. Retrofit continues on a new docs branch from main after this merges.
 - Decided 10 Oct: CD template v1 (`docs/design/cd-template.md`, Cowork + Codex review) · CD-14 rev 3 approved (R6 cart in memory · R7 permission UI · R8 pain point = paper/verbal orders · R9 opener on visit) · seat-open collision asks before joining (CD-14 J2; apply to CD-02 POS in retrofit; BRIEF-011 Q3 added: `visit.opened_by` + `opened_via`) · board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
 - Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
 - **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
@@ -92,5 +92,5 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 5. (done 10 Oct) stale git locks cleared; delete permission granted per session — ask once at session start.
 
 ## Blockers / Coordination
-- Pending docs: erd.html (`notification`, `staff_push_token`, `payment_status.cancelled`, `visit.guest_label`, live-visit index), FRD §13.
+- Pending docs: FRD §13. (erd.html synced to 34 tables 10 Oct.)
 - Stale inputs: `docs/briefs/ui/*.md` (old tokens, PWA), FRD §13/§15 PWA wording.

@@ -6,7 +6,7 @@
 | **Implementer** | kj (reassigned from metee — DR-008, 2026-10-04) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
-| **PR** | <executor fills> |
+| **PR** | https://github.com/khaijeaw65/bar-management-system/pull/27 |
 | **Affected apps** | frontend |
 | **Revision** | 1 |
 | **Depends on** | BRIEF-005 (Done — `/pos/menu`, theme, MSW) |

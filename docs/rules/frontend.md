@@ -81,6 +81,7 @@ app/frontend/src/
 - Dark + light via `next-themes` (`attribute="class"`, `defaultTheme="dark"`, `enableSystem`), stored per device. **No wrong-theme flash:** the theme class must be on `<html>` before first paint in every mode (incl. MSW dev mode).
 - No `style={{ }}` · `cn()` for conditional classes · no `@apply`
 - Mobile-first for `/staff`; desktop-first for `/pos`
+- **Type, radius, tracking, motion only from design-system utilities** (`text-label`, `rounded-card`, `tracking-caps`, `ease-ds-out`, `duration-(--dur-fast)`, …); spacing and sizes from Tailwind's numeric scale. No arbitrary values (`text-[13px]`, `w-[88px]`) — enforced by lint. Mapping: `globals.css`.
 
 ---
 

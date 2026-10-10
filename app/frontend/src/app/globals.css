@@ -2,95 +2,361 @@
 @import "@heroui/styles";
 
 /*
- * Design-system tokens. Dark is the default (:root). .light overrides the same
- * names. HeroUI semantic variables point at these tokens so its components
- * follow the palette without dark: color utilities.
+ * Design-system v2 tokens. Values copied from docs/design/tokens-v2.css.
+ * [data-theme] selectors are omitted — next-themes sets .dark / .light.
+ * Hex lives only in the blocks below.
  */
+
+/* ===== DARK (default) ===== */
 :root,
 .dark {
   color-scheme: dark;
-  --color-bg: #1c1610;
-  --color-surface: #2c2318;
-  --color-surface-raised: #3a2f22;
-  --color-border: #4a3b2a;
-  --color-text-primary: #f0e6d0;
-  --color-text-secondary: #a89070;
-  --color-text-disabled: #6b5a48;
-  --color-accent: #d4872a;
-  --color-accent-text: #d4872a;
-  --color-accent-subtle: #3d2810;
-  --color-success: #4caf7d;
-  --color-success-subtle: #1a2d20;
-  --color-warning: #e8a838;
-  --color-warning-subtle: #3d2810;
-  --color-error: #e05a5a;
-  --color-error-subtle: #3a1c1c;
-  --color-bottle-keep: #8b93d4;
-  --color-bottle-keep-subtle: #262840;
+  /* surfaces */
+  --bg-app: #1C1610;
+  --bg-sunken: #12100C;
+  --surface-card: #2C2318;
+  --surface-raised: #362B1E;
+  --surface-overlay: #241D15;
+  --surface-input: #241D15;
+  --surface-hover: #423424;
+  --surface-press: #362B1E;
+  --surface-bar: rgba(28,22,16,.9);
+  --scrim: rgba(12,10,8,.72);
+  /* text */
+  --text-body: #F0E6D0;
+  --text-muted: #C4B698;
+  --text-faint: #A39377;
+  --text-on-accent: #241608;
+  --text-accent: #E3A75B;
+  --text-danger: #E0745C;
+  /* lines */
+  --line-hairline: rgba(240,230,208,.07);
+  --line: rgba(240,230,208,.12);
+  --line-strong: rgba(240,230,208,.22);
+  --line-accent: #D4872A;
+  --line-accent-soft: rgba(212,135,42,.35);
+  --focus-ring: #E3A75B;
+  /* accent */
+  --accent: #D4872A;
+  --accent-hover: #E3A75B;
+  --accent-press: #B87020;
+  --accent-soft: rgba(212,135,42,.14);
+  --accent-soft-strong: rgba(212,135,42,.24);
+  /* status: --status-x = dot/fill, -bg = chip fill, -fg = chip text, -border = tile/ticket border */
+  --status-new: #E3A11B;    --status-new-bg: #40300B;    --status-new-fg: #E3A11B;    --status-new-border: rgba(227,161,27,.5);
+  --status-making: #6E93A8; --status-making-bg: #1E2F38; --status-making-fg: #8DB0C4; --status-making-border: rgba(110,147,168,.5);
+  --status-served: #7FA85C; --status-served-bg: #2E3A20; --status-served-fg: #98BF76; --status-served-border: rgba(127,168,92,.45);
+  --status-void: #C4503A;   --status-void-bg: #40190F;   --status-void-fg: #E88A73;   --status-void-border: rgba(196,80,58,.5);
+  --status-neutral-bg: #362B1E; --status-neutral-fg: #C4B698; --status-neutral-border: rgba(240,230,208,.12);
+  /* bottle keep */
+  --bottle-keep: #9A9CE0; --bottle-keep-bg: #25264A; --bottle-keep-border: rgba(154,156,224,.45);
+  /* feedback */
+  --success: #7FA85C; --success-fg: #98BF76; --success-bg: #2E3A20;
+  --warning: #E3A11B; --warning-fg: #E3A11B; --warning-bg: #40300B;
+  --info: #6E93A8;    --info-fg: #8DB0C4;    --info-bg: #1E2F38;
+  --danger: #C4503A;  --danger-fg: #F3C9BD;  --danger-bg: #40190F; --danger-bg-hover: #52200F; --danger-border: rgba(196,80,58,.5);
+  /* shadows / effects */
+  --shadow-none: none;
+  --shadow-card: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-raised: 0 4px 14px rgba(0,0,0,.45);
+  --shadow-sheet: 0 -8px 32px rgba(0,0,0,.55);
+  --shadow-dialog: 0 24px 64px rgba(0,0,0,.6);
+  --shadow-accent: 0 4px 16px rgba(212,135,42,.28);
+  --highlight-top: inset 0 1px 0 rgba(240,230,208,.06);
+  --glow-focus: 0 0 0 2px rgba(212,135,42,.55);
+  --blur-overlay: blur(12px);
+  --blur-bar: blur(18px);
 }
 
+/* ===== LIGHT — warm paper ===== */
 .light {
   color-scheme: light;
-  --color-bg: #faf6ef;
-  --color-surface: #fffdf9;
-  --color-surface-raised: #f2eadd;
-  --color-border: #e3d6c2;
-  --color-text-primary: #2a2016;
-  --color-text-secondary: #735e49;
-  --color-text-disabled: #a8977f;
-  --color-accent: #d4872a;
-  --color-accent-text: #a5601a;
-  --color-accent-subtle: #f6e6cf;
-  --color-success: #2a8055;
-  --color-success-subtle: #e3f1e8;
-  --color-warning: #9a6512;
-  --color-warning-subtle: #f8ebd3;
-  --color-error: #c23b3b;
-  --color-error-subtle: #f9e1e1;
-  --color-bottle-keep: #5a62b0;
-  --color-bottle-keep-subtle: #e6e8f6;
+  --bg-app: #F6EFE2;
+  --bg-sunken: #EDE3D1;
+  --surface-card: #FCF8F0;
+  --surface-raised: #F2E9D8;
+  --surface-overlay: #FFFBF4;
+  --surface-input: #FFFBF4;
+  --surface-hover: #EBE0CB;
+  --surface-press: #E3D6BE;
+  --surface-bar: rgba(246,239,226,.9);
+  --scrim: rgba(42,32,22,.42);
+  --text-body: #2A2016;
+  --text-muted: #5C4A35;
+  --text-faint: #6E5A42;
+  --text-on-accent: #241608;
+  --text-accent: #8A4E12;
+  --text-danger: #A0351F;
+  --line-hairline: rgba(42,32,22,.08);
+  --line: rgba(42,32,22,.14);
+  --line-strong: rgba(42,32,22,.26);
+  --line-accent: #B87020;
+  --line-accent-soft: rgba(184,112,32,.45);
+  --focus-ring: #B87020;
+  --accent: #D4872A;
+  --accent-hover: #E3A75B;
+  --accent-press: #B87020;
+  --accent-soft: rgba(212,135,42,.14);
+  --accent-soft-strong: rgba(212,135,42,.26);
+  --status-new: #E3A11B;    --status-new-bg: #F5E4BE;    --status-new-fg: #7A5200;    --status-new-border: rgba(122,82,0,.35);
+  --status-making: #6E93A8; --status-making-bg: #DCE8EE; --status-making-fg: #2E5A72; --status-making-border: rgba(46,90,114,.35);
+  --status-served: #7FA85C; --status-served-bg: #E1EBD3; --status-served-fg: #3F6526; --status-served-border: rgba(63,101,38,.35);
+  --status-void: #C4503A;   --status-void-bg: #F5DCD4;   --status-void-fg: #A0351F;   --status-void-border: rgba(160,53,31,.35);
+  --status-neutral-bg: #EBE0CB; --status-neutral-fg: #5C4A35; --status-neutral-border: rgba(42,32,22,.14);
+  --bottle-keep: #3F3F9A; --bottle-keep-bg: #E3E2F4; --bottle-keep-border: rgba(63,63,154,.35);
+  --success: #7FA85C; --success-fg: #3F6526; --success-bg: #E1EBD3;
+  --warning: #E3A11B; --warning-fg: #7A5200; --warning-bg: #F5E4BE;
+  --info: #6E93A8;    --info-fg: #2E5A72;    --info-bg: #DCE8EE;
+  --danger: #A0351F;  --danger-fg: #8E2A17;  --danger-bg: #F5DCD4; --danger-bg-hover: #F0CEC3; --danger-border: rgba(160,53,31,.4);
+  --shadow-card: 0 1px 2px rgba(60,40,20,.08);
+  --shadow-raised: 0 4px 14px rgba(60,40,20,.12);
+  --shadow-sheet: 0 -8px 32px rgba(60,40,20,.16);
+  --shadow-dialog: 0 24px 64px rgba(60,40,20,.22);
+  --shadow-accent: 0 4px 16px rgba(184,112,32,.28);
+  --highlight-top: inset 0 1px 0 rgba(255,255,255,.7);
+  --glow-focus: 0 0 0 2px rgba(184,112,32,.7);
 }
 
+/* ===== theme-independent ===== */
 :root {
-  --background: var(--color-bg);
-  --foreground: var(--color-text-primary);
-  --surface: var(--color-surface);
-  --surface-foreground: var(--color-text-primary);
-  --overlay: var(--color-surface-raised);
-  --overlay-foreground: var(--color-text-primary);
-  --default: var(--color-surface-raised);
-  --default-foreground: var(--color-text-primary);
-  --muted: var(--color-text-secondary);
-  --accent: var(--color-accent);
-  --accent-foreground: #1c1610;
-  --border: var(--color-border);
-  --separator: var(--color-border);
-  --focus: var(--color-accent);
-  --link: var(--color-accent-text);
-  --success: var(--color-success);
-  --danger: var(--color-error);
-  --warning: var(--color-warning);
+  --qr-bg: #FFFDF7; --qr-ink: #12100C;                                          /* QR must scan */
+  --brand-line: #06C755; --brand-line-hover: #05B34D; --brand-line-fg: #FFFFFF; /* LINE login button */
+  --num: tabular-nums;                                                          /* font-variant-numeric */
+  --z-base: 0; --z-raised: 10; --z-sticky: 20; --z-dropdown: 30; --z-scrim: 40; --z-dialog: 50; --z-toast: 60;
+
+  /* DS type / radius / motion. Values copied from the design-system token files.
+     --ease-out and --ease-in-out are not declared: HeroUI uses Tailwind's --ease-out.
+     DS --ease-out lives here as --ease-ds-out. --ls-body is not copied. */
+  --fs-display:34px; /* @kind font */
+  --fs-title:26px; /* @kind font */
+  --fs-heading:21px; /* @kind font */
+  --fs-subhead:17px; /* @kind font */
+  --fs-body:15px; /* @kind font */
+  --fs-small:13px; /* @kind font */
+  --fs-micro:11px; /* @kind font */
+  --fs-price:19px; /* @kind font */
+  --fs-pos-total:40px; /* @kind font */
+  --lh-display:1.35; /* @kind font */
+  --lh-title:1.4; /* @kind font */
+  --lh-heading:1.45; /* @kind font */
+  --lh-body:1.62; /* @kind font */
+  --lh-tight:1.5; /* @kind font */
+  --fw-regular:400; /* @kind font */
+  --fw-semibold:600; /* @kind font */
+  --fw-bold:700; /* @kind font */
+  --ls-display:-0.01em; /* @kind font */
+  --ls-caps:0.08em; /* @kind font */
+  --r-xs:6px;
+  --r-sm:8px;
+  --r-btn:10px;
+  --r-input:10px;
+  --r-card:12px;
+  --r-card-lg:16px;
+  --r-sheet:20px;
+  --r-pill:999px;
+  --border-w:1px; /* @kind other */
+  --border-w-strong:1.5px; /* @kind other */
+  --dur-instant:90ms; /* @kind other */
+  --dur-fast:140ms; /* @kind other */
+  --dur-base:200ms; /* @kind other */
+  --dur-slow:300ms; /* @kind other */
+  --dur-sheet:340ms; /* @kind other */
+  --ease-ds-out:cubic-bezier(.2,0,0,1); /* @kind other */
+  --ease-sheet:cubic-bezier(.22,1,.36,1); /* @kind other */
+  --press-scale:.97; /* @kind other */
 }
 
+/*
+ * ===== HeroUI v3 theme variables → tokens (both themes) =====
+ * Names verified against @heroui/styles 3.2.6 themes/default/variables.css.
+ * HeroUI already uses --accent, --accent-hover, --accent-soft, --success, --warning,
+ * --danger, --surface-hover with the SAME meaning as ours, so those need no mapping.
+ */
+:root {
+  --background: var(--bg-app);
+  --foreground: var(--text-body);
+  --surface: var(--surface-card);
+  --surface-foreground: var(--text-body);
+  --surface-secondary: var(--surface-raised);
+  --surface-secondary-foreground: var(--text-body);
+  --surface-tertiary: var(--surface-hover);
+  --surface-tertiary-foreground: var(--text-body);
+  --surface-shadow: var(--shadow-card);
+  --overlay: var(--surface-overlay);
+  --overlay-foreground: var(--text-body);
+  --backdrop: var(--scrim);
+  --muted: var(--text-faint);
+  --default: var(--surface-raised);
+  --default-foreground: var(--text-body);
+  --accent-foreground: var(--text-on-accent);
+  --accent-soft-foreground: var(--text-accent);
+  --success-soft: var(--success-bg);   --success-soft-foreground: var(--success-fg);
+  --warning-soft: var(--warning-bg);   --warning-soft-foreground: var(--warning-fg);
+  --danger-soft: var(--danger-bg);     --danger-soft-foreground: var(--danger-fg);
+  --danger-foreground: var(--danger-fg);
+  --field-background: var(--surface-input);
+  --field-foreground: var(--text-body);
+  --field-placeholder: var(--text-faint);
+  --field-border: var(--line);
+  --field-radius: 10px;
+  --field-shadow: none;
+  --border: var(--line);
+  --separator: var(--line-hairline);
+  --focus: var(--focus-ring);
+  --link: var(--text-accent);
+  --radius: 12px;
+}
+
+/*
+ * Tailwind utilities for semantic colours (--color-<token> → bg-bg-app, text-text-muted, border-line).
+ * Not re-declared: HeroUI already provides bg/text utilities for --accent, --accent-soft,
+ * --accent-hover, --success, --warning, --danger, and --surface-hover.
+ * Shadows, z-index, and --num stay plain variables (shadow-(--shadow-card), z-(--z-sticky)).
+ */
 @theme inline {
-  --font-sans: var(--font-sarabun), ui-sans-serif, system-ui, sans-serif;
-  --color-bg: var(--color-bg);
-  --color-surface-raised: var(--color-surface-raised);
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-disabled: var(--color-text-disabled);
-  --color-accent-text: var(--color-accent-text);
-  --color-accent-subtle: var(--color-accent-subtle);
-  --color-success-subtle: var(--color-success-subtle);
-  --color-warning-subtle: var(--color-warning-subtle);
-  --color-error: var(--color-error);
-  --color-error-subtle: var(--color-error-subtle);
-  --color-bottle-keep: var(--color-bottle-keep);
-  --color-bottle-keep-subtle: var(--color-bottle-keep-subtle);
+  --font-sans: var(--font-noto-sans-thai), "Sarabun", system-ui, sans-serif;
+
+  --color-bg-app: var(--bg-app);
+  --color-bg-sunken: var(--bg-sunken);
+  --color-surface-card: var(--surface-card);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-input: var(--surface-input);
+  --color-surface-press: var(--surface-press);
+  --color-surface-bar: var(--surface-bar);
+  --color-scrim: var(--scrim);
+  --color-text-body: var(--text-body);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-text-on-accent: var(--text-on-accent);
+  --color-text-accent: var(--text-accent);
+  --color-text-danger: var(--text-danger);
+  --color-line-hairline: var(--line-hairline);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-accent: var(--line-accent);
+  --color-line-accent-soft: var(--line-accent-soft);
+  --color-focus-ring: var(--focus-ring);
+  --color-accent-press: var(--accent-press);
+  --color-accent-soft-strong: var(--accent-soft-strong);
+  --color-status-new: var(--status-new);
+  --color-status-new-bg: var(--status-new-bg);
+  --color-status-new-fg: var(--status-new-fg);
+  --color-status-new-border: var(--status-new-border);
+  --color-status-making: var(--status-making);
+  --color-status-making-bg: var(--status-making-bg);
+  --color-status-making-fg: var(--status-making-fg);
+  --color-status-making-border: var(--status-making-border);
+  --color-status-served: var(--status-served);
+  --color-status-served-bg: var(--status-served-bg);
+  --color-status-served-fg: var(--status-served-fg);
+  --color-status-served-border: var(--status-served-border);
+  --color-status-void: var(--status-void);
+  --color-status-void-bg: var(--status-void-bg);
+  --color-status-void-fg: var(--status-void-fg);
+  --color-status-void-border: var(--status-void-border);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-fg: var(--status-neutral-fg);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-bottle-keep: var(--bottle-keep);
+  --color-bottle-keep-bg: var(--bottle-keep-bg);
+  --color-bottle-keep-border: var(--bottle-keep-border);
+  --color-success-fg: var(--success-fg);
+  --color-success-bg: var(--success-bg);
+  --color-warning-fg: var(--warning-fg);
+  --color-warning-bg: var(--warning-bg);
+  --color-info: var(--info);
+  --color-info-fg: var(--info-fg);
+  --color-info-bg: var(--info-bg);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-bg-hover: var(--danger-bg-hover);
+  --color-danger-border: var(--danger-border);
+  --color-qr-bg: var(--qr-bg);
+  --color-qr-ink: var(--qr-ink);
+  --color-brand-line: var(--brand-line);
+  --color-brand-line-hover: var(--brand-line-hover);
+  --color-brand-line-fg: var(--brand-line-fg);
+
+  /*
+   * DS → Tailwind. Type utilities set size, line-height, and weight only
+   * (tracking on text-display). Add tabular-nums in markup for price and pos-total.
+   * Do not name a size "body" — --text-body is the body colour.
+   *
+   * text-display      fs-display / lh-display / fw-bold / ls-display
+   * text-title        fs-title / lh-title / fw-bold
+   * text-heading      fs-heading / lh-heading / fw-semibold
+   * text-subhead      fs-subhead / lh-tight / fw-semibold
+   * text-body-md      fs-body / lh-body / fw-regular
+   * text-body-strong  fs-body / lh-body / fw-semibold
+   * text-small        fs-small / 1.5 / fw-regular
+   * text-label        fs-micro / 1.4 / fw-semibold
+   * text-price        fs-price / 1.3 / fw-bold
+   * text-pos-total    fs-pos-total / 1.1 / fw-bold
+   *
+   * rounded-btn r-btn · rounded-input r-input · rounded-card r-card
+   * rounded-card-lg r-card-lg · rounded-sheet r-sheet · rounded-pill r-pill
+   * rounded-ds-xs r-xs · rounded-ds-sm r-sm
+   *   rounded-xs/sm/md/lg/xl belong to HeroUI — do not override
+   * tracking-caps ls-caps · tracking-display ls-display
+   * border = --border-w (1px) · border-(length:--border-w-strong) = 1.5px
+   *
+   * Spacing is Tailwind's scale (1 = 4px), no new tokens:
+   *   sp-1 0.5 · sp-2 1 · sp-3 1.5 · sp-4 2 · sp-5 3 · sp-6 4
+   *   sp-7 5 · sp-8 6 · sp-9 8 · sp-10 10 · sp-11 12 · sp-12 16
+   *   tap-min 11 · tap-comfortable 13 · bar-height 14 · pos-key 16
+   * duration-(--dur-instant|fast|base|slow|sheet)
+   * ease-ds-out = DS ease-out · ease-sheet = DS ease-sheet
+   *   canvas var(--ease-in-out) → ease-in-out (same curve; do not override)
+   * scale-(--press-scale)
+   */
+  --text-display: var(--fs-display);
+  --text-display--line-height: var(--lh-display);
+  --text-display--font-weight: var(--fw-bold);
+  --text-display--letter-spacing: var(--ls-display);
+  --text-title: var(--fs-title);
+  --text-title--line-height: var(--lh-title);
+  --text-title--font-weight: var(--fw-bold);
+  --text-heading: var(--fs-heading);
+  --text-heading--line-height: var(--lh-heading);
+  --text-heading--font-weight: var(--fw-semibold);
+  --text-subhead: var(--fs-subhead);
+  --text-subhead--line-height: var(--lh-tight);
+  --text-subhead--font-weight: var(--fw-semibold);
+  --text-body-md: var(--fs-body);
+  --text-body-md--line-height: var(--lh-body);
+  --text-body-md--font-weight: var(--fw-regular);
+  --text-body-strong: var(--fs-body);
+  --text-body-strong--line-height: var(--lh-body);
+  --text-body-strong--font-weight: var(--fw-semibold);
+  --text-small: var(--fs-small);
+  --text-small--line-height: 1.5;
+  --text-small--font-weight: var(--fw-regular);
+  --text-label: var(--fs-micro);
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: var(--fw-semibold);
+  --text-price: var(--fs-price);
+  --text-price--line-height: 1.3;
+  --text-price--font-weight: var(--fw-bold);
+  --text-pos-total: var(--fs-pos-total);
+  --text-pos-total--line-height: 1.1;
+  --text-pos-total--font-weight: var(--fw-bold);
+  --radius-btn: var(--r-btn);
+  --radius-input: var(--r-input);
+  --radius-card: var(--r-card);
+  --radius-card-lg: var(--r-card-lg);
+  --radius-sheet: var(--r-sheet);
+  --radius-pill: var(--r-pill);
+  --radius-ds-xs: var(--r-xs);
+  --radius-ds-sm: var(--r-sm);
+  --tracking-caps: var(--ls-caps);
+  --tracking-display: var(--ls-display);
+  --ease-ds-out: cubic-bezier(.2,0,0,1);
+  --ease-sheet: cubic-bezier(.22,1,.36,1);
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text-primary);
+  background: var(--bg-app);
+  color: var(--text-body);
   font-family: var(--font-sans);
 }
