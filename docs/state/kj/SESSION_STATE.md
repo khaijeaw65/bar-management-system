@@ -1,57 +1,66 @@
 # State — KJ
-Updated: 2026-10-09 23:00 · Agent: Cowork (planning)
+Updated: 2026-10-10 09:45 · Agent: Cowork (design)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
-## Resume
-**Re-plan (Field, 2026-10-04): build restarts 12 Oct; 70% co-op gate fixed 8 Nov = core slice order → pay → close.** Week 0 (5–11 Oct) = midterms + task clearing; Metee starts on mobile (DR-008). Next for Cowork: CD-03 Q1–Q3 → Ready; Metee's next brief must be Ready by each Sunday.
+## Resume (start here)
+**Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
+**Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
+Next action: build **CD-14 staff new order** as a new Design canvas (brief `docs/design/CD-14-*.md`, Ready), then CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2.
 
-**Field = full reviewer mode (2026-10-09): 0% hand-coding; every kj brief is executed by an agent, Field reviews/approves/merges.**
+## Design canvases (claude.ai Artifacts, type Design, DS "The Loft Bar Design System")
+| CD | Canvas | Status |
+|---|---|---|
+| CD-01 POS login/shell/menu | https://claude.ai/artifact/GDCe3opjPBQ7YxAZ6RwEBo | ported · Field OK |
+| CD-02 POS tables + session | https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG | ported · Field OK (badge + loading fixes) |
+| CD-03 POS payment | https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb | ported · awaiting Field review |
+| CD-04 POS order entry | https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz | ported · awaiting Field review |
+| CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | built · R1–R5 pending Field |
+Handoffs: `docs/design/CD-0#-handoff.md` (each has a "Port to Design canvas" section). DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e).
+
+## How to build a canvas (proven recipe)
+1. `Artifact publish type_url=https://claude.ai/artifact/QKN21svewxgyPb6SYRqWnd title="CD-## …" auto_open=after_first_write`.
+2. Upload Lucide UMD as an asset on that canvas (`scratchpad/up/lucide-0.468.0.min.js` — re-download lucide@0.468.0 if the scratchpad is gone) → `/_blob/<id>`; blobs are per canvas.
+3. Write `project/canvas.json` (all boards pre-declared, 80 px row gap / 120 px between rows, `designSystems` record) + Main + shared children; publish in ONE call with DS server copies: `project/ds/theloftbardesignsystem_99bbff/{styles.css,_ds_bundle.js,tokens/{fonts,colors,typography,spacing,radius,elevation,motion,heroui,base}.css,assets/fonts/NotoSansThai-{Regular,SemiBold,Bold}.ttf}` ← `{"artifact": DS url, "path": "project/<same>"}` (DS has no tokens.json).
+4. Then one board per write → publish. Don't verify/render unless Field asks.
+5. Head per board: `support.js` · `ds/…/styles.css` · lucide blob · `ds/…/_ds_bundle.js`. Mount DS via `<x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.<Comp>">`. Theme: root `data-theme="{{theme}}"` + enum tweak dark/light, pass `theme="{{theme}}"` to every `dc-import`.
+6. Board pattern: 40 px padding, `--bg-sunken`, h1 `--text-heading` + one-line note, frames 1280×800 side by side (gap 40): PosFrame (inset 0) + content child (left 88, top 56) + optional scrim/drawer (right 0, top 56, 400×744) + modal overlay (`--scrim` + `--blur-overlay`).
+7. Add a port/handoff note to `docs/design/CD-##-handoff.md`, commit, move `.git/*.lock` aside.
+
+## Canvas gotchas (each one cost a fix)
+- Shared child roots need `position: relative; isolation: isolate` or DS badges (`z-index: var(--z-raised)`) leak over modals.
+- `style="…"` on `x-import` is ignored → wrap in a `<div style>`.
+- Numeric props must be holes (`width="{{w84}}"`), not strings (`width="84"` renders wrong).
+- Toast body = children (no `description`); `action={{ {label} }}`. Input/Select error = `error="text"` (no `error-message`); Select supports `is-open`, `options=[{value,label}]`. PromptPayPanel: `amount` string, `qr-src`, `qr-size`, `status` (completed/cancelled/expired), `expires-in`.
+- Never name a DC prop `name` (selects the component) — CD-04 uses `who`.
+- If a publish is refused (Field edited the canvas): `read` the files, re-apply, republish. Field sometimes edits defaults (e.g. Grid default mode) — keep them.
+- Bundle source for prop lookups: `scratchpad/artifact-files/4d243392-…/project/_ds_bundle.js` (re-read the DS `project/_ds_bundle.js` if missing).
 
 ## Plan (to 8 Nov) — DR-008: Metee = Expo mobile, KJ = backend + web, reviews mobile
 | Week | KJ | Metee (mobile, after 20:00, ~1 brief/wk ≤10 h, contracts fixtures) |
 |---|---|---|
-| 0 · 5–11 Oct | push branch, BRIEF-002 PR, briefs | merge BRIEF-002 → app shell + mocked login |
+| 0 · 5–11 Oct | push branch, BRIEF-002 PR, finish UI design | merge BRIEF-002 → app shell + mocked login |
 | 1 · 12–18 Oct | BRIEF-009 → BRIEF-007 auth → guard · BRIEF-008 POS shell | table list (mocks) |
 | 2 · 19–25 Oct | tables/visits/orders API + WS · menu list + grid (web) | new-order flow (mocks) |
 | 3 · 26 Oct–1 Nov | payment + webhook + close · drawer + checkout (web) | wire to real API + realtime |
 | 4 · 2–8 Nov | integration, seed, demo — no new features | fixes; demo: phone order → POS live |
 | 9–20 Nov | AWS deploy · bottle keep if time | polish |
 Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core slice. If ahead: bottle keep → dashboard → customer QR. LINE OA → Sem 2.
-DR-009 surfaces: gate = POS full slice (incl. order for customer) + mobile login + order queue (bonus). No CD-08 — mobile uses HeroUI Native + CD-02 content. Seeded menu/tables/staff for the gate.
 
 ## Active
-- Stage: planning — briefs for the gate (session 2026-10-04)
-- Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · **not pushed** — Field: `git push -u origin docs/ui-design-cd03` + PR
-- Decisions today: DR-008 (Metee = mobile), DR-009 (surfaces), DR-005 A1 (`sid` session check), CD-03 Q1–Q3, CD-04 Q1, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`
-- **Design (Field: finish all S1 UI before dev, 2026-10-09):** Done CD-00–04 (CD-03/04 handoffs, F1–F4 accepted). **Ready to run, in order:** CD-08 staff app → CD-14 staff new order → CD-06 customer QR → CD-07 customer pay → CD-15 POS orders/issues → CD-12 back-office shell + menu → CD-13 tables/staff/IAM (full policy editor) → CD-05 dashboard → **CD-11 journeys + notifications last** (CD-10 merged). CD-09 = S2. Schema added today: `menu_item.image_key`, `staff_access_request`. Pending: CD-03 F1 payment columns → BRIEF-013; screenshots for CD-02/03/04.
-- **Ready:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell (→ kj) · BRIEF-009 · **BRIEF-010 mobile shell/queue (Metee)** · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`
-- **Next briefs (not written):** BRIEF-012 backend orders (place, queue, state machine, totals, `open→active`, WS) · BRIEF-013 backend payment + GB Prime Pay webhook + 409 in-flight · IAM brief (groups/policies/PermissionsGuard — ID by Field) · web briefs after CD runs (grid+panel, order entry, checkout) · Metee Week 1 (status actions + order detail)
-- Engineering: BRIEF-002 implemented on `feat/BRIEF-002-expo-scaffold` (0a95185) — **no PR, needs audit; blocks BRIEF-010**
-- Done briefs: 001, 003, 004, 005, 006
+- Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · ~33 commits · **not pushed** — Field: `git push -u origin docs/ui-design-cd03` + PR.
+- Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
+- **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
+- **Ready design briefs:** CD-05, 06, 07, 11, 12, 13, 14, 15 (CD-10 merged into CD-11).
+- **Next impl briefs (not written):** BRIEF-012 orders · BRIEF-013 payment + GB Prime Pay webhook + 409 in-flight (include CD-03 F1 columns `confirmed_via`, `status_reason`, `status_note`; F2 split locks whole bill) · IAM brief (full policy editor) · web screen briefs after CDs · Metee Week 1.
+- Engineering: BRIEF-002 on `feat/BRIEF-002-expo-scaffold` (0a95185) — no PR, needs audit; blocks BRIEF-010. Done briefs: 001, 003–006.
 
-## Field to-do (small, any order)
-1. Edit CLAUDE.md / AGENTS.md (Methee→Metee, mobile owner, drop web `/staff`) + `frontend.md` Target Surfaces (`/staff` row) + `.cursor/.agents` wrappers for `mobile.md` — protected.
-2. Export CD-02 screenshots → `docs/design/assets/CD-02/` (list in handoff §7) — not blocking.
-3. Open PR for BRIEF-002 + assign auditor.
-4. Re-plan sprint dates after midterms.
-
-## UI design session — how to run it
-Pattern (copy CD-02): brief file `docs/design/CD-##-<slug>.md` (Status · Attach · Data · Decisions · Paste block · Acceptance · Result). Prompt rules: inside The Loft Bar Design System project · dark + light · HeroUI v3 / HeroUI Native, label parts · tokens only · Noto Sans Thai · chips by schema enum · `CD-##/<id>` · static state boards · flow board · standalone preview cards. After a run Field pastes the handoff summary (prompt below) + saves screenshots; Cowork writes the handoff and flags contradictions.
-```
-Summarise CD-## for a developer handoff, as plain text:
-1. Per artboard: every state shown + a table of every Thai/English string exactly as drawn.
-2. Layout specs (sizes, spacing/radius tokens, column widths, breakpoints).
-3. Components per artboard with HeroUI v3 / HeroUI Native name + variant/size.
-4. New components or tokens created, with values.
-5. Deviations from the prompt, and why.
-```
-Remaining order: CD-03 payment · CD-04 menu mgmt · CD-05 dashboard · CD-06/07 customer QR · CD-08/09 staff app · CD-10 notifications · CD-11 journeys. Stale inputs: `docs/briefs/ui/*.md` (old tokens, PWA), FRD §13/§15 PWA wording.
+## Field to-do (any order)
+1. Push branch + open PR; open BRIEF-002 PR + auditor.
+2. Review CD-03 + CD-04 canvases; CD-08 R1–R5; CD-01 P1.
+3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
+4. Branch protection; delete stale remote branches (`docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`).
+5. Git: `.git/stale-*-lock-*` files and tmp objects pile up (no delete permission in Cowork) — safe to delete.
 
 ## Blockers / Coordination
-- Pending docs: erd.html (`notification`, `staff_push_token`, `payment_status.cancelled`, `visit.guest_label`, live-visit index), FRD §13, `docs/rules/mobile.md`
-- Stale remote branches to clean up (Field): `docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`
-
-## 2026-10-10 — CD canvas ports done
-- CD-01 https://claude.ai/artifact/GDCe3opjPBQ7YxAZ6RwEBo · CD-02 https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG · CD-03 https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb · CD-04 https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz · CD-08 https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB
-- Next (new canvases): CD-14 → CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11.
-
+- Pending docs: erd.html (`notification`, `staff_push_token`, `payment_status.cancelled`, `visit.guest_label`, live-visit index), FRD §13.
+- Stale inputs: `docs/briefs/ui/*.md` (old tokens, PWA), FRD §13/§15 PWA wording.
