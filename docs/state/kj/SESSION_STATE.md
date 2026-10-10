@@ -52,7 +52,7 @@ Handoffs: `docs/design/CD-0#-handoff.md` (each has a "Port to Design canvas" sec
 Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core slice. If ahead: bottle keep → dashboard → customer QR. LINE OA → Sem 2.
 
 ## Active
-- Branch: `docs/ui-design-cd03` (from main @ 42a7afd) · 31 commits · **not pushed** — Field: `git push -u origin docs/ui-design-cd03` + PR.
+- Branch: `docs/ui-design-cd06` (from main @ 1e301db, after PR #26 merged 10 Oct) · not pushed yet.
 - Decided 10 Oct: board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
 - Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
 - **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
@@ -61,7 +61,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 - Engineering: BRIEF-002 on `feat/BRIEF-002-expo-scaffold` (0a95185) — no PR, needs audit; blocks BRIEF-010. Done briefs: 001, 003–006.
 
 ## Field to-do (any order)
-1. Push branch + open PR; open BRIEF-002 PR + auditor.
+1. Open BRIEF-002 PR + auditor. (PR #26 design canvases merged 10 Oct.)
 2. Review CD-03 + CD-04 canvases; CD-01 P1. DR-010 protected follow-ups: schema.sql, erd.html, CLAUDE.md 33 tables, DR-009 line.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
 4. Branch protection; delete stale remote branches (`docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`).
