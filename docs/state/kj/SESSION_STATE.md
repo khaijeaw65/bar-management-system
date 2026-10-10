@@ -1,11 +1,11 @@
 # State — KJ
-Updated: 2026-10-10 09:45 · Agent: Cowork (design)
+Updated: 2026-10-10 10:20 · Agent: Cowork (design)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
-Next action: build **CD-14 staff new order** as a new Design canvas (brief `docs/design/CD-14-*.md`, Ready), then CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2.
+Next action: build **CD-06 customer QR order** as a new Design canvas, then CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2.
 
 ## Design canvases (claude.ai Artifacts, type Design, DS "The Loft Bar Design System")
 | CD | Canvas | Status |
@@ -15,11 +15,12 @@ Next action: build **CD-14 staff new order** as a new Design canvas (brief `docs
 | CD-03 POS payment | https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb | ported · awaiting Field review |
 | CD-04 POS order entry | https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz | ported · awaiting Field review |
 | CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | built · Field OK (R1–R5 accepted 10 Oct) |
+| CD-14 staff new order | https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW | built · R1–R5 pending Field |
 Handoffs: `docs/design/CD-0#-handoff.md` (each has a "Port to Design canvas" section). DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e).
 
 ## How to build a canvas (proven recipe)
 1. `Artifact publish type_url=https://claude.ai/artifact/QKN21svewxgyPb6SYRqWnd title="CD-## …" auto_open=after_first_write`.
-2. Upload Lucide UMD as an asset on that canvas (`scratchpad/up/lucide-0.468.0.min.js` — re-download lucide@0.468.0 if the scratchpad is gone) → `/_blob/<id>`; blobs are per canvas.
+2. Upload Lucide UMD as an asset on that canvas (`npm pack lucide@0.468.0` → `package/dist/umd/lucide.min.js`; scratchpad doesn't survive sessions) → `/_blob/<id>`; blobs are per canvas.
 3. Write `project/canvas.json` (all boards pre-declared, 80 px row gap / 120 px between rows, `designSystems` record) + Main + shared children; publish in ONE call with DS server copies: `project/ds/theloftbardesignsystem_99bbff/{styles.css,_ds_bundle.js,tokens/{fonts,colors,typography,spacing,radius,elevation,motion,heroui,base}.css,assets/fonts/NotoSansThai-{Regular,SemiBold,Bold}.ttf}` ← `{"artifact": DS url, "path": "project/<same>"}` (DS has no tokens.json).
 4. Then one board per write → publish. Don't verify/render unless Field asks.
 5. Head per board: `support.js` · `ds/…/styles.css` · lucide blob · `ds/…/_ds_bundle.js`. Mount DS via `<x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.<Comp>">`. Theme: root `data-theme="{{theme}}"` + enum tweak dark/light, pass `theme="{{theme}}"` to every `dc-import`.
@@ -31,6 +32,8 @@ Handoffs: `docs/design/CD-0#-handoff.md` (each has a "Port to Design canvas" sec
 - `style="…"` on `x-import` is ignored → wrap in a `<div style>`.
 - Numeric props must be holes (`width="{{w84}}"`), not strings (`width="84"` renders wrong).
 - Toast body = children (no `description`); `action={{ {label} }}`. Input/Select error = `error="text"` (no `error-message`); Select supports `is-open`, `options=[{value,label}]`. PromptPayPanel: `amount` string, `qr-src`, `qr-size`, `status` (completed/cancelled/expired), `expires-in`.
+- DS Badge tones: neutral · accent · new · making · served · void · bottle (no `info`). StatusChip `kind="menu" status="soldout"` exists.
+- DS `Dialog` takes JSX `actions` → can't set from markup; draw alert dialogs from tokens + DS Buttons.
 - Never name a DC prop `name` (selects the component) — CD-04 uses `who`.
 - If a publish is refused (Field edited the canvas): `read` the files, re-apply, republish. Field sometimes edits defaults (e.g. Grid default mode) — keep them.
 - Bundle source for prop lookups: `scratchpad/artifact-files/4d243392-…/project/_ds_bundle.js` (re-read the DS `project/_ds_bundle.js` if missing).
@@ -56,10 +59,10 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 
 ## Field to-do (any order)
 1. Push branch + open PR; open BRIEF-002 PR + auditor.
-2. Review CD-03 + CD-04 canvases; CD-01 P1.
+2. Review CD-03 + CD-04 canvases; CD-14 R1–R5; CD-01 P1.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
 4. Branch protection; delete stale remote branches (`docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`).
-5. Git: `.git/stale-*-lock-*` files and tmp objects pile up (no delete permission in Cowork) — safe to delete.
+5. (done 10 Oct) stale git locks cleared; delete permission granted per session — ask once at session start.
 
 ## Blockers / Coordination
 - Pending docs: erd.html (`notification`, `staff_push_token`, `payment_status.cancelled`, `visit.guest_label`, live-visit index), FRD §13.
