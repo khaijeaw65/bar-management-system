@@ -6,7 +6,7 @@ status: review            # rev 1 approved 2026-10-09 (Q1, F1–F4); rev 2 = CD 
 approved_by: Field        # rev 1
 approved_on: 2026-10-09   # rev 1
 canvas: https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz
-canvas_version: 1791643758-8795
+canvas_version: 1791644084-60d7
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-04/   # taken after rev 2 approval (§11)
 surfaces: [web-pos]
