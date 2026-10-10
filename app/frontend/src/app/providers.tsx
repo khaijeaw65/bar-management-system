@@ -23,7 +23,7 @@ function startMocking(): Promise<void> {
   return mockingReady ?? Promise.resolve();
 }
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({ children }: Readonly<{ children: ReactNode }>) {
   const [queryClient] = useState(() => new QueryClient());
   const [ready, setReady] = useState(!mockingEnabled);
 

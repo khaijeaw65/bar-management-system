@@ -17,7 +17,7 @@ export function MenuList() {
   if (query.isPending) return <MenuListSkeleton />;
   if (query.isError) return <MenuListError onRetry={() => void query.refetch()} />;
   if (query.data.items.length === 0) {
-    return <p className="text-text-secondary">ยังไม่มีเมนู</p>;
+    return <p className="text-text-muted">ยังไม่มีเมนู</p>;
   }
 
   return (

@@ -23,7 +23,8 @@ export function ThemeToggle() {
   const isClient = useIsClient();
 
   return (
-    <div role="group" aria-label="ธีม" className="flex gap-1">
+    <fieldset className="m-0 flex min-w-0 gap-1 border-0 p-0">
+      <legend className="sr-only">ธีม</legend>
       {options.map((option) => {
         const selected = isClient && theme === option.value;
         return (
@@ -34,13 +35,14 @@ export function ThemeToggle() {
             onClick={() => setTheme(option.value)}
             className={cn(
               "h-10 rounded-md px-3 text-sm font-medium",
-              selected ? "bg-accent-subtle text-accent-text" : "text-text-secondary",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
+              selected ? "bg-accent-soft text-text-accent" : "text-text-muted",
             )}
           >
             {option.label}
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Sarabun } from "next/font/google";
+import { Noto_Sans_Thai } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const sarabun = Sarabun({
+const notoSansThai = Noto_Sans_Thai({
   subsets: ["thai", "latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-sarabun",
+  weight: ["400", "600", "700"],
+  variable: "--font-noto-sans-thai",
   display: "swap",
 });
 
@@ -16,8 +16,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="th" className={`${sarabun.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full bg-bg font-sans text-text-primary">
+    <html lang="th" className={`${notoSansThai.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full bg-bg-app font-sans text-text-body">
         <Providers>{children}</Providers>
       </body>
     </html>
