@@ -126,7 +126,7 @@ Nobody identifies themselves to buy a drink. Identity offered only when it unloc
 - **Simple** — one inventory item (e.g. bottled beer).
 - **Recipe-based** — multiple ingredients + quantities (cocktails).
 - **Charge / non-product** — a fee that hits the bill but is NOT a product: **puke fine, otoshi (cover), corkage, breakage, misc**. No inventory deduction, no kitchen routing. Fixed amount (e.g. puke fine = 200) or open amount (staff types it). **Permission-gated + audit-logged** (arbitrary charges on a customer's bill are a control concern, like comps/voids). *(Observed live: "puke fine" as a menu item at a real bar.)*
-- Kitchen routing tag: `bar` / `food` / `both` (not applicable to charge-type).
+- Kitchen station tag (`kitchen_tag`): `bar` / `food` — exactly one per item; none for charge-type (DR-012).
 
 ### Drink type flows
 - **Beer (bottle):** tap → deduct 1 unit. No customization.
@@ -166,7 +166,10 @@ Nobody identifies themselves to buy a drink. Identity offered only when it unloc
 - Table: QR self-service OR waiter logs it.
 
 ### Order status state machine
-`PENDING → ACCEPTED (preparing) → READY → SENT`
+`PENDING → ACCEPTED (รับแล้ว — someone has taken it) → READY → SENT` · terminal `CANCELLED`
+- **Status is per order ticket, never per item (DR-012).** One tap moves the whole ticket. Items carry no progress — only *cancelled*.
+- **Counter seats skip READY:** `ACCEPTED → SENT` in one tap (bartender hands it over). Tables keep all steps (DR-011).
+- **`CANCELLED`:** set automatically when every item on the ticket is cancelled (at the POS); the ticket leaves the queue.
 Branch: `ISSUE` (out of stock / equipment problem). **Resolution paths out of `ISSUE`:**
 - **Substitute/resolved** → back to `ACCEPTED` (e.g. bartender swaps ingredient, resumes prep).
 - **Removed** → item cancelled/voided (see cancelled-item display below), removed from bill.
@@ -178,12 +181,15 @@ Table/seat, **who ordered each item** (name label per line, e.g. "สั่ง�
 ### Cancelled / voided item display
 Cancelled items stay **visible on the bill, struck through / marked cancelled**, with the amount removed from the total — not erased. Preserves the audit trail (matches §8 audit principle + anonymize-don't-delete philosophy). *(Observed live: cancelled tap item shown as "รายการอาหารถูกยกเลิก", amount removed from total.)*
 
-### Kitchen routing
-Orders split by menu item tag → drinks to bartender screen, food to kitchen display (if enabled). Config supports single-POS OR separate kitchen POS.
+### Kitchen routing — station tickets (DR-012)
+- When an order is placed, its items are split by `kitchen_tag` into **one ticket per station** (drinks → bar, food → kitchen). Each ticket is its own `order_record` with its own status; tickets from the same placement share a `placement_id`. A beer never waits for the fries.
+- **Always split — no venue setting.** A bar with one station sees both tickets on the same screen (a mixed order = 2 tickets to tap).
+- **Charge-type items** (corkage, otoshi, fines) go on their own ticket created as `SENT` — never in the queue, still on the bill.
+- Separate kitchen display is optional (S2, `/pos/kitchen`).
 
 ### Customer-facing (QR ordering surface)
 - **Call staff (bell):** one tap → notification to POS ("Table 3 needs staff"). The human-fallback escape hatch for QR ordering — special request, confusion, QR issue, or just wanting a person. Aligns with the "never a single point of failure, always a human fallback" principle.
-- **Running tab view (cart):** customer sees their own session's ordered items, running total, per-item status (preparing / ready / served), and a data-freshness timestamp — same state machine, customer-side. (Observed live in Wongnai's ordering UI.)
+- **Running tab view (cart):** customer sees their own session's ordered items, running total, **status per ticket** (e.g. "เครื่องดื่ม · พร้อมเสิร์ฟ / อาหาร · รับแล้ว") with cancelled items struck through, and a data-freshness timestamp — same state machine, customer-side. No per-item progress (DR-012). (Observed live in Wongnai's ordering UI.)
 
 ---
 

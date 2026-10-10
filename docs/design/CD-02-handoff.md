@@ -14,7 +14,7 @@ Screenshots: `docs/design/assets/CD-02/` (see §7). Tokens: `docs/design/tokens-
 
 ## 1. Design bugs to fix in the build (not blocking)
 - **close-confirm body copy is wrong:** "QR ของโต๊ะนี้จะใช้ไม่ได้ และโต๊ะจะกลับเป็นว่าง". Closing ends the **visit**; the static table QR keeps working and starts a new visit on the next scan (FRD §3). Only *regenerate* invalidates a QR. → Use **"โต๊ะจะกลับเป็นว่าง ลูกค้าที่สแกน QR หลังจากนี้จะเริ่มบิลใหม่"**.
-- Served items show item chip "พร้อม" (item enum has no served value) — correct per schema; the order chip "เสิร์ฟแล้ว" carries the served meaning. No change.
+- ~~Served items show item chip "พร้อม"~~ → **superseded by DR-012 (2026-10-10):** items show no progress chip; only cancelled items show "ยกเลิก" (struck). The order/ticket chip carries the status. **Canvas update in the CD-02 retrofit.**
 - `TableCard` state names in CD code use `seated` → code uses schema `visit_state` (`active`). Call-staff is a flag, not a state.
 
 ## 2. Artboards, states, strings
@@ -54,8 +54,8 @@ States: active (มีออเดอร์) · open (ยังไม่มี�
 | โต๊ะ T3 · Chip มีแขก | header |
 | ตัวเลือกเพิ่มเติม (⋯) · ปิด (x) | IconButton labels |
 | เปิด 1:24 · ต้น | meta (clock, user icons) |
-| "19:02 น." + order Chip (ใหม่ / กำลังทำ / เสิร์ฟแล้ว) | order group header |
-| item Chip (รอ / กำลังทำ / พร้อม / ยกเลิก) · "2× ช้างดราฟต์" · muted "น้ำแข็งก้อนใหญ่ · สั่งโดย บีม" · `฿240.00` | item row; ยกเลิก = struck through, no dot, reason shown ("สั่งผิด · สั่งโดย ต้น") |
+| "19:02 น." + order Chip (ใหม่ / รับแล้ว / เสิร์ฟแล้ว) + station label (บาร์ / ครัว, DR-012) | order group header = one station ticket |
+| item Chip only when cancelled (ยกเลิก, DR-012) · "2× ช้างดราฟต์" · muted "น้ำแข็งก้อนใหญ่ · สั่งโดย บีม" · `฿240.00` | item row; ยกเลิก = struck through, no dot, reason shown ("สั่งผิด · สั่งโดย ต้น") |
 | ยอดรวมย่อย · รวมทั้งสิ้น | footer (total 40/700 accent) |
 | ชำระเงิน | Button primary lg block → CD-03 |
 | ยกเลิกรายการ / Comp | Button danger outline md → void-comp |

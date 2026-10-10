@@ -1,12 +1,12 @@
 ---
 id: CD-14
 title: Staff app — new order
-revision: 3
-status: approved          # rev 3 = CD template pilot, passed
+revision: 4
+status: approved          # rev 3 = CD template pilot, passed · rev 4 = queue card layout from CD-08 R7
 approved_by: Field
 approved_on: 2026-10-10
 canvas: https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW
-canvas_version: 1791609667-6972
+canvas_version: 1791626047-41b2
 ds_version: 1791561405-c72e
 surfaces: [expo-staff]
 sizes: [390x844, 360x780]
@@ -39,7 +39,7 @@ Rev 2 items R1–R5 accepted by Field 2026-10-10 (summary in §10). Rev-3 pilot 
 - **Journeys:** J1 seated T3, 2× ช้างดราฟต์ + 1× โอลด์แฟชั่น (E1–E7) · J2 free seat C3: open then order, or POS opened it first → confirm before joining (E1–E4b).
 
 ## 2. Boards & images
-Images: `docs/design/assets/CD-14/<board>.png` (PNG 1x, dark, exported by Field 2026-10-10 from canvas version 1791609667-6972).
+Images: `docs/design/assets/CD-14/<board>.png` (PNG 1x, dark, exported by Field 2026-10-10 from canvas version 1791609667-6972; `journey-1`, `journey-2`, `cart` images predate rev 4 queue cards — re-export if used).
 
 | Board | Type | States |
 |---|---|---|
@@ -132,3 +132,4 @@ Pushed stack screen (no tab bar): header top pad 48, IconButton back + title `--
 | 1 | 2026-10-10 | first canvas (pick-seat, menu, item sheet, cart, leave, flow) | Cowork, brief D1–D3 |
 | 2 | 2026-10-10 | Journey pilot (J1, J2), full-width search, **no quick add**, DR-010 promo states, highlight fix; R1 queue keeps CD-08 order · R2 seat tiles 3/row · R3 ice in one row · R4 CD-08 sheet gets "สั่งออเดอร์" · R5 "ค่าบริการ" badge neutral — **approved** | Field |
 | 3 | 2026-10-10 | collision now asks before joining (J2 4b dialog → 5b) — Field · CD template pilot: overview + seat-sheet boards, menu 8–9, cart 10–11, YAML header, state matrix, action table; J2 E3b corrected to `200 attached:true` (BRIEF-011) | Field — approved (R6–R9) |
+| 4 | 2026-10-10 | Queue cards (J1·1, J1·8, J2 queue phones, cart·4) use the CD-08 R7 layout: status chip on the top row, status button bottom-left ≤ 190 px so it never sits under the "+ ออเดอร์" FAB (FAB position unchanged). No flow change. | Field (CD-08 R7) |

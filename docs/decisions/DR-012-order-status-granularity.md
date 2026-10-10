@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Pending — Field to discuss in a separate session |
+| **Status** | Approved — Field · 2026-10-10 |
 | **Raised by** | Field via Cowork · 2026-10-10 |
 | **Brief** | none yet — found during the CD-08 retrofit (staff app detail); affects BRIEF-012 (orders), CD-06/07 (customer QR status), CD-15 (POS issues) |
 | **Category** | Flow/Architecture · Data |
 
-> DR-011 is reserved for "counter seats skip READY" (CD-08 R15, approved by Field 2026-10-10, record not yet written).
+> Related: DR-011 "counter seats skip READY" (approved 2026-10-10).
 
 ## Context
 FRD §6 defines the state machine **per order** (`PENDING → ACCEPTED → READY → SENT`, branch `ISSUE`) and CD-08 D3 made status per order: one button moves the whole order. `schema.sql` also has `order_item.status` (`pending | preparing | ready | cancelled`), and the rev-1 CD-08 detail drew a chip on every item ("รอ / กำลังทำ / พร้อม") that simply mirrored the order.
@@ -43,6 +43,14 @@ Open questions for the discussion:
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: A · Approved: A now + C later · Approved: B · Rejected · Approved with change: …>
-**Why:** <one or two lines>
-**Date:** YYYY-MM-DD
+**Decision:** Approved with change: A + C, both in Phase 1, **before the 8 Nov gate**.
+- Status stays **per order** (one tap per step); no per-item status taps. Item chips hidden except cancelled.
+- **C — station tickets at placement:** items split by menu station tag (drinks → bar, food → kitchen) into **one `order_record` per station**, linked by a shared **`placement_id`**. Each ticket runs the existing order state machine.
+- Station = existing `menu_item.kitchen_tag`, values **`bar` | `food` only** (`both` dropped); every non-charge item has exactly one.
+- **Charge-type items** go on their own ticket created as `sent` (never in the queue, still on the bill).
+- **Always split** — no venue setting; a one-station bar sees both tickets on the same screen.
+- Add **`order_status.CANCELLED`** (terminal) — auto-set when every item of the order/ticket is cancelled.
+- Customer QR (CD-06/07) shows order/ticket steps + **cancelled items struck through**; no per-item progress.
+- Rename the `accepted` label "กำลังทำ" → **"รับแล้ว"** everywhere (DS StatusChip, CD-00 §2, CD-02/04/08/14/15, BRIEF-010 filters, FRD §6).
+**Why:** Per-item taps fail the "faster than walking to the POS" test for a 1–2 staff bar; station tickets keep one tap per ticket while stopping drinks waiting on food.
+**Date:** 2026-10-10
