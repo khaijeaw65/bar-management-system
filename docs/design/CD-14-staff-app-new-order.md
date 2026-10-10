@@ -11,7 +11,8 @@ Same as CD-04: `GET /api/menu/categories`, `GET /api/menu/items`, item detail (v
 
 ## Defaults (Field confirms or overrides)
 - **D1 — Entry points:** FAB "+ ออเดอร์" on the ออเดอร์ tab (pick seat first) and "สั่งออเดอร์" in the CD-08 table summary sheet (seat known). A free seat → staff can open it from here ("เปิดโต๊ะและสั่ง") — same first-write-wins as POS.
-- **D2 — Rules identical to CD-04** (quick add for 1-variant items, item BottomSheet for options, charge needs a name, ✕ remove, newest-first, variant label "ตัวเลือก", cart-only new names).
+- **D2 — Rules identical to CD-04** — *amended by Field 2026-10-10: no quick add on the staff app; every item opens the item sheet (no-option items: quantity + สั่งโดย + หมายเหตุ). POS (CD-04) unchanged unless Field decides.*
+  - original: (quick add for 1-variant items, item BottomSheet for options, charge needs a name, ✕ remove, newest-first, variant label "ตัวเลือก", cart-only new names).
 - **D3 — Cart = BottomSheet over the menu** (pull up from a sticky cart bar), not a separate tab.
 
 ## Paste into Claude Design
