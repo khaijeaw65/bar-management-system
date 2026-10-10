@@ -1,23 +1,108 @@
-# CD-02 — Developer handoff (from Claude Design, 2026-09-28)
+---
+id: CD-02
+title: POS — table grid, session panel, open / close table
+revision: 2
+status: review            # rev 1 approved 2026-09-28 (F1–F4, Q1–Q3); rev 2 = CD template retrofit
+approved_by: Field        # rev 1
+approved_on: 2026-09-28   # rev 1
+canvas: https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG
+canvas_version: 1791642704-915d
+ds_version: 1791561405-c72e
+source: docs/design/source/CD-02/   # taken after rev 2 approval (§11)
+surfaces: [web-pos]
+sizes: [1280x800, 1024x768]
+brief: CD-02-pos-tables-session.md
+drs: [DR-009, DR-012]
+depends_on: [CD-00, CD-01, CD-03, CD-04, CD-15]
+supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
+---
 
-Source: Claude Design project https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 · files `ui_kits/pos-v2/cd-02/` (dark) and `cd-02/light/` (light = dark file with `?theme=light`) · brief `CD-02-pos-tables-session.md`.
-Screenshots: `docs/design/assets/CD-02/` (see §7). Tokens: `docs/design/tokens-v2.css` / `docs/design-system.md` v2.1.
-**Do not port Claude Design's JSX.** Build with HeroUI v3 + our tokens; the design is the visual/behaviour spec only. All order/guest/amount values are sample data.
+# CD-02 — POS: table grid, session panel, open / close table
 
-## 0. Decisions (all resolved 2026-09-28)
+Built on The Loft Bar Design System (real DS components; every board has a dark/light Theme tweak). **Do not port canvas markup** — build with HeroUI v3 + tokens (`docs/rules/frontend.md`, BRIEF-014 utilities). Sample data only. Template: `cd-template.md` · boards: `board-convention.md`. Shared children on the canvas: `PosFrame` (rail + top bar), `Grid` (props mode / disconnected / calling / selected / t3 / t5 / t6 / ring / longNames), `Panel` (modes active / open / loading / blocked / idle / limited / joined).
+
+## 0. Review items
+Rev 1 decisions F1–F4, Q1–Q3 stay (§10). Rev-2 items (✓ = accepted):
+
 | # | Item | Recommendation |
 |---|---|---|
-| F1 | **Money format — ✅ Decided (Field, 2026-09-28): `฿1,240.00`** (prefix ฿, 2 decimals, `tabular-nums`). | One `formatBaht()` helper; CD project readme `1,240 ฿` is superseded. |
-| F2 | **Compact counter card idle / call-staff — ✅ Decided (Field, 2026-09-28): option B** — short chip text on its own row: idle "ไม่เคลื่อนไหว", call-staff "เรียก" (+ pulse dot), card skin as on large cards. | Drawn on board `CD-02/decisions`. Full label in the drawer. |
-| F3 | **Call-staff ordering — ✅ Decided (Field, 2026-09-28): option A** — cards keep their `sort_order` position; call-staff shown by accent skin + pulse + summary chip only. | Simpler; no card moves under the finger. Supersedes the realtime board's "move to front" caption. |
-| F4 | **✅ Decided (Field, 2026-09-28): TableCard replaces DS `TableTile`** (compact + large, content model in §5). | Build PR adds TableCard to `components/bar/`, removes TableTile, updates `design-system.md` §6. |
+| R1 | **Pain point.** Root observed at both bars (CD-14 R8: paper / verbal orders, no single place everyone sees). The POS-specific part is an **assumption**: the cashier doesn't know which tables are open, how much each owes, or opens a seat that already has guests. | Field: confirm or correct from the field visits. |
+| R2 ✓ | **Open collision asks before joining** (Field 2026-10-10, BRIEF-011 Q3): `POST /visits` → `200 attached:true` shows a dialog with opener (staff name or "ลูกค้า (สแกน QR)" from `openedVia`), time and guest label; "เข้าโต๊ะเดิม (…)" opens that seat's panel, "เลือกโต๊ะอื่น" returns to the form with the seat cleared. Replaces rev 1's silent "เข้าร่วมโต๊ะเดิมแล้ว" info. Same rule as CD-14 J2. | Done (open-table·4, J2). |
+| R3 ✓ | **DR-012 in the panel:** one order group = one station ticket with a station label (บาร์ / ครัว); item rows carry no progress chip, only "ยกเลิก" (struck); ticket chip `accepted` = "กำลังเตรียม · ชื่อ". | Done (panel). |
+| R4 | **New states:** panel without `orders:void` / `visits:close` (buttons hidden, "ต้องใช้สิทธิ์ผู้จัดการ" — panel·6) · grid at the smallest size 1024×768 with long guest names (grid·2) · without `visits:open` the "+ เปิดโต๊ะ" button is hidden and free cards are not tappable (rule only, same pattern as CD-14 seat-sheet·3). | Accept. |
+| R5 | **Needs API** (not in any brief): comp an item (catalog has only `POST /order-items/:id/cancel`), manager PIN check for void / comp, acknowledge call-staff ("รับทราบ", shared with CD-08 R10-2). | Add to BRIEF-012 (void + comp + PIN) and the customer-QR brief (ack). |
 
-## 1. Design bugs to fix in the build (not blocking)
-- **close-confirm body copy is wrong:** "QR ของโต๊ะนี้จะใช้ไม่ได้ และโต๊ะจะกลับเป็นว่าง". Closing ends the **visit**; the static table QR keeps working and starts a new visit on the next scan (FRD §3). Only *regenerate* invalidates a QR. → Use **"โต๊ะจะกลับเป็นว่าง ลูกค้าที่สแกน QR หลังจากนี้จะเริ่มบิลใหม่"**.
-- ~~Served items show item chip "พร้อม"~~ → **superseded by DR-012 (2026-10-10):** items show no progress chip; only cancelled items show "ยกเลิก" (struck). The order/ticket chip carries the status. **Canvas update in the CD-02 retrofit.**
-- `TableCard` state names in CD code use `seated` → code uses schema `visit_state` (`active`). Call-staff is a flag, not a state.
+## 1. Overview
+- **Goal:** the cashier sees every seat on one screen (free, open, owing, calling) — opens a table in 2 taps and can only close it when it is paid.
+- **Pain point:** see R1 (root = field research; POS-specific part = assumption).
+- **User + context:** cashier / manager at the POS tablet · Friday 22:00, full bar, standing, touch only, several groups arriving and leaving at once.
+- **Entry → exit:** rail "โต๊ะ" = POS home `/pos/tables`. Exit: ชำระเงิน → CD-03 · สั่งแทนลูกค้า → CD-04 · order issues → CD-15.
+- **Outcome:** open a table in 2 taps (free card → เปิดโต๊ะ; assumes a guest name is optional); a collision never creates a second visit or joins silently; a table with a payment in flight or a balance cannot be closed.
+- **Out of scope:** move / merge tables, reservations, per-item split, offline, member QR, printed receipts, LINE OA.
+- **Journeys:** J1 walk-in: tap free T6 → เปิดโต๊ะ (guest แพร) → QR → T6 open (E1–E3) · J2 collision: + เปิดโต๊ะ → T5 → `200 attached` → ask → เข้าโต๊ะเดิม → T5 panel (E1–E3, alternate เลือกโต๊ะอื่น).
 
-## 2. Artboards, states, strings
+## 2. Boards
+| Board | Type | States |
+|---|---|---|
+| `overview` | OVERVIEW | goal, pain point (R1), user/context, outcome, entry/exit, journeys, out of scope, key decisions |
+| `journey-1` | JOURNEY | grid (E1 T6) → open-table form T6 + แพร (E2 เปิดโต๊ะ) → QR (E3 เสร็จสิ้น) → grid T6 เปิดแล้ว |
+| `journey-2` | JOURNEY | grid T5 looks free (E1 + เปิดโต๊ะ) → form T5 (E2) → ask dialog (E3 เข้าโต๊ะเดิม; alt เลือกโต๊ะอื่น) → T5 panel "เข้าโต๊ะเดิมแล้ว" |
+| `grid` | STATES | 1 1280 T3 selected · 2 1024×768 + long guest names |
+| `grid-states` | STATES | 1 loading · 2 empty · 3 error + retry · 4 disconnected |
+| `panel` | STATES | 1 active (4 tickets) · 2 open, no orders · 3 loading · 4 close blocked (409) · 5 idle 25 min · 6 no void / close permission · 7 joined (after J2) |
+| `open-table` | STATES | 1 from "+ เปิดโต๊ะ" (Select open, free seats only) · 2 from a free card (preselected) · 3 submitting · 4 collision → ask before joining · 5 error · 6 success QR |
+| `close-confirm` | STATES | fully paid · remaining → ไปชำระเงิน · closed Toast |
+| `void-comp` | STATES | default · wrong PIN · no manager on shift (self-approve, flagged) |
+| `qr-actions` | STATES | menu · regenerate confirm · reprint preview |
+| `realtime` | STATES | `visit.opened` from QR · `staff.called` sticky Toast |
+| `flow` | FLOW MAP | grid ↔ open-table ↔ panel ↔ close / pay / void |
+Shared (not boards to review): `PosFrame`, `Grid`, `Panel`.
+
+## 3. State coverage
+✓ drawn · n/a (reason) · shared (where) · rule (§9, not drawn).
+
+| State | Grid | Panel | Open-table | Close-confirm | Void-comp | QR actions |
+|---|---|---|---|---|---|---|
+| default | ✓ grid·1 | ✓ ·1 | ✓ ·1 ·2 | ✓ paid | ✓ default | ✓ menu |
+| loading | ✓ grid-states·1 | ✓ ·3 | n/a (seats from grid) | n/a (from panel) | n/a | n/a |
+| empty | ✓ grid-states·2 | ✓ ·2 no orders | rule: no free seat → Select shows "ไม่มีโต๊ะว่าง", เปิดโต๊ะ disabled | n/a | n/a | n/a |
+| error + retry | ✓ grid-states·3 | shared grid-states·3 pattern | ✓ ·5 | shared open-table·5 pattern | shared | shared |
+| validation | n/a | n/a | ✓ ·1 (no seat → disabled) | n/a | ✓ wrong PIN · reason required | n/a |
+| pending | n/a | ✓ ·4 (pay pending) | ✓ ·3 | rule: primary isPending | rule | rule |
+| success feedback | ✓ realtime / J1·4 | ✓ ·7 | ✓ ·6 QR | ✓ Toast "ปิดโต๊ะ T3 แล้ว" | rule: item struck + Toast | rule |
+| failure per reason | ✓ grid-states·3 | ✓ ·4 (409 PAYMENT_IN_FLIGHT) | ✓ ·4 (attached) ·5 | ✓ remaining | ✓ wrong PIN / no manager | rule |
+| stale / conflict | realtime (F3) | ✓ ·7 | ✓ ·4 | ✓ remaining (re-read on open) | rule: item already cancelled → refetch | n/a |
+| disconnected | ✓ grid-states·4 | shared grid banner | n/a | n/a | n/a | n/a |
+| permission denied | rule (no `visits:open`, R4) | ✓ ·6 | rule (entry hidden) | ✓ ·6 (hidden) | ✓ ·6 (hidden) | rule: no `tables:manage` → "สร้าง QR ใหม่" hidden |
+| long Thai text | ✓ grid·2 | rule: names wrap, meta 1 line | n/a (short labels) | n/a | rule: item names wrap | n/a |
+| smallest size | ✓ grid·2 (1024×768) | shared (drawer fixed 400, body scrolls) | n/a (modal 420) | n/a | n/a | n/a |
+| keyboard open | n/a (tablet, hardware-less: on-screen keyboard covers lower half — modal stays centered above it, rule) | n/a | rule | n/a | rule | n/a |
+| session expired | global: 401 → CD-01 login | ← | ← | ← | ← | ← |
+
+## 4. Action table
+| Action | API (status) | Permission | Success → UI | Failure → UI | Recovery | Data kept | Idempotency |
+|---|---|---|---|---|---|---|---|
+| Load grid | `GET /tables` (available, BRIEF-011; `total` / `itemCount` filled by BRIEF-012, `staffCalled` by customer-QR brief) | `tables:read` | grid·1 | network → grid-states·3 · socket down → ·4 | ลองอีกครั้ง; reconnect + refetch | — | n/a |
+| Live seats | WS `/staff` room `pos`: `visit.opened`, `visit.state_changed` (BRIEF-011); `order.created` (BRIEF-012); `staff.called` (customer-QR brief) | `tables:read` | card changes in place (F3), Toasts (realtime) | socket down → banner | refetch on reconnect | — | upsert by seat id |
+| Open table | `POST /visits {tableSeatId, guestLabel?, via:'pos'}` (available, BRIEF-011) | `visits:open` | `201 attached:false` → QR (open-table·6) | `200 attached:true` + `openedBy`, `openedVia` → ask (open-table·4, R2) · network → ·5 · 403 → entry hidden (R4) | เข้าโต๊ะเดิม → panel · เลือกโต๊ะอื่น → form | guest name | not needed: attach returns the live visit, creates nothing |
+| Open panel | `GET /visits/:id` (available header, BRIEF-011; orders / totals BRIEF-012, payments BRIEF-013) | `visits:read` | panel·1 / ·2 | network → panel error (grid-states·3 pattern) | retry | — | n/a |
+| Close table | `POST /visits/:id/close` (available, BRIEF-011; `409 PAYMENT_IN_FLIGHT` added by BRIEF-013) | `visits:close` | close-confirm → Toast, card free | remaining > 0 → close-confirm "ไปชำระเงิน" · `409 PAYMENT_IN_FLIGHT` → panel·4 · `409 INVALID_STATE_TRANSITION` (already closed) → refetch | pay first / wait | — | second close → 409, UI refetches |
+| Void item | `POST /order-items/:id/cancel` (planned BRIEF-012) | `orders:void` + manager PIN | item struck + reason; ticket `cancelled` if it was the last item (DR-012) | wrong PIN → void-comp·2 · no manager → self-approve flagged (void-comp·3) | re-enter PIN | modal input | one call per item; repeat → 409 refetch |
+| Comp item | **needs API** (R5) | `orders:void` + PIN | item ฿0, "Comp" note | as void | as void | — | — |
+| Verify manager PIN | **needs API** (R5) | — | — | wrong PIN → void-comp·2 | — | — | — |
+| Pay | → CD-03 (`POST /visits/:visitId/payments`, planned BRIEF-013) | `payments:create` | — | — | — | — | Idempotency-Key (CD-03) |
+| Order for guest | → CD-04 | `orders:create` | — | — | — | — | — |
+| Regenerate QR | `POST /tables/:id/qr/regenerate` (available, BRIEF-011) | `tables:manage` | new QR shown, old invalid | network → Alert, old QR still valid | retry | — | each call = new token (confirm dialog guards it) |
+| Reprint QR | client only (same token) | `tables:read` | print preview | — | — | — | — |
+| Acknowledge call-staff | **needs API** (R5; CD-08 R10-2) | — | Toast closes, card normal | — | — | — | — |
+
+## 5. e2e script
+- **J1** E1 tap free T6 → open-table form with T6 preselected · type guest "แพร" · E2 tap เปิดโต๊ะ → one `POST /visits {tableSeatId:T6, guestLabel:'แพร', via:'pos'}` → `201 attached:false` → QR modal "เปิดโต๊ะ T6 แล้ว" · E3 tap เสร็จสิ้น → grid, T6 card "เปิดแล้ว" selected.
+- **J2** E1 tap "+ เปิดโต๊ะ" → form, Select lists free seats · choose T5, guest "แพร" · E2 tap เปิดโต๊ะ → `200 attached:true`, `openedVia:'qr'` → ask dialog shows "ลูกค้า (สแกน QR)", time, guest "ฝน"; QR modal NOT shown · E3 tap "เข้าโต๊ะเดิม (ฝน)" → T5 panel with info "เข้าโต๊ะเดิมแล้ว"; exactly one visit for T5 · alt: "เลือกโต๊ะอื่น" → form, seat cleared, T5 shown seated.
+- **Edge:** close with remaining → "ไปชำระเงิน", no close call · close during payment → 409 → panel·4 · void last item of a ticket → ticket disappears from the panel's active groups (cancelled).
+
+## 6. Strings & sample data
+Sample data lives in `Grid` / `Panel` `renderVals()` and the board files. New in rev 2 (**bold**): **"T5 เพิ่งถูกเปิดไปแล้ว" · เปิดโดย / เวลา / แขก · "ลูกค้า (สแกน QR)" · "ถ้าเป็นลูกค้ากลุ่มเดียวกัน ออเดอร์จะเข้าบิลเดียวกัน — ถ้าเป็นคนละกลุ่ม ให้เลือกโต๊ะอื่น" · "เข้าโต๊ะเดิม (ฝน)" · "เลือกโต๊ะอื่น" · Alert "เข้าโต๊ะเดิมแล้ว" / "เปิดโดยลูกค้า (QR) 21:12 น. · แขก ฝน — ออเดอร์จะเข้าบิลเดียวกัน" · "ยกเลิกรายการ / Comp และปิดโต๊ะ ต้องใช้สิทธิ์ผู้จัดการ" · station labels "บาร์" / "ครัว" · ticket chip "กำลังเตรียม · บีม"**. Rev-1 strings (still valid except where DR-012 / R2 changed them):
 
 ### Shared chrome (CD-01 shell)
 PosRail 88 px (โต๊ะ active, ออเดอร์ Badge 3) · TopBar 56 px: "THE LOFT BAR · เดอะ ลอฟท์ บาร์" · Chip "กะเปิด 18:00 · Beam (Manager)" (**now `nowrap`** — CD-01 changed too) · clock "HH:MM น." · NotificationBell items "T2 เรียกพนักงาน · เมื่อกี้", "ออเดอร์ใหม่ T3 · โอลด์แฟชั่น · สิงห์ดราฟต์ 2× · 3 นาทีที่แล้ว" · theme "ธีมสว่าง / ธีมมืด" · avatar "Beam".
@@ -102,7 +187,8 @@ Drawer ⋯ Dropdown: "พิมพ์ QR ซ้ำ" (printer) · "สร้า�
 ### CD-02/flow
 grid → (แตะ ว่าง / + เปิดโต๊ะ) open-table → (สำเร็จ) QR → (เสร็จสิ้น) grid active · customer first order → grid active · grid → (แตะที่มีแขก) panel → ชำระเงิน (CD-03) / ปิดโต๊ะ → close-confirm → grid free, or → CD-03 if remaining · panel → void-comp → panel · idle → ยังใช้งานอยู่ (panel) / ปิดโต๊ะ (close-confirm).
 
-## 3. Layout specs
+
+## 7. Layout & tokens
 - Viewports 1280×800 (primary), 1024×800. Content 1192×744 @1280, 936×744 @1024.
 - Grid page padding 20 / 24 / 24; header gap 16, mb 20; title 26/700; summary chips gap 8; section heading 17/600 muted, mb 12.
 - Counter grid `repeat(auto-fill, 120px)` gap 12, mb 28 (8/row @1280, 6/row @1024). Table grid `repeat(auto-fill, minmax(200px, 1fr))` gap 12, pt 4 (5 cols @1280, 4 @1024).
@@ -113,7 +199,10 @@ grid → (แตะ ว่าง / + เปิดโต๊ะ) open-table → (�
 - **Modals** width `min(420px, 100% − 32px)`, p 20, radius 16, `--shadow-dialog`, scrim + `--blur-overlay`; title 21/600 mb 8; field gap 16; actions right, gap 8, mt 20; inputs 48 high radius 10. QR 240 (success) / 220 (print) on `--qr-bg`, padding 6%, radius 8.
 - **Toast** max 380, radius 10, 3px tone rule, top-right.
 
-## 4. Components → HeroUI v3
+- Smallest size: **1024×768** (grid·2) — counters 6/row, tables 4/row, cards keep their size; guest names truncate with "…".
+- Tailwind mapping: `app/frontend/src/app/globals.css` (BRIEF-014) — DS utilities only, no arbitrary px.
+
+## 8. Components → platform (HeroUI v3)
 | Part | HeroUI v3 |
 |---|---|
 | Summary "ใช้งาน n" | Chip variant soft/outline neutral + dot |
@@ -130,31 +219,25 @@ grid → (แตะ ว่าง / + เปิดโต๊ะ) open-table → (�
 | Live updates | Toast (info; warning with action, duration 0) |
 Not used: Tooltip (removed — touch tablet, no hover).
 
-## 5. New in the CD project
-- Tokens: **none**. DS components: **none**.
-- Kit-local (not exported): TableCard, NewOrderBadge, SummaryChips, GridView, TablePanel (+ OrderGroup, ItemRow), Cd02DropdownMenu, Cd02Shell, QRMock (placeholder — real QR encodes the signed table token).
-- Changed: `ui_kits/pos-v2/Shell.jsx` shift chip `white-space: nowrap` (affects CD-01 top bar); `readme.md` CD-02 index + "มีแขก = active only; summary uses ใช้งาน".
 
-## 6. Accepted deviations (Cowork default — Field may override at BRIEF approval)
-1. Summary "ใช้งาน n" (Field's revision) — counts open + active + idle.
-2. No hover anywhere; counter cards show total, item count in drawer/large cards only (Field's revision).
-3. 1024 drawn inside a 1280 card with a notes column.
-4. State boards scaled (grid-states 90%, panel-states 58.5%, open-table 76%, void-comp 80%, close-confirm 90%) — use the full-size boards (grid, panel, open-table · QR) for pixel values.
-5. Drawer below the top bar; only content dimmed.
-6. Free cards have no chip; compact open card puts the chip on its own row.
-7. "Outline danger" = DS danger button with transparent fill.
-8. Void-comp item picker = selectable Cards (Checkbox acceptable).
-9. Added copy listed in §2 (ไปที่ตั้งค่า, เกิดข้อผิดพลาด, เสร็จสิ้น, ปิด, ยืนยันการยกเลิก / ยืนยัน Comp, summary and field labels) — accepted, except the close-confirm body (§1).
-10. QR codes are placeholders.
+## 9. Behaviour rules
+- **Grid:** sort by `sort_order` only; call-staff never moves a card (F3). Free card tap → open-table preselected; occupied tap → panel. Without `visits:open` the "+ เปิดโต๊ะ" button is hidden and free cards are inert (R4).
+- **Open:** `POST /visits` with `via:'pos'`. `201` → QR. `200 attached:true` is a normal outcome, never an error, but the POS **never joins silently** — the ask dialog shows who opened it (`openedBy.displayName`, or "ลูกค้า (สแกน QR)" when `openedVia = qr`), when, and the guest label (R2). One live visit per seat stays the rule.
+- **Panel (DR-012):** groups = station tickets, newest first, each with time + station label + ticket chip; items show no progress chip, cancelled items struck with reason; a ticket whose items are all cancelled is shown as cancelled and drops out of the totals. Totals exclude cancelled items.
+- **Close:** always via close-confirm; remaining > 0 → "ไปชำระเงิน" (no close call); payment in flight → 409 → panel·4; idle "ปิดโต๊ะ" also goes to close-confirm, never closes directly.
+- **Void / comp:** manager PIN unless no manager is on shift → self-approve flagged in the audit log (FRD §8). Comp + PIN check need APIs (R5).
+- **QR:** reprint = same token (client); regenerate = confirm dialog, old token invalid immediately.
+- **Realtime:** `visit.opened` → card updates in place + Toast; `staff.called` → sticky Toast with "รับทราบ" (ack API pending, R5); disconnected → banner, grid keeps last data, refetch on reconnect.
+- **Touch only:** no hover, no tooltips; targets ≥ 44, primary 52.
+- **Standard questions (`cd-template.md` §5):** Filters → n/a (no filters on the grid; summary chips are counts). Search → n/a. Long and short → 1024×768 smallest, 1280×800 design; guest names truncate on cards, wrap in the panel; empty grid → grid-states·2. Interaction → DS Button / Card pressed + disabled + pending; selected card = accent ring; DS motion tokens only. Accessibility → each TableCard is a button labelled "T3 มีแขก ต้น, บีม ฿1,240.00"; icon-only buttons have labels (ตัวเลือกเพิ่มเติม, ปิด); drawer = dialog labelled "โต๊ะ T3"; reading order rail → top bar → summary → counters → tables. Data → seat + visit summary from `GET /tables`; panel from `GET /visits/:id`; missing guest label → "—"; missing total (before BRIEF-012) → hidden.
+- **User-mindset checks:** ✓ one dominant action per screen (เปิดโต๊ะ / ชำระเงิน) · ✓ targets · ✓ acknowledgement < 1 s (pending / Toast) · ✓ meaningful loss confirmed (close, void, regenerate) · ✓ errors say how to fix · ✓ task cost "2 taps to open" · ✓ status never by colour alone · ✓ long Thai drawn (grid·2) · ☐ walkthrough with staff.
 
-## 7. Screenshots (`docs/design/assets/CD-02/`)
-Pending — Field to export: `grid-dark.png`, `grid-light.png`, `grid-1024.png`, `grid-states-loading.png`, `grid-states-error.png`, `panel-dark.png`, `panel-light.png`, `panel-states.png`, `open-table.png`, `open-table-qr.png`, `close-confirm.png`, `void-comp.png`, `qr-actions.png`, `realtime.png`, `flow.png`.
+## 10. Revisions
+| Rev | Date | Change | Authority |
+|---|---|---|---|
+| 1 | 2026-09-28 | Claude Design boards; F1 money `฿1,240.00` · F2 compact idle / call-staff short chips · F3 call-staff doesn't move cards · F4 TableCard replaces TableTile · Q1 `table_seat.kind` · Q2 tables always shared · Q3 QR reprint + regenerate | Field |
+| 1 | 2026-10-09 | Ported to the Design canvas (full-size boards, close-confirm copy fix applied) | Cowork |
+| 2 | 2026-10-10 | CD template retrofit: overview, J1 / J2, pills + sections, 1024×768 + long names, panel·6 permission, panel·7 joined; R2 ask before joining (open-table·4); R3 DR-012 station tickets in the panel; R1 pain point assumption; R5 API gaps | Field (R2, R3) · R1, R4, R5 pending |
 
-## 8. Port to Design canvas (2026-10-09)
-Canvas: **CD-02 POS Tables Session** https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG (DS "The Loft Bar Design System", theme tweak dark/light per board). This supersedes the Claude Design project as the visual reference; §0–§6 still apply.
-- Shared pieces: `PosFrame` (rail + top bar), `Grid` (props mode / disconnected / calling / selected / t3 / t5), `Panel` (drawer, modes active / open / loading / blocked / idle). Every state board composes these.
-- Boards: grid (1280 + 1024), grid-states (4), panel (5), open-table (6, incl. QR), close-confirm (3), void-comp (3), qr-actions (3), realtime (2), flow.
-- §1 close-confirm copy fix is **applied** in the canvas.
-- P1 (port note): boards are now full size (no scaled boards) — §6 item 4 no longer applies.
-- P2: void-comp item picker drawn as selectable rows with Checkbox (both allowed by §6 item 8).
-- QR codes remain placeholders.
+## 11. Source snapshot
+Pending — after Field approves rev 2 (`cd-template.md` §6). Lucide blob `/_blob/2813c665b3ba7d45ea80d6ebc447f36b` (CD-02 only). QR images are placeholders (conic-gradient CSS in board `<helmet>`), not assets.
