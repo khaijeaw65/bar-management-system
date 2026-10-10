@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Status** | Draft rev 2 — waiting for Field approval (rev 1 was Ready; Phase A findings changed §3.1, §3.4, AC-2, §7) |
+| **Status** | Ready rev 2 — Field approved in session 2026-10-10 (implemented: PR #29, audit PASS with one test fix) |
 | **Implementer** | kj (Cursor) — Field may reassign |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
-| **PR** | <executor fills> |
+| **PR** | https://github.com/khaijeaw65/bar-management-system/pull/29 |
 | **Affected apps** | frontend |
 | **Revision** | 2 |
 | **Depends on** | BRIEF-008 (Done — merged PR #27: v2 colour tokens + Noto Sans Thai in `globals.css`) |
@@ -164,10 +164,11 @@ pnpm --filter @bar/frontend build
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (rev 2, 2026-10-10)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-10 | Initial (from the BRIEF-900 POC finding); Field approved → Ready |
 | 2 | 2026-10-10 | From Cursor Phase A + Cowork check: no `--ease-out`/`--ease-in-out` override (HeroUI uses `--ease-out` 178×) → `ease-ds-out`; usage count 9; Phase A inferences and test approach recorded as Pre-decided 8–9 |
+| 2 | 2026-10-10 | Field approved rev 2. Audit (Cowork): PASS. Accepted deviations: `app/frontend/src/lib/utils/cn.ts` extended (`extendTailwindMerge`) — without it `tailwind-merge` dropped the new `text-*` sizes next to `text-<colour>`; screenshots 1200×1030 instead of 1280×800. Fix before merge: AC-3 grep matched the lint test's split strings. |

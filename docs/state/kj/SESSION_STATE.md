@@ -84,7 +84,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 - **POC passed (10 Oct):** approved canvas → byte-copied source snapshot → Cursor implemented `/poc/menu` with no screenshots (BRIEF-900, PR #28 closed unmerged, kept as worked example in `docs/design/poc-source-handoff/`). Findings → cd-template v2 + **BRIEF-014 Ready** (DS type/radius/tracking/motion as Tailwind utilities + lint gate against arbitrary px). Vault: `02 Learning/Design to Implement Pipeline.md`.
 
 ## Field to-do (any order)
-0. BRIEF-014 Ready (approved 10 Oct) — hand to Cursor (Phase A first). After it merges: add the Styling line in `docs/rules/frontend.md` (text in BRIEF-014 §8).
+0. BRIEF-014 rev 2: PR #29 audit PASS — merge after Cursor's AC-3 test fix. After it merges: add the Styling line in `docs/rules/frontend.md` (text in BRIEF-014 §8).
 1. Open BRIEF-002 PR + auditor. (PR #26 design canvases merged 10 Oct.)
 2. Review CD-03 + CD-04 content during the retrofit; CD-01 P1. (done 10 Oct: schema.sql DR-010 + BRIEF-011 Q3, erd.html synced incl. staff_access_request, CLAUDE.md 34 tables — Cowork Field-approved edits.) DR-009 line refined to DR-010. CD-14 images exported 10 Oct → docs/design/assets/CD-14/.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
