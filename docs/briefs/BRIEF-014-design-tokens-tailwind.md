@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft — waiting for Field approval |
+| **Status** | Ready — Field approved in session 2026-10-10 |
 | **Implementer** | kj (Cursor) — Field may reassign |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -161,9 +161,9 @@ pnpm --filter @bar/frontend build
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-10)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
-| 1 | 2026-10-10 | Initial (Draft, from the BRIEF-900 POC finding) |
+| 1 | 2026-10-10 | Initial (from the BRIEF-900 POC finding); Field approved → Ready |
