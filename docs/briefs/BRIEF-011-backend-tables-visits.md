@@ -21,7 +21,7 @@ The POS can list all seats with their live visit, open a table (first write wins
 
 ## 2. Scope
 ### In
-- **Migrations:** `table_seat`, `visit` exactly as `schema.sql` + Q1 additions. Entities: `TableSeat` extends `BaseEntity`; `Visit` has **no audit columns** in schema → does not extend `BaseEntity` (same rule as BRIEF-007 identity tables).
+- **Migrations:** `table_seat`, `visit` exactly as `schema.sql` + Q1 + Q3 additions. Entities: `TableSeat` extends `BaseEntity`; `Visit` has **no audit columns** in schema → does not extend `BaseEntity` (same rule as BRIEF-007 identity tables).
 - **Seed** `seed:venue` (idempotent): counter seats `C1`–`C8` (`kind=counter`), tables `T1`–`T6` (`kind=table`), `sort_order` by label, each with a QR token (Q1). Gate demo uses seeded seats — no seat CRUD here.
 - **Module** (Q2): `modules/venue/` — `TableSeat` + `Visit` (domain ports, services, TypeORM adapters, controllers). `VisitService` owns **all** visit transitions (backend.md invariant) and is exported for BRIEF-012/013.
 - **Endpoints** (`/api` prefix, envelope, OpenAPI via BRIEF-009 helper):
@@ -29,7 +29,7 @@ The POS can list all seats with their live visit, open a table (first write wins
   |---|---|---|---|
   | GET | `/tables` | active seats sorted by `kind` then `sort_order`, each with `currentVisit` (`id`, `state`, `openedAt`, `guestLabel`, `total: '0.00'`, `itemCount: 0`, `staffCalled: false`) or `null` | `tables:read` |
   | POST | `/tables/:id/qr/regenerate` | new token, old token invalid → `{ qrToken }` | `tables:manage` |
-  | POST | `/visits` | `{ tableSeatId, guestLabel? }` → creates `open` visit; if a live visit exists → **200 with that visit + `attached: true`** (not an error); `201 attached: false` otherwise. `Idempotency-Key` not required (attach makes it idempotent) | `visits:open` |
+  | POST | `/visits` | `{ tableSeatId, guestLabel? }` → creates `open` visit; if a live visit exists → **200 with that visit + `attached: true`** (not an error); `201 attached: false` otherwise. Body may carry `via: 'pos' | 'app'` (default `pos`). Response visit includes `openedBy: { staffId, displayName } | null` and `openedVia` (Q3) so the losing client can show who opened it. `Idempotency-Key` not required (attach makes it idempotent) | `visits:open` |
   | GET | `/visits/:id` | header: seat label/kind, state, openedAt, closedAt, guestLabel (orders/payments added by 012/013) | `visits:read` |
   | POST | `/visits/:id/close` | `open|active|idle → closed` (`closed_at = now`); already `closed|abandoned` → `409 INVALID_STATE_TRANSITION`. Payment-in-flight check added by BRIEF-013 | `visits:close` |
 - **Concurrency:** open race resolved by the DB (Q1 partial unique index): insert → on unique violation re-read the live visit and return it as attached. No app-level locks.
@@ -54,7 +54,7 @@ The POS can list all seats with their live visit, open a table (first write wins
 - **AC-1** — `seed:venue` twice → 14 seats, no duplicates, every seat has a unique QR token.
 - **AC-2** — `GET /tables` returns counters then tables in `sort_order`, `currentVisit` null for free seats and filled for live visits.
 - **AC-3** — `POST /visits` on a free seat → 201, `attached: false`, state `open`, `visit.opened` emitted to room `pos`.
-- **AC-4** — Two concurrent `POST /visits` on the same free seat (Promise.all, e2e) → exactly one visit row; one response `attached: false`, the other `attached: true` with the same id; exactly one `visit.opened` event.
+- **AC-4** — Two concurrent `POST /visits` on the same free seat (Promise.all, e2e) → exactly one visit row; one response `attached: false`, the other `attached: true` with the same id; exactly one `visit.opened` event. The attached response carries `openedBy` (the first caller's staff id + display name) and `openedVia` of the first call (Q3).
 - **AC-5** — `POST /visits/:id/close` on open/active/idle → `closed`, `closed_at` set, `visit.state_changed` emitted; seat shows `currentVisit: null`; closing again → 409 `INVALID_STATE_TRANSITION`. A closed visit is never reopened; a new open creates a new visit.
 - **AC-6** — `POST /tables/:id/qr/regenerate` → new token returned and stored; the old token no longer matches any seat.
 - **AC-7** — Socket connect without a valid token, or with a token whose `session:<sid>` was revoked → connection refused.
@@ -100,6 +100,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
   3. `visit.guest_label VARCHAR(100) NULL` — CD-02 open-table has "ชื่อแขก (ไม่บังคับ)" and the card shows a name before any order; today there is no column for it.
 - **Q2 — Where visits live. ✅ Decided (Field, 2026-10-04): `modules/venue/`** (seat + its visits = one aggregate; `GET /tables` joins them; avoids a venue↔visit cycle). *Alternative:* new `modules/visit/` (cleaner name, one more module, cross-module call for the summary).
 - **Pre-decided packages (exact major, verify with `pnpm view` before install; different major → stop, DR):** `@nestjs/websockets` + `@nestjs/platform-socket.io` `^12` (= `@nestjs/core` major) · `socket.io` `^4` · `@socket.io/redis-adapter` `^8` · dev `socket.io-client` `^4` (e2e).
+- **Q3 — Who opened the visit. ✅ Decided (Field, 2026-10-10, from CD-14 R9):** add to `visit`: `opened_by UUID REFERENCES staff_user(id)` (nullable — a guest QR open has no staff) and `opened_via visit_open_source NOT NULL DEFAULT 'pos'` with `CREATE TYPE visit_open_source AS ENUM ('pos','app','qr');`. Staff route sets `opened_by` from the authenticated staff and `opened_via` from body `via` (informational, not a permission); the customer QR route (later brief) sets `qr`. *Why:* on a collision the staff app (CD-14 J2) and POS (CD-02) must ask before joining — the dialog shows opener, time and guest label, because a different group may be at that seat. `schema.sql` is protected → **Field applies Q3 by hand before execution.**
 - **Known gap (not blocking):** no IAM brief yet → `@RequirePermissions` is metadata only; any authenticated staff can call these endpoints until the IAM brief lands. Acceptable for the gate (seeded staff only); IAM brief must land before any real-bar pilot.
 - **Likely DRs:** socket.io cookie auth across ports in dev · TypeORM partial index syntax in migration.
 

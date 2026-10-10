@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>เมนูบาร์ — ค้นหาไม่พบ</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/theloftbardesignsystem_99bbff/styles.css">
+<script src="/_blob/8bfda7adea891787e687d261a73a3d6e"></script>
+<script src="ds/theloftbardesignsystem_99bbff/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.sf > *{flex:1 1 auto;display:flex;min-width:0}
+</style>
+</helmet>
+<main data-theme="dark" style="width: 1280px; height: 800px; box-sizing: border-box; padding: var(--sp-10) var(--sp-11); background: var(--bg-app); color: var(--text-body); font-family: var(--font-ui); display: flex; flex-direction: column; gap: var(--sp-8); overflow: hidden">
+
+  <header style="display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sp-8)">
+    <div style="display: flex; flex-direction: column; gap: var(--sp-2)">
+      <span style="font: var(--text-label); letter-spacing: var(--ls-caps); color: var(--text-accent)">THE LOFT BAR</span>
+      <h1 style="margin: 0; font: var(--text-display); letter-spacing: var(--ls-display)">เมนู</h1>
+    </div>
+    <div class="sf" style="width: 400px; display: flex">
+      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.SearchField" placeholder="ค้นหาเมนู" value="มาร์การิต้า" style="{{searchStyle}}"></x-import>
+    </div>
+  </header>
+
+  <nav aria-label="หมวดเมนู" style="display: flex; gap: var(--sp-4); flex-wrap: wrap">
+    <sc-for list="{{categories}}" as="c" hint-placeholder-count="5">
+      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag" is-selected="{{c.selected}}" count="{{c.count}}">{{c.label}}</x-import>
+    </sc-for>
+  </nav>
+
+  <div style="font: var(--text-small); color: var(--text-muted)">ไม่พบผลลัพธ์สำหรับ “มาร์การิต้า”</div>
+
+  <section aria-label="ผลการค้นหา" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-4); padding-bottom: var(--sp-12)">
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.EmptyState" variant="empty" icon="search-x" title="ไม่พบเมนูที่ค้นหา" description="ลองค้นหาด้วยคำอื่น หรือล้างคำค้นหาเพื่อดูเมนูทั้งหมด"></x-import>
+    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="secondary" size="md" icon-left="x">ล้างคำค้นหา</x-import>
+  </section>
+
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    // Same categories as the default board; counts are category totals (they do not change with the search text).
+    const categories = [
+      { id: 'all', label: 'ทั้งหมด', count: 4, selected: true },
+      { id: 'draft', label: 'เบียร์สด', count: 1, selected: false },
+      { id: 'cocktail', label: 'ค็อกเทล', count: 1, selected: false },
+      { id: 'highball', label: 'ไฮบอล', count: 1, selected: false },
+      { id: 'food', label: 'อาหาร', count: 1, selected: false }
+    ];
+    return { categories, searchStyle: { width: '100%', height: 44, boxSizing: 'border-box' } };
+  }
+}
+</script>
+</body>
+</html>

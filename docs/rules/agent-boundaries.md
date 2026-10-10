@@ -1,7 +1,7 @@
 # Agent Boundaries — Bar Management System
 
 > **Always-on. All agents. No exceptions.**
-> Protected files are never edited by agents — not even with a comment or TODO. If you think one needs changing → raise a DR (`docs/decisions/_TEMPLATE.md`) and stop that path. Field (KJ) applies changes manually.
+> Protected files are never edited by agents — not even with a comment or TODO. If you think one needs changing → raise a DR (`docs/decisions/_TEMPLATE.md`) and stop that path. Field (KJ) applies changes manually, except the *Field-approved edits* below.
 > Explicit Field-requested workflow maintenance may change only the specified documents; this is not a standing executor exception. Onboarding may write `.agent-local.json` and initialize own state. Executors may fill only the brief PR link as bookkeeping. See workflow §1–4.
 > Workflow, roles and the Field Guard: `docs/rules/workflow.md`.
 
@@ -19,8 +19,8 @@ package.json                 ← root. app/* package.json: only after an Approve
 
 ### Agent Rules & Instructions (never unlockable)
 ```
-CLAUDE.md
-AGENTS.md
+CLAUDE.md                    ← Field-approved edits by Cowork / Codex allowed (see below)
+AGENTS.md                    ← Field-approved edits by Cowork / Codex allowed (see below)
 docs/rules/**
 .cursor/rules/**
 .agents/rules/**
@@ -34,9 +34,10 @@ infra/**                     ← Terraform, docker-compose.yml, all infra files 
 .github/**                   ← workflows, CODEOWNERS, PR template
 ```
 
-### Schema (ERD locked — 32 tables, 9 domains)
+### Schema (ERD locked — 34 tables, 9 domains)
 ```
-docs/schema.sql
+docs/schema.sql              ← Field-approved edits by Cowork / Codex allowed (see below); brief-unlockable
+docs/erd.html                ← Field-approved edits by Cowork / Codex allowed (see below); not brief-unlockable
 ```
 
 ### Workflow Documents (ownership-restricted)
@@ -47,7 +48,21 @@ docs/audits/**            ← assigned Cowork/Codex auditor, or explicitly reque
 docs/state/<person>/SESSION_STATE.md    ← only the state file of the person running the session
 docs/handoff.md           ← frozen legacy log — do not edit
 docs/quality/README.md    ← Field-owned quality procedure (local SonarQube); change only with Field's approval
+docs/design/source/**     ← design source snapshots (byte copies, SHA-256 in the CD handoff §11). Cowork writes them only when taking a snapshot at CD approval; nobody edits them afterwards. A new canvas version = a new snapshot
+docs/design/poc-source-handoff/source/**   ← same rule (POC worked example, BRIEF-900)
 ```
+
+---
+
+## Field-approved edits (Cowork / Codex only)
+
+These protected files may be edited by **Cowork or Codex** when Field approves the specific change in the session (approval = Field's explicit OK on the exact change). Record it in the commit message trailer: `Approved-by: Field (session)`.
+- `docs/schema.sql`
+- `docs/erd.html`
+- `CLAUDE.md`
+- `AGENTS.md`
+
+Executors (Claude Code, Cursor, Antigravity) still may not edit them, except `docs/schema.sql` via an exact brief unlock (below). Everything else under *Agent Rules & Instructions* stays never-editable by agents. (Field, 2026-10-10.)
 
 ---
 
@@ -55,8 +70,8 @@ docs/quality/README.md    ← Field-owned quality procedure (local SonarQube); c
 
 A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.g. `.github/workflows/ci.yml`, `pnpm-workspace.yaml`, `turbo.json`.
 - The executor may edit **only those paths, only within that brief**. No globs.
-- **Only unlockable:** Root Config, Infrastructure (except `.github/CODEOWNERS` and `.github/pull_request_template.md`), and Schema.
-- **Never unlockable:** Agent Rules & Instructions, `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all Workflow Documents above.
+- **Only unlockable:** Root Config, Infrastructure (except `.github/CODEOWNERS` and `.github/pull_request_template.md`), and Schema (`docs/schema.sql` only).
+- **Never unlockable (by brief):** Agent Rules & Instructions, `docs/erd.html`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all Workflow Documents above.
 - A DR approval alone does not unlock a protected file — only the brief's unlock list does.
 
 ---
@@ -68,6 +83,7 @@ A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.
 | Any dependency change (root or app/*) | Allowed only if **approved** (exact Pre-decided item in the Ready brief, or Approved DR). Otherwise raise a DR and stop that path. Root `package.json` also needs the brief's unlock list |
 | Brief looks wrong / incomplete | Raise a DR (Category: Brief deviation) — never edit the brief |
 | Schema needs a new column or table | Raise a DR (Category: Data); optional SQL sketch inside the DR |
+| Design source snapshot looks wrong or outdated | Report it in your Phase A / handoff — never edit the snapshot; Cowork takes a new one from the approved canvas version |
 | Workflow / infra / CI change needed | Raise a DR — Field either edits by hand or writes a brief with an unlock list |
 | A rule looks wrong | Raise a DR — never edit rules, never comment inside rule files |
 
@@ -75,10 +91,11 @@ A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.
 
 ## Why This Exists
 
-- `docs/schema.sql` is the ERD for 32 tables across 9 domains — silently changing it breaks downstream TypeORM entities, migrations, and the visual ERD.
+- `docs/schema.sql` is the ERD for 34 tables across 9 domains — silently changing it breaks downstream TypeORM entities, migrations, and the visual ERD.
 - Root configs affect every workspace package — a wrong edit breaks the entire monorepo build.
 - Agent rule files must be human-controlled so agents cannot change their own constraints.
 - Infra/CI/enforcement files require deliberate review; an accidental change can break pipelines or remove the review requirement itself.
+- Design source snapshots are the agent's design contract; an edit makes the SHA-256 inventory wrong and the build no longer matches what Field approved.
 
 ---
 

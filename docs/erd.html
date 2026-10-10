@@ -521,7 +521,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     <div>
       <h1 class="intro-title">Entity<br><span>Relationship Diagram</span></h1>
       <div class="intro-meta">
-        <span><strong>9 domains</strong> · 32 tables</span>
+        <span><strong>9 domains</strong> · 34 tables</span>
         <span><strong>Stack:</strong> NestJS + PostgreSQL + TypeORM</span>
         <span><strong>Updated:</strong> Sep 2026</span>
       </div>
@@ -620,6 +620,9 @@ erDiagram
         uuid table_seat_id FK
         uuid customer_id FK
         string state
+        string guest_label
+        uuid opened_by FK
+        string opened_via
         timestamp opened_at
         timestamp closed_at
     }
@@ -673,6 +676,15 @@ erDiagram
         uuid user_id FK
         uuid policy_id FK
     }
+    staff_access_request {
+        uuid id PK
+        string provider
+        string external_id
+        string display_name
+        string status
+        timestamp requested_at
+        uuid decided_by FK
+    }
     menu_category {
         uuid id PK
         uuid venue_id FK
@@ -687,9 +699,18 @@ erDiagram
         text description
         decimal base_price
         string item_type
+        string image_key
         string kitchen_tag
         boolean is_available
+        boolean is_promo
         int sort_order
+    }
+    menu_item_availability {
+        uuid id PK
+        uuid menu_item_id FK
+        int[] days_of_week
+        time start_time
+        time end_time
     }
     menu_item_variant {
         uuid id PK
@@ -831,6 +852,8 @@ erDiagram
     staff_user ||--o{ staff_user_identity : "identified via"
     staff_user ||--o{ user_group_membership : belongs
     staff_user ||--o{ user_policy : "has direct"
+    staff_user |o--o{ visit : opens
+    staff_user |o--o{ staff_access_request : decides
     staff_user ||--o{ inventory_transaction : creates
     staff_user ||--o{ bottle_keep_pour : creates
 
@@ -845,6 +868,7 @@ erDiagram
 
     menu_category ||--o{ menu_item : contains
     menu_item ||--o{ menu_item_variant : has
+    menu_item ||--o{ menu_item_availability : "available during"
     menu_item_variant ||--o{ menu_variant_modifier_group : supports
     menu_item_variant ||--o{ menu_variant_ingredient : uses
     menu_item_variant ||--o{ order_item : "ordered as"
@@ -968,10 +992,13 @@ erDiagram
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> table_seat_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> customer_id</span><span class="field-type">uuid?</span></div>
             <div class="field-row"><span class="field-name">state</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">guest_label</span><span class="field-type">varchar?</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> opened_by</span><span class="field-type">uuid?</span></div>
+            <div class="field-row"><span class="field-name">opened_via</span><span class="field-type">enum</span></div>
             <div class="field-row"><span class="field-name">opened_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">closed_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">customer_id nullable — visit exists before identity. State machine: OPEN → ACTIVE → IDLE → CLOSED</div>
+          <div class="field-note">customer_id nullable — visit exists before identity. State machine: OPEN → ACTIVE → IDLE → CLOSED. One live visit per seat (partial unique index). opened_by / opened_via (pos | app | qr) feed the join-confirm dialog when two devices open the same seat (BRIEF-011 Q3).</div>
         </div>
 
       </div>
@@ -1107,6 +1134,23 @@ erDiagram
           <div class="field-note">PK: (user_id, policy_id). Direct policy on a specific user — overrides nothing, just adds. Final permissions = union(group policies, user policies). Redis cache invalidated on change.</div>
         </div>
 
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">staff_access_request</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">provider</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">external_id</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">display_name</span><span class="field-type">varchar?</span></div>
+            <div class="field-row"><span class="field-name">status</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">requested_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> decided_by</span><span class="field-type">uuid?</span></div>
+          </div>
+          <div class="field-note">An unregistered LINE login creates a pending request; owner approves or rejects in back office (CD-13). Unique on (provider, external_id).</div>
+        </div>
+
       </div>
     </div>
 
@@ -1142,13 +1186,30 @@ erDiagram
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> category_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+            <div class="field-row"><span class="field-name">image_key</span><span class="field-type">varchar?</span></div>
             <div class="field-row"><span class="field-name">base_price</span><span class="field-type">numeric(10,2)</span></div>
             <div class="field-row"><span class="field-name">item_type</span><span class="field-type">enum</span></div>
             <div class="field-row"><span class="field-name">kitchen_tag</span><span class="field-type">enum</span></div>
             <div class="field-row"><span class="field-name">is_available</span><span class="field-type">boolean</span></div>
+            <div class="field-row"><span class="field-name">is_promo</span><span class="field-type">boolean</span></div>
             <div class="field-row"><span class="field-name">sort_order</span><span class="field-type">smallint</span></div>
           </div>
-          <div class="field-note">item_type: simple | recipe | charge. kitchen_tag: bar | food | both | n/a. Charge items (puke fine, corkage) permission-gated + audit-logged.</div>
+          <div class="field-note">item_type: simple | recipe | charge. kitchen_tag: bar | food | both | n/a. Charge items (puke fine, corkage) permission-gated + audit-logged. is_promo splits promo sales in analytics (DR-010).</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">menu_item_availability</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> menu_item_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">days_of_week</span><span class="field-type">smallint[]</span></div>
+            <div class="field-row"><span class="field-name">start_time</span><span class="field-type">time</span></div>
+            <div class="field-row"><span class="field-name">end_time</span><span class="field-type">time</span></div>
+          </div>
+          <div class="field-note">Promo / time-limited windows (DR-010). No rows = always available. days_of_week = day the window starts; end &lt; start = crosses midnight. Server clock (Asia/Bangkok) decides; checked at order submit.</div>
         </div>
 
         <div class="entity-card">

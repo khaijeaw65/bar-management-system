@@ -1,6 +1,6 @@
 -- ============================================================
 -- Bar Management System — Initial Schema
--- Generated: 2026-09-13  |  Updated: 2026-09-22  |  9 domains, 32 tables
+-- Generated: 2026-09-13  |  Updated: 2026-10-10  |  9 domains, 34 tables
 -- ============================================================
 
 -- ── Extensions ───────────────────────────────────────────────
@@ -10,6 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE identity_provider   AS ENUM ('line', 'phone_otp');
 CREATE TYPE table_seat_kind     AS ENUM ('table', 'counter');
 CREATE TYPE visit_state         AS ENUM ('open', 'active', 'idle', 'closed', 'abandoned');
+CREATE TYPE visit_open_source   AS ENUM ('pos', 'app', 'qr');  -- where a visit was opened (BRIEF-011 Q3, Field 2026-10-10)
 CREATE TYPE item_type           AS ENUM ('simple', 'recipe', 'charge');
 CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue');
 CREATE TYPE order_item_status   AS ENUM ('pending', 'preparing', 'ready', 'cancelled');
@@ -80,6 +81,8 @@ CREATE TABLE visit (
   customer_id    UUID REFERENCES customer(id),   -- nullable — linked post-hoc
   state          visit_state NOT NULL DEFAULT 'open',
   guest_label    VARCHAR(100),                    -- optional name at open (CD-02 open-table; BRIEF-011 Q1)
+  opened_by      UUID,                            -- staff who opened it; NULL = guest QR. FK added after staff_user (BRIEF-011 Q3)
+  opened_via     visit_open_source NOT NULL DEFAULT 'pos',  -- shown in the join-confirm dialog (CD-14 J2, BRIEF-011 Q3)
   opened_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   closed_at      TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -113,6 +116,7 @@ ALTER TABLE venue        ADD CONSTRAINT venue_created_by_fk  FOREIGN KEY (create
 ALTER TABLE venue        ADD CONSTRAINT venue_updated_by_fk  FOREIGN KEY (updated_by)  REFERENCES staff_user(id);
 ALTER TABLE table_seat   ADD CONSTRAINT seat_created_by_fk   FOREIGN KEY (created_by)  REFERENCES staff_user(id);
 ALTER TABLE table_seat   ADD CONSTRAINT seat_updated_by_fk   FOREIGN KEY (updated_by)  REFERENCES staff_user(id);
+ALTER TABLE visit        ADD CONSTRAINT visit_opened_by_fk   FOREIGN KEY (opened_by)   REFERENCES staff_user(id);  -- BRIEF-011 Q3
 
 CREATE TABLE staff_user_identity (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -219,11 +223,29 @@ CREATE TABLE menu_item (
   item_type    item_type NOT NULL DEFAULT 'simple',
   kitchen_tag  VARCHAR(50),
   is_available BOOLEAN NOT NULL DEFAULT TRUE,
+  is_promo     BOOLEAN NOT NULL DEFAULT FALSE,   -- promo analytics split (DR-010)
   sort_order   SMALLINT NOT NULL DEFAULT 0,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by   UUID REFERENCES staff_user(id),
   updated_by   UUID REFERENCES staff_user(id)
+);
+
+-- Time windows for an item (DR-010). No rows = always available (subject to is_available).
+-- days_of_week = the day the window STARTS (DR-010 rule 10); end_time < start_time = crosses midnight.
+CREATE TABLE menu_item_availability (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  menu_item_id  UUID NOT NULL REFERENCES menu_item(id) ON DELETE CASCADE,
+  days_of_week  SMALLINT[] NOT NULL,          -- ISO 1=Mon … 7=Sun
+  start_time    TIME NOT NULL,                -- venue local time (Asia/Bangkok)
+  end_time      TIME NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by    UUID REFERENCES staff_user(id),
+  updated_by    UUID REFERENCES staff_user(id),
+  CONSTRAINT chk_avail_time CHECK (start_time <> end_time),
+  CONSTRAINT chk_avail_days CHECK (days_of_week <@ ARRAY[1,2,3,4,5,6,7]::SMALLINT[]
+                                   AND cardinality(days_of_week) > 0)
 );
 
 CREATE TABLE menu_item_variant (
@@ -422,6 +444,9 @@ CREATE INDEX idx_visit_table_seat   ON visit(table_seat_id);
 CREATE INDEX idx_visit_customer      ON visit(customer_id) WHERE customer_id IS NOT NULL;
 CREATE INDEX idx_visit_state         ON visit(state);
 CREATE UNIQUE INDEX uq_visit_live_per_seat ON visit(table_seat_id) WHERE state IN ('open','active','idle');  -- one live visit per seat (BRIEF-011 Q1)
+
+-- Menu availability windows (DR-010)
+CREATE INDEX idx_menu_item_avail_item ON menu_item_availability(menu_item_id);
 
 -- Order lookups
 CREATE INDEX idx_order_visit         ON order_record(visit_id);

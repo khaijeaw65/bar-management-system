@@ -1,0 +1,12 @@
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg-app);color:var(--text-body);font:var(--text-body-md);-webkit-font-smoothing:antialiased;text-wrap:pretty}
+*,*::before,*::after{box-sizing:border-box}
+a{color:var(--text-accent);text-decoration:none}
+a:hover{color:var(--accent-hover);text-decoration:underline}
+::selection{background:var(--accent-soft-strong);color:var(--text-body)}
+:focus-visible{outline:none;box-shadow:var(--glow-focus)}
+.num,[data-num]{font-variant-numeric:tabular-nums}
+@keyframes sk-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes lb-spin{to{transform:rotate(360deg)}}
+@keyframes lb-pulse{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes lb-toast-bar{from{transform:scaleX(1)}to{transform:scaleX(0)}}

@@ -6,7 +6,7 @@
 > Reference docs (read before working):
 >   CLAUDE.md         → permanent project context
 >   docs/FRD.md       → feature scope (what is in/out)
->   docs/schema.sql   → PostgreSQL schema (32 tables, 9 domains)
+>   docs/schema.sql   → PostgreSQL schema (34 tables, 9 domains)
 >   docs/rules/workflow.md → roles, briefs, gates, Field Guard (always read first)
 >   docs/state/<person>/SESSION_STATE.md → current progress (read at start, overwrite at end)
 
