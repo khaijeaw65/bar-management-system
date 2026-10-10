@@ -1,0 +1,16 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-10T06:30:00Z"},
+  "title": "POC design handoff — Bar menu",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 1280, "h": 800, "title": "POC-design-handoff/menu/default"},
+    "NoResults.dc.html": {"x": 1360, "y": 0, "w": 1280, "h": 800, "title": "POC-design-handoff/menu/no-results"}
+  },
+  "order": ["Main.dc.html", "NoResults.dc.html"],
+  "notes": {},
+  "designSystems": [
+    {"title": "The Loft Bar Design System", "namespace": "theloftbardesignsystem_99bbff", "artifact": "https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D", "version": "1791561405-c72e", "copiedAt": "2026-10-10T06:30:00Z"}
+  ]
+}

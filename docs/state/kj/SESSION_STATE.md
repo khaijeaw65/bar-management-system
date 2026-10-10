@@ -1,11 +1,11 @@
 # State — KJ
-Updated: 2026-10-10 13:10 · Agent: Cowork (design)
+Updated: 2026-10-10 16:40 · Agent: Cowork (design)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
-**Next action: retrofit CD-01, CD-02, CD-03, CD-04, CD-08 to `docs/design/cd-template.md`** (one batch, ~1 long session). Then CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last) built to the template from the start. CD-09 = S2.
+**Next action: retrofit CD-01, CD-02, CD-03, CD-04, CD-08 to `docs/design/cd-template.md`** (one batch, ~1 long session). Template is now **v2**: each retrofitted canvas also gets a **source snapshot** (`docs/design/source/CD-##/`, handoff §11, cd-template §6); CD-14 needs its snapshot too. Then CD-06 → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last) built to the template from the start. CD-09 = S2.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
 Session start: ask Field once for delete permission on the project folder (git locks), `git status`, branch `docs/ui-design-cd06`.
 
@@ -17,6 +17,7 @@ Session start: ask Field once for delete permission on the project folder (git l
 5. **Action table**: real endpoints from briefs only (BRIEF-011 available; orders = BRIEF-012 planned; payment = BRIEF-013 planned; menu = menu-management brief planned); every failure reason drawn. **Check API semantics against the brief** — CD-14 had attach drawn as a 409 but BRIEF-011 returns `200 attached:true`.
 6. Handoff rewritten to the template (YAML header, §0–§10, revision bump, status `review`); R# open items as sticky notes on the canvas (orange → green when accepted).
 7. Brief gets a "Revisions" table if decisions changed it.
+8. After Field approves: source snapshot (cd-template §6) → handoff §11 (inventory + SHA-256 verified, dependencies, repo drift D# items). PNG export optional (presentation only). Answer the standard behaviour questions (§5) in §9.
 
 Known retrofit items per canvas:
 - **CD-02 POS tables:** seat-open collision must **ask before joining** (same dialog as CD-14 J2 4b: opener/time/guest, "สั่งเข้าโต๊ะเดิม" / "เลือกโต๊ะอื่น"; uses BRIEF-011 Q3 `openedBy`/`openedVia`).
@@ -80,7 +81,10 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 - **Next impl briefs (not written):** BRIEF-012 orders · BRIEF-013 payment + GB Prime Pay webhook + 409 in-flight (include CD-03 F1 columns `confirmed_via`, `status_reason`, `status_note`; F2 split locks whole bill) · IAM brief (full policy editor) · web screen briefs after CDs · Metee Week 1.
 - Engineering: BRIEF-002 on `feat/BRIEF-002-expo-scaffold` (0a95185) — no PR, needs audit; blocks BRIEF-010. Done briefs: 001, 003–006.
 
+- **POC passed (10 Oct):** approved canvas → byte-copied source snapshot → Cursor implemented `/poc/menu` with no screenshots (BRIEF-900, PR #28 closed unmerged, kept as worked example in `docs/design/poc-source-handoff/`). Findings → cd-template v2 + **BRIEF-014 Draft** (DS type/radius/tracking/motion as Tailwind utilities + lint gate against arbitrary px). Vault: `02 Learning/Design to Implement Pipeline.md`.
+
 ## Field to-do (any order)
+0. Approve BRIEF-014 → Ready (then assign executor). After it merges: add the Styling line in `docs/rules/frontend.md` (text in BRIEF-014 §8). Close PR #28 + delete `poc/BRIEF-900-source-handoff-menu`.
 1. Open BRIEF-002 PR + auditor. (PR #26 design canvases merged 10 Oct.)
 2. Review CD-03 + CD-04 content during the retrofit; CD-01 P1. (done 10 Oct: schema.sql DR-010 + BRIEF-011 Q3, erd.html synced incl. staff_access_request, CLAUDE.md 34 tables — Cowork Field-approved edits.) DR-009 line refined to DR-010. CD-14 images exported 10 Oct → docs/design/assets/CD-14/.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
