@@ -19,8 +19,8 @@ package.json                 ← root. app/* package.json: only after an Approve
 
 ### Agent Rules & Instructions (never unlockable)
 ```
-CLAUDE.md
-AGENTS.md
+CLAUDE.md                    ← Field-approved edits by Cowork / Codex allowed (see below)
+AGENTS.md                    ← Field-approved edits by Cowork / Codex allowed (see below)
 docs/rules/**
 .cursor/rules/**
 .agents/rules/**
@@ -34,9 +34,10 @@ infra/**                     ← Terraform, docker-compose.yml, all infra files 
 .github/**                   ← workflows, CODEOWNERS, PR template
 ```
 
-### Schema (ERD locked — 32 tables, 9 domains)
+### Schema (ERD locked — 33 tables, 9 domains)
 ```
-docs/schema.sql
+docs/schema.sql              ← Field-approved edits by Cowork / Codex allowed (see below)
+docs/erd.html                ← Field-approved edits by Cowork / Codex allowed (see below)
 ```
 
 ### Workflow Documents (ownership-restricted)
@@ -51,12 +52,24 @@ docs/quality/README.md    ← Field-owned quality procedure (local SonarQube); c
 
 ---
 
+## Field-approved edits (Cowork / Codex only)
+
+These protected files may be edited by **Cowork or Codex** when Field approves the specific change in the session (approval = Field's explicit OK on the exact change). Record it in the commit message trailer: `Approved-by: Field (session)`.
+- `docs/schema.sql`
+- `docs/erd.html`
+- `CLAUDE.md`
+- `AGENTS.md`
+
+Executors (Claude Code, Cursor, Antigravity) still may not edit them, except `docs/schema.sql` via an exact brief unlock (below). Everything else under *Agent Rules & Instructions* stays never-editable by agents. (Field, 2026-10-10.)
+
+---
+
 ## Brief Unlocks
 
 A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.g. `.github/workflows/ci.yml`, `pnpm-workspace.yaml`, `turbo.json`.
 - The executor may edit **only those paths, only within that brief**. No globs.
 - **Only unlockable:** Root Config, Infrastructure (except `.github/CODEOWNERS` and `.github/pull_request_template.md`), and Schema.
-- **Never unlockable:** Agent Rules & Instructions, `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all Workflow Documents above.
+- **Never unlockable (by brief):** Agent Rules & Instructions, `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all Workflow Documents above.
 - A DR approval alone does not unlock a protected file — only the brief's unlock list does.
 
 ---

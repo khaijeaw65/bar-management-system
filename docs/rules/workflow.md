@@ -136,7 +136,8 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 - Protected files (`agent-boundaries.md`) stay protected by default. **A DR approval does not unlock them.**
 - A brief may list **exact paths** under *Unlocked protected files*. The executor may edit **only those paths, only for that brief**. No globs.
 - **Only these categories are unlockable:** root config (`turbo.json`, `pnpm-workspace.yaml`, root `package.json`, `.gitignore`), infrastructure (`infra/**`, `.github/workflows/**`) — still exact paths only, e.g. `infra/docker-compose.yml`, and `docs/schema.sql`.
-- **Never unlockable:** rules & instructions (`docs/rules/**`, `CLAUDE.md`, `AGENTS.md`, agent wrappers), `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all ownership-restricted docs (briefs, DR decisions, other person's state, audits, `docs/handoff.md`).
+- **Field-approved edits:** Cowork or Codex may edit `docs/schema.sql`, `docs/erd.html`, `CLAUDE.md`, `AGENTS.md` when Field explicitly approves the exact change in the session; commit trailer `Approved-by: Field (session)`. Executors still may not (schema only via a brief unlock). See `agent-boundaries.md`.
+- **Never unlockable (by brief):** rules & instructions (`docs/rules/**`, `CLAUDE.md`, `AGENTS.md`, agent wrappers), `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all ownership-restricted docs (briefs, DR decisions, other person's state, audits, `docs/handoff.md`).
 - Field's PR review (+ assigned auditor's audit) is the backstop.
 
 ### Procedure
