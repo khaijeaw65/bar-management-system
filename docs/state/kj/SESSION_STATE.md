@@ -76,15 +76,15 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 - Branch: `docs/ui-design-cd06` — **pushed** (origin @ 28bdca1 + this state commit), no PR yet. Holds: CD-14 rev 3 + images, CD template v1, schema.sql/erd (BRIEF-011 Q3, DR-010), rules change (Field-approved edits), DR-009/010, BRIEF-011 Q3. Open the PR when the retrofit batch is done (or now, docs only).
 - Decided 10 Oct: CD template v1 (`docs/design/cd-template.md`, Cowork + Codex review) · CD-14 rev 3 approved (R6 cart in memory · R7 permission UI · R8 pain point = paper/verbal orders · R9 opener on visit) · seat-open collision asks before joining (CD-14 J2; apply to CD-02 POS in retrofit; BRIEF-011 Q3 added: `visit.opened_by` + `opened_via`) · board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
 - Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
-- **Ready briefs:** BRIEF-014 design tokens (Cursor) · BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
+- **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
 - **Ready design briefs:** CD-05, 06, 07, 11, 12, 13, 14, 15 (CD-10 merged into CD-11).
 - **Next impl briefs (not written):** BRIEF-012 orders · BRIEF-013 payment + GB Prime Pay webhook + 409 in-flight (include CD-03 F1 columns `confirmed_via`, `status_reason`, `status_note`; F2 split locks whole bill) · IAM brief (full policy editor) · web screen briefs after CDs · Metee Week 1.
-- Engineering: BRIEF-002 on `feat/BRIEF-002-expo-scaffold` (0a95185) — no PR, needs audit; blocks BRIEF-010. Done briefs: 001, 003–006.
+- Engineering: BRIEF-002 on `feat/BRIEF-002-expo-scaffold` (0a95185) — no PR, needs audit; blocks BRIEF-010. Done briefs: 001, 003–006, 008, 014.
 
-- **POC passed (10 Oct):** approved canvas → byte-copied source snapshot → Cursor implemented `/poc/menu` with no screenshots (BRIEF-900, PR #28 closed unmerged, kept as worked example in `docs/design/poc-source-handoff/`). Findings → cd-template v2 + **BRIEF-014 Ready** (DS type/radius/tracking/motion as Tailwind utilities + lint gate against arbitrary px). Vault: `02 Learning/Design to Implement Pipeline.md`.
+- **POC passed (10 Oct):** approved canvas → byte-copied source snapshot → Cursor implemented `/poc/menu` with no screenshots (BRIEF-900, PR #28 closed unmerged, kept as worked example in `docs/design/poc-source-handoff/`). Findings → cd-template v2 + **BRIEF-014 (merged PR #29)** (DS type/radius/tracking/motion as Tailwind utilities + lint gate against arbitrary px). Vault: `02 Learning/Design to Implement Pipeline.md`.
 
 ## Field to-do (any order)
-0. BRIEF-014 rev 2: PR #29 audit PASS — merge after Cursor's AC-3 test fix. After it merges: add the Styling line in `docs/rules/frontend.md` (text in BRIEF-014 §8).
+0. (done 10 Oct) BRIEF-014 merged (PR #29) + frontend.md Styling line added by Field.
 1. Open BRIEF-002 PR + auditor. (PR #26 design canvases merged 10 Oct.)
 2. Review CD-03 + CD-04 content during the retrofit; CD-01 P1. (done 10 Oct: schema.sql DR-010 + BRIEF-011 Q3, erd.html synced incl. staff_access_request, CLAUDE.md 34 tables — Cowork Field-approved edits.) DR-009 line refined to DR-010. CD-14 images exported 10 Oct → docs/design/assets/CD-14/.
 3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
