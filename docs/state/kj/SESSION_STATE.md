@@ -1,23 +1,23 @@
 # State — KJ
-Updated: 2026-10-10 13:50 · Agent: Cursor (BRIEF-008)
+Updated: 2026-10-10 15:40 · Agent: Cursor (BRIEF-014)
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief.**
-**Active: BRIEF-008 POS shell — Implemented, awaiting audit.**
-Branch `feat/BRIEF-008-pos-shell-tokens` · PR #27 · work SHA `98fdcb4`.
-Handoff: `docs/handoffs/BRIEF-008.md`.
-Next: `audit BRIEF-008` (Cowork). Sonar was not run — Docker Desktop is manually paused.
+**Active: BRIEF-014 design tokens — Implemented, awaiting audit.**
+Branch `feat/BRIEF-014-design-tokens-tailwind` · PR #29 · work SHA `d1a28be`.
+Handoff: `docs/handoffs/BRIEF-014.md`.
+Next: `audit BRIEF-014` (Cowork).
 
 ## Active
-- BRIEF-008 Rev 1. Shell, v2 tokens, Noto Sans Thai on `/pos/menu`. G1 exit 0 (lint, typecheck, 10 tests, build, e2e 1 passed). `ci` pending on PR #27.
-- No DRs raised. No package changes.
-- Checkout started on `docs/ui-design-cd06` (ahead of origin by 1 at `b3ff208`). This brief branched from `origin/main` `1e301db`.
+- BRIEF-014 rev 2. Type, radius, tracking, motion utilities in `globals.css`. Six shell classes replaced. ESLint rejects arbitrary numeric classes. `cn()` keeps the new type utilities beside colour classes.
+- G1 exit 0 on `d1a28be`: lint, typecheck, 14 tests, build. AC-3 grep empty. Sonar not run (brief: optional).
+- No DRs. No package changes. HeroUI `--ease-out` / `--ease-in-out` not overridden (`ease-ds-out` instead).
 
 ## Coordination
-- Design branch `docs/ui-design-cd06` left at `b3ff208` (unpushed commit `docs(state): branch pushed — session end`). Untracked `docs/design/poc-source-handoff/` is not part of BRIEF-008 and was not committed.
-- Design retrofit (CD-01, 02, 03, 04, 08) is still the next design session, not this branch.
-- Ready after this: BRIEF-007 (after 009) · BRIEF-009 · BRIEF-011. BRIEF-010 is Metee.
+- Brief source is `docs/ui-design-cd06` (rev 2). This branch does not edit that branch. Brief PR field is still empty.
+- Nine default utilities (`text-sm`, `text-xl`, `rounded-md`, `rounded-lg`) were reported and left in place.
+- After merge, Field adds the styling line in `docs/rules/frontend.md` (brief §8).
 
 ## Blockers
-- Local Sonar: Docker Desktop paused. Unpause, then `pnpm sonar && pnpm sonar:report` on this branch.
+- none
