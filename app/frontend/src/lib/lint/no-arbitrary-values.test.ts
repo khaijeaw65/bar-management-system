@@ -20,13 +20,13 @@ function sourceWithClass(className: string): string {
 }
 
 test("AC-4 rejects an arbitrary px class and allows token and non-numeric arbitrary classes", async () => {
-  const bad = sourceWithClass(["text-[", "13px]"].join(""));
+  const bad = sourceWithClass(["text-", "[13px]"].join(""));
   const badTemplate = [
     "export function X(){ return <div className={`text-[",
     "13px]`} />; }",
   ].join("");
   const hash = sourceWithClass(["bg-[", "#fff]"].join(""));
-  const numericGrid = sourceWithClass(["grid-cols-[", "1fr_320px]"].join(""));
+  const numericGrid = sourceWithClass(["grid-cols-", "[1fr_320px]"].join(""));
   const tokenParen = sourceWithClass("duration-(--dur-fast)");
 
   expect(await lintSource(bad)).toContain(denied);
