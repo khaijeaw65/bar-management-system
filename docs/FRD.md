@@ -257,11 +257,16 @@ Many collisions above share one root: **state can change between when an action 
 
 ## 9. Pricing & Promotion
 
-### Happy Hour
-- Time-triggered automatic price changes (e.g. 17:00–19:00). Items shift price state by system clock. `[HH]` tag keeps discount metrics separate from regular sales analytics.
+### Phase 1 shape — time-windowed promo items (DR-010)
+- A promotion is its own menu item in a promo category (e.g. "โปรโมชั่น"), e.g. "Leo ×4 + ice bucket — 390฿, before 21:00". It is not a price change of a regular item (matches field research: bars run a separate time-based promo menu).
+- Each item may have availability windows (days + start/end time, venue time Asia/Bangkok; windows may cross midnight). No window = always available.
+- Server clock decides. Eligibility is checked at order submit; the price is frozen by `unit_price_snapshot` (a 20:59 order keeps the promo price). A cart line whose window closed before submit is rejected (`409 ITEM_UNAVAILABLE`, `reason: out_of_window`) and shown like a sold-out line. `days_of_week` means the day a window starts. Menus refetch every 60 s while open.
+- Outside the window: **greyed out on every menu surface (customer web, POS, staff app)** with its window shown ("เริ่ม 17:00" / "ถึง 21:00"); it cannot be added. Not hidden (doubles as marketing).
+- `is_promo` flag keeps promo sales separate in analytics (replaces the `[HH]` tag idea).
+- Bundle contents are fixed (recipe ingredients, e.g. 4 × Leo). Mix-and-match is not in scope.
 
-### Promotion Engine
-- Types: time-based, bundle (e.g. bucket of 5), event-based.
+### Later phase (unchanged intent)
+- Promotion engine: percentage/amount off, mix-and-match bundles, event-based, stacking.
 - Manual discount → mandatory reason code, permission-gated (who can discount).
 - Margin impact report (value surrendered vs volume lift).
 - **Loyalty / stamp cards — NOT in scope.**
