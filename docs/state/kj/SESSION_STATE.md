@@ -53,7 +53,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 
 ## Active
 - Branch: `docs/ui-design-cd06` (from main @ 1e301db, after PR #26 merged 10 Oct) · not pushed yet.
-- Decided 10 Oct: board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
+- Decided 10 Oct: seat-open collision asks before joining (CD-14 J2; apply to CD-02 POS in retrofit; BRIEF-011 attach response needs `openedBy`/`openedVia` — CD-14 R9 pending) · board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
 - Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
 - **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
 - **Ready design briefs:** CD-05, 06, 07, 11, 12, 13, 14, 15 (CD-10 merged into CD-11).
