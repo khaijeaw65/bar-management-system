@@ -1,6 +1,6 @@
 # CD-05 — Back office: dashboard (owner money view · manager action view · comps/voids)
 
-**Status:** Ready — D1–D3 accepted by Field (2026-10-09) · **Surface:** web responsive 1280 (also 1024) + 390 phone (owner checks from the phone — DR-009) · **Used by:** S1 dashboard brief (if time) + advisor presentation · FRD §12
+**Status:** Rev 1 canvas in review (2026-10-11) — D1–D3 accepted by Field (2026-10-09) · **Surface:** web responsive 1280 (also 1024) + 390 phone (owner checks from the phone — DR-009) · **Used by:** S1 dashboard brief (if time) + advisor presentation · FRD §12
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -30,5 +30,12 @@ From orders + payments only in S1: revenue by day/week/month, bills count, avera
 - No out-of-scope items appear.
 
 ## Result
-- Claude Design link: <after run>
-- Handoff: `docs/design/CD-05-handoff.md` · screenshots `docs/design/assets/CD-05/`
+- Canvas: https://claude.ai/artifact/WiY9xummEw5w2rPdnRqBdf (built to `cd-template.md` v2)
+- Handoff: `docs/design/CD-05-handoff.md` · source snapshot after approval
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 1 | 2026-10-11 | Chart colours `--chart-1` / `--chart-2` proposed + validated (R2) · today shows 8 open seats from the shared sample, not 5 (R3) · spike rule (R4) · counting rules (R6) · comps / voids reasons include ของหมด (CD-15 R3) · overview default period 30 วัน | handoff §0, §9 |

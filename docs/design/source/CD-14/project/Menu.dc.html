@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>CD-14 เมนู</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/theloftbardesignsystem_99bbff/styles.css">
+<script src="/_blob/55621ac7d8cfe40fb69092b2ed520365"></script>
+<script src="ds/theloftbardesignsystem_99bbff/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.sf > *{flex:1 1 auto;display:flex;min-width:0}
+a{color:var(--text-accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 3880px; height: 1020px; box-sizing: border-box; padding: 40px; background: var(--bg-sunken); color: var(--text-body); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: baseline; gap: 16px; height: 40px">
+    <span style="font: var(--fw-bold) var(--fs-micro)/1 var(--font-ui); letter-spacing: var(--ls-caps); padding: 6px 10px; border-radius: 999px; background: var(--surface-raised); color: var(--text-muted); border: 1px solid var(--line); align-self: center">STATES · ไม่ใช่ลำดับ</span>
+    <h1 style="margin: 0; font: var(--text-heading)">CD-14/menu</h1>
+    <span style="font: var(--text-small); color: var(--text-muted)">แถวรายการ (ไม่ใช่ไทล์) · แตะเมนูใดก็ได้ → sheet เลือกจำนวน (+ตัวเลือกถ้ามี) แล้วเพิ่ม — ไม่มีเพิ่มทันที (Field 10 ต.ค.) · ตะกร้าดึงขึ้นจากแถบล่าง (D3) · HeroUI Native: SearchField, Chip, ListGroup, Badge, Alert, Skeleton, Toast</span>
+  </div>
+  <div style="display: flex; gap: 40px; align-items: flex-start">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="9">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font: var(--text-label); color: var(--text-faint)">{{p.label}}</div>
+      <div style="width: {{p.w}}px; height: {{p.h}}px; box-sizing: border-box; border-radius: 36px; overflow: hidden; position: relative; isolation: isolate; background: var(--bg-app); border: 1px solid var(--line); box-shadow: var(--shadow-raised)">
+        <div style="padding: 48px 8px 4px 4px; display: flex; align-items: center; gap: 4px">
+          <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="chevron-left" label="กลับ"></x-import>
+          <div style="font: var(--text-title); flex-grow: 1; white-space: nowrap">สั่งออเดอร์ — T3</div>
+          <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="table" status="seated" size="sm"></x-import>
+        </div>
+        <div class="sf" style="padding: 4px 16px 10px; display: flex">
+          <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.SearchField" placeholder="ค้นหาเมนู" value="{{p.query}}" is-disabled="{{p.searchOff}}" style="{{searchFill}}"></x-import>
+        </div>
+
+        <sc-if value="{{p.chips}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; gap: 8px; padding: 0 16px 6px; overflow: hidden">
+            <sc-for list="{{p.cats}}" as="c" hint-placeholder-count="6">
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag" is-selected="{{c.on}}">{{c.label}}</x-import>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.disconnected}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 4px 16px 8px">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Alert" tone="warning" icon="wifi-off" title="การเชื่อมต่อขาด">สถานะเมนูอาจไม่ล่าสุด — ยังสั่งได้ ระบบตรวจของหมด / โปรหมดเวลาอีกครั้งตอนส่ง</x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.list}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; padding: 0 16px">
+            <sc-for list="{{p.items}}" as="it" hint-placeholder-count="9">
+              <button type="button" aria-disabled="{{it.soldOut}}" style="min-height: 60px; box-sizing: border-box; padding: 8px 0; display: flex; align-items: center; gap: 10px; background: transparent; border: none; border-bottom: 1px solid var(--line-hairline); text-align: left; font-family: var(--font-ui); color: var(--text-body); {{it.dim}}">
+                <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                  <span style="display: flex; align-items: center; gap: 8px">
+                    <span style="font: var(--fw-semibold) var(--fs-subhead)/1.3 var(--font-ui); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden">{{it.name}}</span>
+                    <sc-if value="{{it.hasQty}}" hint-placeholder-val="{{ false }}">
+                      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="accent" variant="solid" size="sm">{{it.qty}}</x-import>
+                    </sc-if>
+                  </span>
+                  <sc-if value="{{it.hasSub}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: inline-flex; align-items: center; gap: 4px; font: var(--text-small); color: {{it.subColor}}">
+                      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="{{it.subIcon}}" size="sm"></x-import>{{it.sub}}
+                    </span>
+                  </sc-if>
+                </span>
+                <sc-if value="{{it.soldOut}}" hint-placeholder-val="{{ false }}">
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="menu" status="soldout" size="sm"></x-import>
+                </sc-if>
+                <span style="font: var(--fw-bold) var(--fs-body)/1.3 var(--font-numeric); color: {{it.priceColor}}; font-variant-numeric: tabular-nums; white-space: nowrap">{{it.price}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.loading}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 8px; padding: 0 16px 14px">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="{{w72}}" height="{{h36}}" rounded="{{yes}}"></x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="{{w80}}" height="{{h36}}" rounded="{{yes}}"></x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="{{w80}}" height="{{h36}}" rounded="{{yes}}"></x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="{{w64}}" height="{{h36}}" rounded="{{yes}}"></x-import>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 4px 16px">
+            <sc-for list="{{seven}}" as="k" hint-placeholder-count="7">
+              <div style="display: flex; align-items: center; gap: 12px; height: 44px">
+                <div style="flex-grow: 1">
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="60%" height="{{h18}}"></x-import>
+                </div>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Skeleton" width="{{w72}}" height="{{h18}}"></x-import>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.error}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 8px 16px; display: flex; flex-direction: column; gap: 12px">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Alert" tone="danger" title="โหลดเมนูไม่สำเร็จ">ตรวจการเชื่อมต่อแล้วลองอีกครั้ง ตะกร้าที่เลือกไว้ยังอยู่</x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="secondary" size="md" block="{{yes}}" icon-left="rotate-cw">ลองอีกครั้ง</x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.noResult}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 96px 24px 0">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.EmptyState" variant="empty" icon="search-x" title="ไม่พบเมนูที่ค้นหา" description="ลองค้นหาด้วยคำอื่น หรือเลือกหมวด ทั้งหมด"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.toast}}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; top: 52px; left: 12px; right: 12px; z-index: 60; display: flex; justify-content: center">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Toast" tone="success" icon="check" title="เพิ่ม ช้างดราฟต์ ×2 แล้ว" duration="{{zero}}">สั่งโดย ต้น · แก้ได้ในตะกร้า</x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{p.keyboard}}" hint-placeholder-val="{{ false }}">
+          <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 300px; z-index: 30; background: var(--surface-raised); border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font: var(--text-small); color: var(--text-faint)">แป้นพิมพ์ของระบบ (iOS / Android) — แถบตะกร้าซ่อนขณะพิมพ์</div>
+        </sc-if>
+
+        <sc-if value="{{p.bar}}" hint-placeholder-val="{{ true }}">
+          <div style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 20; padding: 8px 16px 28px; background: var(--surface-bar); backdrop-filter: var(--blur-bar); border-top: 1px solid var(--line-hairline); box-shadow: var(--shadow-sheet); display: flex; flex-direction: column; gap: 8px">
+            <div style="align-self: center; width: 36px; height: 4px; border-radius: 999px; background: var(--line-strong)"></div>
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+                <span style="font: var(--text-small); color: var(--text-muted); font-variant-numeric: tabular-nums">ตะกร้า {{p.count}} รายการ</span>
+                <span style="font: var(--fw-bold) var(--fs-subhead)/1.2 var(--font-numeric); color: var(--text-accent); font-variant-numeric: tabular-nums">{{p.total}}</span>
+              </div>
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="lg" icon-left="chevron-up">ดูตะกร้า</x-import>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":3880,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const MENU = [
+      ['chang', 'ช้างดราฟต์', 120], ['singha', 'สิงห์ดราฟต์', 140], ['leo', 'ลีโอขวด', 100],
+      ['negroni', 'เนโกรนี', 240], ['oldfa', 'โอลด์แฟชั่น', 260, 'from'], ['highball', 'ไฮบอลมะนาวโซดา', 180],
+      ['yum', 'ยำหมูยอ', 150, 'soldout'], ['nuts', 'ถั่วทอดสมุนไพร', 80], ['cork', 'ค่าเปิดขวด', 300, 'charge']
+    ];
+    const baht = (n) => '฿' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const PROMO = [
+      ['p1', 'ลีโอ 4 ขวด + ถังน้ำแข็ง', 390, 'promoOn', 'โปร · ถึง 21:00'],
+      ['p2', 'ไฮบอลมะนาวโซดา 2 แก้ว', 290, 'promoOn', 'โปร · ถึง 21:00'],
+      ['p3', 'ค็อกเทล 1 แถม 1', 240, 'promoOff', 'โปร · เริ่ม 22:00 (ศ.–ส.)']
+    ];
+    const map = (qtys) => ([id, name, price, flag, win]) => {
+      const q = qtys[id] || 0, so = flag === 'soldout', off = flag === 'promoOff', promo = flag === 'promoOn' || off;
+      return {
+        name, qty: String(q), hasQty: q > 0, soldOut: so,
+        price: (flag === 'from' ? 'เริ่มต้น ' : '') + baht(price),
+        priceColor: so || off ? 'var(--text-faint)' : 'var(--text-accent)',
+        dim: so || off ? 'opacity: 0.55;' : '',
+        hasSub: flag === 'from' || flag === 'charge' || promo,
+        sub: promo ? win : (flag === 'from' ? 'มีตัวเลือก' : 'ค่าบริการ · ต้องระบุชื่อ'),
+        subIcon: promo ? 'clock' : (flag === 'from' ? 'sliders-horizontal' : 'user-round'),
+        subColor: flag === 'promoOn' ? 'var(--text-accent)' : 'var(--text-faint)'
+      };
+    };
+    const items = (qtys) => MENU.map(map(qtys));
+    const CATS = ['ทั้งหมด', 'โปรโมชั่น', 'เบียร์สด', 'ค็อกเทล', 'ไฮบอล', 'อาหาร', 'ค่าบริการ'];
+    const cats = (sel) => CATS.map((label) => ({ label, on: label === sel }));
+    const Q = { chang: 2, oldfa: 1, leo: 1 };
+    const Q2 = { chang: 4, oldfa: 1, leo: 1 };
+    const base = { disconnected: false, keyboard: false, w: 390, h: 844, query: '', searchOff: false, chips: true, list: true, loading: false, error: false, noResult: false, toast: false, bar: true, items: items(Q), count: 4, total: baht(620), cats: cats('ทั้งหมด') };
+    const phones = [
+      { ...base, label: '1 · โหลดแล้ว (มีของในตะกร้า)' },
+      { ...base, label: '2 · กำลังโหลด', chips: false, list: false, loading: true, bar: false, searchOff: true },
+      { ...base, label: '3 · โหลดไม่สำเร็จ', chips: false, list: false, error: true, searchOff: true },
+      { ...base, label: '4 · ค้นหาไม่พบ', query: 'มาร์การิต้า', list: false, noResult: true },
+      { ...base, label: '5 · กลับจาก sheet: เพิ่ม ช้างดราฟต์ ×2 แล้ว', items: items(Q2), count: 6, total: baht(860), toast: true },
+      { ...base, label: '6 · 360×780', w: 360, h: 780 },
+      { ...base, label: '7 · หมวด โปรโมชั่น 20:30 น. (DR-010)', cats: cats('โปรโมชั่น'), items: PROMO.map(map({})) },
+      { ...base, label: '8 · การเชื่อมต่อขาด (realtime)', disconnected: true },
+      { ...base, label: '9 · พิมพ์ค้นหา + ชื่อเมนูยาว (ตัดที่ 2 บรรทัด)', query: 'ช้าง', keyboard: true, bar: false,
+        items: [['chang', 'ช้างดราฟต์', 120], ['jug', 'ช้างดราฟต์ เหยือกใหญ่ 1.5 ลิตร (แชร์ได้ 4–5 คน) พร้อมถังน้ำแข็ง', 590], ['changb', 'ช้างคลาสสิก ขวดใหญ่', 110]].map(map(Q)) }
+    ];
+    return {
+      theme: this.props.theme ?? 'dark', yes: true, zero: 0, phones,
+      searchFill: { width: '100%', height: 44, boxSizing: 'border-box' }, seven: [1, 2, 3, 4, 5, 6, 7],
+      w64: 64, w72: 72, w80: 80, h18: 18, h36: 36
+    };
+  }
+}
+</script>
+</body>
+</html>

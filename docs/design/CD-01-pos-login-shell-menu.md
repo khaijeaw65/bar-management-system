@@ -25,3 +25,10 @@
 ## Result
 - Claude Design link: https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 (artboards `CD-01/*`)
 - Copy changes: <none / list>
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 2 | 2026-10-10 | Not-registered = access request sent (CD-13 Q1) · menu list gains "ส่งไปที่" (DR-012) · 1024×768 + read-only menu state · session-expired only on failed refresh | handoff §0 R2–R4, §9 |

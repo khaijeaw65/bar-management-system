@@ -1,32 +1,115 @@
-# CD-03 — Developer handoff: POS payment (from Claude Design, 2026-10-09)
+---
+id: CD-03
+title: POS — payment (PromptPay QR, cash, manual confirm, split-equal, in-flight lock)
+revision: 2
+status: review            # rev 1 decisions approved (Q1–Q3 2026-10-04, F1–F4 2026-10-09); rev-1 screens not yet reviewed (R3); rev 2 = CD template retrofit
+approved_by: Field        # rev 1 decisions
+approved_on: 2026-10-09
+canvas: https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb
+canvas_version: 1791644100-e257
+ds_version: 1791561405-c72e
+source: docs/design/source/CD-03/   # taken after rev 2 approval (§11)
+surfaces: [web-pos]
+sizes: [1280x800, 1024x768]
+brief: CD-03-pos-payment.md
+drs: [DR-009, DR-012]
+depends_on: [CD-00, CD-02, CD-04]
+supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
+---
 
-Source: Claude Design project https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 · files `ui_kits/pos-v2/cd-03/` (dark) and `cd-03/light/` (`?theme=light`) · brief `CD-03-pos-payment.md` (Q1–Q3 decided 2026-10-04).
-Screenshots: `docs/design/assets/CD-03/` — **re-export after the CD bundle refreshes** (the summary says PromptPayPanel QR + `completed`/`cancelled` chips render as placeholder / "—" until then).
-**Do not port Claude Design's JSX.** Build with HeroUI v3 + our tokens. All amounts, names and QR art are sample data (QR = placeholder, not EMVCo).
+# CD-03 — POS: payment
 
-## 0. Cowork review — ✅ all accepted by Field (2026-10-09)
+Built on The Loft Bar Design System (real DS components; every board has a dark/light Theme tweak). **Do not port canvas markup** — build with HeroUI v3 + tokens (`docs/rules/frontend.md`, BRIEF-014 utilities). Sample data only; QR art is a placeholder, not EMVCo. Template: `cd-template.md` · boards: `board-convention.md`. Shared children on the canvas: `PosFrame`, `Grid` (CD-02 copy), `Panel` (modes active / locked / lockedNew / paid / manualPaid, prop `ring`).
+
+## 0. Review items
+Rev 1 decisions Q1–Q3, F1–F4 stay (§10). Rev-2 items (✓ = accepted):
+
 | # | Item | Recommendation |
 |---|---|---|
-| F1 | **Payment needs to store *how* it was confirmed and *why* it was cancelled.** Boards show "ยืนยันด้วยตนเอง" + a reason (manual-confirm), and "QR หมดเวลา" vs "ยกเลิกแล้ว" for the same `cancelled` status. `payment` has no column for either (Q1 said "from the audit reason" — too awkward to query for a list). | Add to `payment`: `confirmed_via` enum (`webhook` \| `manual` \| `cash`, null while pending) · `status_reason VARCHAR(50)` (`expired` \| `staff_cancel` \| manual-confirm reason code) · `status_note TEXT` (the "อื่นๆ" detail). Accepted — goes into **BRIEF-013** as a Pre-decided schema change. |
-| F2 | **Split locks the whole bill** while any part is `pending` (in-flight board shows one lock for the table). Cancelling one part's QR only unlocks when no part is pending. | Accept — simplest consistent rule with FRD §7 "freeze what must be frozen". Record in BRIEF-013. |
-| F3 | Manual-confirm "อื่นๆ" → `รายละเอียด` field. | **Required** when อื่นๆ is chosen (otherwise the audit flag has no content). |
-| F4 | `cancelled` chip (neutral) is new in the DS StatusChip. | Update `docs/design-system.md` + `CD-00-handoff.md` §2 payment row: add `cancelled` ยกเลิกแล้ว neutral. Done (CD-00 §2 updated). |
+| R1 ✓ | **Pain point.** Root observed at both bars (CD-14 R8: paper / verbal orders → bill added up by hand). The payment-specific part is an **assumption**: cashiers check transfer slips by eye (can be faked) and split bills on a calculator → slow check-out queue, short takings. | Field: confirm or correct from the field visits. **Confirmed 2026-10-12** (field experience + research — `docs/research/Claude_verified_ops_findings.md`, DR-014). |
+| R2 ✓ | **DR-012 in the panel** (all boards): groups = station tickets with label บาร์ / ครัว, no item progress chips (only "ยกเลิก"), `accepted` = "กำลังเตรียม · ชื่อ"; orders arriving after the QR are tickets too. Sample made consistent with CD-02 / CD-04 (฿1,240.00 = items in receipt). | Done (panel). |
+| R3 ⏸ | **Content review of rev 1 screens** — decisions were approved, the screens never were: split rule (last part takes satang; charges added after the split) · cash helper optional · completed auto-advances after 3 s · whole bill locked while any part pending · receipt on screen only. | Field: walk J1 / J2 + state boards. **Parked 2026-10-12** until Field reviews the canvases. |
+| R4 ✓ | **New states:** checkout at 1024×768 (checkout·4) · create-QR failed, nothing locked (checkout·5) · promptpay at 1024×768 (·7). Rules: no `payments:create` → "ชำระเงิน" hidden · no `payments:mark_paid` → "ยืนยันด้วยตนเอง" hidden · disconnected → poll `GET /payments/:id` every 5 s. | Accept. **Accepted 2026-10-12** (Field). |
+| R5 ✓ | **Needs API (BRIEF-013, not written):** `confirmed_via` / `status_reason` / `status_note` (F1) · whole-bill lock while any part pending (F2) · `409 PAYMENT_IN_FLIGHT` on void / comp / close · cancel + 15-min system expiry (Q1) · GB Prime Pay webhook → `payment.status_changed`. | Write into BRIEF-013. **Accepted 2026-10-12** (Field). |
+| R6 | **DR-014 #6 impact (canvas update):** payment modes per venue — gateway webhook, or "normal way": app-generated amount-locked PromptPay QR to the venue account + **scan slip → verify** (evidence stored; reused slip / wrong receiver / short amount rejected) + manual confirm fallback. Gate = manual confirm. | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
 
-## 1. Design notes (not blocking)
+## 1. Overview
+- **Goal:** the cashier collects the whole bill or an equal split; PromptPay confirms itself from the bank, the amount is locked while waiting, and settling never closes the table by itself.
+- **Pain point:** see R1 (root = field research; payment-specific part = assumption).
+- **User + context:** cashier / manager at the POS tablet · Friday 23:30, several tables asking for the bill, groups of 3–6 who want to split, guest waiting with phone in hand, touch only.
+- **Entry → exit:** CD-02 panel "ชำระเงิน" · close-confirm "ไปชำระเงิน". Exit: settled → panel with on-screen receipt → "ปิดโต๊ะ" (CD-02 close-confirm) or "กลับไปที่โต๊ะ" · ยกเลิก QR → panel unlocked.
+- **Outcome:** no slip checking for PromptPay (webhook confirms); no double charge (Idempotency-Key, lock); split remainder always on the last part; manual confirm possible but flagged for the owner.
+- **Out of scope:** item-level split, printed / tax receipts, refunds UI, tips, cards, customer pays on phone (CD-07), end-of-shift cash count, LINE OA.
+- **Journeys:** J1 T3 merge + PromptPay: ชำระเงิน → สร้าง QR → webhook → สรุป → ปิดโต๊ะ (E1–E4) · J2 webhook missing, guest shows slip: ยืนยันด้วยตนเอง → reason อื่นๆ + detail → confirmed, flagged (E1–E3).
+
+## 2. Boards
+| Board | Type | States |
+|---|---|---|
+| `overview` | OVERVIEW | goal, pain point (R1), user/context, outcome, entry/exit, journeys, out of scope, key decisions |
+| `journey-1` | JOURNEY | panel (E1 ชำระเงิน) → checkout (E2 สร้าง QR) → pending → (webhook) completed (E3 ไปที่สรุป) → done (E4 ปิดโต๊ะ → CD-02) |
+| `journey-2` | JOURNEY | pending 6 min (E1 ยืนยันด้วยตนเอง) → reason required (E2 อื่นๆ + detail) → (E3 ยืนยัน) → receipt with "ยืนยันด้วยตนเอง" |
+| `checkout` | STATES | 1 default · 2 split selected · 3 partly paid + cash · 4 1024×768 · 5 create-QR failed |
+| `split` | STATES | 1 three people · 2 charge assigned · 3 two people (min) |
+| `promptpay` | STATES | 1 pending · 2 completed · 3 failed · 4 expired · 5 disconnected · 6 split part 1/3 · 7 1024×768 |
+| `split-progress` | STATES | 0/3 · 2/3 · 3/3 |
+| `cash` | STATES | helper used · short · confirming |
+| `manual-confirm` | STATES | no reason · อื่นๆ + detail · result |
+| `in-flight` | STATES | locked · new order after QR · 409 Toast |
+| `done` | STATES | panel after settlement · realtime Toast on grid |
+| `flow` | FLOW MAP | panel → checkout → promptpay / split / cash → done |
+Shared (not boards to review): `PosFrame`, `Grid`, `Panel`.
+
+## 3. State coverage
+✓ drawn · n/a (reason) · shared (where) · rule (§9, not drawn).
+
+| State | Checkout | Split | PromptPay | Cash | Manual confirm | Panel (in-flight / done) |
+|---|---|---|---|---|---|---|
+| default | ✓ ·1 | ✓ ·1 | ✓ ·1 | ✓ ·1 | ✓ ·1 | ✓ in-flight·1 |
+| loading | rule: bill from panel data, no own load | n/a | rule: create QR = primary isPending | ✓ ·3 | rule: primary isPending | shared CD-02 panel·3 |
+| empty | rule: คงเหลือ ฿0.00 → "ชำระเงิน" disabled | n/a | n/a | n/a | n/a | n/a |
+| error + retry | ✓ ·5 | n/a (client) | ✓ ·3 failed | rule: network → Alert, retry same key | rule: as cash | ✓ in-flight·3 |
+| validation | n/a | ✓ ·3 (2–10) | n/a | ✓ ·2 short | ✓ ·1 ·2 (reason, detail F3) | n/a |
+| pending | ✓ (lock on create) | n/a | ✓ ·1 ·5 ·6 | ✓ ·3 | rule | ✓ in-flight·1 |
+| success feedback | n/a | n/a | ✓ ·2 | rule → done | ✓ ·3 | ✓ done·1 ·2 |
+| failure per reason | ✓ ·5 | n/a | ✓ ·3 failed · ·4 expired | ✓ ·2 | rule: 409 already completed → refetch, Toast | ✓ in-flight·3 (409) |
+| stale / conflict | ✓ ·3 (partly paid) | rule: bill changed before confirm → recompute | ✓ in-flight·2 (new order outside lock) | n/a | rule: webhook arrives first → modal closes, completed | ✓ in-flight·2 |
+| disconnected | n/a | n/a | ✓ ·5 (poll fallback) | n/a | n/a | shared CD-02 grid-states·4 |
+| permission denied | rule: no `payments:create` → entry hidden | ← | rule: no `payments:mark_paid` → link hidden | ← | ← | ← |
+| long Thai text | rule: names wrap in receipt | n/a | n/a | n/a | ✓ ·2 (detail) | rule |
+| smallest size | ✓ ·4 | shared (560) | ✓ ·7 | shared (560) | shared (520) | split-progress 880 widest, fits |
+| keyboard open | n/a | n/a | n/a | rule: numeric keyboard, modal stays centered | rule | n/a |
+| session expired | global: 401 → CD-01 login; pending payment stays server-side | ← | ← | ← | ← | ← |
+
+## 4. Action table
+| Action | API (status) | Permission | Success → UI | Failure → UI | Recovery | Data kept | Idempotency |
+|---|---|---|---|---|---|---|---|
+| Open checkout | `GET /visits/:id` totals + payments (planned BRIEF-012 / 013) | `payments:create` | checkout·1 / ·3 | network → panel error | retry | — | n/a |
+| Create QR / split | `POST /visits/:visitId/payments {method, mode, parts?}` + Idempotency-Key (planned BRIEF-013) | `payments:create` | locks bill, promptpay·1 / split-progress | network / gateway → checkout·5 (nothing locked) · `409 PAYMENT_IN_FLIGHT` → show existing QR | retry same key | choices | key per checkout open |
+| Confirm (bank) | webhook → WS `payment.status_changed` (planned BRIEF-013) | — | promptpay·2 → done | failed → ·3 | สร้าง QR ใหม่ (new key) | — | webhook dedup by gateway ref |
+| Poll status | `GET /payments/:id` every 5 s while disconnected | `payments:read` | as webhook | — | — | — | n/a |
+| Cancel QR | `POST /payments/:id/cancel` | `payments:create` | `cancelled` (`staff_cancel`), bill unlocked when no part pending (F2) | 409 already completed → done | — | — | repeat → 409 refetch |
+| Expiry | server job at 15 min (Q1) | system | ·4 expired (`status_reason = expired`) | — | สร้าง QR ใหม่ | — | — |
+| Manual confirm | `POST /payments/:id/mark-paid {reason, note?}` | `payments:mark_paid` | completed + Badge "ยืนยันด้วยตนเอง" (`confirmed_via = manual`) | 409 already completed → close modal | — | reason | repeat → 409 |
+| Cash | `POST /visits/:visitId/payments {method:'cash'}` (completed immediately) | `payments:create` | done | network → Alert | retry same key | received (client only) | Idempotency-Key |
+| Void / close while pending | CD-02 actions | — | — | `409 PAYMENT_IN_FLIGHT` → in-flight·3 | cancel QR first | — | — |
+| Close table | → CD-02 close-confirm | `visits:close` | — | — | — | — | — |
+
+## 5. e2e script
+- **J1** E1 on T3 panel tap "ชำระเงิน" → checkout (รวมบิล + PromptPay, คงเหลือ ฿1,240.00) · E2 "สร้าง QR" → one `POST /payments` with Idempotency-Key → QR ฿1,240.00, countdown 15:00, panel locked (void / close disabled) · simulate webhook → `payment.status_changed completed` → "ชำระแล้ว ฿1,240.00", auto-advance after 3 s · E3 "ไปที่สรุป" → panel receipt "ชำระครบแล้ว", table still open · E4 "ปิดโต๊ะ" → CD-02 close-confirm (paid → close allowed).
+- **J2** pending QR, no webhook · E1 "ยืนยันด้วยตนเอง" → modal, confirm disabled · choose "อื่นๆ" → detail required (F3) · type detail · E3 "ยืนยันว่าชำระแล้ว" → `mark-paid {reason:'other', note}` → completed, `confirmed_via = manual`, receipt Badge "ยืนยันด้วยตนเอง", Toast "ยืนยันด้วยตนเอง · บันทึกให้เจ้าของตรวจสอบแล้ว".
+- **Edge:** double-tap สร้าง QR → one payment · void from staff app while pending → 409 · new order during pending → shown under divider, not in locked amount · split 3 of ฿1,240.00 → 413.33 / 413.33 / 413.34 · cash received empty → confirm allowed.
+
+## 6. Strings & sample data
+Sample data lives in the board files and `Panel` `renderVals()`. New in rev 2 (**bold**): **"สร้าง QR ไม่สำเร็จ ลองอีกครั้ง" / "ยังไม่ได้ล็อกยอด — กดสร้าง QR อีกครั้งได้ ระบบไม่สร้างซ้ำ" · panel station labels บาร์ / ครัว · ticket chip "กำลังเตรียม · บีม" · receipt items 2× ช้างดราฟต์ ฿240.00 · 4× สิงห์ดราฟต์ ฿560.00 · 1× โอลด์แฟชั่น ฿260.00 · 1× ลีโอขวด ฿100.00 · 1× ถั่วทอดสมุนไพร ฿80.00**. Rev-1 strings (Claude Design summary below) still valid except panel item chips (DR-012) and the receipt sample.
+
+### Rev-1 design notes (still valid)
 - Sample data is not internally consistent (receipt shows เนโกรนี ฿280.00 and ยำหมูยอ ฿180.00 vs menu ฿240.00 / ฿150.00 + หมด in CD-04; split state 2 total ฿1,540.00 vs checkout ฿1,240.00). Use the **rules**, not the sample numbers: split = `floor(nonCharge×100/n)/100`, last part = remainder; charge items added to their assigned part.
 - `expired` is not a status: show `cancelled` chip + heading "QR หมดเวลา" when `status_reason = expired` (F1).
 - Completed → auto-advance to done after 3 s (`ไปที่สรุปการชำระใน 3 วินาที`) — accepted; button "ไปที่สรุป" skips the wait.
 - Cash confirm disabled **only** when "รับเงินมา" is filled and short; empty field = confirm allowed (helper only, FRD §7).
 
-## 2. Accepted deviations
-All items in the summary §5 accepted (promptpay split into 3 state boards + 6th split-part state; context boards; added exit labels ถัดไป / ย้อนกลับ / ยืนยันการแบ่ง / ไปที่สรุป / ปิด; "ขาด ฿240.00"; quick-cash labels in money format; QR placeholder).
 
-## 3. Modal widths (from summary §2, for quick reference)
-checkout 560 · split 560 · cash 560 · manual-confirm 520 · promptpay 720 · split-progress 880 (widest; fits 1024×768). PromptPayPanel 348 (qrSize 260).
-
----
-
-## Claude Design summary (verbatim)
+### Rev-1 Claude Design summary (verbatim — layout §2, components §3 and strings §1 still apply unless changed above)
 ```
 CD-03 — POS ชำระเงิน (payment, table T3) — DEVELOPER HANDOFF
 
@@ -284,10 +367,44 @@ Kit-local (not in the DS bundle): RadioCard (Radio inside 56px card), BillSummar
 - QR art is the CD-02 QRMock placeholder (module grid), not a real EMVCo payload.
 ```
 
-## 4. Port to Design canvas (2026-10-09)
-Canvas: **CD-03 POS Payment** https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb (DS "The Loft Bar Design System", theme tweak dark/light per board). Supersedes the Claude Design project as the visual reference; §0–§3 and the verbatim summary still apply.
-- Shared pieces: `PosFrame`, `Grid` (from CD-02), `Panel` with CD-03 modes `active` / `locked` / `lockedNew` / `paid` / `manualPaid`.
-- Boards (all full size, no zoomed state boards): checkout (3), split (3), promptpay (6), split-progress (3), cash (3), manual-confirm (3), in-flight (3), done (2), flow.
-- P1: sample data made consistent — receipt and drawer both total ฿1,240.00 (non-cancelled items only); split state 2 stays ฿1,540.00 because of the ฿300.00 charge item (rule unchanged, §1).
-- P2: QR art is a placeholder image (not EMVCo), uploaded to the canvas.
-- P3: manual-confirm state 3 shows the receipt with Badge "ยืนยันด้วยตนเอง" + a success Toast.
+
+## 7. Layout & tokens
+- Viewports 1280×800 (design), **1024×768 smallest** (checkout·4, promptpay·7). Content 1192×744 @1280.
+- Modals: checkout 560 · split 560 · cash 560 · manual-confirm 520 · promptpay 720 · split-progress 880 (widest, fits 1024). PromptPayPanel 348 (qrSize 260).
+- Radio cards min-height 56; bill summary total 40/700 accent; part rows min-height 60; footer buttons lg 52.
+- Drawer 400 (CD-02); receipt Card padding 16. Toasts top-right max 380.
+
+## 8. Components → platform (HeroUI v3)
+| Part | HeroUI v3 |
+|---|---|
+| Checkout / split / cash / manual confirm | Modal + RadioGroup (card wrapper) · NumberField · Select · Input / TextField · Button |
+| QR | PromptPayPanel (DS) inside Modal · Spinner |
+| Payment status | StatusChip kind payment (pending / completed / failed / cancelled) |
+| Manual flag | Badge warning "ยืนยันด้วยตนเอง" |
+| Lock / errors / disconnected | Alert (info / danger / warning) |
+| Feedback | Toast success / danger |
+| Panel | CD-02 Drawer (DR-012 groups) |
+
+## 9. Behaviour rules
+- **Lock:** creating a payment locks the bill amount; while any part is `pending` the whole bill is locked (F2): void / comp / close → `409 PAYMENT_IN_FLIGHT`. Orders arriving meanwhile show under "ออเดอร์ใหม่หลังสร้าง QR — ไม่รวมในยอดนี้" and remain due after.
+- **Confirmation:** only the webhook (or poll fallback) marks PromptPay completed; staff can't except via manual confirm (`payments:mark_paid`, reason required, "อื่นๆ" needs detail, flagged — Q3).
+- **Expiry:** QR lifetime 15 min; expiry = `cancelled` + `status_reason = expired`, heading "QR หมดเวลา" (Q1, F1).
+- **Split:** n 2–10; part = floor(non-charge × 100 / n) / 100; last part = remainder; charge items added to their assigned part (Q2).
+- **Cash:** stores only the bill amount; "รับเงินมา" is a client helper; confirm disabled only when filled and short.
+- **Settlement ≠ close:** done keeps the table open; "ปิดโต๊ะ" goes through CD-02 close-confirm.
+- **Idempotency:** one key per checkout attempt; retry reuses it; "สร้าง QR ใหม่" after failed / expired uses a new key.
+- **Disconnected:** keep pending UI, Alert warning, poll every 5 s; webhook result wins.
+- **Permissions:** no `payments:create` → "ชำระเงิน" hidden; no `payments:mark_paid` → manual link hidden.
+- **Standard questions (`cd-template.md` §5):** Filters / search → n/a. Long and short → 1024×768 drawn; receipt names wrap. Interaction → DS pressed / disabled / pending; radio card selected = accent-soft. Accessibility → modal labelled "ชำระเงิน — T3"; countdown announced politely each minute, not every second; status not by colour alone (chip text). Data → totals from server only; client never computes the charged amount except the split preview (server recomputes).
+- **User-mindset checks:** ✓ one dominant action per step · ✓ targets · ✓ ack < 1 s · ✓ loss confirmed (cancel QR = explicit button) · ✓ errors say how to fix · ✓ task cost J1 3 taps · ✓ status not by colour alone · ☐ long Thai receipt drawn · ☐ walkthrough with staff (R3).
+
+## 10. Revisions
+| Rev | Date | Change | Authority |
+|---|---|---|---|
+| 1 | 2026-10-04 | Q1 `payment_status += cancelled`, 15-min QR · Q2 charges per part · Q3 manual confirm without PIN, flagged | Field |
+| 1 | 2026-10-09 | Claude Design boards; F1 `confirmed_via` / `status_reason` / `status_note` · F2 split locks whole bill · F3 detail required for อื่นๆ · F4 `cancelled` chip | Field |
+| 1 | 2026-10-09 | Ported to the Design canvas (P1 sample consistency, P2 QR placeholder, P3 manual result) | Cowork |
+| 2 | 2026-10-10 | CD template retrofit: overview, J1 / J2, pills + sections, 1024×768 frames, create-QR failure; R2 DR-012 panel + sample consistent with CD-02 / CD-04; R1 pain point assumption; R3 screen review; R4 states; R5 API gaps | R2 via DR-012 · R1, R3–R5 pending |
+
+## 11. Source snapshot
+Pending — after Field approves rev 2 (`cd-template.md` §6). Lucide blob `/_blob/7564fb1d7f942a27438b0405aa632b96` (CD-03). QR image `/_blob/9a623a27027ed88647a51f86c0a108f1` is a placeholder (not EMVCo).

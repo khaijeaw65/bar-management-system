@@ -521,7 +521,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     <div>
       <h1 class="intro-title">Entity<br><span>Relationship Diagram</span></h1>
       <div class="intro-meta">
-        <span><strong>9 domains</strong> · 34 tables</span>
+        <span><strong>10 domains</strong> · 37 tables</span>
         <span><strong>Stack:</strong> NestJS + PostgreSQL + TypeORM</span>
         <span><strong>Updated:</strong> Sep 2026</span>
       </div>
@@ -545,6 +545,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-order)"></div> Orders <span class="legend-count">3</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-pay)"></div> Payment <span class="legend-count">2</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-bottle)"></div> Bottle Keep <span class="legend-count">2</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-inv)"></div> Shift &amp; AI Insight <span class="legend-count">2</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-audit)"></div> Audit Log <span class="legend-count">1</span></div>
   </div>
 
@@ -588,6 +589,11 @@ erDiagram
         string name
         string timezone
         boolean kitchen_display_enabled
+        time business_day_cutoff
+        string payment_mode
+        string promptpay_id
+        boolean counter_qr_enabled
+        boolean shift_close_enabled
         timestamp created_at
     }
     table_seat {
@@ -630,6 +636,7 @@ erDiagram
         uuid id PK
         string display_name
         boolean is_active
+        string pos_pin_hash
         timestamp created_at
     }
     staff_user_identity {
@@ -700,7 +707,7 @@ erDiagram
         decimal base_price
         string item_type
         string image_key
-        string kitchen_tag
+        string kitchen_tag "bar|food, NULL=charge"
         boolean is_available
         boolean is_promo
         int sort_order
@@ -768,18 +775,31 @@ erDiagram
     order_record {
         uuid id PK
         uuid visit_id FK
-        string status
+        int order_number
+        date business_date
         timestamp created_at
+        timestamp updated_at
+    }
+    order_ticket {
+        uuid id PK
+        uuid order_id FK
+        string station
+        string status
+        string issue_reason
+        uuid issue_item_id FK
+        timestamp issue_escalated_at
+        timestamp sent_at
         timestamp updated_at
     }
     order_item {
         uuid id PK
-        uuid order_id FK
+        uuid ticket_id FK
         uuid menu_item_variant_id FK
         int quantity
         decimal unit_price_snapshot
         text notes
-        string status
+        timestamp cancelled_at
+        string cancel_reason
         timestamp created_at
     }
     order_item_modifier {
@@ -796,6 +816,9 @@ erDiagram
         string status
         string gateway_tx_id UK
         text qr_payload
+        string confirmed_via
+        string slip_trans_ref UK
+        decimal slip_amount
         timestamp paid_at
         timestamp created_at
     }
@@ -821,6 +844,26 @@ erDiagram
         uuid visit_id FK
         decimal quantity_poured
         uuid created_by FK
+        timestamp created_at
+    }
+    shift {
+        uuid id PK
+        date business_date
+        uuid opened_by FK
+        decimal opening_float
+        decimal counted_cash
+        decimal expected_cash
+        uuid reviewed_by FK
+        timestamp closed_at
+    }
+    ai_insight {
+        uuid id PK
+        string kind
+        date period_start
+        date period_end
+        jsonb input_snapshot
+        jsonb output
+        string model
         timestamp created_at
     }
     audit_log {
@@ -881,7 +924,8 @@ erDiagram
     inventory_item ||--o{ menu_variant_ingredient : "ingredient in"
     inventory_item ||--o{ bottle_keep : is
 
-    order_record ||--o{ order_item : contains
+    order_record ||--|{ order_ticket : "split into"
+    order_ticket ||--|{ order_item : contains
     order_item ||--o{ order_item_modifier : has
 
     payment ||--o{ payment_order : covers
@@ -916,9 +960,15 @@ erDiagram
             <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">timezone</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">kitchen_display_enabled</span><span class="field-type">boolean</span></div>
+            <div class="field-row"><span class="field-name">business_day_cutoff</span><span class="field-type">time</span></div>
+            <div class="field-row"><span class="field-name">payment_mode</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">promptpay_id</span><span class="field-type">varchar(20)</span></div>
+            <div class="field-row"><span class="field-name">promptpay_id_type</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">counter_qr_enabled</span><span class="field-type">boolean</span></div>
+            <div class="field-row"><span class="field-name">shift_close_enabled</span><span class="field-type">boolean</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">kitchen_display_enabled toggled at runtime — no redeploy needed (see handoff §Kitchen Display)</div>
+          <div class="field-note">Venue settings, all toggled at runtime (DR-014): kitchen_display_enabled → bar/food tickets + READY step · business_day_cutoff (default 06:00) → reports, order numbers · payment_mode own_promptpay | gateway + promptpay_id for the app-generated amount QR · counter_qr_enabled · shift_close_enabled.</div>
         </div>
 
         <div class="entity-card">
@@ -1194,7 +1244,7 @@ erDiagram
             <div class="field-row"><span class="field-name">is_promo</span><span class="field-type">boolean</span></div>
             <div class="field-row"><span class="field-name">sort_order</span><span class="field-type">smallint</span></div>
           </div>
-          <div class="field-note">item_type: simple | recipe | charge. kitchen_tag: bar | food | both | n/a. Charge items (puke fine, corkage) permission-gated + audit-logged. is_promo splits promo sales in analytics (DR-010).</div>
+          <div class="field-note">item_type: simple | recipe | charge. kitchen_tag: bar | food (NULL only for charge, DR-012). Charge items (puke fine, corkage) permission-gated + audit-logged. is_promo splits promo sales in analytics (DR-010).</div>
         </div>
 
         <div class="entity-card">
@@ -1353,11 +1403,35 @@ erDiagram
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> visit_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">order_number</span><span class="field-type">int</span></div>
+            <div class="field-row"><span class="field-name">business_date</span><span class="field-type">date</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">One row = one order "#001" — what was sent in one go (DR-013). order_number resets daily; business_date uses the 06:00 Asia/Bangkok cut-off. UNIQUE (business_date, order_number). 1 order → 1..3 tickets. Bill link: payment_order → order_record.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">order_ticket</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> order_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">station</span><span class="field-type">enum</span></div>
             <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">issue_reason</span><span class="field-type">varchar(30)</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> issue_item_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">issue_note</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> issue_reported_by</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">issue_escalated_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">sent_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
           </div>
           <div class="field-note">
+            One station's part of an order; owns the status (DR-012, DR-013). Split by station only when venue.kitchen_display_enabled — otherwise one bar ticket. station NULL = charge-only ticket (created SENT). UNIQUE NULLS NOT DISTINCT (order_id, station). Counter seats ACCEPTED → SENT (DR-011). All items cancelled → CANCELLED.
             <div class="state-list">
               <span class="state-chip">PENDING</span><span class="state-arrow">→</span>
               <span class="state-chip">ACCEPTED</span><span class="state-arrow">→</span>
@@ -1365,6 +1439,8 @@ erDiagram
               <span class="state-chip">SENT</span>
               <span class="state-arrow">⤳</span>
               <span class="state-chip">ISSUE</span>
+              <span class="state-arrow">⤳</span>
+              <span class="state-chip">CANCELLED</span>
             </div>
           </div>
         </div>
@@ -1376,15 +1452,19 @@ erDiagram
           </div>
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
-            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> order_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> ticket_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> menu_item_variant_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">quantity</span><span class="field-type">smallint</span></div>
             <div class="field-row"><span class="field-name">unit_price_snapshot</span><span class="field-type">numeric(10,2)</span></div>
             <div class="field-row"><span class="field-name">notes</span><span class="field-type">text</span></div>
-            <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">cancelled_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> cancelled_by</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">cancel_reason</span><span class="field-type">varchar(50)</span></div>
+            <div class="field-row"><span class="field-name">cancel_note</span><span class="field-type">text</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">unit_price_snapshot frozen at order time. Cancelled items stay visible, struck-through (audit principle).</div>
+          <div class="field-note">Belongs to one ticket (DR-013). No per-item progress status — cancelled_at NULL = active. unit_price_snapshot frozen at order time. Cancelled items stay visible, struck-through, with who / when / why (audit principle).</div>
         </div>
 
         <div class="entity-card">
@@ -1426,10 +1506,13 @@ erDiagram
             <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-uk">UK</span> gateway_tx_id</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">qr_payload</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name">confirmed_via</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-uk">UK</span> slip_trans_ref</span><span class="field-type">varchar(100)</span></div>
+            <div class="field-row"><span class="field-name">slip_amount</span><span class="field-type">numeric(12,2)</span></div>
             <div class="field-row"><span class="field-name">paid_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">gateway_tx_id UNIQUE = idempotency key — GB Prime Pay may retry webhooks, check before settling. method: promptpay | cash. status: pending | completed | failed | refunded. One visit can have multiple payments (separate bills).</div>
+          <div class="field-note">gateway_tx_id UNIQUE = idempotency key — GB Prime Pay may retry webhooks, check before settling. method: promptpay | cash. status: pending | completed | failed | refunded | cancelled. confirmed_via: webhook | manual | cash | slip_verify (DR-014). slip_trans_ref UNIQUE = reused-slip guard. One visit can have multiple payments (separate bills).</div>
         </div>
 
         <div class="entity-card">
@@ -1473,7 +1556,7 @@ erDiagram
             <div class="field-row"><span class="field-name">location_note</span><span class="field-type">text</span></div>
             <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
           </div>
-          <div class="field-note">Separate from bar inventory — already sold. No precise ml tracking; bars use "2 bottles, half left" style. remaining_note = free text e.g. "ครึ่งขวด". Status: active | finished | expired. Blocks customer anonymization while active.</div>
+          <div class="field-note">Separate from bar inventory — already sold. No precise ml tracking; bars use "2 bottles, half left" style. remaining_note = free text e.g. "ครึ่งขวด". Status: active | finished — simple record, no expiry (DR-014). Blocks customer anonymization while active.</div>
         </div>
 
         <div class="entity-card">
@@ -1490,6 +1573,59 @@ erDiagram
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
           </div>
           <div class="field-note">Each pour decrements bottle_keep.remaining_quantity. Linked to the visit so pour history is visible per session.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SHIFT & AI INSIGHT -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-inv)"></div>
+        <div class="domain-name" style="color:var(--d-inv)">Shift &amp; AI Insight</div>
+        <div class="domain-desc">Cash count at close + AI owner insight (DR-014)</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">shift</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">business_date</span><span class="field-type">date</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> opened_by</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">opened_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">opening_float</span><span class="field-type">numeric(12,2)</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> closed_by</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">closed_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">counted_cash</span><span class="field-type">numeric(12,2)</span></div>
+            <div class="field-row"><span class="field-name">expected_cash</span><span class="field-type">numeric(12,2)</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> reviewed_by</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">reviewed_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">note</span><span class="field-type">text</span></div>
+          </div>
+          <div class="field-note">Optional per venue (venue.shift_close_enabled). Staff count the drawer blind; expected_cash = float + cash payments, snapshotted at close; manager reviews (in person or remote).</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">ai_insight</span>
+            <span class="entity-tag tag-append">append-only</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">kind</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">period_start</span><span class="field-type">date</span></div>
+            <div class="field-row"><span class="field-name">period_end</span><span class="field-type">date</span></div>
+            <div class="field-row"><span class="field-name">input_snapshot</span><span class="field-type">jsonb</span></div>
+            <div class="field-row"><span class="field-name">output</span><span class="field-type">jsonb</span></div>
+            <div class="field-row"><span class="field-name">model</span><span class="field-type">varchar(100)</span></div>
+            <div class="field-row"><span class="field-name">tokens_used</span><span class="field-type">int</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">kind: sales_summary | anomaly | menu. SQL computes every figure (input_snapshot); the model only explains them (output). Totals only, staff as aliases — no guest data sent. Generated by a scheduled job or on demand.</div>
         </div>
 
       </div>

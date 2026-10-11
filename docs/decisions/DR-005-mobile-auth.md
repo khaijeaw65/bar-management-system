@@ -73,3 +73,13 @@ App                                   Backend                         LINE
 - Every authenticated request (cookie or Bearer) checks `session:<sid>` in Redis; missing → 401. Mobile logout (revoke refresh family) therefore ends the session immediately, not after the access-token TTL.
 - `POST /api/auth/mobile/token` and `/mobile/refresh` create/rotate the same family + session record as the web flow.
 **Why:** instant per-device logout with no extra infrastructure (Redis already on the request path).
+
+---
+
+## Amendment 2 — persistent mobile session (Field, 2026-10-10, via CD-08 R13)
+- **Mobile refresh TTL = 30 days, sliding** (each rotation extends it; `session:<sid>` TTL follows). Web stays 7 days.
+- The staff app stays signed in across app restarts and reboots; access tokens refresh silently. The login screen appears only when a refresh fails: own logout, device revoked by the owner (`sid` revoked), unused for more than 30 days, or refresh-token reuse detected.
+- **No re-authentication before actions.** The phone cannot move money (void / payment / close are POS-only, DR-009); every action is permission-checked (`PermissionsGuard`) and audited with the staff id; the owner can revoke one device instantly.
+- Implementation: `POST /api/auth/mobile/token` and `/mobile/refresh` set the 30-day TTL for `client=mobile` families (configurable; exact name in the mobile auth brief).
+**Why:** a bar phone is shared at the counter and used shift by shift; a weekly login (7 days) would hit staff who work one shift a week, and re-auth per action fails the "faster than walking to the POS" test.
+**Date:** 2026-10-10 · recorded by Cowork on Field's explicit instruction ("agree", CD-08 review)

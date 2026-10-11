@@ -1,0 +1,19 @@
+:root{
+  --sp-0:0px;--sp-1:2px;--sp-2:4px;--sp-3:6px;--sp-4:8px;--sp-5:12px;--sp-6:16px;
+  --sp-7:20px;--sp-8:24px;--sp-9:32px;--sp-10:40px;--sp-11:48px;--sp-12:64px;
+
+  --gutter-phone:16px;
+  --gutter-desktop:24px;
+  --card-pad:16px;
+  --card-pad-lg:20px;
+  --stack-tight:8px;
+  --stack:12px;
+  --stack-loose:20px;
+  --section-gap:32px;
+
+  --tap-min:44px;
+  --tap-comfortable:52px;
+  --pos-key:64px;
+  --bar-height:56px;
+  --sheet-grab:36px;
+}

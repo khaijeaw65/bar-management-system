@@ -1,6 +1,6 @@
 # CD-03 — POS: payment (PromptPay QR, cash, manual confirm, split-equal, in-flight collision)
 
-**Status:** Done (2026-10-09) — handoff `CD-03-handoff.md`; review F1–F4 accepted by Field 2026-10-09 · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (order → **pay** → close) — opened from CD-02 panel "ชำระเงิน" and close-confirm "ไปชำระเงิน"
+**Status:** rev 2 in review (2026-10-10, CD template retrofit) — handoff `CD-03-handoff.md`; Q1–Q3 + F1–F4 accepted by Field; screens awaiting review (R3) · **Surface:** web desktop/tablet (1280 px; also 1024 px) · **Used by:** core vertical slice (order → **pay** → close) — opened from CD-02 panel "ชำระเงิน" and close-confirm "ไปชำระเงิน"
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System, not the home "What should we create?" box): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -47,3 +47,10 @@ Defaults (no decision needed unless Field objects): split rounding → parts rou
 ## Result
 - Claude Design link: https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 (`ui_kits/pos-v2/cd-03/`, 9 boards + state boards, dark + light)
 - Handoff: `docs/design/CD-03-handoff.md` · screenshots `docs/design/assets/CD-03/`
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 2 | 2026-10-10 | Panel order groups are DR-012 station tickets (no item progress chips) · checkout and promptpay drawn at the smallest size 1024×768 (brief said 1024 px) · create-QR failure state added · permission rules (`payments:create`, `payments:mark_paid`) · poll fallback every 5 s when disconnected | handoff §0 R2, R4, §9 |

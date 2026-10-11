@@ -1,6 +1,6 @@
 # CD-11 — Journey boards + notifications end-to-end (CD-10 merged in) — presentation set
 
-**Status:** Ready (Field, 2026-10-09) — run **last**, after every other CD handoff exists · **Surface:** presentation boards 1920×1080 composed from existing artboards · **Used by:** 8 Nov gate demo + advisor presentation · CD-10 merged here (Field, 2026-10-09)
+**Status:** Rev 1 canvas in review (2026-10-11) — brief Ready (Field, 2026-10-09) — run **last**, after every other CD handoff exists · **Surface:** presentation boards 1920×1080 composed from existing artboards · **Used by:** 8 Nov gate demo + advisor presentation · CD-10 merged here (Field, 2026-10-09)
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -25,5 +25,10 @@ All handoffs `docs/design/CD-0*-handoff.md`, `CD-1*-handoff.md` · DR-009 (surfa
 - Notification matrix matches DR-009.
 
 ## Result
-- Claude Design link: <after run>
-- Boards exported to `docs/design/assets/CD-11/` (also used by the presentation deck)
+- Canvas: https://claude.ai/artifact/PpcMLoSNUudmcQU3kiYDsG (page ชุดนำเสนอ = 7 boards · page Sources = copied components)
+- Handoff: `docs/design/CD-11-handoff.md` · PNG export to `docs/design/assets/CD-11/` after approval
+
+## Revisions
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 1 | 2026-10-11 | Composed from copies of the real components (no screenshots) — re-copy after other CD reviews (R1) · sample captions where CDs use different tables (R2) · notification matrix follows DR-009 rows; "เมนูหมด" is a footnote, not a row; DR-009 needs an amendment for DR-012 ticket chips (R3) · counter uses C3, not C2 (R4) | handoff §0 |

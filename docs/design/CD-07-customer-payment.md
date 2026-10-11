@@ -1,6 +1,6 @@
 # CD-07 — Customer QR: pay from the phone (PromptPay merge / split-equal, cash via staff)
 
-**Status:** Ready — Q1 (no claiming) + D1–D4 accepted by Field (2026-10-09) · **Surface:** customer phone web (390×844; also 360×780) · **Used by:** S1 customer payment brief · FRD §7 · rules from CD-03 (F1–F4)
+**Status:** rev 1 canvas in review (2026-10-11) — Q1 (no claiming) + D1–D4 accepted by Field (2026-10-09) · **Surface:** customer phone web (390×844; also 360×780) · **Used by:** S1 customer payment brief · FRD §7 · rules from CD-03 (F1–F4)
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -37,5 +37,12 @@
 - No out-of-scope items appear.
 
 ## Result
-- Claude Design link: <after run>
-- Handoff: `docs/design/CD-07-handoff.md` · screenshots `docs/design/assets/CD-07/`
+- Canvas: https://claude.ai/artifact/JDoXZyWWF2tLybdY9dufQe (built to `cd-template.md` v2)
+- Handoff: `docs/design/CD-07-handoff.md` · source snapshot after approval
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 1 | 2026-10-11 | Merge CTA reads "สร้าง QR ฿1,240.00" (split / cash keep "ถัดไป" / "เรียกพนักงาน") · QR 200 instead of 240 to fit 844 with the save-QR hint · "เปลี่ยนวิธีจ่าย" (cancel own QR) added with a split restriction (R2) · tab "after payment" state added | handoff §0, §9 |

@@ -2,15 +2,15 @@
 
 | | |
 |---|---|
-| **Status** | Ready — approved by Field 2026-10-04 |
+| **Status** | Ready — approved by Field 2026-10-04 · Rev 2 approved 2026-10-10 (DR-012) |
 | **Implementer** | metee (learning mode — writes ≥ 70 % himself; agent ≤ 20 %) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **PR** | <executor fills> |
 | **Affected apps** | mobile |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | **BRIEF-002 merged** (Expo scaffold). Does **not** wait for BRIEF-009 — uses provisional local schemas (§3) |
-| **References** | `docs/rules/mobile.md` · DR-008, DR-009 (staff app scope) · DR-005 (auth, mocked here) · FRD §6 (order states, order card) · `docs/design/CD-00-handoff.md` §2 (order chips) · `docs/design/CD-02-handoff.md` F1 (money) · `docs/briefs/ui/staff-mobile.md` Screen 1–2 (content reference only — old tokens/PWA wording ignored) |
+| **References** | `docs/rules/mobile.md` · DR-008, DR-009 (staff app scope), DR-012 (station tickets, labels) · DR-005 (auth, mocked here) · FRD §6 (order states, order card) · `docs/design/CD-00-handoff.md` §2 (order chips) · `docs/design/CD-02-handoff.md` F1 (money) · `docs/briefs/ui/staff-mobile.md` Screen 1–2 (content reference only — old tokens/PWA wording ignored) |
 | **Audit depth** | Compact (UI on mocks, no auth/payment logic) |
 | **Size** | ~8–10 h (Week 0, evenings) |
 
@@ -27,13 +27,13 @@ A staff member opens the app, "logs in" with a mock session, and lands on **อ�
 - **Tabs** `src/app/(tabs)/_layout.tsx`: bottom tabs **ออเดอร์** (active, `ClipboardList`) and **อื่นๆ** (`Menu`) only. อื่นๆ screen = staff name + Button "ออกจากระบบ" → `signOut()` → `/login`.
 - **Order queue** `src/app/(tabs)/orders.tsx`:
   - Header "ออเดอร์".
-  - Filter tabs (HeroUI Native `Tabs` or `Chip` row, horizontal scroll): **ทั้งหมด · ใหม่ · กำลังทำ · พร้อมเสิร์ฟ · มีปัญหา** → `all | pending | accepted | ready | issue`. `sent` orders are not shown in the queue. "มีปัญหา" shows a dot when any `issue` exists.
-  - `FlatList` of **OrderCard** (`src/components/order/OrderCard.tsx`): row 1 order no. "#0042" + time ago "2 นาทีที่แล้ว" · row 2 "T3 · ต้น" (table label · first `orderedByName`) · items "2× ช้างดราฟต์" max 3 lines then "+ 2 รายการ" · status chip (CD-00 §2 label + tone).
+  - Filter tabs (HeroUI Native `Tabs` or `Chip` row, horizontal scroll): **ทั้งหมด · ใหม่ · กำลังเตรียม · พร้อมเสิร์ฟ · มีปัญหา** → `all | pending | accepted | ready | issue`. `sent` orders are not shown in the queue. "มีปัญหา" shows a dot when any `issue` exists.
+  - `FlatList` of **OrderCard** (`src/components/order/OrderCard.tsx`): row 1 order no. "#0042" + time ago "2 นาทีที่แล้ว" · row 2 "T3 · ต้น · บาร์" (table label · first `orderedByName` · station label บาร์ / ครัว from `station`) · items "2× ช้างดราฟต์" max 3 lines then "+ 2 รายการ" · status chip (CD-00 §2 label + tone). Item lines carry no status chip; a cancelled item is struck through (DR-012).
   - Pull-to-refresh (`refetch`).
   - States: loading (Skeleton ×4) · empty per filter "ยังไม่มีออเดอร์" · error Alert "โหลดออเดอร์ไม่สำเร็จ" + Button "ลองอีกครั้ง".
   - Sort: oldest first (bartender works FIFO).
 - **API layer + mocks** (mobile.md → Mocks): `src/lib/api/orders.ts` `getOrderQueue(): Promise<OrderQueue>` → returns `src/mocks/orders.ts` when `EXPO_PUBLIC_USE_MOCKS=1` (300 ms delay); real branch throws `Error('API not wired — BRIEF-012+')` for now. Hook `src/hooks/useOrderQueue.ts` (`['orders', 'queue']`).
-- **Fixtures**: 8 orders covering every queue status, 1–5 items each, mixed tables (T1–T6, C1–C8), 2 with no `orderedByName`, 1 with a cancelled item.
+- **Fixtures**: 8 orders covering every queue status, 1–5 items each, mixed tables (T1–T6, C1–C8), 2 with no `orderedByName`, 1 with a cancelled item, **1 mixed placement = 2 tickets (bar + food) sharing a `placementId`** (DR-012).
 - **Utils** `src/lib/utils/`: `formatBaht()` (`฿1,240.00`, not used on cards yet — tested now for later), `timeAgo()` (Thai: "เมื่อกี้", "n นาทีที่แล้ว", "n ชม.ที่แล้ว").
 - Replace BRIEF-002's placeholder `src/app/index.tsx` (redirect only) — **remove its `OrderStatus` import from `@bar/contracts`** (that enum is replaced by BRIEF-009).
 - Map design tokens into `src/global.css` for the colors this brief uses (chip tones, surface, text) from `docs/design/tokens-v2.css`; no hex in `.tsx`.
@@ -47,11 +47,13 @@ A staff member opens the app, "logs in" with a mock session, and lands on **อ�
 - **Endpoint (future, catalog):** `GET /api/orders?status=pending,accepted,ready,issue` (`orders:read`). Mocked here.
 - **Provisional schema** — local in `src/lib/api/orders.ts` (moves to `@bar/contracts` when the orders backend brief lands; field names must stay):
   ```ts
-  const OrderStatusLocal = z.enum(['pending','accepted','ready','sent','issue']);           // = schema.sql order_status
-  const OrderItemStatusLocal = z.enum(['pending','preparing','ready','cancelled']);        // = order_item_status
+  const OrderStatusLocal = z.enum(['pending','accepted','ready','sent','issue','cancelled']); // = schema.sql order_status (DR-012)
+  const OrderItemStatusLocal = z.enum(['pending','preparing','ready','cancelled']);        // = order_item_status; UI uses only cancelled (DR-012)
+  const StationLocal = z.enum(['bar','food']);                                              // = kitchen_station (charge tickets never reach the queue)
   const QueueItem = z.object({ id: z.string().uuid(), name: z.string(), variantName: z.string().nullable(),
     quantity: z.number().int().positive(), status: OrderItemStatusLocal, orderedByName: z.string().nullable(), notes: z.string().nullable() });
   const QueueOrder = z.object({ id: z.string().uuid(), number: z.number().int(), status: OrderStatusLocal,
+    placementId: z.string().uuid(), station: StationLocal,
     tableLabel: z.string(), visitId: z.string().uuid(), createdAt: z.string().datetime(), items: z.array(QueueItem).min(1) });
   export const OrderQueueSchema = z.object({ items: z.array(QueueOrder) });
   export type OrderQueue = z.infer<typeof OrderQueueSchema>;
@@ -123,3 +125,4 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-04 | Initial — replaces the old "BRIEF-010 menu-list redesign" (web, now Field's per DR-008) |
+| 2 | 2026-10-10 | DR-012 + Amendment 1: `accepted` label "กำลังเตรียม"; card = station ticket (`placementId`, `station`, label บาร์ / ครัว); no item status chips, cancelled struck; `order_status += cancelled`; fixture with a 2-ticket placement (Field approved in session) |

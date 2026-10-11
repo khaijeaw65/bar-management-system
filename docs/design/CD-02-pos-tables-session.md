@@ -43,3 +43,10 @@
 ## Result
 - Claude Design link: https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457 (`ui_kits/pos-v2/cd-02/`, 12 boards dark + light)
 - Handoff: `docs/design/CD-02-handoff.md` · screenshots `docs/design/assets/CD-02/`
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 2 | 2026-10-10 | "Already opened" is no longer a silent info Alert — the POS asks before joining (opener / time / guest; เข้าโต๊ะเดิม / เลือกโต๊ะอื่น) · panel groups = DR-012 station tickets, no item progress chips · 1024×768 smallest size · permission-limited panel | handoff §0 R2–R4, §9 |

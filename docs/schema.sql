@@ -1,6 +1,6 @@
 -- ============================================================
 -- Bar Management System — Initial Schema
--- Generated: 2026-09-13  |  Updated: 2026-10-10  |  9 domains, 34 tables
+-- Generated: 2026-09-13  |  Updated: 2026-10-12  |  10 domains, 37 tables
 -- ============================================================
 
 -- ── Extensions ───────────────────────────────────────────────
@@ -12,11 +12,15 @@ CREATE TYPE table_seat_kind     AS ENUM ('table', 'counter');
 CREATE TYPE visit_state         AS ENUM ('open', 'active', 'idle', 'closed', 'abandoned');
 CREATE TYPE visit_open_source   AS ENUM ('pos', 'app', 'qr');  -- where a visit was opened (BRIEF-011 Q3, Field 2026-10-10)
 CREATE TYPE item_type           AS ENUM ('simple', 'recipe', 'charge');
-CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue');
-CREATE TYPE order_item_status   AS ENUM ('pending', 'preparing', 'ready', 'cancelled');
+CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue', 'cancelled');  -- per station ticket; cancelled = every item on the ticket cancelled (DR-012, Field 2026-10-10)
+CREATE TYPE kitchen_station     AS ENUM ('bar', 'food');  -- station ticket routing; 'both' dropped (DR-012)
 CREATE TYPE payment_method      AS ENUM ('promptpay', 'cash');
 CREATE TYPE payment_status      AS ENUM ('pending', 'completed', 'failed', 'refunded', 'cancelled');  -- cancelled = staff cancel or 15-min QR timeout (CD-03 Q1, Field 2026-10-04)
-CREATE TYPE bottle_keep_status  AS ENUM ('active', 'finished', 'expired');
+CREATE TYPE bottle_keep_status  AS ENUM ('active', 'finished');  -- simple record, no expiry (DR-014 #9)
+CREATE TYPE venue_payment_mode  AS ENUM ('own_promptpay', 'gateway');  -- DR-014 #6
+CREATE TYPE promptpay_id_type   AS ENUM ('mobile', 'national_id', 'ewallet');  -- DR-014 #6
+CREATE TYPE payment_confirmed_via AS ENUM ('webhook', 'manual', 'cash', 'slip_verify');  -- CD-03 F1 + DR-014 #6
+CREATE TYPE ai_insight_kind     AS ENUM ('sales_summary', 'anomaly', 'menu');  -- DR-014 #11
 CREATE TYPE inv_category        AS ENUM ('A', 'B', 'C');
 CREATE TYPE inv_tx_type         AS ENUM ('purchase', 'usage', 'adjustment', 'void');
 CREATE TYPE audit_action        AS ENUM ('CREATE', 'UPDATE');
@@ -30,7 +34,13 @@ CREATE TABLE venue (
   id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name                     VARCHAR(200) NOT NULL,
   slug                     VARCHAR(100) NOT NULL UNIQUE,
-  kitchen_display_enabled  BOOLEAN NOT NULL DEFAULT FALSE,
+  kitchen_display_enabled  BOOLEAN NOT NULL DEFAULT FALSE,   -- split bar/food tickets + READY step (DR-013, DR-014 #1)
+  business_day_cutoff      TIME NOT NULL DEFAULT '06:00',    -- Asia/Bangkok; reports, order numbers, 'until tonight' (DR-014 #4)
+  payment_mode             venue_payment_mode NOT NULL DEFAULT 'own_promptpay',  -- DR-014 #6
+  promptpay_id             VARCHAR(20),                      -- owner/bar PromptPay for app-generated QR
+  promptpay_id_type        promptpay_id_type,
+  counter_qr_enabled       BOOLEAN NOT NULL DEFAULT FALSE,   -- DR-014 #5
+  shift_close_enabled      BOOLEAN NOT NULL DEFAULT FALSE,   -- DR-014 #7
   created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by               UUID,   -- FK added after staff_user
@@ -107,6 +117,7 @@ CREATE TABLE staff_user (
   id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   display_name  VARCHAR(200) NOT NULL,
   is_active     BOOLEAN NOT NULL DEFAULT TRUE,
+  pos_pin_hash  VARCHAR(100),          -- hashed 4-digit PIN for switching on the shared POS (DR-014 #8)
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -221,14 +232,15 @@ CREATE TABLE menu_item (
   image_key    VARCHAR(500),            -- S3 object key of the menu photo, NULL = no photo (CD-06 Q1, Field 2026-10-09)
   base_price   NUMERIC(10,2) NOT NULL DEFAULT 0,
   item_type    item_type NOT NULL DEFAULT 'simple',
-  kitchen_tag  VARCHAR(50),
+  kitchen_tag  kitchen_station,          -- NULL only for item_type = 'charge' (DR-012)
   is_available BOOLEAN NOT NULL DEFAULT TRUE,
   is_promo     BOOLEAN NOT NULL DEFAULT FALSE,   -- promo analytics split (DR-010)
   sort_order   SMALLINT NOT NULL DEFAULT 0,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by   UUID REFERENCES staff_user(id),
-  updated_by   UUID REFERENCES staff_user(id)
+  updated_by   UUID REFERENCES staff_user(id),
+  CONSTRAINT chk_menu_item_station CHECK ((item_type = 'charge') = (kitchen_tag IS NULL))  -- DR-012
 );
 
 -- Time windows for an item (DR-010). No rows = always available (subject to is_available).
@@ -342,28 +354,60 @@ CREATE TABLE restock_request (
 -- 6. ORDER
 -- ============================================================
 
+-- One row = one order: what was sent in one go, shown as "#001" (DR-013).
+-- An order has 1..3 tickets (bar / food / charge); each ticket has 1..n items.
 CREATE TABLE order_record (
-  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  visit_id    UUID NOT NULL REFERENCES visit(id),
-  status      order_status NOT NULL DEFAULT 'pending',
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  created_by  UUID REFERENCES staff_user(id),
-  updated_by  UUID REFERENCES staff_user(id)
+  id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  visit_id       UUID NOT NULL REFERENCES visit(id),
+  order_number   INT  NOT NULL,             -- daily sequence, shown "#001" (DR-013)
+  business_date  DATE NOT NULL,             -- business day, 06:00 Asia/Bangkok cut-off (DR-013)
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by     UUID REFERENCES staff_user(id),   -- NULL = customer QR order
+  updated_by     UUID REFERENCES staff_user(id),
+  CONSTRAINT uq_order_number_per_day UNIQUE (business_date, order_number)
+);
+
+-- One row = one station's part of an order; owns the STATUS (DR-012, DR-013).
+-- Split by station only when venue.kitchen_display_enabled; otherwise one 'bar' ticket (+ charge ticket).
+CREATE TABLE order_ticket (
+  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id            UUID NOT NULL REFERENCES order_record(id),
+  station             kitchen_station,           -- NULL = charge-only ticket, created as 'sent'
+  status              order_status NOT NULL DEFAULT 'pending',
+  issue_reason        VARCHAR(30),               -- out_of_stock | equipment | other (shown while status = 'issue')
+  issue_item_id       UUID,                      -- FK → order_item, added below (circular)
+  issue_note          TEXT,                      -- required when issue_reason = 'other'
+  issue_reported_by   UUID REFERENCES staff_user(id),
+  issue_escalated_at  TIMESTAMPTZ,               -- "ส่งให้ POS" (NULL = not escalated)
+  sent_at             TIMESTAMPTZ,               -- served time
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by          UUID REFERENCES staff_user(id),
+  updated_by          UUID REFERENCES staff_user(id),   -- name in "กำลังเตรียม · ชื่อ" (CD-08 R14)
+  CONSTRAINT uq_ticket_station_per_order UNIQUE NULLS NOT DISTINCT (order_id, station)
 );
 
 CREATE TABLE order_item (
   id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  order_id              UUID NOT NULL REFERENCES order_record(id),
+  ticket_id             UUID NOT NULL REFERENCES order_ticket(id),   -- order reached through the ticket (DR-013)
   menu_item_variant_id  UUID NOT NULL REFERENCES menu_item_variant(id),
   quantity              SMALLINT NOT NULL DEFAULT 1,
   unit_price_snapshot   NUMERIC(10,2) NOT NULL,   -- frozen at order time
   ordered_by_name       VARCHAR(100),           -- e.g. 'Filippo' — label shown on order card
   notes                 TEXT,
-  status                order_item_status NOT NULL DEFAULT 'pending',
+  cancelled_at          TIMESTAMPTZ,            -- NULL = active; no per-item progress (DR-012, DR-013)
+  cancelled_by          UUID REFERENCES staff_user(id),
+  cancel_reason         VARCHAR(50),            -- ของหมด / สั่งผิด / ของเสีย … (CD-15 R3)
+  cancel_note           TEXT,
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  created_by            UUID REFERENCES staff_user(id)
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by            UUID REFERENCES staff_user(id),
+  updated_by            UUID REFERENCES staff_user(id)
 );
+
+ALTER TABLE order_ticket ADD CONSTRAINT fk_ticket_issue_item
+  FOREIGN KEY (issue_item_id) REFERENCES order_item(id);
 
 CREATE TABLE order_item_modifier (
   id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -383,7 +427,10 @@ CREATE TABLE payment (
   method          payment_method NOT NULL DEFAULT 'promptpay',
   status          payment_status NOT NULL DEFAULT 'pending',
   gateway_tx_id   VARCHAR(300) UNIQUE,   -- idempotency key
-  qr_payload      TEXT,
+  qr_payload      TEXT,                  -- gateway QR, or app-generated amount-locked PromptPay payload (DR-014 #6)
+  confirmed_via   payment_confirmed_via, -- NULL while pending
+  slip_trans_ref  VARCHAR(100) UNIQUE,   -- bank reference from the verified slip — rejects reused slips (DR-014 #6)
+  slip_amount     NUMERIC(12,2),         -- amount the bank reports for that slip
   paid_at         TIMESTAMPTZ,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -410,7 +457,6 @@ CREATE TABLE bottle_keep (
   remaining_quantity  SMALLINT NOT NULL DEFAULT 1,
   remaining_note      TEXT,           -- e.g. 'ครึ่งขวด', '2 bottles left'
   opened_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  expires_at          TIMESTAMPTZ,                    -- bar policy expiry date (e.g. opened_at + 90 days)
   last_used_at        TIMESTAMPTZ,
   location_note       TEXT,
   status              bottle_keep_status NOT NULL DEFAULT 'active',
@@ -436,6 +482,45 @@ CREATE TABLE audit_log (
 );
 
 -- ============================================================
+-- 10. SHIFT & AI INSIGHT (DR-014)
+-- ============================================================
+
+-- Cash count at close: opening float → counted vs expected → manager review (DR-014 #7)
+CREATE TABLE shift (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  business_date   DATE NOT NULL,                 -- venue business day (cut-off)
+  opened_by       UUID NOT NULL REFERENCES staff_user(id),
+  opened_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  opening_float   NUMERIC(12,2) NOT NULL DEFAULT 0,
+  closed_by       UUID REFERENCES staff_user(id),
+  closed_at       TIMESTAMPTZ,
+  counted_cash    NUMERIC(12,2),                 -- entered blind by staff
+  expected_cash   NUMERIC(12,2),                 -- snapshot at close: float + cash payments
+  reviewed_by     UUID REFERENCES staff_user(id),
+  reviewed_at     TIMESTAMPTZ,
+  note            TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by      UUID REFERENCES staff_user(id),
+  updated_by      UUID REFERENCES staff_user(id)
+);
+
+-- AI owner insight: SQL computes the figures, the model explains them (DR-014 #11).
+-- Append-only history; totals only, staff as aliases — no guest data sent to the model.
+CREATE TABLE ai_insight (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  kind            ai_insight_kind NOT NULL,
+  period_start    DATE NOT NULL,
+  period_end      DATE NOT NULL,
+  input_snapshot  JSONB NOT NULL,                -- the aggregated numbers sent (source of every figure shown)
+  output          JSONB NOT NULL,                -- structured summary / alerts / suggestions
+  model           VARCHAR(100) NOT NULL,
+  tokens_used     INT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by      UUID REFERENCES staff_user(id) -- NULL = scheduled job
+);
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 
@@ -450,8 +535,11 @@ CREATE INDEX idx_menu_item_avail_item ON menu_item_availability(menu_item_id);
 
 -- Order lookups
 CREATE INDEX idx_order_visit         ON order_record(visit_id);
-CREATE INDEX idx_order_item_order    ON order_item(order_id);
-CREATE INDEX idx_order_item_status   ON order_item(status);
+CREATE INDEX idx_ticket_order        ON order_ticket(order_id);   -- DR-013
+CREATE INDEX idx_ticket_status       ON order_ticket(status);
+CREATE INDEX idx_shift_business_date ON shift(business_date);
+CREATE INDEX idx_ai_insight_period   ON ai_insight(kind, period_end);
+CREATE INDEX idx_order_item_ticket   ON order_item(ticket_id);
 
 -- Payment lookups
 CREATE INDEX idx_payment_visit       ON payment(visit_id);

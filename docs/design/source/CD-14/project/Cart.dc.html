@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>CD-14 ตะกร้า</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/theloftbardesignsystem_99bbff/styles.css">
+<script src="/_blob/55621ac7d8cfe40fb69092b2ed520365"></script>
+<script src="ds/theloftbardesignsystem_99bbff/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--text-accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 4740px; height: 1020px; box-sizing: border-box; padding: 40px; background: var(--bg-sunken); color: var(--text-body); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: baseline; gap: 16px; height: 40px">
+    <span style="font: var(--fw-bold) var(--fs-micro)/1 var(--font-ui); letter-spacing: var(--ls-caps); padding: 6px 10px; border-radius: 999px; background: var(--surface-raised); color: var(--text-muted); border: 1px solid var(--line); align-self: center">STATES · ไม่ใช่ลำดับ</span>
+    <h1 style="margin: 0; font: var(--text-heading)">CD-14/cart</h1>
+    <span style="font: var(--text-small); color: var(--text-muted)">BottomSheet ขยายเต็มเหนือเมนู (D3) · ใหม่สุดอยู่บน · ค่าบริการต้องมีชื่อ · ส่งด้วย Idempotency-Key เดิมเมื่อลองใหม่ · HeroUI Native: BottomSheet, Chip, NumberField, Button, Alert, Toast</span>
+  </div>
+  <div style="display: flex; gap: 40px; align-items: flex-start">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="11">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font: var(--text-label); color: var(--text-faint)">{{p.label}}</div>
+      <div style="width: {{p.w}}px; height: {{p.h}}px; box-sizing: border-box; border-radius: 36px; overflow: hidden; position: relative; isolation: isolate; background: var(--bg-app); border: 1px solid var(--line); box-shadow: var(--shadow-raised)">
+
+        <sc-if value="{{p.cart}}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 48px 8px 4px 4px; display: flex; align-items: center; gap: 4px">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="chevron-left" label="กลับ"></x-import>
+            <div style="font: var(--text-title); flex-grow: 1">สั่งออเดอร์ — T3</div>
+          </div>
+          <div style="position: absolute; inset: 0; z-index: 10; background: var(--scrim)"></div>
+          <div role="dialog" aria-label="ตะกร้า" style="position: absolute; left: 0; right: 0; bottom: 0; top: 56px; z-index: 11; background: var(--surface-overlay); border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--shadow-sheet); display: flex; flex-direction: column">
+            <div style="align-self: center; width: 36px; height: 4px; border-radius: 999px; background: var(--line-strong); margin-top: 10px"></div>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px 4px 16px">
+              <span style="font: var(--text-heading)">ตะกร้า · T3</span>
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="accent" size="sm">{{p.count}}</x-import>
+              <span style="flex-grow: 1"></span>
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="chevron-down" label="ย่อตะกร้า" is-disabled="{{p.locked}}"></x-import>
+            </div>
+            <div style="padding: 4px 16px 12px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid var(--line-hairline)">
+              <span style="font: var(--text-small); color: var(--text-muted)">รายการใหม่สั่งโดย</span>
+              <div role="group" aria-label="สั่งโดย" style="display: flex; gap: 8px; flex-wrap: wrap">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag" is-selected="{{yes}}" is-disabled="{{p.locked}}">ต้น</x-import>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag" is-disabled="{{p.locked}}">บีม</x-import>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag" is-disabled="{{p.locked}}">+ ชื่อใหม่</x-import>
+              </div>
+            </div>
+
+            <sc-if value="{{p.hasAlert}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 12px 16px 0">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Alert" tone="{{p.alertTone}}" title="{{p.alertTitle}}">{{p.alertBody}}</x-import>
+              </div>
+            </sc-if>
+
+            <div style="flex-grow: 1; min-height: 0; overflow: hidden; padding: 0 16px">
+              <sc-for list="{{p.lines}}" as="l" hint-placeholder-count="3">
+                <sc-if value="{{l.void}}" hint-placeholder-val="{{ false }}">
+                  <div style="margin: 10px 0; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: var(--status-void-bg); border: 1px solid var(--status-void-border); border-radius: var(--r-card)">
+                    <div style="display: flex; gap: 10px; align-items: baseline">
+                      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                        <span style="display: flex; align-items: center; gap: 8px; font: var(--fw-semibold) var(--fs-body)/1.4 var(--font-ui)"><span style="font-variant-numeric: tabular-nums">{{l.qty}}×</span>{{l.name}}
+                          <sc-if value="{{l.soldChip}}" hint-placeholder-val="{{ true }}">
+                            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="menu" status="soldout" size="sm"></x-import>
+                          </sc-if>
+                          <sc-if value="{{l.windowChip}}" hint-placeholder-val="{{ false }}">
+                            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="void" size="sm">หมดเวลาโปร</x-import>
+                          </sc-if>
+                        </span>
+                        <span style="font: var(--fw-semibold) var(--fs-small)/1.5 var(--font-ui); color: var(--status-void-fg)">{{l.voidMsg}}</span>
+                        <span style="font: var(--text-small); color: var(--text-muted)">สั่งโดย {{l.by}}</span>
+                      </div>
+                      <span style="font: var(--text-body-strong); color: var(--text-faint); text-decoration: line-through; font-variant-numeric: tabular-nums">{{l.price}}</span>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end">
+                      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="danger" size="md" icon-left="trash-2">ลบออก</x-import>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{l.live}}" hint-placeholder-val="{{ true }}">
+                  <div style="padding: 12px 0; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--line-hairline)">
+                    <div style="display: flex; gap: 10px; align-items: baseline">
+                      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+                        <span style="display: flex; align-items: center; gap: 8px; font: var(--fw-semibold) var(--fs-body)/1.4 var(--font-ui)">{{l.name}}
+                          <sc-if value="{{l.charge}}" hint-placeholder-val="{{ false }}">
+                            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="sm">ค่าบริการ</x-import>
+                          </sc-if>
+                        </span>
+                        <sc-if value="{{l.hasMod}}" hint-placeholder-val="{{ false }}">
+                          <span style="font: var(--text-small); color: var(--text-muted)">{{l.mod}}</span>
+                        </sc-if>
+                        <span style="font: var(--text-small); color: var(--text-muted)">สั่งโดย {{l.by}}</span>
+                      </div>
+                      <span style="font: var(--text-body-strong); font-variant-numeric: tabular-nums">{{l.price}}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between">
+                      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.QuantityStepper" value="{{l.qtyN}}" min="{{one}}" disabled="{{p.locked}}"></x-import>
+                      <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="x" label="ลบรายการ" is-disabled="{{p.locked}}"></x-import>
+                    </div>
+                  </div>
+                </sc-if>
+              </sc-for>
+            </div>
+
+            <div style="padding: 12px 16px 28px; border-top: 1px solid var(--line); background: var(--surface-overlay); box-shadow: var(--shadow-sheet); display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: baseline; gap: 8px">
+                <span style="flex-grow: 1; font: var(--text-subhead)">รวม</span>
+                <span style="font: var(--fw-bold) var(--fs-title)/1.2 var(--font-numeric); color: var(--text-accent); font-variant-numeric: tabular-nums">{{p.total}}</span>
+              </div>
+              <sc-if value="{{p.sendBtn}}" hint-placeholder-val="{{ true }}">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="lg" block="{{yes}}" icon-left="send" is-pending="{{p.sending}}" is-disabled="{{p.sendOff}}">{{p.sendLabel}}</x-import>
+              </sc-if>
+              <sc-if value="{{p.closed}}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="secondary" size="lg" block="{{yes}}" icon-left="arrow-left">กลับไปคิวออเดอร์</x-import>
+              </sc-if>
+            </div>
+          </div>
+
+          <sc-if value="{{p.charge}}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 20; background: var(--scrim)"></div>
+            <div role="dialog" aria-label="คิดกับใคร?" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--surface-overlay); border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--shadow-sheet); padding: 10px 16px 28px; display: flex; flex-direction: column; gap: 14px">
+              <div style="align-self: center; width: 36px; height: 4px; border-radius: 999px; background: var(--line-strong)"></div>
+              <div style="display: flex; align-items: center; justify-content: space-between">
+                <span style="font: var(--text-heading)">คิดกับใคร?</span>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="x" label="ปิด"></x-import>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 8px; padding: 10px 14px; background: var(--surface-raised); border-radius: var(--r-card)">
+                <span style="flex-grow: 1; font: var(--text-body-strong)">ค่าเปิดขวด</span>
+                <span style="font: var(--text-price); color: var(--text-accent); font-variant-numeric: tabular-nums">฿300.00</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <span style="font: var(--text-body-strong)">สั่งโดย</span>
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="sm">ต้องเลือก 1</x-import>
+                </div>
+                <div role="group" aria-label="สั่งโดย" style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag">ต้น</x-import>
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag">บีม</x-import>
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag">+ ชื่อใหม่</x-import>
+                </div>
+                <span style="font: var(--text-small); color: var(--text-muted)">ค่าบริการต้องระบุชื่อลูกค้า</span>
+              </div>
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="lg" block="{{yes}}" icon-left="plus" is-disabled="{{yes}}">เพิ่มลงตะกร้า</x-import>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{p.done}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 56px 16px 12px; display: flex; align-items: baseline; justify-content: space-between">
+            <div style="font: var(--text-title)">ออเดอร์</div>
+            <div style="font: var(--text-small); color: var(--text-muted); font-variant-numeric: tabular-nums">21:18 น.</div>
+          </div>
+          <div style="display: flex; gap: 8px; padding: 0 16px 12px; overflow: hidden">
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--text-muted); font: var(--fw-semibold) var(--fs-small)/1 var(--font-ui); white-space: nowrap; flex: 0 0 auto">ทั้งหมด 5</button>
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-accent); background: var(--accent-soft-strong); color: var(--text-accent); font: var(--fw-semibold) var(--fs-small)/1 var(--font-ui); white-space: nowrap; flex: 0 0 auto">ใหม่ 2</button>
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--text-muted); font: var(--fw-semibold) var(--fs-small)/1 var(--font-ui); white-space: nowrap; flex: 0 0 auto">กำลังทำ 2</button>
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--text-muted); font: var(--fw-semibold) var(--fs-small)/1 var(--font-ui); white-space: nowrap; flex: 0 0 auto">พร้อมเสิร์ฟ 1</button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 16px">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Card" padding="14px">
+              <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font: var(--text-small); color: var(--text-faint); font-variant-numeric: tabular-nums">
+                  <span style="display: inline-flex; align-items: center; gap: 8px; min-width: 0"><span>#0041</span><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="order" status="pending" label="ใหม่" size="sm"></x-import></span>
+                  <span style="white-space: nowrap">10 นาทีที่แล้ว</span>
+                </div>
+                <div style="font: var(--text-subhead); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">C2 · ฟ้า</div>
+                <div style="font: var(--text-small); color: var(--text-muted)"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">1× โอลด์แฟชั่น</div></div>
+                <div style="display: flex; margin-top: 8px"><div style="display: flex; max-width: 190px"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="md" icon-left="play">รับออเดอร์</x-import></div></div>
+              </div>
+            </x-import>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Card" padding="14px" selected="{{yes}}">
+              <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font: var(--text-small); color: var(--text-faint); font-variant-numeric: tabular-nums">
+                  <span style="display: inline-flex; align-items: center; gap: 8px; min-width: 0"><span>#0045</span><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.StatusChip" kind="order" status="pending" label="ใหม่" size="sm"></x-import></span>
+                  <span style="white-space: nowrap">เมื่อกี้</span>
+                </div>
+                <div style="font: var(--text-subhead); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">T3 · ต้น</div>
+                <div style="font: var(--text-small); color: var(--text-muted)"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">2× ช้างดราฟต์</div><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">1× โอลด์แฟชั่น</div><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">1× ลีโอขวด</div></div>
+                <div style="display: flex; margin-top: 8px"><div style="display: flex; max-width: 190px"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="md" icon-left="play">รับออเดอร์</x-import></div></div>
+              </div>
+            </x-import>
+          </div>
+          <div style="position: absolute; top: 52px; left: 12px; right: 12px; z-index: 60; display: flex; justify-content: center">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Toast" tone="success" icon="send" title="ส่งออเดอร์ T3 แล้ว · 4 รายการ" duration="{{zero}}">#0045 · ฿620.00</x-import>
+          </div>
+          <div style="position: absolute; right: 16px; bottom: 92px; z-index: 5; border-radius: var(--r-btn); box-shadow: var(--shadow-raised)">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="lg" icon-left="plus">ออเดอร์</x-import>
+          </div>
+          <nav style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; background: var(--surface-bar); backdrop-filter: var(--blur-bar); border-top: 1px solid var(--line-hairline); padding: 6px 4px 22px">
+            <button type="button" style="flex: 1; display: grid; justify-items: center; gap: 3px; padding: 6px 0; background: transparent; border: none; color: var(--text-accent)"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="clipboard-list"></x-import><span style="font: var(--fw-semibold) var(--fs-micro)/1.3 var(--font-ui)">ออเดอร์</span></button>
+            <button type="button" style="flex: 1; display: grid; justify-items: center; gap: 3px; padding: 6px 0; background: transparent; border: none; color: var(--text-faint)"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="layout-grid"></x-import><span style="font: var(--fw-semibold) var(--fs-micro)/1.3 var(--font-ui)">โต๊ะ</span></button>
+            <button type="button" style="flex: 1; display: grid; justify-items: center; gap: 3px; padding: 6px 0; background: transparent; border: none; color: var(--text-faint)"><x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="menu"></x-import><span style="font: var(--fw-semibold) var(--fs-micro)/1.3 var(--font-ui)">อื่นๆ</span></button>
+          </nav>
+        </sc-if>
+      </div>
+    </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":4740,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const baht = (n) => '฿' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const line = (name, qty, by, price, extra) => {
+      const e = extra || {};
+      return { name, qty: String(qty), qtyN: qty, by, price: baht(price), raw: price, mod: e.mod || '', hasMod: !!e.mod, charge: !!e.charge, void: !!e.void, live: !e.void,
+        soldChip: !e.window, windowChip: !!e.window, voidMsg: e.window ? 'หมดเวลาโปร — ลบออกเพื่อส่งต่อ' : 'หมดแล้ว — ลบออกเพื่อส่งต่อ' };
+    };
+    const LEO = line('ลีโอขวด', 1, 'ต้น', 100, { mod: 'หมายเหตุ: ไม่ใส่น้ำแข็ง' });
+    const OLD = line('โอลด์แฟชั่น', 1, 'บีม', 280, { mod: 'ปกติ · เชอร์รี่ · น้ำแข็งก้อนใหญ่' });
+    const CHANG = line('ช้างดราฟต์', 2, 'ต้น', 240);
+    const CORK = line('ค่าเปิดขวด', 1, 'บีม', 300, { charge: true });
+    const YUM = line('ยำหมูยอ', 1, 'บีม', 150, { void: true });
+    const CART = [LEO, OLD, CHANG];
+    const sum = (ls) => ls.filter((l) => l.live).reduce((s, l) => s + l.raw, 0);
+    const cnt = (ls) => String(ls.filter((l) => l.live).reduce((s, l) => s + l.qtyN, 0));
+    const mk = (lines, o) => ({
+      w: 390, h: 844, cart: true, done: false, charge: false, locked: false, sending: false, sendOff: false, sendBtn: true, closed: false,
+      sendLabel: 'ส่งออเดอร์', hasAlert: false, alertTone: 'danger', alertTitle: '', alertBody: '',
+      lines, total: baht(sum(lines)), count: cnt(lines), ...o
+    });
+    const WITH_CORK = [CORK, LEO, OLD, CHANG];
+    const WITH_YUM = [YUM, LEO, OLD, CHANG];
+    const phones = [
+      mk(CART, { label: '1 · ตะกร้าปกติ' }),
+      mk(CART, { label: '2 · แตะ ค่าเปิดขวด → คิดกับใคร?', charge: true }),
+      mk(WITH_CORK, { label: '3 · กำลังส่ง (ล็อกการแก้ไข)', locked: true, sending: true }),
+      mk(CART, { label: '4 · ส่งสำเร็จ → กลับคิว (ออเดอร์ใหม่ไฮไลต์)', cart: false, done: true }),
+      mk(WITH_YUM, { label: '5 · เมนูหมดระหว่างสั่ง (409 ITEM_UNAVAILABLE)', sendOff: true, hasAlert: true, alertTitle: 'มีรายการที่หมดแล้ว 1 รายการ', alertBody: 'ลบออกก่อนจึงจะส่งได้' }),
+      mk(CART, { label: '6 · ส่งไม่สำเร็จ (เครือข่าย)', sendLabel: 'ลองส่งอีกครั้ง', hasAlert: true, alertTitle: 'ส่งออเดอร์ไม่สำเร็จ ลองอีกครั้ง', alertBody: 'ตะกร้ายังอยู่ครบ — ส่งซ้ำจะไม่เกิดออเดอร์ซ้ำ' }),
+      mk(CART, { label: '7 · โต๊ะถูกปิดแล้ว (409 INVALID_STATE)', locked: true, sendBtn: false, closed: true, hasAlert: true, alertTitle: 'โต๊ะนี้ถูกปิดแล้ว', alertBody: 'ออเดอร์ไม่ถูกส่ง เลือกโต๊ะใหม่จากคิวออเดอร์' }),
+      mk(CART, { label: '8 · 360×780', w: 360, h: 780 }),
+      mk([line('ค็อกเทลพิเศษประจำเดือน “ฝนแรกที่บางกอก” จินมะลิ ส้มซ่า', 1, 'คุณสมศักดิ์ (โต๊ะข้าง)', 320, { mod: 'ดับเบิล · ไม่หวาน · น้ำแข็งก้อนใหญ่ · หมายเหตุ: แยกแก้ว ใส่มะนาวเพิ่ม เสิร์ฟพร้อมอาหาร' }), LEO, OLD],
+        { label: '10 · ข้อความยาว (ชื่อเมนู / ผู้สั่ง / หมายเหตุ ตัดบรรทัด)' }),
+      mk(CART, { label: '11 · สิทธิ์ถูกถอนระหว่างใช้งาน (403)', sendOff: true, hasAlert: true, alertTitle: 'บัญชีนี้ไม่มีสิทธิ์ส่งออเดอร์แล้ว', alertBody: 'ตะกร้ายังอยู่ — ให้ผู้จัดการตรวจสิทธิ์ หรือให้พนักงานอื่นส่งแทน' }),
+      mk([line('ลีโอ 4 ขวด + ถังน้ำแข็ง', 1, 'ต้น', 390, { void: true, window: true }), LEO, OLD], { label: '9 · โปรหมดเวลาก่อนส่ง (409 · out_of_window · DR-010)', sendOff: true, hasAlert: true, alertTitle: 'โปรหมดเวลาแล้ว 1 รายการ', alertBody: 'โปรนี้ถึง 21:00 — ลบออก หรือสั่งเมนูปกติแทน' })
+    ];
+    return { theme: this.props.theme ?? 'dark', yes: true, one: 1, zero: 0, phones };
+  }
+}
+</script>
+</body>
+</html>

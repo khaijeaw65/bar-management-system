@@ -87,7 +87,7 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 
 ---
 
-## Database (ERD — 9 domains, 34 tables)
+## Database (ERD — 9 domains, 35 tables)
 
 Domains: Venue & Tables · Guest & Identity · Staff IAM · Menu · Inventory · Order · Payment · Bottle Keep · Audit Log
 

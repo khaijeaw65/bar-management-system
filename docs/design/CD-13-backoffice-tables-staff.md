@@ -1,6 +1,6 @@
 # CD-13 — Back office: tables & QR setup, staff, groups (IAM, time-bound membership)
 
-**Status:** Ready — Q1 (access requests), Q2 (full policy editor in S1), D1–D3 decided by Field (2026-10-09) · **Surface:** web responsive 1280 (also 1024) + 390 phone · **Used by:** S1 IAM brief + tables setup brief · FRD §2 (IAM), §3 (QR) · BRIEF-007 D1 (pre-registered staff)
+**Status:** Rev 1 canvas in review (2026-10-11) — Q1 (access requests), Q2 (full policy editor in S1), D1–D3 decided by Field (2026-10-09) · **Surface:** web responsive 1280 (also 1024) + 390 phone · **Used by:** S1 IAM brief + tables setup brief · FRD §2 (IAM), §3 (QR) · BRIEF-007 D1 (pre-registered staff)
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -40,5 +40,12 @@ Seats CRUD (`label`, `kind`, `sortOrder`, `isActive`, `qrToken`) + `POST /api/ta
 - No out-of-scope items appear.
 
 ## Result
-- Claude Design link: <after run>
-- Handoff: `docs/design/CD-13-handoff.md` · screenshots `docs/design/assets/CD-13/`
+- Canvas: https://claude.ai/artifact/PF5pdKMY4b2w1oaunrHJH3 (built to `cd-template.md` v2)
+- Handoff: `docs/design/CD-13-handoff.md` · source snapshot after approval
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 1 | 2026-10-11 | Policy matrix = rows per resource with the real permission codes, not 5 fixed columns (R2) · "ถึงสิ้นกะคืนนี้" = 06:00 next day (R3) · rejected-request re-login open (R4) · seats in เคาน์เตอร์ / โต๊ะ sections, no kind chip per row (R5) · self-deactivate blocked, deactivate revokes all sessions, expired membership struck, delete-group lists lost permissions (R6) · API gaps (R7) · DS gaps (R8) | handoff §0, §9 |

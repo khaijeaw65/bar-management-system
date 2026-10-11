@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>CD-14 ตัวเลือกเมนู</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/theloftbardesignsystem_99bbff/styles.css">
+<script src="/_blob/55621ac7d8cfe40fb69092b2ed520365"></script>
+<script src="ds/theloftbardesignsystem_99bbff/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--text-accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1760px; height: 1020px; box-sizing: border-box; padding: 40px; background: var(--bg-sunken); color: var(--text-body); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: baseline; gap: 16px; height: 40px">
+    <span style="font: var(--fw-bold) var(--fs-micro)/1 var(--font-ui); letter-spacing: var(--ls-caps); padding: 6px 10px; border-radius: 999px; background: var(--surface-raised); color: var(--text-muted); border: 1px solid var(--line); align-self: center">STATES · ไม่ใช่ลำดับ</span>
+    <h1 style="margin: 0; font: var(--text-heading)">CD-14/item-sheet</h1>
+    <span style="font: var(--text-small); color: var(--text-muted)">ทุกเมนูเปิด sheet นี้ (ไม่มีเพิ่มทันที — Field 10 ต.ค.) · ไม่มีตัวเลือก = จำนวน + สั่งโดย + หมายเหตุ · ตัวเลือกบังคับ 1 · ท็อปปิ้งสูงสุด 2 · HeroUI Native: BottomSheet, RadioGroup, CheckboxGroup, Chip, TextField, FieldError</span>
+  </div>
+  <div style="display: flex; gap: 40px; align-items: flex-start">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="4">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font: var(--text-label); color: var(--text-faint)">{{p.label}}</div>
+      <div style="width: 390px; height: 844px; box-sizing: border-box; border-radius: 36px; overflow: hidden; position: relative; isolation: isolate; background: var(--bg-app); border: 1px solid var(--line); box-shadow: var(--shadow-raised)">
+        <div style="padding: 48px 8px 4px 4px; display: flex; align-items: center; gap: 4px">
+          <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="chevron-left" label="กลับ"></x-import>
+          <div style="font: var(--text-title); flex-grow: 1">สั่งออเดอร์ — T3</div>
+        </div>
+        <div style="position: absolute; inset: 0; z-index: 10; background: var(--scrim)"></div>
+
+        <div role="dialog" aria-label="{{p.title}}" style="position: absolute; left: 0; right: 0; bottom: 0; top: {{p.top}}; z-index: 11; background: var(--surface-overlay); border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--shadow-sheet); display: flex; flex-direction: column">
+          <div style="align-self: center; width: 36px; height: 4px; border-radius: 999px; background: var(--line-strong); margin-top: 10px"></div>
+          <div style="display: flex; align-items: flex-start; gap: 8px; padding: 8px 8px 8px 16px">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+              <span style="font: var(--text-heading)">{{p.title}}</span>
+              <span style="font: var(--text-small); color: var(--text-muted); font-variant-numeric: tabular-nums">{{p.sub}}</span>
+            </div>
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.IconButton" icon="x" label="ปิด"></x-import>
+          </div>
+
+          <div style="flex-grow: 1; min-height: 0; overflow: hidden; padding: 4px 16px 12px; display: flex; flex-direction: column; gap: 16px">
+            <sc-if value="{{p.hasOpts}}" hint-placeholder-val="{{ true }}">
+            <div role="radiogroup" aria-label="ตัวเลือก" style="display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span style="font: var(--text-body-strong)">ตัวเลือก</span>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="sm">ต้องเลือก 1</x-import>
+              </div>
+              <sc-for list="{{p.variants}}" as="o" hint-placeholder-count="2">
+                <div style="min-height: 48px; box-sizing: border-box; padding: 0 14px; display: flex; align-items: center; border-radius: var(--r-btn); {{o.skin}}">
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Radio" is-selected="{{o.on}}" label="{{o.label}}" trailing="{{o.price}}" style="flex: 1"></x-import>
+                </div>
+              </sc-for>
+            </div>
+
+            <div role="group" aria-label="ท็อปปิ้ง" style="display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span style="font: var(--text-body-strong)">ท็อปปิ้ง</span>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="neutral" size="sm">ไม่บังคับ · สูงสุด 2</x-import>
+              </div>
+              <sc-for list="{{p.tops}}" as="o" hint-placeholder-count="3">
+                <div style="min-height: 48px; box-sizing: border-box; padding: 0 14px; display: flex; align-items: center; gap: 8px; border-radius: var(--r-btn); {{o.skin}}">
+                  <div style="flex-grow: 1">
+                    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Checkbox" is-selected="{{o.on}}" is-disabled="{{o.off}}" label="{{o.label}}"></x-import>
+                  </div>
+                  <span style="font: var(--text-body-md); color: {{o.priceColor}}; font-variant-numeric: tabular-nums">{{o.price}}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{p.max}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 6px; font: var(--text-small); color: var(--text-muted)">
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="info" size="sm"></x-import>เลือกได้สูงสุด 2 — เอาออกก่อนเพื่อเลือกอันอื่น
+                </div>
+              </sc-if>
+            </div>
+
+            <div role="radiogroup" aria-label="ระดับน้ำแข็ง" aria-invalid="{{p.req}}" style="display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span style="font: var(--text-body-strong); color: {{p.iceLabelColor}}">ระดับน้ำแข็ง</span>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Badge" tone="{{p.iceTone}}" size="sm">ต้องเลือก 1</x-import>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+                <sc-for list="{{p.ice}}" as="o" hint-placeholder-count="3">
+                  <div style="min-height: 48px; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; border-radius: var(--r-btn); {{o.skin}}">
+                    <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Radio" is-selected="{{o.on}}" label="{{o.label}}"></x-import>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{p.req}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 6px; font: var(--fw-semibold) var(--fs-small)/1.5 var(--font-ui); color: var(--text-danger)">
+                  <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Icon" name="circle-alert" size="sm"></x-import>กรุณาเลือกระดับน้ำแข็ง
+                </div>
+              </sc-if>
+            </div>
+            </sc-if>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font: var(--text-body-strong)">สั่งโดย</span>
+              <div role="group" aria-label="สั่งโดย" style="display: flex; gap: 8px; flex-wrap: wrap">
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag">ต้น</x-import>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag" is-selected="{{yes}}">บีม</x-import>
+                <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Tag">+ ชื่อใหม่</x-import>
+              </div>
+            </div>
+
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Input" label="หมายเหตุ (ไม่บังคับ)" placeholder="เช่น หวานน้อย"></x-import>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px; padding: 12px 16px 28px; border-top: 1px solid var(--line-hairline); background: var(--surface-overlay)">
+            <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.QuantityStepper" value="{{p.qty}}" min="{{one}}" size="lg"></x-import>
+            <div style="flex-grow: 1; display: flex">
+              <x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.Button" variant="primary" size="lg" block="{{yes}}" is-disabled="{{p.req}}">เพิ่มลงตะกร้า · {{p.price}}</x-import>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":1760,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const baht = (n) => '฿' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const skin = (sel, off, invalid) => 'background: ' + (sel && !off ? 'var(--accent-soft)' : 'var(--surface-input)') + '; border: 1px solid ' + (invalid ? 'var(--danger)' : (sel && !off ? 'var(--line-accent)' : 'var(--line)')) + ';';
+    const TOPS = [['peel', 'เปลือกส้ม', 0], ['cherry', 'เชอร์รี่', 20], ['smoke', 'ควันซินนามอน', 20]];
+    const build = (state) => {
+      const req = state === 'required', max = state === 'max';
+      const picked = max ? ['peel', 'cherry'] : ['cherry'];
+      const ice = req ? null : 'large';
+      const price = 260 + TOPS.filter((t) => picked.indexOf(t[0]) >= 0).reduce((s, t) => s + t[2], 0);
+      return {
+        hasOpts: true, top: '56px', qty: 1, title: 'โอลด์แฟชั่น', sub: 'ค็อกเทล · เริ่มต้น ฿260.00',
+        req, max, price: baht(price),
+        iceTone: req ? 'void' : 'neutral',
+        iceLabelColor: req ? 'var(--text-danger)' : 'var(--text-body)',
+        variants: [
+          { label: 'ปกติ', price: baht(260), on: true, skin: skin(true) },
+          { label: 'ดับเบิล', price: baht(360), on: false, skin: skin(false) }
+        ],
+        tops: TOPS.map(([k, l, pr]) => {
+          const on = picked.indexOf(k) >= 0, off = max && !on;
+          return { label: l, on, off, price: '+' + baht(pr), skin: skin(on, off) + (off ? ' opacity: 0.6;' : ''), priceColor: off ? 'var(--text-faint)' : 'var(--text-muted)' };
+        }),
+        ice: [['large', 'ก้อนใหญ่'], ['normal', 'ปกติ'], ['none', 'ไม่ใส่']].map(([k, l]) => ({ label: l, on: ice === k, skin: skin(ice === k, false, req) }))
+      };
+    };
+    const phones = [
+      { label: '1 · ค่าเริ่มต้น', ...build('default') },
+      { label: '2 · ยังไม่เลือกตัวบังคับ (FieldError)', ...build('required') },
+      { label: '3 · ท็อปปิ้งครบ 2 แล้ว', ...build('max') },
+      { label: '4 · เมนูไม่มีตัวเลือก (ช้างดราฟต์) — เลือกจำนวน', ...build('default'), hasOpts: false, top: '444px', qty: 2,
+        title: 'ช้างดราฟต์', sub: 'เบียร์สด · ฿120.00 / แก้ว', price: baht(240) }
+    ];
+    return { theme: this.props.theme ?? 'dark', yes: true, one: 1, phones };
+  }
+}
+</script>
+</body>
+</html>
