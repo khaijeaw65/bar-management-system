@@ -17,7 +17,7 @@ Updated: 2026-10-12 01:50 · Agent: Cowork (decisions) — session end
 - FRD updated to DR-012/013/014 (§2, §3, §5, §6, §7, §8, §9, §10, §11, §12, §13).
 
 ## Next session (in order)
-1. **Field OK on the DR-014 schema diff** (venue settings, `shift`, `ai_insight`, staff `pos_pin_hash`, payment slip fields, bottle_keep simplification → 37 tables) + CLAUDE.md "Key differentiators" line (AI guest intelligence → AI owner insight). Validate on throwaway Postgres; sync ERD.
+1. ~~DR-014 schema~~ **done 12 Oct** (37 tables, 10 domains; validated PG16; ERD synced). **Still needs Field OK:** CLAUDE.md "Key differentiators" line (AI guest intelligence → AI owner insight) + table count 35 → 37 in CLAUDE.md and agent-boundaries · bottle_keep: make `customer_id` optional + `guest_label`? (Cowork recommends yes).
 2. **Advisor heads-up:** AI feature moved to owner insight.
 3. Remaining review batches: CD-08 + CD-15 (R8–R11, R5/R6), CD-05/06/07/11/12/13 (incl. CD-13 R4, CD-05 R4 threshold, CD-15 R6 strip), then canvas revisions for DR-013/014.
 4. Before BRIEF-013: confirm EasySlip response includes the receiver account.
