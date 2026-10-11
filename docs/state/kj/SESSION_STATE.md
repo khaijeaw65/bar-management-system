@@ -12,7 +12,7 @@ Updated: 2026-10-10 16:10 · Agent: Cowork (design) — session end
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
-**Next action:** retrofit batch done 10 Oct (CD-08 rev 3, CD-02 / CD-01 / CD-04 / CD-03 rev 2 — all in review, see table). CD-14 source snapshot taken (`docs/design/source/CD-14/`, handoff §11). Snapshots for the others after Field approves each. Then new CDs to the template: CD-06 (rev 1 in review) → CD-07 (rev 1 in review) → CD-15 (rev 1 canvas done 11 Oct, in review) → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2. Parked decisions stay parked.
+**Next action:** retrofit batch done 10 Oct (CD-08 rev 3, CD-02 / CD-01 / CD-04 / CD-03 rev 2 — all in review, see table). CD-14 source snapshot taken (`docs/design/source/CD-14/`, handoff §11). Snapshots for the others after Field approves each. Then new CDs to the template: CD-06 (rev 1 in review) → CD-07 (rev 1 in review) → CD-15 (rev 1 canvas done 11 Oct, in review) → CD-12 (rev 1 done 11 Oct, in review) → CD-13 → CD-05 → CD-11 (last). CD-09 = S2. Parked decisions stay parked.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
 Session start: ask Field once for delete permission on the project folder (git locks), `git status`, branch **`docs/ui-retrofit`** (from main @ ed1ef8a, after PR #30).
 
@@ -43,6 +43,7 @@ Known retrofit items per canvas:
 | CD-06 customer QR order | https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi | rev 1 built 10 Oct · Field 11 Oct: R1 R6 ✓, R2 drawn (pending), R3–R5 parked |
 | CD-07 customer payment | https://claude.ai/artifact/JDoXZyWWF2tLybdY9dufQe | rev 1 built 11 Oct (review: R1–R3, R5; R4 parked with CD-06 session) |
 | CD-15 POS orders + issues | https://claude.ai/artifact/QvCcTKGEBD77NqW4ZarhcL | rev 1 built 11 Oct (review: R1, R3, R5, R6; R2 + R4 parked) |
+| CD-12 back-office menu | https://claude.ai/artifact/DXNTpCExFkMNmJodR9CpZJ | rev 1 built 11 Oct (review: R1–R8; R5 = S1 promo creation decision) |
 | CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | Field OK (R1–R5) · retrofit pending (+ สั่งออเดอร์) |
 | CD-14 staff new order | https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW | **rev 3 approved 10 Oct — template reference** (images in docs/design/assets/CD-14/) |
 Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e). CD-14 Lucide blob `/_blob/55621ac7d8cfe40fb69092b2ed520365` (CD-14 only).
