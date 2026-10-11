@@ -3,7 +3,7 @@ Updated: 2026-10-10 16:10 · Agent: Cowork (design) — session end
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Parked decisions (Field 10 Oct — "park, finish CDs first")
-- **CD-06 R3 + R4 (customer session):** where the nickname is changed, and identifying "my" orders by phone (visit-session token on `order_record`) instead of by name — decides customer session handling. **R5** customer-QR API contract waits on both; customer-QR brief on hold. (Field 11 Oct: discuss in a separate session.)
+- **CD-06 R3 + R4 (customer session):** where the nickname is changed, and identifying "my" orders by phone (visit-session token on `order_record`) instead of by name — decides customer session handling. **R5** customer-QR API contract waits on both; customer-QR brief on hold. CD-07 R4 (customer payment API) waits on the same decision. (Field 11 Oct: discuss in a separate session.)
 - Order display number per placement (BRIEF-012; Cowork: one number shared by a placement's tickets).
 - CD-08 R8–R11 (summary "เสิร์ฟแล้ว" section, served Toast/no undo, API gaps list, filter rule) — drawn as proposed, orange on canvas.
 - DS StatusChip label `accepted` = "กำลังเตรียม" (Field to change in the DS; canvases pass `label` meanwhile).
@@ -12,7 +12,7 @@ Updated: 2026-10-10 16:10 · Agent: Cowork (design) — session end
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
-**Next action:** retrofit batch done 10 Oct (CD-08 rev 3, CD-02 / CD-01 / CD-04 / CD-03 rev 2 — all in review, see table). CD-14 source snapshot taken (`docs/design/source/CD-14/`, handoff §11). Snapshots for the others after Field approves each. Then new CDs to the template: CD-06 (rev 1 canvas done 10 Oct, in review) → CD-07 → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2. Parked decisions stay parked.
+**Next action:** retrofit batch done 10 Oct (CD-08 rev 3, CD-02 / CD-01 / CD-04 / CD-03 rev 2 — all in review, see table). CD-14 source snapshot taken (`docs/design/source/CD-14/`, handoff §11). Snapshots for the others after Field approves each. Then new CDs to the template: CD-06 (rev 1 in review) → CD-07 (rev 1 canvas done 11 Oct, in review) → CD-15 → CD-12 → CD-13 → CD-05 → CD-11 (last). CD-09 = S2. Parked decisions stay parked.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
 Session start: ask Field once for delete permission on the project folder (git locks), `git status`, branch **`docs/ui-retrofit`** (from main @ ed1ef8a, after PR #30).
 
@@ -41,6 +41,7 @@ Known retrofit items per canvas:
 | CD-03 POS payment | https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb | rev 2 retrofit done 10 Oct (review: R1, R3–R5 pending; R3 = first screen review) |
 | CD-04 POS order entry | https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz | rev 2 retrofit done 10 Oct (review: R1, R6–R8 pending) |
 | CD-06 customer QR order | https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi | rev 1 built 10 Oct · Field 11 Oct: R1 R6 ✓, R2 drawn (pending), R3–R5 parked |
+| CD-07 customer payment | https://claude.ai/artifact/JDoXZyWWF2tLybdY9dufQe | rev 1 built 11 Oct (review: R1–R3, R5; R4 parked with CD-06 session) |
 | CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | Field OK (R1–R5) · retrofit pending (+ สั่งออเดอร์) |
 | CD-14 staff new order | https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW | **rev 3 approved 10 Oct — template reference** (images in docs/design/assets/CD-14/) |
 Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e). CD-14 Lucide blob `/_blob/55621ac7d8cfe40fb69092b2ed520365` (CD-14 only).
