@@ -6,7 +6,7 @@ status: review
 approved_by:
 approved_on:
 canvas: https://claude.ai/artifact/DXNTpCExFkMNmJodR9CpZJ
-canvas_version: 1791709718-6410
+canvas_version: 1791711808-d035
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-12/   # taken after approval (§11)
 surfaces: [web-backoffice, web-pos-shell]
@@ -139,7 +139,7 @@ Sample menu = CD-04 (ช้างดราฟต์ ฿120 … ค่าเป�
 | Rev | Date | Change | Authority |
 |---|---|---|---|
 | 0 | 2026-10-09 | Brief D1–D4 | Field |
-| 1 | 2026-10-11 | First canvas built to `cd-template.md` v2: overview, J1 (1280) / J2 (390), shell, list ×2, editor ×3, modifiers, categories, flow; R1–R8 raised | Cowork — review pending |
+| 1 | 2026-10-11 | Toast failure tone fixed (DS has `error`, not `danger`) · First canvas built to `cd-template.md` v2: overview, J1 (1280) / J2 (390), shell, list ×2, editor ×3, modifiers, categories, flow; R1–R8 raised | Cowork — review pending |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 1. Lucide UMD `/_blob/88329802c31715a0490e055643ce3ede`; photo placeholders copied from CD-06.

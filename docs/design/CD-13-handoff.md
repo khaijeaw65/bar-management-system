@@ -6,7 +6,7 @@ status: review
 approved_by:
 approved_on:
 canvas: https://claude.ai/artifact/PF5pdKMY4b2w1oaunrHJH3
-canvas_version: 1791711059-8666
+canvas_version: 1791711811-7aff
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-13/   # taken after approval (§11)
 surfaces: [web-backoffice]
@@ -140,7 +140,7 @@ Sample: ก้อง (เจ้าของ) · บีม (ผู้จัดก
 | Rev | Date | Change | Authority |
 |---|---|---|---|
 | 0 | 2026-10-09 | Brief Q1 access requests, Q2 full policy editor in S1, D1–D4 | Field |
-| 1 | 2026-10-11 | First canvas built to `cd-template.md` v2: overview, J1 (1280) / J2 (390), settings, tables ×2 + print, staff ×2, staff-detail, groups, policies, flow; R1–R8 raised | Cowork — review pending |
+| 1 | 2026-10-11 | Toast failure tone fixed (DS has `error`, not `danger`) · First canvas built to `cd-template.md` v2: overview, J1 (1280) / J2 (390), settings, tables ×2 + print, staff ×2, staff-detail, groups, policies, flow; R1–R8 raised | Cowork — review pending |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 1. Lucide UMD `/_blob/9a3515b513ca33d99eba87f535e4db24`; QR placeholder `/_blob/f422f3d7cdccf5e05a16f2e793ee86b1` (copied from CD-07).
