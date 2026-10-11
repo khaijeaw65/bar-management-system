@@ -73,7 +73,7 @@ Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV9
 - If a publish is refused (Field edited the canvas): `read` the files, re-apply, republish. Field sometimes edits defaults (e.g. Grid default mode) — keep them.
 - Bundle source for prop lookups: `read` any canvas's `project/ds/theloftbardesignsystem_99bbff/_ds_bundle.js` (scratchpad does not survive sessions); grep `function <Comp>(` for props.
 - Row tap ring = overlay span (`left/right -12px, top/bottom 6px`, 2.5 px accent border, radius 12) — not `outline` on the full row.
-- Never write to `docs/rules/**` (protected — even new files). Exception (Field 10 Oct): Cowork/Codex may edit `docs/schema.sql`, `docs/erd.html`, `CLAUDE.md`, `AGENTS.md` with Field's explicit OK on the exact change; trailer `Approved-by: Field (session)`. Validate schema changes by running the whole file on a throwaway Postgres (binaries are in the cloud container: /usr/lib/postgresql/*/bin, run as user postgres in /var/tmp).
+- Protected files (incl. `docs/rules/**`): edit only with Field's explicit OK on the exact change in the session (agent-boundaries rev 11 Oct); trailer `Approved-by: Field (session)`. Snapshots under `docs/design/source/**` and `docs/handoff.md` are never edited. Validate schema changes by running the whole file on a throwaway Postgres (binaries are in the cloud container: /usr/lib/postgresql/*/bin, run as user postgres in /var/tmp).
 
 ## Plan (to 8 Nov) — DR-008: Metee = Expo mobile, KJ = backend + web, reviews mobile
 | Week | KJ | Metee (mobile, after 20:00, ~1 brief/wk ≤10 h, contracts fixtures) |

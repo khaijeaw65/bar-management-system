@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending — Field parked 2026-10-10 to finish CDs first; revisit before BRIEF-012 is written |
+| **Status** | Approved — Field · 2026-10-11 |
 | **Raised by** | Field via Cowork · 2026-10-10 |
 | **Brief** | BRIEF-012 (orders, not written) · affects schema.sql/erd.html, CD-08, CD-15, CD-02, CD-06, BRIEF-010 |
 | **Category** | Data · Flow/Architecture |
@@ -59,6 +59,10 @@ Endpoints `/tickets/:id/accept|ready|send|flag-issue|resolve` · event `ticket.s
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: A · Approved: B · Approved with change: …>
-**Why:**
-**Date:**
+**Decision:** Approved with change: **B** (order → tickets, new `order_ticket`, 35 tables) + Rules 1–4, plus:
+- `order_ticket.issue_reported_by` UUID → staff_user ("รายงานโดย ต้น", CD-15 R5).
+- Business-day cut-off **06:00 Asia/Bangkok** for `business_date` — the same day boundary used by CD-13 R3 (shift-end membership) and CD-05 R5 (reports).
+- Cardinality: one order → 1..3 tickets (bar / food / charge; usually 1 bar + optional charge when the kitchen screen is off); one ticket → 1..n items; each item belongs to exactly one ticket.
+- Schema/ERD edit applied only after Field OKs the exact diff.
+**Why:** the model matches how the bar talks ("order #001, two tickets"); number, creator and bill link stored once; status stays per ticket.
+**Date:** 2026-10-11

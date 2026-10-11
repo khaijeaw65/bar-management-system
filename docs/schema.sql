@@ -1,6 +1,6 @@
 -- ============================================================
 -- Bar Management System — Initial Schema
--- Generated: 2026-09-13  |  Updated: 2026-10-10  |  9 domains, 34 tables
+-- Generated: 2026-09-13  |  Updated: 2026-10-11  |  9 domains, 35 tables
 -- ============================================================
 
 -- ── Extensions ───────────────────────────────────────────────
@@ -13,7 +13,6 @@ CREATE TYPE visit_state         AS ENUM ('open', 'active', 'idle', 'closed', 'ab
 CREATE TYPE visit_open_source   AS ENUM ('pos', 'app', 'qr');  -- where a visit was opened (BRIEF-011 Q3, Field 2026-10-10)
 CREATE TYPE item_type           AS ENUM ('simple', 'recipe', 'charge');
 CREATE TYPE order_status        AS ENUM ('pending', 'accepted', 'ready', 'sent', 'issue', 'cancelled');  -- per station ticket; cancelled = every item on the ticket cancelled (DR-012, Field 2026-10-10)
-CREATE TYPE order_item_status   AS ENUM ('pending', 'preparing', 'ready', 'cancelled');  -- only 'pending' / 'cancelled' are used; no per-item progress (DR-012)
 CREATE TYPE kitchen_station     AS ENUM ('bar', 'food');  -- station ticket routing; 'both' dropped (DR-012)
 CREATE TYPE payment_method      AS ENUM ('promptpay', 'cash');
 CREATE TYPE payment_status      AS ENUM ('pending', 'completed', 'failed', 'refunded', 'cancelled');  -- cancelled = staff cancel or 15-min QR timeout (CD-03 Q1, Field 2026-10-04)
@@ -344,31 +343,60 @@ CREATE TABLE restock_request (
 -- 6. ORDER
 -- ============================================================
 
--- One row = one station ticket (DR-012). A placement with drinks + food = 2 rows sharing placement_id.
+-- One row = one order: what was sent in one go, shown as "#001" (DR-013).
+-- An order has 1..3 tickets (bar / food / charge); each ticket has 1..n items.
 CREATE TABLE order_record (
-  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  visit_id      UUID NOT NULL REFERENCES visit(id),
-  placement_id  UUID NOT NULL,              -- shared by all tickets of one placement (DR-012)
-  station       kitchen_station,            -- NULL = charge-only ticket, created as 'sent' (DR-012)
-  status        order_status NOT NULL DEFAULT 'pending',
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  created_by  UUID REFERENCES staff_user(id),
-  updated_by  UUID REFERENCES staff_user(id)
+  id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  visit_id       UUID NOT NULL REFERENCES visit(id),
+  order_number   INT  NOT NULL,             -- daily sequence, shown "#001" (DR-013)
+  business_date  DATE NOT NULL,             -- business day, 06:00 Asia/Bangkok cut-off (DR-013)
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by     UUID REFERENCES staff_user(id),   -- NULL = customer QR order
+  updated_by     UUID REFERENCES staff_user(id),
+  CONSTRAINT uq_order_number_per_day UNIQUE (business_date, order_number)
+);
+
+-- One row = one station's part of an order; owns the STATUS (DR-012, DR-013).
+-- Split by station only when venue.kitchen_display_enabled; otherwise one 'bar' ticket (+ charge ticket).
+CREATE TABLE order_ticket (
+  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id            UUID NOT NULL REFERENCES order_record(id),
+  station             kitchen_station,           -- NULL = charge-only ticket, created as 'sent'
+  status              order_status NOT NULL DEFAULT 'pending',
+  issue_reason        VARCHAR(30),               -- out_of_stock | equipment | other (shown while status = 'issue')
+  issue_item_id       UUID,                      -- FK → order_item, added below (circular)
+  issue_note          TEXT,                      -- required when issue_reason = 'other'
+  issue_reported_by   UUID REFERENCES staff_user(id),
+  issue_escalated_at  TIMESTAMPTZ,               -- "ส่งให้ POS" (NULL = not escalated)
+  sent_at             TIMESTAMPTZ,               -- served time
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by          UUID REFERENCES staff_user(id),
+  updated_by          UUID REFERENCES staff_user(id),   -- name in "กำลังเตรียม · ชื่อ" (CD-08 R14)
+  CONSTRAINT uq_ticket_station_per_order UNIQUE NULLS NOT DISTINCT (order_id, station)
 );
 
 CREATE TABLE order_item (
   id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  order_id              UUID NOT NULL REFERENCES order_record(id),
+  ticket_id             UUID NOT NULL REFERENCES order_ticket(id),   -- order reached through the ticket (DR-013)
   menu_item_variant_id  UUID NOT NULL REFERENCES menu_item_variant(id),
   quantity              SMALLINT NOT NULL DEFAULT 1,
   unit_price_snapshot   NUMERIC(10,2) NOT NULL,   -- frozen at order time
   ordered_by_name       VARCHAR(100),           -- e.g. 'Filippo' — label shown on order card
   notes                 TEXT,
-  status                order_item_status NOT NULL DEFAULT 'pending',
+  cancelled_at          TIMESTAMPTZ,            -- NULL = active; no per-item progress (DR-012, DR-013)
+  cancelled_by          UUID REFERENCES staff_user(id),
+  cancel_reason         VARCHAR(50),            -- ของหมด / สั่งผิด / ของเสีย … (CD-15 R3)
+  cancel_note           TEXT,
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  created_by            UUID REFERENCES staff_user(id)
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by            UUID REFERENCES staff_user(id),
+  updated_by            UUID REFERENCES staff_user(id)
 );
+
+ALTER TABLE order_ticket ADD CONSTRAINT fk_ticket_issue_item
+  FOREIGN KEY (issue_item_id) REFERENCES order_item(id);
 
 CREATE TABLE order_item_modifier (
   id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -455,9 +483,9 @@ CREATE INDEX idx_menu_item_avail_item ON menu_item_availability(menu_item_id);
 
 -- Order lookups
 CREATE INDEX idx_order_visit         ON order_record(visit_id);
-CREATE INDEX idx_order_placement     ON order_record(placement_id);  -- DR-012
-CREATE INDEX idx_order_item_order    ON order_item(order_id);
-CREATE INDEX idx_order_item_status   ON order_item(status);
+CREATE INDEX idx_ticket_order        ON order_ticket(order_id);   -- DR-013
+CREATE INDEX idx_ticket_status       ON order_ticket(status);
+CREATE INDEX idx_order_item_ticket   ON order_item(ticket_id);
 
 -- Payment lookups
 CREATE INDEX idx_payment_visit       ON payment(visit_id);
