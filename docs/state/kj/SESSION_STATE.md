@@ -3,6 +3,7 @@ Updated: 2026-10-10 16:10 · Agent: Cowork (design) — session end
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Parked decisions (Field 10 Oct — "park, finish CDs first")
+- **CD-06 R3 + R4 (customer session):** where the nickname is changed, and identifying "my" orders by phone (visit-session token on `order_record`) instead of by name — decides customer session handling. **R5** customer-QR API contract waits on both; customer-QR brief on hold. (Field 11 Oct: discuss in a separate session.)
 - Order display number per placement (BRIEF-012; Cowork: one number shared by a placement's tickets).
 - CD-08 R8–R11 (summary "เสิร์ฟแล้ว" section, served Toast/no undo, API gaps list, filter rule) — drawn as proposed, orange on canvas.
 - DS StatusChip label `accepted` = "กำลังเตรียม" (Field to change in the DS; canvases pass `label` meanwhile).
@@ -39,7 +40,7 @@ Known retrofit items per canvas:
 | CD-02 POS tables + session | https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG | Field OK (rev 1) · retrofit pending (+ join confirm) |
 | CD-03 POS payment | https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb | rev 2 retrofit done 10 Oct (review: R1, R3–R5 pending; R3 = first screen review) |
 | CD-04 POS order entry | https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz | rev 2 retrofit done 10 Oct (review: R1, R6–R8 pending) |
-| CD-06 customer QR order | https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi | rev 1 built 10 Oct (review: R1–R6) |
+| CD-06 customer QR order | https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi | rev 1 built 10 Oct · Field 11 Oct: R1 R6 ✓, R2 drawn (pending), R3–R5 parked |
 | CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | Field OK (R1–R5) · retrofit pending (+ สั่งออเดอร์) |
 | CD-14 staff new order | https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW | **rev 3 approved 10 Oct — template reference** (images in docs/design/assets/CD-14/) |
 Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e). CD-14 Lucide blob `/_blob/55621ac7d8cfe40fb69092b2ed520365` (CD-14 only).

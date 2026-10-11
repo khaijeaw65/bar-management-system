@@ -6,7 +6,7 @@ status: review
 approved_by:
 approved_on:
 canvas: https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi
-canvas_version: 1791645156-53cb
+canvas_version: 1791708052-d3a9
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-06/   # taken after approval (§11)
 surfaces: [web-customer]
@@ -26,31 +26,31 @@ Brief decisions Q1 (photos) and D1–D4 apply (§10). Rev-1 items (✓ = accepte
 
 | # | Item | Recommendation |
 |---|---|---|
-| R1 | **Pain point.** Root observed at both bars (CD-14 R8: paper / verbal orders, no single place everyone sees). Customer-specific part is an **assumption**: on a full night guests wait long to order and keep asking where their order is. | Field: confirm or correct. |
-| R2 | **"+" on a card:** item with 1 variant and no required group → add 1 immediately + Toast; otherwise opens the item sheet. Tapping the card always opens the item sheet (note / qty). Same as POS (CD-04 R2); differs from CD-14 (staff app, no quick add). | Accept — the cart bar is always visible, so a mis-tap is easy to see and undo. |
-| R3 | **Change nickname** is drawn in the cart ("สั่งในชื่อ ต้น · เปลี่ยนชื่อ") instead of the tab header (brief D1), because the name only matters at send. Skipped nickname → header "โต๊ะ T3", orders show "สั่งโดย ลูกค้า". | Accept. |
-| R4 | **"ของฉัน" filter must not match by name** (two guests can both be "ต้น"). Needs a per-phone id: store the visit-session token's id on `order_record` (no personal data). | Schema / API item for the customer-QR brief. |
-| R5 | **Needs API (customer-QR brief, not written):** `GET /public/menu` with `imageUrl` (from `image_key`) + `available_now` + window (DR-010) · running tab per station ticket (DR-012) · `POST /public/visits/:id/call-staff {reason?}` with server-side 60 s throttle · WS `/customer` (`order.status_changed`, `menu.availability_changed`, `visit.state_changed`). | Write into the customer-QR brief. |
-| R6 | **Photos:** canvas uses placeholder illustrations; real photos = `menu_item.image_key` uploaded in CD-12; no photo = category icon (glass-water / utensils / martini / beer) on `--surface-raised`, 4:3 — both drawn. | Accept. |
+| R1 ✓ | **Pain point = field research** (Field 2026-10-11): same root as CD-14 R8 (verbal orders); in small bars it happens only at rush hour / when the bar is full — guests wait long before they can order. | Done (overview). |
+| R2 | **Every tap opens a sheet — no quick add** (Field's idea 2026-10-11, drawn by Cowork). "+" or card → bottom sheet. No-option item: half sheet with qty + note; if already in the cart it opens at the current qty, button "อัปเดตตะกร้า", qty 0 → danger "ลบออกจากตะกร้า" (item·1–3). Item with options: full-screen sheet; always adds a new line, with a hint that an existing line (different options) is edited in the cart (item·7). Cost: +1 tap per item (J1 = 5 taps for one drink) for no accidental adds and qty edits without leaving the menu; same pattern as CD-14. | Field: confirm the drawn version. |
+| R3 ⏸ | **Parked — discuss separately** (Field 2026-10-11). Where the nickname is changed (drawn in the cart: "สั่งในชื่อ ต้น · เปลี่ยนชื่อ"; brief said tab header); skipped nickname → "สั่งโดย ลูกค้า". Tied to R4. | — |
+| R4 ⏸ | **Parked — discuss separately** (Field 2026-10-11). "ของฉัน" must not match by name → needs a per-phone id (visit-session token on `order_record`). Decides how customer sessions work. | — |
+| R5 ⏸ | **Parked until R3 + R4** (Field 2026-10-11). Customer-QR API contract: menu `imageUrl` + `available_now` + window · running tab per ticket · call-staff + 60 s throttle · WS `/customer`. The customer-QR brief stays on hold. | — |
+| R6 ✓ | **Photos** (Field 2026-10-11): canvas uses placeholder illustrations; real photos = `menu_item.image_key` from CD-12; no photo = category icon on `--surface-raised`, 4:3 — both drawn. | Done. |
 
 ## 1. Overview
 - **Goal:** a guest scans the table QR, orders on their own phone without login, sees the whole table's orders with status, and can call staff.
-- **Pain point:** see R1.
+- **Pain point (field research, R1):** orders are verbal; in small bars this bites at rush hour / when full — guests wait long before they can order.
 - **User + context:** guest at a table / counter · Friday 22:00 with 3–4 friends, dim light, one hand holding a glass, won't install or register anything.
 - **Entry → exit:** scan QR → `/q/:token`. Exit: ชำระเงิน → CD-07 · table closed → scan again.
-- **Outcome:** scan → order a no-option drink in 4 taps (ดูเมนู → + → ดูตะกร้า → สั่งเลย; assumes nickname typed or skipped); one shared bill with names; sold-out / expired promo caught before send; retry never duplicates.
+- **Outcome:** scan → order a no-option drink in 5 taps (ดูเมนู → + → เพิ่มลงตะกร้า → ดูตะกร้า → สั่งเลย; assumes nickname typed or skipped); one shared bill with names; sold-out / expired promo caught before send; retry never duplicates.
 - **Out of scope:** payment (CD-07), LINE login, PDPA consent, bottle keep, recommendations, multi-language, staff / POS screens.
-- **Journeys:** J1 ต้น scans T3 → nickname → ช้าง ×2 (quick add) → โอลด์แฟชั่น (sheet) → ถั่วทอด → cart → send → tab with 2 tickets (E1–E7) · J2 ยำหมูยอ sold out at send → 409 → remove → send (E1–E3).
+- **Journeys:** J1 ต้น scans T3 → nickname → ช้าง ×2 (qty sheet) → โอลด์แฟชั่น (full sheet) → ถั่วทอด → cart → send → tab with 2 tickets (E1–E8) · J2 ยำหมูยอ sold out at send → 409 → remove → send (E1–E3).
 
 ## 2. Boards
 | Board | Type | States |
 |---|---|---|
 | `overview` | OVERVIEW | goal, pain point (R1), user/context, outcome, entry/exit, journeys, out of scope, key decisions |
-| `journey-1` | JOURNEY | welcome (E1 ดูเมนู) → menu (E2 + ช้าง) → added (E3 card โอลด์แฟชั่น) → item (E4 เพิ่ม) → cart bar 4 (E5 + ถั่วทอด, E6 ดูตะกร้า) → cart (E7 สั่งเลย) → tab ฿1,840.00 |
+| `journey-1` | JOURNEY | welcome (E1 ดูเมนู) → menu (E2 + ช้าง) → qty sheet 2 (E3 เพิ่ม) → added (E4 card โอลด์แฟชั่น) → item (E5 เพิ่ม; E6 + ถั่วทอด → sheet) → cart bar 4 (E7 ดูตะกร้า) → cart (E8 สั่งเลย) → tab ฿1,840.00 |
 | `journey-2` | JOURNEY | cart ยำหมูยอ + ช้าง (E1) → 409 void line (E2 ลบออก) → cart (E3) → tab ฿1,480.00 |
 | `welcome` | STATES | 1 default · 2 typing + keyboard · 3 loading · 4 invalid QR · 5 360×780 |
 | `menu` | STATES | 1 loaded · 2 loading · 3 error · 4 no result · 5 cart bar · 6 sold out live · 7 promo · 8 disconnected · 9 search + long names + keyboard · 10 nickname skipped · 11 360×780 |
-| `item` | STATES | 1 default · 2 required missing · 3 max toppings · 4 one-variant · 5 note + keyboard |
+| `item` | STATES | 1 qty sheet new · 2 qty sheet already in cart · 3 qty 0 → remove · 4 options default · 5 required missing · 6 max toppings · 7 options + already in cart · 8 full sheet + keyboard |
 | `cart` | STATES | 1 normal · 2 sending · 3 sold out 409 · 4 promo expired 409 · 5 network error · 6 table closed · 7 empty · 8 360×780 |
 | `tab` | STATES | 1 all · 2 ของฉัน · 3 ticket ready (live) · 4 after send · 5 empty · 6 disconnected · 7 360×780 |
 | `call-staff` | STATES | 1 open · 2 sending · 3 done + 60 s lock · 4 error |
@@ -84,14 +84,14 @@ Shared (not a board to review): `Screen`.
 | Open QR | `GET /public/qr/:token` (planned, customer-QR brief) | public token | welcome·1 | 404 → welcome·4 | ask staff | — | n/a |
 | Load menu | `GET /public/menu` (planned; `imageUrl`, `available_now`, window — R5) | visit-session token | menu·1 | network → menu·3 | ลองอีกครั้ง | cart | n/a |
 | Live menu | WS `/customer` `menu.availability_changed` + refetch 60 s (DR-010) | session | card → หมด + Toast (menu·6) | socket down → menu·8 | refetch on reconnect | cart | upsert by item id |
-| Quick add / add from sheet | client | — | count + Toast | required missing → item·2 | pick | cart (this phone) | — |
+| Add / change qty / remove (sheet) | client | — | count + Toast; qty 0 removes the line | required missing → item·5 | pick | cart (this phone) | — |
 | Send order | `POST /public/visits/:id/orders` + Idempotency-Key (planned); first order on a free table opens the visit (FRD §3) | session | `201` → tab·4 + Toast | `409 ITEM_UNAVAILABLE` sold_out → cart·3 · out_of_window → cart·4 · `409` visit closed → cart·6 · network → cart·5 | remove line / retry / scan again | cart | key per cart, reused on retry, new after success or edit |
 | Running tab | `GET` tab of the visit (planned, R5) + WS `order.status_changed` | session | tab·1, live ·3 | socket down → tab·6 | refetch | — | n/a |
 | Call staff | `POST /public/visits/:id/call-staff {reason?}` (planned, R5) | session | call·3, 60 s lock | network → call·4 · 429 → same as ·3 (already called) | retry | reason | server throttle 60 s |
 | Pay | → CD-07 | session | — | — | — | — | — |
 
 ## 5. e2e script
-- **J1** E1 open `/q/:token` for T3, type "ต้น", tap ดูเมนู → menu, header "โต๊ะ T3 · ต้น" · E2 tap + on ช้างดราฟต์ twice → card count 2, cart bar "ตะกร้า 2 รายการ ฿240.00", Toast · E3 tap the โอลด์แฟชั่น card → item sheet, defaults ปกติ · เชอร์รี่ · ก้อนใหญ่, button "เพิ่มลงตะกร้า · ฿280.00" · E4 add → cart bar 3 · E5 + ถั่วทอดสมุนไพร → 4 / ฿600.00 · E6 ดูตะกร้า → cart, "สั่งในชื่อ ต้น" · E7 สั่งเลย → one `POST` with Idempotency-Key, `orderedByName:'ต้น'` → `201` → tab: new placement 20:34 with เครื่องดื่ม · ส่งแล้ว (ช้าง ×2, โอลด์แฟชั่น) and อาหาร · ส่งแล้ว (ถั่วทอด), รวมทั้งโต๊ะ ฿1,840.00.
+- **J1** E1 open `/q/:token` for T3, type "ต้น", tap ดูเมนู → menu, header "โต๊ะ T3 · ต้น" · E2 tap + on ช้างดราฟต์ → qty sheet at 1 · tap stepper + → 2, button "เพิ่มลงตะกร้า · ฿240.00" · E3 add → card count 2, cart bar "ตะกร้า 2 รายการ ฿240.00", Toast · E4 tap the โอลด์แฟชั่น card → full sheet, defaults ปกติ · เชอร์รี่ · ก้อนใหญ่, button "เพิ่มลงตะกร้า · ฿280.00" · E5 add → cart bar 3 · E6 + ถั่วทอดสมุนไพร → sheet → add → 4 / ฿600.00 · E7 ดูตะกร้า → cart, "สั่งในชื่อ ต้น" · E8 สั่งเลย → one `POST` with Idempotency-Key, `orderedByName:'ต้น'` → `201` → tab: new placement 20:34 with เครื่องดื่ม · ส่งแล้ว (ช้าง ×2, โอลด์แฟชั่น) and อาหาร · ส่งแล้ว (ถั่วทอด), รวมทั้งโต๊ะ ฿1,840.00.
 - **J2** cart ยำหมูยอ + ช้าง ×2 · E1 สั่งเลย → `409 ITEM_UNAVAILABLE reason sold_out` → nothing created; void line at top, struck ฿150.00, Alert, สั่งเลย disabled · E2 ลบออก → enabled, total ฿240.00 · E3 สั่งเลย → `201`, tab total ฿1,480.00.
 - **Edge:** network error then retry → one order · closed table → cart·6, no send · call staff twice within 60 s → second press disabled (client) and 429 (server) · old / regenerated QR → welcome·4.
 
@@ -121,7 +121,7 @@ Tab sample = the same T3 bill as CD-02 / CD-03 / CD-04 (฿1,240.00; ต้น �
 
 ## 9. Behaviour rules
 - **No login.** The QR token gives a visit-session token stored on this phone; nickname is optional (D1), ≤ 30 chars, trimmed, sent as `orderedByName`.
-- **Quick add (R2):** "+" adds 1 when the item has 1 variant and no required group; else opens the sheet. Card tap always opens the sheet.
+- **Sheet before add (R2):** "+" and card tap always open a sheet. No-option item → half sheet (qty + note); already in cart → starts at current qty, "อัปเดตตะกร้า", qty 0 → "ลบออกจากตะกร้า". Item with options → full sheet, always a new line (existing lines with other options are edited in the cart).
 - **Charge items** (corkage etc.) are not on the customer menu; when staff add one it appears in the tab with no status (D3).
 - **Promos (DR-010):** promo tab; out-of-window greyed, no "+", start time shown; server decides; expired in cart → cart·4.
 - **Send:** one `POST` per cart with Idempotency-Key; cart locked while pending; the first order on a free table opens the visit.
@@ -129,14 +129,15 @@ Tab sample = the same T3 bill as CD-02 / CD-03 / CD-04 (฿1,240.00; ต้น �
 - **Realtime:** `/customer` room; on disconnect show banner, keep last data, refetch on reconnect.
 - **Call staff:** reason optional; button disabled 60 s after success (client) and throttled on the server (R5).
 - **Standard questions:** Filters → category chips single select, ทั้งหมด default; tab filter ทั้งหมด / ของฉัน single select, cannot de-select both. Search → trimmed, Thai substring match on name, clears with the field's ✕ (query only; category kept). Long and short → 360×780 drawn; names clamp 2 lines on cards, wrap elsewhere. Interaction → DS pressed / disabled / pending; no hover reliance (touch). Accessibility → each card has "ดู {name}" and "เพิ่ม {name}" buttons; ticket status read as "{station} {status}"; reading order header → search → categories → cards → cart bar. Data → photo from `imageUrl` (missing → category icon); prices from the API.
-- **User-mindset checks:** ✓ one dominant action per screen · ✓ targets ≥ 44 (primary 52) in thumb reach · ✓ ack < 1 s (Toast / pending) · ✓ errors say how to fix · ✓ task cost 4 taps (no-option drink) · ✓ status has text · ✓ long Thai drawn (menu·9) · ☐ walkthrough with a guest.
+- **User-mindset checks:** ✓ one dominant action per screen · ✓ targets ≥ 44 (primary 52) in thumb reach · ✓ ack < 1 s (Toast / pending) · ✓ errors say how to fix · ✓ task cost 5 taps (no-option drink, R2) · ✓ status has text · ✓ long Thai drawn (menu·9) · ☐ walkthrough with a guest.
 
 ## 10. Revisions
 | Rev | Date | Change | Authority |
 |---|---|---|---|
 | 0 | 2026-10-09 | Brief: Q1 photos (`menu_item.image_key`), D1–D4 | Field |
 | 0 | 2026-10-10 | D3 per station ticket (DR-012), customer label "ร้านกำลังเตรียม" (DR-012 A1) | Field |
-| 1 | 2026-10-10 | First canvas built to `cd-template.md` v2: overview, J1 / J2, 6 state boards, flow; R1–R6 raised | Cowork — review pending |
+| 1 | 2026-10-10 | First canvas built to `cd-template.md` v2: overview, J1 / J2, 6 state boards, flow; R1–R6 raised | Cowork |
+| 1 | 2026-10-11 | Field review: R1 + R6 accepted · R2 Field's sheet-before-add idea drawn (item·1–3, ·7; J1 now E1–E8) · R3 / R4 / R5 parked for a separate discussion | Field (R1, R6) · R2 pending |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 1 (`cd-template.md` §6). Assets on the canvas: Lucide UMD `/_blob/8d9605710cbf0935649fa04801cfffca`; placeholder photo illustrations `/_blob/0521bae84b976a31c39d9d4d511ef00e` (beer), `e2a89ae45cad300bf94455372a662b88` (bottle), `15f3198af1081fec566d0ff51ed73e39` (rocks), `84a7473d8958d44bf3c9747c67a1d684` (negroni), `9bd9f6147882a151e9ebf0676c1debc3` (food).

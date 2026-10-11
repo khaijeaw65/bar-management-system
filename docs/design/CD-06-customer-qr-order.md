@@ -50,4 +50,4 @@ Once the handoff is approved it wins over the paste text above (`cd-template.md`
 
 | Rev | Date | Change vs this brief | Where |
 |---|---|---|---|
-| 1 | 2026-10-10 | Nickname change lives in the cart, not the tab header (R3) · "+" = quick add for no-option items (R2) · promo category + expired-promo cart state (DR-010) · "ของฉัน" filters by phone, not name (R4) · categories drawn as chips · call-staff error state added | handoff §0, §9 |
+| 1 | 2026-10-10 | Nickname change lives in the cart, not the tab header (R3) · "+" / card always opens a sheet — qty sheet for no-option items, edit or remove existing qty there (R2, Field idea, pending) · promo category + expired-promo cart state (DR-010) · "ของฉัน" filters by phone, not name (R4) · categories drawn as chips · call-staff error state added | handoff §0, §9 |
