@@ -1,6 +1,6 @@
 # CD-15 — POS: orders page + issue resolution (escalated from the staff app)
 
-**Status:** Ready — D1–D3 accepted by Field (2026-10-09) · **Surface:** web POS 1280 (also 1024) · **Used by:** S1 POS orders brief · closes the gap from CD-08 D2 ("ส่งให้ POS") · FRD §6 ISSUE resolution, §8 void/comp
+**Status:** rev 1 canvas in review (2026-10-11) — D1–D3 accepted by Field (2026-10-09) · **Surface:** web POS 1280 (also 1024) · **Used by:** S1 POS orders brief · closes the gap from CD-08 D2 ("ส่งให้ POS") · FRD §6 ISSUE resolution, §8 void/comp
 
 ## Attach
 **Open inside the existing Claude Design project** (Design systems tab → The Loft Bar Design System): https://claude.ai/design/p/99bbff1a-22a2-48d7-8dbc-3226d55e3457
@@ -31,5 +31,12 @@
 - Void always goes through the CD-02 void-comp rules (reason + PIN / self-approve flag).
 
 ## Result
-- Claude Design link: <after run>
-- Handoff: `docs/design/CD-15-handoff.md` · screenshots `docs/design/assets/CD-15/`
+- Canvas: https://claude.ai/artifact/QvCcTKGEBD77NqW4ZarhcL (built to `cd-template.md` v2)
+- Handoff: `docs/design/CD-15-handoff.md` · source snapshot after approval
+
+## Revisions
+Once the handoff is approved it wins over the paste text above (`cd-template.md` §2).
+
+| Rev | Date | Change vs this brief | Where |
+|---|---|---|---|
+| 1 | 2026-10-11 | Void reason "ของหมด" added (R3) · accepted chip label "กำลังเตรียม · name" (DR-012 A1) · counter tickets show "เสิร์ฟแล้ว" from กำลังเตรียม (DR-011) · last-item void → ticket cancelled drawn · no-permission and payment-in-flight states · 1024 issue strip option (R6) | handoff §0, §9 |
