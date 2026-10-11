@@ -26,12 +26,13 @@ Brief D1–D4 apply (§10). Rev-1 items:
 
 | # | Item | Recommendation |
 |---|---|---|
-| R1 | **Pain point.** Root observed (CD-08 R6: no single place everyone sees orders). POS-specific part is an **assumption**: when an item runs out mid-order, staff can't fix it themselves (a void is money), they wait for the manager, and the bill isn't corrected. | Field: confirm or correct. |
-| R2 ⏸ | **Order number per placement** — the board shows #0045 on both tickets (บาร์ + ครัว) of one placement; `order_record` has no number column. **Parked** with "Order display number per placement" (SESSION_STATE). | — |
+| R1 ✓ | **Pain point.** Root observed (CD-08 R6: no single place everyone sees orders). POS-specific part is an **assumption**: when an item runs out mid-order, staff can't fix it themselves (a void is money), they wait for the manager, and the bill isn't corrected. | Field: confirm or correct. **Confirmed 2026-10-12** (field experience + research — `docs/research/Claude_verified_ops_findings.md`, DR-014). |
+| R2 ✓ | **Order number per placement** — the board shows #0045 on both tickets (บาร์ + ครัว) of one placement; `order_record` has no number column. **Parked** with "Order display number per placement" (SESSION_STATE). | — **Answered 2026-10-12 (DR-013):** both tickets share `order_record.order_number` (#0045 · บาร์ / · ครัว). |
 | R3 | **Void reason "ของหมด"** — brief says ของเสีย / ของหมด; CD-02's list has no ของหมด. Add it (first in the list, pre-filled from an issue) so sold-out is reported separately from spoilage; update CD-02 void-comp. | Accept. |
 | R4 ⏸ | **DS StatusChip** kind order has no `cancelled` (DR-012) and `accepted` still reads "กำลังทำ" (DR-012 A1 = "กำลังเตรียม"). Drawn with `label` overrides + Badge "ยกเลิกทั้งใบ". **Parked** with the DS label item. | — |
 | R5 | **Needs API (BRIEF-012 / 013):** `GET /orders?status=` with `escalated` + issue (reason, item, note, reporter) · `POST /orders/:id/resolve` · item void + manager PIN check (CD-02 R5) · `409 PAYMENT_IN_FLIGHT` on void (BRIEF-013) · ticket auto-`cancelled` when every item is void. | Add to BRIEF-012 / 013. |
 | R6 | **1024×768:** four 260-wide columns overflow; "มีปัญหา" ends off-screen (horizontal scroll, as the brief says). Alternative: when issues exist, show them as a warning strip above three columns so they're never out of sight. | Field: keep scroll or take the strip. |
+| R7 | **DR-014 impact (canvas update):** READY column only when the kitchen screen is on (#1) · sold-out auto-cancel shows as cancelled items, not an issue (#3). | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
 
 ## 1. Overview
 - **Goal:** the POS sees every open ticket of the shift by status, can drive the status itself (bars without phones), and resolves issues the staff app escalated — continue, void, or replace.

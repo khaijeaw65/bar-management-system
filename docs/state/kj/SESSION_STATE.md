@@ -1,13 +1,27 @@
 # State — KJ
-Updated: 2026-10-10 16:10 · Agent: Cowork (design) — session end
+Updated: 2026-10-12 01:50 · Agent: Cowork (decisions) — session end
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Parked decisions (Field 10 Oct — "park, finish CDs first")
 - **CD-06 R3 + R4 (customer session):** where the nickname is changed, and identifying "my" orders by phone (visit-session token on `order_record`) instead of by name — decides customer session handling. **R5** customer-QR API contract waits on both; customer-QR brief on hold. CD-07 R4 (customer payment API) waits on the same decision. (Field 11 Oct: discuss in a separate session.)
-- Order display number per placement (BRIEF-012; Cowork: one number shared by a placement's tickets).
 - CD-08 R8–R11 (summary "เสิร์ฟแล้ว" section, served Toast/no undo, API gaps list, filter rule) — drawn as proposed, orange on canvas.
 - DS StatusChip label `accepted` = "กำลังเตรียม" (Field to change in the DS; canvases pass `label` meanwhile).
 - CD-14: success state for a cart that splits into 2 tickets (DR-012).
+
+## Decided 11–12 Oct (read before anything else)
+- **DR-013 approved (B):** order → tickets → items. `order_record` = order "#001" (`order_number`, `business_date`); new `order_ticket` owns status/station/issue/`sent_at`; `order_item.ticket_id` + cancellation fields; 35 tables (schema/ERD/CLAUDE.md done, `fbabebe`).
+- **DR-014 approved (ops simplification):** READY only with kitchen screen · no idle auto-close · 86 auto-cancels waiting items · business-day cut-off venue setting (06:00) · counter QR optional/off · **payment modes: gateway webhook OR own PromptPay + app amount-locked QR + scan slip → EasySlip verify (manual fallback)** · shift close S1 after gate · POS PIN switch · bottle keep = simple record · promos: no crossed-out price · **AI = owner insight suite (sales / anomaly-fraud / menu), guest summary dropped** · 3 seeded groups.
+- **agent-boundaries:** any protected file editable by an agent only with Field's explicit OK on the exact change.
+- Research: `docs/research/Grok_/Gemini_Bar_Operation_research.md` + `Claude_verified_ops_findings.md` (primary-source check).
+- Handoffs: all R1 pain points ✓ confirmed · CD-02 R4/R5, CD-03 R4/R5, CD-04 R6–R8 ✓ · CD-03 R3 ⏸ (screen review) · CD-12 R5 ✓ · CD-13 R3 ✓ · CD-15 R2 ✓ · DR-014 impact rows added (CD-02/03/05/06/07/08/12/13/15) — canvases not yet redrawn.
+- FRD updated to DR-012/013/014 (§2, §3, §5, §6, §7, §8, §9, §10, §11, §12, §13).
+
+## Next session (in order)
+1. **Field OK on the DR-014 schema diff** (venue settings, `shift`, `ai_insight`, staff `pos_pin_hash`, payment slip fields, bottle_keep simplification → 37 tables) + CLAUDE.md "Key differentiators" line (AI guest intelligence → AI owner insight). Validate on throwaway Postgres; sync ERD.
+2. **Advisor heads-up:** AI feature moved to owner insight.
+3. Remaining review batches: CD-08 + CD-15 (R8–R11, R5/R6), CD-05/06/07/11/12/13 (incl. CD-13 R4, CD-05 R4 threshold, CD-15 R6 strip), then canvas revisions for DR-013/014.
+4. Before BRIEF-013: confirm EasySlip response includes the receiver account.
+5. Write BRIEF-012 (orders, DR-012/013/014) — build restarts 12 Oct.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**

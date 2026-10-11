@@ -24,7 +24,7 @@ Built on The Loft Bar Design System (real DS components; Theme tweak dark/light 
 ## 0. Review items
 | # | Item | Recommendation |
 |---|---|---|
-| R1 | **Pain point is an assumption:** shared device / password, nobody knows who voided or took cash, staff who left can still get in. Root shared with CD-14 R8 (no single place everyone sees). | Field: confirm or correct from the field visits. |
+| R1 ✓ | **Pain point is an assumption:** shared device / password, nobody knows who voided or took cash, staff who left can still get in. Root shared with CD-14 R8 (no single place everyone sees). | Field: confirm or correct from the field visits. **Confirmed 2026-10-12** (field experience + research — `docs/research/Claude_verified_ops_findings.md`, DR-014). |
 | R2 | **Not-registered copy (rev-1 port note P1):** "ส่งคำขอเข้าใช้งานถึงเจ้าของร้านแล้ว · เข้าสู่ระบบอีกครั้งเมื่อได้รับอนุมัติ" + 3 steps (CD-13 Q1 access requests). Same as CD-08 R1, which Field accepted. | Accept. |
 | R3 | **Menu list:** new column "ส่งไปที่" (บาร์ / ครัว — `menu_item.kitchen_tag`, required by DR-012) · new state menu·6 = 1024×768 + long names (1 line, "…") + no `menu:write` ("เพิ่มเมนูใหม่" hidden, read-only note). | Accept. |
 | R4 ✓ | **Session expired** stays a blocking modal (rev 1 deviation 3), but appears only when the refresh fails (logged out elsewhere, revoked, unused > 7 days for web — DR-005 / BRIEF-007), not on every access-token expiry. | Done (board note). |

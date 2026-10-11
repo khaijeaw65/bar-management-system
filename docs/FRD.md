@@ -4,7 +4,7 @@
 **Version:** 1.2 — BASELINE (approved). Full scope; hardened for concurrency/edge cases; build sequenced by semester (see handoff.md).
 **Review status:** Dual independent review passed — GPT (~98%, approved to close) + Grok (9.2/10, all 17 edge cases closed). Do not reopen without a new business requirement or implementation discovery.
 **Target:** Small-to-medium counter bars in Thailand (counter seating + tables)
-**Last updated:** 2026-08-23 (rev: field research + GPT consistency pass + Grok edge-case pass — 17 collisions resolved via re-validation principle)
+**Last updated:** 2026-10-12 (DR-012/013/014: tickets, order numbers, payment modes, ops simplification, AI owner insight) · previously 2026-08-23 (rev: field research + GPT consistency pass + Grok edge-case pass — 17 collisions resolved via re-validation principle)
 
 ---
 
@@ -38,6 +38,9 @@ A unified bar management platform for small-to-medium counter bars. Unlike gener
 | Bartender | Staff app · POS at the counter (payments, close) | Orders, bar tab, guest notes, receipts, payments |
 | Waiter | Staff app | Orders, tables, request bill handoff |
 
+**Seeded groups (DR-014):** a new venue starts with three ready-made groups — **Owner / Manager / Staff** (Staff = bartender + waiter). The policy editor sits under "ขั้นสูง" for owners who want finer control.
+- **Shared POS (DR-014):** staff switch the active person on the shared POS tablet with a **4-digit PIN** linked to their LINE identity; every POS action is attributed to the person who switched in.
+
 Roles can be combined on one user (small bar: owner also bartends). Surface by context, access by permission — see DR-009. Only Owner/Manager can assign group memberships.
 
 ---
@@ -49,15 +52,15 @@ Roles can be combined on one user (small bar: owner also bartends). Surface by c
 
 ### QR
 - **Tables:** static QR printed per table → resolves to `/(table)/{id}`.
-- **Counter seats:** portable **paper QR handed at seating** (no fixed spot to mount a sticker). Numbered per seat; collected/reused when the guest leaves. Same static-QR concept, made movable.
+- **Counter seats:** guests usually order by voice, so **counter QR is optional and off by default (DR-014)** — the bartender opens the counter seat on the POS / staff app. A venue that wants it can enable a portable per-seat QR card. Table QR ordering stays (medium bars with food).
 - **Reprintable on demand** (wear, tear, spill, loss — happens constantly in a bar). Reprint resolves to the **same** table → works immediately. Optional **regenerate** (new signed token, invalidate old) for the rare security case (leaked/misused QR). Counter paper QRs are freely reissued.
 
 ### Session state machine
 - `OPEN → ACTIVE → IDLE → CLOSED`.
 - **Opens** when: staff opens manually (reservation/VIP) OR first order placed (walk-in, self-service).
 - **`ACTIVE → IDLE`:** occurs after no relevant session activity (new order, item change, payment activity) for the configured inactivity threshold. Any such activity resets the idle timer.
-- **Closes** when: staff closes after payment OR ignored idle notification auto-closes.
-- **Idle handling:** after inactivity threshold, notify POS to check table. If ignored for a further period → auto-close.
+- **Closes** when: staff closes it — always manual (DR-014: no auto-close; guests step out to smoke or talk).
+- **Idle handling:** after the inactivity threshold, show an idle warning on the POS so staff check the table. Nothing closes automatically.
 
 ### Separate vs shared
 - **Shared (default):** one QR for the table/seat. Can be **shared to friends** (like Wongnai's "แชร์ QR ให้เพื่อน") → everyone who scans joins the **same** session → all orders → same table → **one bill**. Each person can still enter their own name (shown on their order items) so staff knows whose drink is whose.
@@ -151,7 +154,7 @@ Nobody identifies themselves to buy a drink. Identity offered only when it unloc
 
 ### 86'd items
 - Bartender marks item unavailable → QR menu hides it immediately, POS shows "86'd" badge → **auto-restores when available stock returns to the level required to fulfil the item** (not merely any stock change). Staff can also manually un-86 an item.
-- **86 mid-order:** marking an item/ingredient 86'd also evaluates **dependent orders already in `PENDING`/`ACCEPTED`** and moves them to `ISSUE` (§6 resolution: substitute / remove / escalate). Already-`SENT` orders are untouched.
+- **86 mid-order (DR-014):** marking an item 86'd **auto-cancels that item on tickets still waiting** (`PENDING`/`ACCEPTED`; reason ของหมด, cancelled by system) and alerts staff "แจ้งลูกค้าโต๊ะ …" so they tell the guest. No issue queue mid-rush. Already-`SENT` tickets are untouched. The `ISSUE` flow remains for problems staff report themselves.
 
 ### Restock requests concurrency
 - A restock request **snapshots the item's stock level + 86 state at request time**, so a request isn't confusing if the item is 86'd or adjusted moments later.
@@ -168,7 +171,7 @@ Nobody identifies themselves to buy a drink. Identity offered only when it unloc
 ### Order status state machine
 `PENDING → ACCEPTED (กำลังเตรียม — someone has taken it and is preparing it: fetch, mix or cook) → READY → SENT` · terminal `CANCELLED`
 - **Status is per order ticket, never per item (DR-012).** One tap moves the whole ticket. Items carry no progress — only *cancelled*.
-- **Counter seats skip READY:** `ACCEPTED → SENT` in one tap (bartender hands it over). Tables keep all steps (DR-011).
+- **READY only with a kitchen screen (DR-014):** when `venue.kitchen_display_enabled` is off (most small bars), every seat goes `ACCEPTED → SENT` in one tap. With the kitchen screen on, tables keep `READY` (food waits at the pass for a runner); counter seats always skip it (DR-011).
 - **`CANCELLED`:** set automatically when every item on the ticket is cancelled (at the POS); the ticket leaves the queue.
 Branch: `ISSUE` (out of stock / equipment problem). **Resolution paths out of `ISSUE`:**
 - **Substitute/resolved** → back to `ACCEPTED` (e.g. bartender swaps ingredient, resumes prep).
@@ -181,11 +184,13 @@ Table/seat, **who ordered each item** (name label per line, e.g. "สั่ง�
 ### Cancelled / voided item display
 Cancelled items stay **visible on the bill, struck through / marked cancelled**, with the amount removed from the total — not erased. Preserves the audit trail (matches §8 audit principle + anonymize-don't-delete philosophy). *(Observed live: cancelled tap item shown as "รายการอาหารถูกยกเลิก", amount removed from total.)*
 
-### Kitchen routing — station tickets (DR-012)
-- When an order is placed, its items are split by `kitchen_tag` into **one ticket per station** (drinks → bar, food → kitchen). Each ticket is its own `order_record` with its own status; tickets from the same placement share a `placement_id`. A beer never waits for the fries.
-- **Always split — no venue setting.** A bar with one station sees both tickets on the same screen (a mixed order = 2 tickets to tap).
+### Orders, tickets and kitchen routing (DR-012, DR-013)
+- **Order** = what is sent in one go, numbered per business day ("#001", resets at the business-day cut-off — §12). **Ticket** = one station's part of an order and owns the status. **Item** belongs to one ticket.
+- **Kitchen screen off (default):** one `bar` ticket holds every item — the bar handles food verbally, as today.
+- **Kitchen screen on** (`venue.kitchen_display_enabled`): items split by `kitchen_tag` into a `bar` and a `food` ticket with separate status, so a beer never waits for the fries. Labels "#001 · บาร์ / #001 · ครัว". The split is decided when the order is placed and never redone.
 - **Charge-type items** (corkage, otoshi, fines) go on their own ticket created as `SENT` — never in the queue, still on the bill.
-- Separate kitchen display is optional (S2, `/pos/kitchen`).
+- All items on a ticket cancelled → ticket `CANCELLED`, whatever its status.
+- Separate kitchen display screen: S2 (`/pos/kitchen`).
 
 ### Customer-facing (QR ordering surface)
 - **Call staff (bell):** one tap → notification to POS ("Table 3 needs staff"). The human-fallback escape hatch for QR ordering — special request, confusion, QR issue, or just wanting a person. Aligns with the "never a single point of failure, always a human fallback" principle.
@@ -194,6 +199,11 @@ Cancelled items stay **visible on the bill, struck through / marked cancelled**,
 ---
 
 ## 7. Payment
+
+### Payment modes (DR-014) — one confirmation interface, chosen per venue
+- **Gateway webhook** — locked-amount QR from the gateway, confirmed by the gateway webhook. GB Prime Pay first (demo); Omise as a later adapter. Cost ~1.65–2.5% per sale.
+- **Normal way** (most small bars) — money goes to the **owner's / bar's own PromptPay**. The app generates an **amount-locked PromptPay QR** (EMVCo Thai QR with the bill amount — free, built on the server from the locked amount). Guests may also pay with the bar's static QR or by PromptPay ID. **Staff scan the slip's verification QR** → slip-verification API (EasySlip first adapter) → paid automatically with evidence stored. Our own checks: slip reference unique (no reuse), receiver = venue PromptPay, amount ≥ bill. API down / no slip QR → manual confirm + reason (today's practice).
+- Replaces today's habit of screenshotting the guest's slip without checking it with the bank. Gate (8 Nov) = normal way with manual confirm.
 
 ### Two axes (configurable): WHERE payment happens × HOW it's confirmed
 
@@ -219,7 +229,7 @@ Both real bars observed rely on **manual slip verification** (staff looks at a p
 
 ### Payment-in-flight collisions (state frozen during a payment attempt)
 A payment attempt **locks the amount** for that attempt. While a payment is pending/in-flight:
-- **Idle auto-close is blocked** — payment activity resets the idle timer; a table cannot auto-close mid-payment.
+- **Idle warning is suppressed** — payment activity resets the idle timer (no auto-close exists since DR-014).
 - **Comp/void of items in that bill is blocked** — must cancel/regenerate the payment first (prevents the paid amount and the bill diverging).
 - **Time-based price changes (happy hour boundary) do not alter the locked amount** — the frozen amount stands for that attempt; new prices apply to later orders or a regenerated QR.
 - **Manual mark vs late webhook:** if staff marks a session paid manually and the real webhook arrives afterward for an already-settled session, the webhook is **ignored and logged** — no double settlement.
@@ -249,8 +259,9 @@ A payment attempt **locks the amount** for that attempt. While a payment is pend
 - Immutable log of all critical actions: order edits, stock adjustments, price changes, comps, voids, deletions, cash-method changes. Who / what / when.
 
 ### End-of-Shift Cashout
+- **Scope (DR-014):** S1 after the 8 Nov gate; optional per venue (as in Loyverse). Opening float → staff count the drawer at close → manager/owner sees expected vs counted and the difference (also remotely on the phone).
 - **Blind cash counting:** system does NOT show expected total; staff enters raw physical count first, then system compares → variance flagged.
-- **Dual sign-off** (outgoing staff + incoming manager) locks shift report.
+- **Manager review** (in person or remote) locks the shift report; dual sign-off only when two people are on site.
 - **Settle point (operational, not system-enforced):** bars force a settlement point at a cutoff (e.g. midnight) — staff manually go table-to-table settling all open tabs (hand off QR/bill to each). Cashout runs **against settled tabs**. The system's role is only to support fast per-session settle + close; the forcing is an operational practice, not a batch feature. New sessions open fresh afterward.
 
 ### Concurrency & state re-validation (cross-cutting principle)
@@ -267,6 +278,8 @@ Many collisions above share one root: **state can change between when an action 
 - A promotion is its own menu item in a promo category (e.g. "โปรโมชั่น"), e.g. "Leo ×4 + ice bucket — 390฿, before 21:00". It is not a price change of a regular item (matches field research: bars run a separate time-based promo menu).
 - Each item may have availability windows (days + start/end time, venue time Asia/Bangkok; windows may cross midnight). No window = always available.
 - Server clock decides. Eligibility is checked at order submit; the price is frozen by `unit_price_snapshot` (a 20:59 order keeps the promo price). A cart line whose window closed before submit is rejected (`409 ITEM_UNAVAILABLE`, `reason: out_of_window`) and shown like a sold-out line. `days_of_week` means the day a window starts. Menus refetch every 60 s while open.
+- **Guest QR display (DR-014):** show the promo price as-is — **no crossed-out "was" price** on alcohol items. Thai alcohol law restricts promoting alcohol sales (Section 32 enforcement); legal compliance of a promotion is the venue's responsibility.
+- **S1 can create promo items** in the back office (CD-12 R5); the window editor is S2 (seeded windows until then).
 - Outside the window: **greyed out on every menu surface (customer web, POS, staff app)** with its window shown ("เริ่ม 17:00" / "ถึง 21:00"); it cannot be added. Not hidden (doubles as marketing).
 - `is_promo` flag keeps promo sales separate in analytics (replaces the `[HH]` tag idea).
 - Bundle contents are fixed (recipe ingredients, e.g. 4 × Leo). Mix-and-match is not in scope.
@@ -282,26 +295,30 @@ Many collisions above share one root: **state can change between when an action 
 ## 10. Guest Intelligence (Differentiator)
 
 - **Guest profile (organic, not form-filled):** name, photo (both optional + consent), drink preferences, visit history, flags (allergy, VIP), color tags, linked bottle-keep.
-- **AI summary:** condenses bartender notes into quick-read. **Preferences only — no behavioral profiling** (no "drinks heavily", "usually alone"). PDPA + non-creepy.
-- **Input source:** `customer.notes` (bartender-written free text). AI is never given order history, visit counts, or spending data.
-- **Fallback when no notes:** AI panel is visible on the identified-guest screen but shows placeholder text: **"ยังไม่มีข้อมูล — ลองถามดูนะ"**. This prompts the bartender to engage and write the first note. Summary generates only once `customer.notes` has content.
-- **Role:** memory aid for staff, not a behavior coach. System surfaces "has this person been here, what do they like"; bartender decides how to use it.
-- **Surfaces:** bartender screen (when regular identified) + QR menu ("recommended for you", own history only).
+- **Guest notes:** plain free text written by staff, opt-in with PDPA consent (S2). **The AI guest summary is dropped (DR-014)** — notes are short and read in seconds; AI moves to the owner (§12).
+- **Role:** memory aid for staff. The system surfaces "has this person been here, what do they like"; the bartender decides how to use it.
+- **Surfaces:** bartender screen (when a regular is identified).
 
 ---
 
 ## 11. Bottle Keep (Differentiator)
 
-- Register bottle to guest profile: type, purchase date, expiry (bar policy, e.g. 90 days).
-- **Track existence, not precise volume** (customers self-pour / share — precise ml is unrealistic). Status: Active / Finished / Expired. Optional rough estimate (Full / Half / Low).
+- **Simple record (DR-014):** guest, bottle, date kept, note, status `active | finished`. Bottle keep is for regulars, case by case — no fixed expiry, no level tracking, no reminders; the post-it on the bottle stays human work.
 - **Separate from bar inventory** (already sold, not bar stock — excluded from variance).
-- Shows on ordering page when identified: "Order from my bottle" (top of menu, one tap).
-- **Status re-checked at order acceptance:** if the bottle becomes Finished/Expired between the customer tapping "order from my bottle" and staff acceptance, the order moves to `ISSUE` (§6) rather than pouring from a bottle no longer valid.
-- Expiry reminder → Semester 2 (needs LINE OA).
+- "Order from my bottle" on the guest menu → S2.
 
 ---
 
 ## 12. Analytics
+
+**Business day (DR-014):** reports, order numbers and "until end of tonight" memberships use a venue cut-off, default **06:00** Asia/Bangkok — a 01:30 sale belongs to the previous night.
+
+### AI owner insight (DR-014 — the project's AI feature)
+- **Core:** (1) sales summary, daily and weekly; (2) anomaly / fraud alerts — voids and comps by reason and person, voids after a payment attempt, manual vs verified payments, failed or reused slips, cash over/short per shift; (3) menu and stock suggestions — sold-out frequency, slow movers. **Next:** promo results, peak-hour load, payment-fee view. **Stretch:** "ask your data" through tool calling on fixed report endpoints only.
+- **SQL calculates, AI explains:** every figure comes from fixed reports and rule checks; the model only ranks and explains them, and each insight shows its source numbers.
+- **Privacy:** totals only — no guest data; staff sent as aliases and mapped back on our server. Alerts state facts and say "ควรตรวจสอบ" — never accuse.
+- Generated by a scheduled job (daily/weekly) or on demand; stored (`ai_insight`) so cost stays bounded and history is visible.
+
 
 ### Owner dashboard ("money view")
 Revenue (daily/weekly/monthly + trend), top & worst sellers, margin & pour cost %, variance (leakage), payment breakdown (cash vs PromptPay).
@@ -318,7 +335,8 @@ Comps/voids totals grouped by reason; flag abnormal spikes by person/reason. **N
 
 - **Channels:** WebSocket (in-app, real-time, web + staff app), Expo push (staff app backgrounded, DR-003 `staff_push_token`), LINE OA (customer-facing, Semester 2).
 - **Routing per surface:** see DR-009 Notifications table.
-- **Triggers:** idle table, new table opened, restock request, low stock, payment confirmed, new QR order, food ready, **call staff (customer → POS via bell)**.
+- **Triggers:** idle table (warning only), new table opened, restock request, low stock, payment confirmed, new QR order, food ready, **call staff (customer → POS via bell)**.
+- **Priority (DR-014):** the POS sound + badge is the primary channel. Phone push only for new order, call staff and ready — staff can mute it.
 
 ---
 

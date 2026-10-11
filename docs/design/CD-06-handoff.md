@@ -32,6 +32,7 @@ Brief decisions Q1 (photos) and D1–D4 apply (§10). Rev-1 items (✓ = accepte
 | R4 ⏸ | **Parked — discuss separately** (Field 2026-10-11). "ของฉัน" must not match by name → needs a per-phone id (visit-session token on `order_record`). Decides how customer sessions work. | — |
 | R5 ⏸ | **Parked until R3 + R4** (Field 2026-10-11). Customer-QR API contract: menu `imageUrl` + `available_now` + window · running tab per ticket · call-staff + 60 s throttle · WS `/customer`. The customer-QR brief stays on hold. | — |
 | R6 ✓ | **Photos** (Field 2026-10-11): canvas uses placeholder illustrations; real photos = `menu_item.image_key` from CD-12; no photo = category icon on `--surface-raised`, 4:3 — both drawn. | Done. |
+| R7 | **DR-014 #10 impact:** promo items show the promo price as-is — no crossed-out "was" price on alcohol. | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
 
 ## 1. Overview
 - **Goal:** a guest scans the table QR, orders on their own phone without login, sees the whole table's orders with status, and can call staff.
