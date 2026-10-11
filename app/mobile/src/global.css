@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "uniwind";
+@source "../node_modules/heroui-native/lib";
+
+@theme {
+  --font-sans: "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+}

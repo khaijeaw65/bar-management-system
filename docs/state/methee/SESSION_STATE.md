@@ -1,30 +1,32 @@
 # State — Methee
-Updated: 2026-09-24 · Agent: Codex (Field-approved template migration)
-> Tracked branch snapshot. Future writes belong to Methee's session.
+Updated: 2026-09-28 20:58 · Agent: Antigravity
+> Tracked branch snapshot, ≤ 40 lines. Write only your own state; refresh at session end/before changing tools.
 
 ## Resume
-Run `onboard methee` in Methee's own checkout and verify the assigned Ready brief.
+Run `execute BRIEF-008` to start implementing the POS shell tokens.
 
 ## Active
-- Brief: none verified; do not infer assignment from this placeholder
-- Stage: Onboarding pending
-- Branch: verify on Methee's checkout
-- Work commit: none verified
-- PR: none verified
+- Brief: BRIEF-008 — POS shell (top bar + 88 px rail) and design-system v2 tokens + Noto Sans Thai · Revision: 1
+- Brief file: docs/briefs/BRIEF-008-pos-shell-tokens.md
+- Stage: In Progress
+- Branch: main
+- Work commit: none
+- PR: none
 
 ## Working tree
-- Uncommitted: unknown on Methee's machine
-- Checks: not run; initialization only
+- Uncommitted: clean
+- Checks: not run
 
 ## Progress
-- Completed: shared state location initialized on Field's explicit instruction
-- Remaining: onboard, verify identity/assignment/checkout
+- Completed: Onboarding completed. Identity saved to `.agent-local.json`.
+- Remaining: All ACs for BRIEF-008.
 
 ## Next steps
-1. Run `onboard methee` in Methee's own checkout and verify the assigned Ready brief.
-2. Run `execute BRIEF-###` only after the assignment and Ready checks.
+1. Run `execute BRIEF-008` to start implementing the POS shell tokens.
+2. Create task branch `feat/BRIEF-008-pos-shell-tokens`.
+3. Implement tokens in `src/app/globals.css`.
 
 ## Blockers / Coordination
-- No existing Methee state was present in this checkout; no progress invented.
-- Shared files: verify against the brief/PR
-- Review queue: none verified
+- none
+- Shared files: none
+- Review queue: none
