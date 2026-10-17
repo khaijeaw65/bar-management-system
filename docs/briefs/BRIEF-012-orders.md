@@ -2,13 +2,13 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 3 approved by Field 2026-10-17 |
 | **Implementer** | kj (executor agent — Cursor) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts |
 | **Revision** | 3 |
-| **Depends on** | **BRIEF-011 merged** (PR #45 — `VisitService`, `NotificationsService`, `closeIfLive`) · **BRIEF-016 merged** (Q1 — `venue` settings row + menu tables/read + seed) |
+| **Depends on** | **BRIEF-011 merged** (PR #45 — `VisitService`, `NotificationsService`, `closeIfLive`) · **BRIEF-016 merged ✅ PR #49** (Q1 — `venue` settings row + menu tables/read + seed) |
 | **References** | FRD §6 · `docs/schema.sql` §6 (`order_record`, `order_ticket`, `order_item`, `order_item_modifier`, `order_status`) · DR-011 · DR-012 (+ Amendment 1) · DR-013 · DR-014 #1 #4 · `docs/api/README.md` (Orders, Idempotency, Realtime) · CD-04 R8 · CD-08 R10-1, R10-4 · CD-15 · BRIEF-011 audit Finding 1 · `docs/rules/backend.md` |
 | **Audit depth** | Full (core flow, concurrency, money) |
 | **Size** | ~3 days (target: API live by checkpoint 25 Oct) |
@@ -129,7 +129,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome (Q1–Q5 decided 2026-10-17)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision (Ready also waits for BRIEF-016 to be Ready)
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-17; BRIEF-016 merged in PR #49)
 
 ## Changelog
 | Rev | Date | Change |
@@ -137,3 +137,4 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 | 1 | 2026-10-17 | Initial Draft (Cowork) — from DR-012/013/014, CD-04 R8, CD-08 R10-1/R10-4, CD-15 R5, CD-02 R5, BRIEF-011 Finding 1; Q1–Q5 open |
 | 2 | 2026-10-17 | Q1–Q5 decided by Field in session (all A), recorded by Cowork on Field's explicit instruction; Pre-decided list completed |
 | 3 | 2026-10-17 | Aligned with BRIEF-016: availability via `getOrderable()`; `ITEM_UNAVAILABLE` carries `reason` (DR-010 rule 11); `IDEMPOTENCY_KEY_REUSED` already exists — no decision change |
+| 3 | 2026-10-17 | **Ready** — Field: "approve ready brief 012" (session), recorded by Cowork; branch rebased on `main` after BRIEF-016 (PR #49) |
