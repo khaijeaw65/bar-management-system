@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native';
 import { Button } from 'heroui-native';
 import { Beer } from 'lucide-react-native';
-import { OrderStatus } from '@bar/contracts';
+import { OrderStatusSchema } from '@bar/contracts';
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
       <Text className="text-2xl font-bold text-black dark:text-white font-sans">ระบบจัดการบาร์</Text>
       <Beer color="currentColor" size={24} className="text-black dark:text-white" />
       <Button>เข้าสู่ระบบด้วย LINE</Button>
-      <Text className="text-gray-500 font-sans">Status test: {OrderStatus.PENDING}</Text>
+      <Text className="text-gray-500 font-sans">Status test: {OrderStatusSchema.enum.pending}</Text>
     </View>
   );
 }

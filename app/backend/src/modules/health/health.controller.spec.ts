@@ -22,6 +22,7 @@ describe('HealthController', () => {
 
     await request(app.getHttpServer()).get('/api/health').expect(503).expect({
       status: 503,
+      code: 'INTERNAL_ERROR',
       message: 'database unavailable',
       data: null,
     });

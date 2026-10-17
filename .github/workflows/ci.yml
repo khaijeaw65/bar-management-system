@@ -63,3 +63,14 @@ jobs:
           else
             echo "Skipping test:e2e — @bar/backend is not affected"
           fi
+
+      - name: OpenAPI spec matches contracts
+        run: |
+          set -euo pipefail
+          dry=$(pnpm exec turbo run lint typecheck test --filter="...[origin/main]" --dry=json)
+          if printf '%s\n' "$dry" | jq -e 'any(.packages[]?; . == "@bar/backend" or . == "@bar/contracts")' >/dev/null; then
+            pnpm --filter @bar/backend openapi:export
+            git diff --exit-code docs/api/openapi.json
+          else
+            echo "Skipping openapi:export — backend and contracts are not affected"
+          fi

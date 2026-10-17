@@ -16,7 +16,8 @@ jest.mock('lucide-react-native', () => {
 
 describe('Home Screen', () => {
   it('renders without crashing', () => {
-    const component = createRoot(<Home />);
+    // test-renderer 1.3 types take options; this call still renders the element.
+    const component = createRoot(<Home /> as never);
     expect(component).toBeTruthy();
   });
 });

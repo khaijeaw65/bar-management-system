@@ -13,6 +13,7 @@ export class TransformResponseInterceptor implements NestInterceptor {
       map((data) => ({
         status: context.switchToHttp().getResponse<{ statusCode: number }>()
           .statusCode,
+        code: '' as const,
         message: 'success' as const,
         data,
       })),

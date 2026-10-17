@@ -30,6 +30,7 @@ describe('Health (e2e)', () => {
       .expect(200)
       .expect({
         status: 200,
+        code: '',
         message: 'success',
         data: { status: 'ok', db: 'up' },
       });

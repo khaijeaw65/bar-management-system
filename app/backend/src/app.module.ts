@@ -5,12 +5,14 @@ import { ClsUserInterceptor } from './common/interceptors/cls-user.interceptor.j
 import { HealthModule } from './modules/health/health.module.js';
 import { AppConfigModule } from './providers/config/app/config.module.js';
 import { DatabaseConfigModule } from './providers/config/database/config.module.js';
+import { OpenApiConfigModule } from './providers/config/openapi/config.module.js';
 import { DatabaseModule } from './providers/database/database.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     AppConfigModule,
+    OpenApiConfigModule,
     DatabaseConfigModule,
     DatabaseModule,
     HealthModule,

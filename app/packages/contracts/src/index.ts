@@ -1,4 +1,4 @@
-// @bar/contracts — shared types, enums, and DTOs
-// Add shared types here as you build each module.
-
-export * from './enums';
+export * from './schemas/common.js';
+export * from './schemas/enums.js';
+export * from './schemas/errors.js';
+export * from './schemas/menu.js';
