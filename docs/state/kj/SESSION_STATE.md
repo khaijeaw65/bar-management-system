@@ -1,22 +1,22 @@
 # State — KJ
-Updated: 2026-10-17 22:12 · Agent: Cursor
+Updated: 2026-10-17 23:58 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-012 audit PASS on `feat/BRIEF-012-orders`. PR opens from this head. Merge when `ci` is green (Field's own PR, pre-approved).
+BRIEF-019 Implemented on `feat/BRIEF-019-class-helpers`. Next: `audit BRIEF-019`. No PR until PASS.
 
 ## Active
-- Brief: BRIEF-012 orders + station tickets · Stage: Audit PASS (Rev 3)
-- Branch: `feat/BRIEF-012-orders` · Work SHA: `1323202` · PR: opens after this commit
-- Checks: G1 on `1323202` — contracts 16, backend unit 62, e2e 52, lint / typecheck / build / openapi:check exit 0
-- Done 17 Oct: BRIEF-009 (#34), BRIEF-007 (#35), BRIEF-015 (#41 + #43), BRIEF-011 (#45), workflow Rev 18 (#46), Rev 19 (#48), BRIEF-016 (#49)
+- Brief: BRIEF-019 class-file helpers · Stage: Implemented (Rev 2)
+- Branch: `feat/BRIEF-019-class-helpers` · Work SHA: `a0f48cd` · PR: none until audit PASS
+- Checks: G1 on `a0f48cd` — lint / typecheck / openapi:check exit 0, unit 62, e2e 52
+- Done 17 Oct: BRIEF-009 (#34), BRIEF-007 (#35), BRIEF-015 (#41 + #43), BRIEF-011 (#45), workflow Rev 18 (#46), Rev 19 (#48), BRIEF-016 (#49), BRIEF-012 (#50)
 
 ## Next steps
-1. Open the PR from this head · merge when CI is green · target: orders API live by checkpoint 25 Oct
-2. Cowork seeds BRIEF-013 (payment + webhook) — inputs in Carry over
-3. BRIEF-017 Rev 2 (issues + 86 + cache, Q1–Q3 decided) on local `feat/BRIEF-017-void-comp-issues` — rebase after BRIEF-013, then Ready
-4. Cowork: CD-02 R5 → BRIEF-018, CD-15 R5 split 017/018, `/tickets` names in CD-08/15
-5. Confirm PR #47 closed unmerged (superseded by #48)
+1. Cowork: `audit BRIEF-019` on work SHA `a0f48cd`
+2. After PASS, open the PR · merge when `ci` is green (Field's own PR, pre-approved)
+3. Cowork seeds BRIEF-013 (payment + webhook) — inputs in Carry over
+4. BRIEF-017 Rev 2 on local `feat/BRIEF-017-void-comp-issues` — rebase after BRIEF-013, then Ready
+5. Cowork: CD-02 R5 → BRIEF-018, CD-15 R5 split 017/018, `/tickets` names in CD-08/15
 
 ## Blockers / Coordination
 - none · Shared files: none · Review queue: none
@@ -31,7 +31,7 @@ BRIEF-012 audit PASS on `feat/BRIEF-012-orders`. PR opens from this head. Merge 
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `e9e8c88`
 
 ## Queue
-1. BRIEF-012 orders (Audit PASS, PR next)
+1. BRIEF-019 class-file helpers (Implemented, audit next)
 2. BRIEF-013 payment + webhook
 3. BRIEF-017 issue flow + sold-out (86) + menu cache
 4. IAM brief (full policy editor)
