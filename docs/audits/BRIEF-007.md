@@ -114,3 +114,30 @@ Paths and line numbers below refer to `/Users/khaijeaw/Documents/bar-BRIEF-007/`
 Return PR #35 to Cursor for C1–C5, then re-audit the implementation and controlled concurrency tests. Preserve existing behavior and contracts during the readability refactor. No application code, state, rules or brief assignment was edited in this audit session.
 
 This report was prepared in the writable primary checkout because the implementation worktree is outside this session's writable roots. The git hand should copy this complete report into `bar-BRIEF-007/docs/audits/BRIEF-007.md`, preserving the original audit above, verify only this report is included in the evidence commit, then ship it on the feature branch. No PASS or merge authority is granted.
+
+
+## Post-merge review — 2026-10-17 · `74361197c2ad9724a42054ce1875970fd2799dec`
+
+- **Auditor / assignment:** Codex, continued Field-requested review. Field states the readability/type/access-modifier review still does not pass.
+- **Result: CHANGES REQUIRED.** This is a follow-up repair requirement after merge, not a change to the authoritative merged/Done history of BRIEF-007.
+- **Remote evidence:** GitHub API reports PR #35 MERGED at 2026-10-17 14:46:04 Asia/Bangkok; pre-merge head `cfd0793bfcad0caf38fb38f7e0a72380239e1de0`, merge SHA above. Independently fetched `auth.service.ts`, `token.service.ts` and the audit at that exact merge SHA. The callback remains unchanged, token service still has the consumption/publication gap, and the merged audit ends in Codex CHANGES REQUIRED. No later PASS appears in that merged audit file. No GitHub comments, commits, pushes or merges were performed by this reviewer.
+
+### Additional finding C6 — Must fix · Low: anonymous and duplicated object types
+
+`app/backend/src/modules/auth/application/auth.service.ts:51–55` declares the callback input anonymously. Give it a named module-local type such as `LineLoginCallbackInput`, and use `public async handleLineCallback(input: LineLoginCallbackInput): Promise<LoginResult>`. The inline profile shape at line 63 duplicates `LineProfile`, already declared in `modules/auth/domain/line-client.ts`; import and reuse that type. Prefer returning a typed profile from a private verification helper over declaring a mutable variable with a second handwritten profile shape.
+
+This is a maintainability finding requested by Field. The inline object is a TypeScript structural type, not a runtime hard-coded value. Defining a name does not validate incoming data; preserve existing callback validation. Keep internal callback/provider types in the auth module; adding a name does not require moving them to shared contracts or changing the public DTO.
+
+### Conflict check and repair boundaries
+
+1. **Workflow conflict:** workflow §3/§6/§7 require audit PASS and zero unresolved Must fix findings before an agent merges Field's own PR. The merged audit still says CHANGES REQUIRED and the reviewed code still contains those findings. Merge is confirmed; the API/file evidence does not establish who authorized/performed it or whether separate evidence existed elsewhere. Do not infer approval from merged status or passing CI. Handle the remaining work in a follow-up repair branch/PR rather than trying to merge #35 again.
+2. **Local checkout drift:** the primary checkout contains an auth stub, while the feature worktree and merged commit contain the implementation. Editing the primary stub would target stale code. A repair executor must start from current main and inspect checkout ownership and unrelated changes first.
+3. **No source conflict markers found** in the inspected primary/feature backend source trees. GitHub reports mergeability UNKNOWN for the already-merged PR; that does not prove a future repair branch is conflict-free. No speculative merge/rebase was performed.
+4. **Rules vs requested style:** explicit `public`, named internal types and meaningful private helpers do not conflict with the minimalism rule. Extract cohesive subtasks, not a wrapper for every statement. Existing private helpers are already marked `private`; apply explicit `public` to intended class API methods. This audit does not change protected rules or introduce an enforcement dependency.
+5. **Preserve behavior:** inactive known staff must not create access requests; unknown staff may record them. Reuse `LineProfile`; keep HTTP paths and response shapes unchanged. Keep OAuth state single-use. Do not silently broaden exception handling while extracting helpers. The two copies of `handleLineCallback` are in Field's chat example; the fetched merged source contains one declaration.
+
+### Required follow-up
+
+Carry C1–C6 into a scoped repair task. Acceptance must include a readable callback orchestration, cohesive private helpers, explicit public/private class APIs, named input types and reused existing types, plus concurrency coverage for logout during refresh rotation. Run the required gates on the repair commit and obtain PASS before merge. This review alone does not approve an auth behavior change or modify a Ready brief.
+
+No tests rerun in this continuation; source review and remote merge/audit status verification only. Earlier lint/typecheck evidence belongs to `2dfe942`, not a newly executed check on the merge commit.
