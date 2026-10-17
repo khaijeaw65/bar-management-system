@@ -14,6 +14,8 @@ const HealthDataSchema = z.object({
   db: z.literal('up'),
 });
 
+type HealthStatus = { status: 'ok'; db: 'up' };
+
 @ApiTags('health')
 @Public()
 @Controller('health')
@@ -30,7 +32,7 @@ export class HealthController {
     description: 'Database is unreachable',
     schema: { $ref: '#/components/schemas/ApiError' },
   })
-  public async getHealth(): Promise<{ status: 'ok'; db: 'up' }> {
+  public async getHealth(): Promise<HealthStatus> {
     const db = await this.health.checkDb();
     if (db === 'down') {
       throw new ServiceUnavailableException('database unavailable');

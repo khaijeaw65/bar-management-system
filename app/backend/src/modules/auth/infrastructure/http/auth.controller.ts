@@ -24,12 +24,14 @@ import { AuthService } from '../../application/auth.service.js';
 import { clearSessionCookies, writeSessionCookies } from './auth-cookies.js';
 
 const AuthOkSchema = z.object({ ok: z.literal(true) });
+type AuthOkResponse = z.infer<typeof AuthOkSchema>;
+type RedirectTarget = { url: string; statusCode: number };
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   public constructor(
-    private readonly auth: AuthService,
+    private readonly authService: AuthService,
     private readonly appConfig: AppConfigService,
     private readonly jwtConfig: JwtConfigService,
   ) {}
@@ -42,8 +44,8 @@ export class AuthController {
     status: 302,
     description: 'Redirect to the LINE authorize URL',
   })
-  public async lineLogin(): Promise<{ url: string; statusCode: number }> {
-    return { url: await this.auth.startLineLogin(), statusCode: 302 };
+  public async lineLogin(): Promise<RedirectTarget> {
+    return { url: await this.authService.startLineLogin(), statusCode: 302 };
   }
 
   @Get('line/callback')
@@ -63,8 +65,12 @@ export class AuthController {
     @Query('state') state: string | undefined,
     @Query('error') error: string | undefined,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ url: string; statusCode: number }> {
-    const result = await this.auth.handleLineCallback({ code, state, error });
+  ): Promise<RedirectTarget> {
+    const result = await this.authService.handleLineCallback({
+      code,
+      state,
+      error,
+    });
     if (result.kind === 'session') {
       this.writeCookies(res, result.accessToken, result.refreshToken);
     }
@@ -83,8 +89,8 @@ export class AuthController {
   public async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ ok: true }> {
-    const result = await this.auth.refresh(req.cookies?.refresh_token);
+  ): Promise<AuthOkResponse> {
+    const result = await this.authService.refresh(req.cookies?.refresh_token);
     if (result.kind === 'unauthorized') {
       clearSessionCookies(res, this.appConfig.nodeEnv);
       throw new UnauthorizedException();
@@ -101,8 +107,8 @@ export class AuthController {
   public async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ ok: true }> {
-    await this.auth.logout(req.cookies?.refresh_token);
+  ): Promise<AuthOkResponse> {
+    await this.authService.logout(req.cookies?.refresh_token);
     clearSessionCookies(res, this.appConfig.nodeEnv);
     return { ok: true };
   }
@@ -115,7 +121,7 @@ export class AuthController {
   })
   @ApiEnvelopedOk(AuthMeSchema)
   public me(@CurrentUser() user: CurrentUserPayload): Promise<AuthMe> {
-    return this.auth.getCurrentStaffUser(user.sub);
+    return this.authService.getCurrentStaffUser(user.sub);
   }
 
   private writeCookies(

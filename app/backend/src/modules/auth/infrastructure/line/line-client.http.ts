@@ -3,8 +3,10 @@ import { z } from 'zod';
 import { LineConfigService } from '../../../../providers/config/line/config.service.js';
 import {
   buildLineAuthorizeUrl,
+  type LineAuthorizeInput,
   type LineClient,
   type LineProfile,
+  type LineTokenExchange,
 } from '../../domain/line-client.js';
 
 const TokenResponseSchema = z.object({
@@ -20,26 +22,26 @@ const VerifyResponseSchema = z.object({
 
 @Injectable()
 export class LineClientHttp implements LineClient {
-  public constructor(private readonly config: LineConfigService) {}
+  public constructor(private readonly lineConfigService: LineConfigService) {}
 
-  public authorizeUrl(input: { state: string; nonce: string }): string {
+  public authorizeUrl(input: LineAuthorizeInput): string {
     return buildLineAuthorizeUrl({
-      channelId: this.config.channelId,
-      callbackUrl: this.config.callbackUrl,
+      channelId: this.lineConfigService.channelId,
+      callbackUrl: this.lineConfigService.callbackUrl,
       state: input.state,
       nonce: input.nonce,
     });
   }
 
-  public async exchangeCode(code: string): Promise<{ idToken: string }> {
+  public async exchangeCode(code: string): Promise<LineTokenExchange> {
     const body = await this.postForm(
       'https://api.line.me/oauth2/v2.1/token',
       {
         grant_type: 'authorization_code',
         code,
-        redirect_uri: this.config.callbackUrl,
-        client_id: this.config.channelId,
-        client_secret: this.config.channelSecret,
+        redirect_uri: this.lineConfigService.callbackUrl,
+        client_id: this.lineConfigService.channelId,
+        client_secret: this.lineConfigService.channelSecret,
       },
       'LINE token exchange failed',
     );
@@ -54,7 +56,7 @@ export class LineClientHttp implements LineClient {
       'https://api.line.me/oauth2/v2.1/verify',
       {
         id_token: idToken,
-        client_id: this.config.channelId,
+        client_id: this.lineConfigService.channelId,
         nonce,
       },
       'LINE ID token verification failed',
@@ -77,7 +79,7 @@ export class LineClientHttp implements LineClient {
   }
 }
 
-function readIdToken(body: unknown): { idToken: string } {
+function readIdToken(body: unknown): LineTokenExchange {
   const parsed = TokenResponseSchema.safeParse(body);
   if (!parsed.success) throw new Error('LINE token exchange failed');
   return { idToken: parsed.data.id_token };

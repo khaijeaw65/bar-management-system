@@ -6,6 +6,11 @@ import type { CurrentUserPayload } from '../../../../common/decorators/current-u
 import { JwtConfigService } from '../../../../providers/config/jwt/config.service.js';
 import { TokenService } from '../../application/token.service.js';
 
+type AccessTokenPayload = {
+  sub?: unknown;
+  sid?: unknown;
+};
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   public constructor(
@@ -22,10 +27,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  public async validate(payload: {
-    sub?: unknown;
-    sid?: unknown;
-  }): Promise<CurrentUserPayload> {
+  public async validate(
+    payload: AccessTokenPayload,
+  ): Promise<CurrentUserPayload> {
     if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string') {
       throw new UnauthorizedException();
     }

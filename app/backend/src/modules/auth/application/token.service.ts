@@ -28,8 +28,8 @@ type RotationOutcome =
 @Injectable()
 export class TokenService {
   public constructor(
-    private readonly redis: RedisService,
-    private readonly jwt: JwtService,
+    private readonly redisService: RedisService,
+    private readonly jwtService: JwtService,
     private readonly jwtConfig: JwtConfigService,
   ) {}
 
@@ -45,7 +45,7 @@ export class TokenService {
 
   public async rotate(rawRefresh: string): Promise<RotateResult> {
     const refreshToken = newRefreshToken();
-    const outcome = rotationOutcome(
+    const outcome = parseRotationOutcome(
       await this.evalScript(ROTATE_REFRESH, [
         sha256(rawRefresh),
         sha256(refreshToken),
@@ -55,7 +55,7 @@ export class TokenService {
     if (outcome.kind === 'reused') {
       await this.evalScript(REVOKE_FAMILY, [
         sha256(rawRefresh),
-        this.revokedTtl(),
+        this.revokedTtlSeconds(),
       ]);
       return { status: 'reused' };
     }
@@ -70,12 +70,12 @@ export class TokenService {
     if (!rawRefresh) return;
     await this.evalScript(REVOKE_FAMILY, [
       sha256(rawRefresh),
-      this.revokedTtl(),
+      this.revokedTtlSeconds(),
     ]);
   }
 
   public async sessionExists(familyId: string): Promise<boolean> {
-    const value = await this.redis.client.get(sessionKey(familyId));
+    const value = await this.redisService.client.get(sessionKey(familyId));
     return value !== null;
   }
 
@@ -84,18 +84,23 @@ export class TokenService {
     record: RefreshRecord,
   ): Promise<void> {
     const hash = sha256(rawRefresh);
-    const ttl = this.jwtConfig.refreshTtlSeconds;
-    await this.redis.client.set(
+    const refreshTtlSeconds = this.jwtConfig.refreshTtlSeconds;
+    await this.redisService.client.set(
       refreshKey(hash),
       JSON.stringify(record),
       'EX',
-      ttl,
+      refreshTtlSeconds,
     );
-    await this.redis.client.set(familyKey(record.familyId), hash, 'EX', ttl);
+    await this.redisService.client.set(
+      familyKey(record.familyId),
+      hash,
+      'EX',
+      refreshTtlSeconds,
+    );
   }
 
   private async storeSession(familyId: string, userId: string): Promise<void> {
-    await this.redis.client.set(
+    await this.redisService.client.set(
       sessionKey(familyId),
       JSON.stringify({ userId }),
       'EX',
@@ -104,15 +109,15 @@ export class TokenService {
   }
 
   private signAccess(userId: string, familyId: string): Promise<string> {
-    return this.jwt.signAsync({ sub: userId, sid: familyId });
+    return this.jwtService.signAsync({ sub: userId, sid: familyId });
   }
 
-  private revokedTtl(): string {
+  private revokedTtlSeconds(): string {
     return String(this.jwtConfig.refreshTtlSeconds);
   }
 
   private evalScript(script: string, args: string[]): Promise<unknown> {
-    return this.redis.client.eval(script, 0, ...args);
+    return this.redisService.client.eval(script, 0, ...args);
   }
 }
 
@@ -136,7 +141,7 @@ function familyKey(familyId: string): string {
   return `family:${familyId}`;
 }
 
-function rotationOutcome(result: unknown): RotationOutcome {
+function parseRotationOutcome(result: unknown): RotationOutcome {
   if (!Array.isArray(result)) return { kind: 'invalid' };
   const [status, userId, familyId] = result;
   if (

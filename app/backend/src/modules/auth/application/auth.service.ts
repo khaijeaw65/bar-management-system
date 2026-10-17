@@ -44,17 +44,17 @@ export class AuthService {
 
   public constructor(
     @Inject(LINE_CLIENT) private readonly lineClient: LineClient,
-    private readonly redis: RedisService,
+    private readonly redisService: RedisService,
     private readonly tokenService: TokenService,
     private readonly staffUserService: StaffUserService,
-    private readonly accessRequests: AccessRequestService,
-    private readonly appConfig: AppConfigService,
+    private readonly accessRequestService: AccessRequestService,
+    private readonly appConfigService: AppConfigService,
   ) {}
 
   public async startLineLogin(): Promise<string> {
     const state = randomBytes(32).toString('base64url');
     const nonce = randomBytes(32).toString('base64url');
-    await this.redis.client.set(
+    await this.redisService.client.set(
       oauthKey(state),
       JSON.stringify({ nonce }),
       'EX',
@@ -101,8 +101,8 @@ export class AuthService {
   }
 
   private async consumeNonce(state: string): Promise<string | null> {
-    const raw = await this.redis.client.getdel(oauthKey(state));
-    return nonceFrom(raw);
+    const raw = await this.redisService.client.getdel(oauthKey(state));
+    return parseNonce(raw);
   }
 
   private createLoginFailedRedirect(): LoginResult {
@@ -138,12 +138,12 @@ export class AuthService {
   private async handleUnregisteredIdentity(
     profile: LineProfile,
   ): Promise<LoginResult> {
-    await this.accessRequests.recordRequest(
-      'line',
-      profile.sub,
-      profile.name,
-      profile.picture,
-    );
+    await this.accessRequestService.recordRequest({
+      provider: 'line',
+      externalId: profile.sub,
+      displayName: profile.name,
+      avatarUrl: profile.picture,
+    });
     this.logger.log(`LINE login not registered sub=${profile.sub}`);
     return this.createNotRegisteredRedirect();
   }
@@ -171,7 +171,7 @@ export class AuthService {
   }
 
   private frontendBaseUrl(): string {
-    return this.appConfig.frontendUrl.replace(/\/$/, '');
+    return this.appConfigService.frontendUrl.replace(/\/$/, '');
   }
 }
 
@@ -179,7 +179,7 @@ function oauthKey(state: string): string {
   return `oauth:${state}`;
 }
 
-function nonceFrom(raw: string | null): string | null {
+function parseNonce(raw: string | null): string | null {
   if (!raw) return null;
   try {
     return readNonce(JSON.parse(raw));

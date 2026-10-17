@@ -18,8 +18,10 @@ import { configureApp } from '../src/bootstrap/configure-app.js';
 import {
   LINE_CLIENT,
   buildLineAuthorizeUrl,
+  type LineAuthorizeInput,
   type LineClient,
   type LineProfile,
+  type LineTokenExchange,
 } from '../src/modules/auth/domain/line-client.js';
 import { JwtConfigService } from '../src/providers/config/jwt/config.service.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
@@ -29,7 +31,7 @@ const FRONTEND = 'http://localhost:3000';
 class FakeLineClient implements LineClient {
   public profile: LineProfile = { sub: 'U-unset', name: null, picture: null };
 
-  public authorizeUrl(input: { state: string; nonce: string }): string {
+  public authorizeUrl(input: LineAuthorizeInput): string {
     return buildLineAuthorizeUrl({
       channelId: process.env.LINE_CHANNEL_ID ?? '',
       callbackUrl: process.env.LINE_CALLBACK_URL ?? '',
@@ -38,7 +40,7 @@ class FakeLineClient implements LineClient {
     });
   }
 
-  public exchangeCode(): Promise<{ idToken: string }> {
+  public exchangeCode(): Promise<LineTokenExchange> {
     return Promise.resolve({ idToken: 'fake-id-token' });
   }
 

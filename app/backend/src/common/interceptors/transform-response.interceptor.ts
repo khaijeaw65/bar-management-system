@@ -28,14 +28,13 @@ function envelope(context: ExecutionContext, data: unknown): unknown {
   };
 }
 
-function httpResponse(context: ExecutionContext): {
+type HttpResponseState = {
   statusCode: number;
   headersSent?: boolean;
-} {
-  return context.switchToHttp().getResponse<{
-    statusCode: number;
-    headersSent?: boolean;
-  }>();
+};
+
+function httpResponse(context: ExecutionContext): HttpResponseState {
+  return context.switchToHttp().getResponse<HttpResponseState>();
 }
 
 function isRedirect(context: ExecutionContext): boolean {
