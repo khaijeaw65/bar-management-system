@@ -1,7 +1,9 @@
 import {
   Controller,
+  Get,
   HttpCode,
   Post,
+  Redirect,
   type CallHandler,
   type ExecutionContext,
 } from '@nestjs/common';
@@ -58,6 +60,29 @@ describe('TransformResponseInterceptor', () => {
         message: 'success',
         data: { id: '1' },
       });
+
+    await app.close();
+  });
+
+  it('does not wrap a redirect', async () => {
+    @Controller('go')
+    class GoController {
+      @Get()
+      @Redirect()
+      go() {
+        return { url: 'https://example.test/after', statusCode: 302 };
+      }
+    }
+
+    const moduleRef = await Test.createTestingModule({
+      controllers: [GoController],
+    }).compile();
+    const app = moduleRef.createNestApplication();
+    app.useGlobalInterceptors(new TransformResponseInterceptor());
+    await app.init();
+
+    const res = await request(app.getHttpServer()).get('/go').expect(302);
+    expect(res.headers.location).toBe('https://example.test/after');
 
     await app.close();
   });

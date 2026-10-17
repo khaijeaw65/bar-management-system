@@ -23,6 +23,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       TURBO_TELEMETRY_DISABLED: 1
       PGHOST: localhost
@@ -30,6 +39,14 @@ jobs:
       PGUSER: bar
       PGPASSWORD: bar
       PGDATABASE: bar
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: test-jwt-access-secret-32-characters
+      JWT_ACCESS_TTL: 15m
+      REFRESH_TTL_DAYS: "7"
+      LINE_CHANNEL_ID: line-channel-test
+      LINE_CHANNEL_SECRET: line-channel-secret-test
+      LINE_CALLBACK_URL: http://localhost:3001/api/auth/line/callback
+      FRONTEND_URL: http://localhost:3000
     steps:
       - name: Checkout
         uses: actions/checkout@v4

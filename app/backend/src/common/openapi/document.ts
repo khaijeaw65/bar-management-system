@@ -24,6 +24,7 @@ export function openApiConfig(version: string) {
     .addCookieAuth('access_token')
     .addBearerAuth()
     .addTag('health')
+    .addTag('auth')
     .build();
 }
 

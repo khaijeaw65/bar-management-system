@@ -1,4 +1,5 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { Public } from '../../common/decorators/public.decorator.js';
 import {
   ApiOperation,
   ApiServiceUnavailableResponse,
@@ -14,6 +15,7 @@ const HealthDataSchema = z.object({
 });
 
 @ApiTags('health')
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(private readonly health: HealthService) {}
