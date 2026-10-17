@@ -1,6 +1,6 @@
 # Workflow — Roles, Briefs, Gates, Field Guard
 
-> Rev 17 — 2026-10-17 (+ §7 remote protection = rulesets, Field-approved). Rev 16 — 2026-10-17 (+ git hand / ship line: planners and auditors never run Git, Field-approved). Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
+> Rev 18 — 2026-10-17 (+ audit before PR: the PR opens only after audit PASS; Cowork may commit on docs branches; auditors read Git freely, Field-approved). Rev 17 — 2026-10-17 (+ §7 remote protection = rulesets, Field-approved). Rev 16 — 2026-10-17 (+ git hand / ship line: planners and auditors never run Git, Field-approved). Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
 > This file governs execution. Briefs define outcomes; scoped rules define code conventions. Historical revisions remain in Git.
 
 ## 1. People, Roles, Session Types
@@ -54,9 +54,9 @@ State is a branch snapshot, not a live lock. KJ reads Metee's latest state from 
 ## 3. Lifecycle and Ready Checklist
 
 ```text
-Draft → Ready → In Progress → Implemented → Audit PASS → merge authority (§7) → PR merged (Done)
-                              ↑                |
-                              └─ CHANGES REQUIRED
+Draft → Ready → In Progress → Implemented (branch pushed, no PR) → Audit PASS → PR opened → CI green → merge (§7) → Done
+                              ↑                                    |
+                              └──── CHANGES REQUIRED (fix on the branch, re-audit)
 Audit BLOCKED → Field decision / missing evidence → resume the affected step
 ```
 
@@ -69,13 +69,18 @@ Before Ready, Field/Cowork checks:
 
 Cowork presents the brief/change and asks for explicit Ready approval. Record approval date in the changelog; bump revision on content changes. Executors never turn a Draft into Ready. Existing active briefs missing assignment metadata require Field/Cowork to record it before audit; do not silently assign Codex. Completed historical briefs/reports retain their original statuses.
 
-One brief = one task branch = one PR. Open a Draft PR after the first suitable commit; convert it to ready for review only after all ACs and G1 pass, handoff exists and state is current. WIP/state pushes may contain failing or unrun tests if disclosed honestly; they do not establish Implemented or authorize merge.
+One brief = one task branch = one PR. **Audit before PR (Field, 2026-10-17):** the executor commits on the task branch and pushes it, but opens **no PR** until the assigned audit is PASS.
+- **Implemented:** the branch holds the work commit(s) plus one `docs(BRIEF-###)` commit with handoff and state. The auditor reviews the work commit S from the pushed branch.
+- **CHANGES REQUIRED:** fix commits on the same branch → re-audit of the new S. The report is appended in the auditor's checkout, not committed between rounds.
+- **PASS:** the executor copies the audit report unchanged, commits it with the final handoff/state in one `docs(BRIEF-###)` commit (H), pushes, and opens the PR — ready for review, not Draft.
+- Because the PR exists only after PASS, it cannot be merged early. Push only a branch, never a PR, before PASS. WIP pushes may contain failing or unrun tests if disclosed honestly; they do not establish Implemented or authorize merge.
+- Optional, before PASS: the git hand may run CI on the branch with `gh workflow run ci --ref <branch>` (no PR needed).
 
-**Who runs Git (Field, 2026-10-17):** the **git hand** is any executor running on Field's machine with an authenticated `gh` — today Claude Code; Cursor once `gh` / `api.github.com` is allowed in its sandbox and `gh pr create` is verified. Planners and auditors (Cowork, Codex) never run Git.
+**Who runs Git (Field, 2026-10-17):** the **git hand** is any executor running on Field's machine with an authenticated `gh` — today Claude Code; Cursor once `gh` / `api.github.com` is allowed in its sandbox and `gh pr create` is verified. Planners and auditors (Cowork, Codex) may read Git freely (`show` / `diff` / `log` / `grep` / `merge-base` / `ls-remote`, read-only GitHub API) but change Git state only in one case: **Cowork may create a `docs/*` branch from `main` and commit docs files on it in the main checkout**, when the checkout is clean, then return to `main`. Never on task branches, never fetch / pull / push / PR / merge — the git hand pushes and opens the PR (`push docs/<branch> and open PR`). Codex: read-only. If a needed commit isn't available locally, ask the git hand to fetch it.
 
 | Tool | Writes | Commit | Push | Open/update PR | Merge |
 |---|---|---|---|---|---|
-| Cowork (planner, default auditor) | docs, Drafts, approved records, audit report | ✗ | ✗ | ✗ | ✗ |
+| Cowork (planner, default auditor) | docs, Drafts, approved records, audit report | docs branches only | ✗ | ✗ | ✗ |
 | Codex (fallback auditor) | audit report only | ✗ | ✗ | ✗ | ✗ |
 | Cursor (executor) | brief scope, handoff, own state | ✓ | ✓ | git hand only | git hand only |
 | Claude Code (executor, git hand) | brief scope, handoff, own state | ✓ | ✓ | ✓ | Field's own PRs under §7 |
@@ -98,20 +103,20 @@ Read AGENTS/CLAUDE, workflow, own state, exact brief revision and linked DRs. Ch
 | Command | Behavior |
 |---|---|
 | `onboard kj` / `onboard methee` | Read rules/state/briefs, inspect tools and checkout, save identity, initialize missing own state, summarize setup gaps and one eligible Ready brief. No automatic install, branch switch or feature implementation. |
-| `execute BRIEF-###` / `ทำ BRIEF-###` | Includes resume automatically: verify identity, Ready revision, implementer, dependencies, DRs, scope, unlocks and checkout. Reuse existing branch/PR; implement, test, self-check, push and prepare review. |
+| `execute BRIEF-###` / `ทำ BRIEF-###` | Includes resume automatically: verify identity, Ready revision, implementer, dependencies, DRs, scope, unlocks and checkout. Reuse the existing branch; implement, test, self-check, commit and push the branch — no PR before audit PASS (§3). After PASS: commit the audit with handoff/state, open the PR. |
 | `resume` (optionally `kj` / `methee`) | Resume the current checkout's active brief through the same checks. Missing/ambiguous state requires evidence-based reconstruction, not a guessed task. |
 | `audit BRIEF-###` / `ตรวจ BRIEF-###` | Use the assigned auditor and Audit write limits. Wrong tool for the assignment → explain the handoff; do not pretend a review happened or change assignment. |
 | `สถานะ BRIEF-###` | Read-only summary from brief, branch, PR and evidence; label unavailable/stale information. |
-| `handoff` | Update own tracked state and commit/push scoped progress to the task branch when permitted. Disclose failed/unrun checks; keep WIP PR Draft. Audit sessions update only their audit. Never auto-merge, deploy or switch branches. |
+| `handoff` | Update own tracked state and commit/push scoped progress to the task branch when permitted. Disclose failed/unrun checks; no PR before audit PASS. Audit sessions update only their audit. Never auto-merge, deploy or switch branches. |
 | `อนุมัติ merge BRIEF-###` | Field authorizes the presented PR/head and its completion actions under §7. |
 
 Execute is idempotent: continue WIP, fix in-scope Must fix findings, report waiting review, or report Done for an already merged PR. Never create duplicate branches/PRs. A missing/duplicate ID or implementer mismatch must be clarified; legacy IDs resolve only through §10.
 
-At Implemented, provide the PR, handoff, assigned auditor and `audit BRIEF-###` as the next action. Dispatch across tools only if an available integration actually supports it and the task authorizes it; otherwise provide the handoff command. Do not claim an external auditor has started when it has not.
+At Implemented, provide the branch, work SHA, handoff, assigned auditor and `audit BRIEF-###` as the next action. At PASS, provide the PR. Dispatch across tools only if an available integration actually supports it and the task authorizes it; otherwise provide the handoff command. Do not claim an external auditor has started when it has not.
 
 ### Ship line
 
-A planner/auditor session ends with one line for the git hand: `ship <branch>: "<commit message>" — files: <exact paths> — <Approved-by trailer if protected files>`. The git hand commits **exactly** those files without editing them (packaging only), pushes, and opens or updates the PR. If `git status` shows any other change, or a listed file is missing, it stops and reports. An audit report shipped this way is evidence-only (S..H, §7).
+A planner/auditor session ends with one line for the git hand: `ship <branch>: "<commit message>" — files: <exact paths> — <Approved-by trailer if protected files>`. The git hand commits **exactly** those files without editing them (packaging only), pushes, and opens or updates the PR. If `git status` shows any other change, or a listed file is missing, it stops and reports. An audit report shipped this way is evidence-only (S..H, §7). Task-branch audit reports are not shipped this way: the executor commits the report at PASS (§3). Ship lines remain for docs branches.
 
 ### Concurrent work and state
 
@@ -211,7 +216,7 @@ Main is the only long-lived branch. Use short-lived task branches and merge comm
 
 ### Review evidence without a SHA loop
 
-The audit reviews implementation commit S. The audit file itself is committed later at head H. Before approval, verify and record that S..H contains only audit/handoff/state/PR-link evidence; any code, tests, dependency, CI, schema, brief-scope or rule change requires re-audit of the changed work. Do not require an audit file to contain its own commit SHA. The pre-merge summary names both audited S and actual H, checks on H and the intervening diff. Reuse test evidence only with an explicit explanation of unchanged tested files/environment; required CI still targets H.
+The audit reviews implementation commit S. The audit file itself is committed later at head H. S is the audited work commit on the pushed branch; H is the PR head after the PASS docs commit. Before approval, verify and record that S..H contains only audit/handoff/state/PR-link evidence; any code, tests, dependency, CI, schema, brief-scope or rule change requires re-audit of the changed work. Do not require an audit file to contain its own commit SHA. The pre-merge summary names both audited S and actual H, checks on H and the intervening diff. Reuse test evidence only with an explicit explanation of unchanged tested files/environment; required CI still targets H. If CI fails on H, the executor fixes on the branch; any code or test change needs a compact re-check of the new commit by the auditor before merge.
 
 **Merge authority (Field, 2026-09-24):**
 - **Field's own PRs** (brief Implementer = kj): pre-approved. The agent may merge once the assigned audit is **PASS** with zero Must fix, S..H is evidence-only, and required checks are green on H. No separate `อนุมัติ merge` needed; the agent reports PR, H and merge SHA afterwards.
