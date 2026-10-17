@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-17 |
 | **Implementer** | kj (executor agent — Cursor) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -107,10 +107,11 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome (Q1–Q3 decided 2026-10-17)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-17)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-17 | Initial Draft (Cowork) — split out of BRIEF-012 by Field's Q1 decision (2026-10-17); read-only menu |
 | 2 | 2026-10-17 | Q1–Q3 decided by Field in session (all A) + cache scaling path → BRIEF-017 + `getOrderable` DB-only rule + seed README AC, recorded by Cowork on Field's explicit instruction |
+| 2 | 2026-10-17 | **Ready** — Field: "approve Ready BRIEF-016 Rev 2" (session), recorded by Cowork |
