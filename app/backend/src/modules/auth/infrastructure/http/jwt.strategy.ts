@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
 import { JwtConfigService } from '../../../../providers/config/jwt/config.service.js';
 import { TokenService } from '../../application/token.service.js';
-import type { AccessTokenPayload } from './dto/auth.dto.js';
+import type { AccessClaims } from '../../application/token.types.js';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -23,14 +23,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  public async validate(
-    payload: AccessTokenPayload,
-  ): Promise<CurrentUserPayload> {
-    if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string') {
-      throw new UnauthorizedException();
-    }
-    const active = await this.tokenService.sessionExists(payload.sid);
-    if (!active) throw new UnauthorizedException();
-    return { sub: payload.sub, sid: payload.sid };
+  public async validate(payload: AccessClaims): Promise<CurrentUserPayload> {
+    const user = await this.tokenService.authenticateClaims(payload);
+    if (!user) throw new UnauthorizedException();
+    return user;
   }
 }

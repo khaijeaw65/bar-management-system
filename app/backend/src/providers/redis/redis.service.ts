@@ -1,10 +1,11 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { RedisConfigService } from '../config/redis/config.service.js';
 
 @Injectable()
-export class RedisService implements OnModuleDestroy {
+export class RedisService implements OnApplicationShutdown {
   public readonly client: Redis;
+  private readonly subscribers: Redis[] = [];
 
   public constructor(config: RedisConfigService) {
     this.client = new Redis(config.url, {
@@ -14,11 +15,23 @@ export class RedisService implements OnModuleDestroy {
     });
   }
 
-  public async onModuleDestroy(): Promise<void> {
-    if (this.client.status === 'wait' || this.client.status === 'end') {
-      this.client.disconnect();
-      return;
-    }
-    await this.client.quit();
+  public createSubscriber(): Redis {
+    const subscriber = this.client.duplicate();
+    this.subscribers.push(subscriber);
+    return subscriber;
   }
+
+  // After the socket adapter unsubscribes. Quitting earlier rejects its close.
+  public async onApplicationShutdown(): Promise<void> {
+    await Promise.all(this.subscribers.map((client) => closeRedis(client)));
+    await closeRedis(this.client);
+  }
+}
+
+async function closeRedis(client: Redis): Promise<void> {
+  if (client.status === 'wait' || client.status === 'end') {
+    client.disconnect();
+    return;
+  }
+  await client.quit();
 }

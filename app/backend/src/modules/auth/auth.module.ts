@@ -44,5 +44,6 @@ import { LineClientHttp } from './infrastructure/line/line-client.http.js';
     { provide: LINE_CLIENT, useClass: LineClientHttp },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
+  exports: [TokenService],
 })
 export class AuthModule {}

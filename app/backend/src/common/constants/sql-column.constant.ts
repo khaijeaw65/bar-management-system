@@ -7,6 +7,7 @@ export const COL = {
   TEXT: 'text' as const,
   VARCHAR: 'varchar' as const,
   INT: 'integer' as const,
+  SMALLINT: 'smallint' as const,
   BIGINT: 'bigint' as const,
   DECIMAL: 'decimal' as const,
   BOOLEAN: 'boolean' as const,

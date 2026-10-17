@@ -23,4 +23,8 @@ export class StaffUserService {
   public findActiveById(id: string): Promise<StaffUserView | null> {
     return this.staffUsers.findActiveById(id);
   }
+
+  public findById(id: string): Promise<StaffUserView | null> {
+    return this.staffUsers.findById(id);
+  }
 }

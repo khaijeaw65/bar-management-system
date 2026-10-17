@@ -1,3 +1,8 @@
+export interface AccessClaims {
+  sub?: unknown;
+  sid?: unknown;
+}
+
 export interface RefreshRecord {
   userId: string;
   familyId: string;
