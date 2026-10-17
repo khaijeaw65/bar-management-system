@@ -28,10 +28,10 @@ Seven 1920×1080 boards for the 8 Nov gate demo and the advisor presentation, **
 ## 0. Review items
 | # | Item | Recommendation |
 |---|---|---|
-| R1 | **Built before the other reviews closed.** Boards use component copies at today's versions (§11). When Field approves changes in any CD, re-copy all sources in one pass before exporting. | Accept; re-copy before 8 Nov export. |
-| R2 | **Sample data doesn't line up across CDs:** walk-in customer is T3 while the staff queue shows T5 / #0039 · issue path ends on the T3 bill (เนโกรนี cancelled) instead of T2 ยำหมูยอ · admin: CD-12 marks ยำหมูยอ sold out, CD-06 shows ถั่วทอดสมุนไพร sold out · counter split / cash frames are the CD-03 T3 bill. Captions say "(ตัวอย่าง…)". | Field: accept captions, or add matching states to CD-06 / CD-03 / CD-08 later. |
-| R3 | **DR-009 notification table needs an amendment:** "Order ready → POS item chip" conflicts with DR-012 (no per-item progress chips; the ticket chip shows พร้อมเสิร์ฟ) · the brief's row "เมนูหมด" isn't a DR-009 event — shown as a footnote (greyed everywhere via `menu.availability_changed`) · the staff-app push for an idle table has no copy in CD-08 yet — drawn as "T4 ไม่มีความเคลื่อนไหว 25 นาที" (proposal). | Amend DR-009 (Field decision). |
-| R4 | **Counter journey uses C3**, the free counter seat in the CD-02 sample, instead of the brief's C2 (C2 is occupied in the sample). | Accept. |
+| R1 ✓ | **Built before the other reviews closed.** Boards use component copies at today's versions (§11). When Field approves changes in any CD, re-copy all sources in one pass before exporting. | Accept; re-copy before 8 Nov export. **Accepted 2026-10-17** (Field). |
+| R2 ✓ | **Sample data doesn't line up across CDs:** walk-in customer is T3 while the staff queue shows T5 / #0039 · issue path ends on the T3 bill (เนโกรนี cancelled) instead of T2 ยำหมูยอ · admin: CD-12 marks ยำหมูยอ sold out, CD-06 shows ถั่วทอดสมุนไพร sold out · counter split / cash frames are the CD-03 T3 bill. Captions say "(ตัวอย่าง…)". | Field: accept captions, or add matching states to CD-06 / CD-03 / CD-08 later. **Accepted 2026-10-17** (Field): keep "(ตัวอย่าง…)" captions, no redraw. |
+| R3 ✓ | **DR-009 notification table needs an amendment:** "Order ready → POS item chip" conflicts with DR-012 (no per-item progress chips; the ticket chip shows พร้อมเสิร์ฟ) · the brief's row "เมนูหมด" isn't a DR-009 event — shown as a footnote (greyed everywhere via `menu.availability_changed`) · the staff-app push for an idle table has no copy in CD-08 yet — drawn as "T4 ไม่มีความเคลื่อนไหว 25 นาที" (proposal). | Amend DR-009 (Field decision). **Accepted 2026-10-17** (Field): DR-009 Amendment 1 (all 3 items). |
+| R4 ✓ | **Counter journey uses C3**, the free counter seat in the CD-02 sample, instead of the brief's C2 (C2 is occupied in the sample). | Accept. **Accepted 2026-10-17** (Field). |
 
 ## 1. Boards
 | Board | Story | Composed from |

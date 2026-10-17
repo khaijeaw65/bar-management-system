@@ -27,10 +27,10 @@ Brief decisions Q1 (no claiming) and D1–D4 apply (§10). Rev-1 items:
 | # | Item | Recommendation |
 |---|---|---|
 | R1 ✓ | **Pain point.** Root observed (verbal orders → bill added by hand). Payment-specific part is an **assumption**: on a full night guests wait long for the bill; friends split and transfer separately, staff check each slip by eye. | Field: confirm or correct. **Confirmed 2026-10-12** (field experience + research — `docs/research/Claude_verified_ops_findings.md`, DR-014). |
-| R2 | **"เปลี่ยนวิธีจ่าย" on a pending QR** = the guest cancels their own QR (cancel → bill unlocked). Merge: always allowed. Split: only while no part is paid; after the first paid part the rest must be paid or handled by staff. | Accept. |
-| R3 | **Paying with the phone that shows the QR** can't scan itself → primary "บันทึก QR" + 2-step hint (open the bank app → scan → pick from gallery). A friend can still scan the screen directly. | Accept. |
+| R2 ✓ | **"เปลี่ยนวิธีจ่าย" on a pending QR** = the guest cancels their own QR (cancel → bill unlocked). Merge: always allowed. Split: only while no part is paid; after the first paid part the rest must be paid or handled by staff. | Accept. **Accepted 2026-10-17** (Field). |
+| R3 ✓ | **Paying with the phone that shows the QR** can't scan itself → primary "บันทึก QR" + 2-step hint (open the bank app → scan → pick from gallery). A friend can still scan the screen directly. | Accept. **Accepted 2026-10-17** (Field). |
 | R4 ⏸ | **Parked with CD-06 R3 / R4 / R5** (customer session). The customer payment API (visit-session auth, create / cancel / status, realtime `payment.status_changed`) is written after the session decision; rules as CD-03. | — |
-| R5 | **Ordering after full payment** creates a new balance on the same table; "ชำระเงิน" returns with only the new amount. Rule only, not drawn. | Accept. |
+| R5 ✓ | **Ordering after full payment** creates a new balance on the same table; "ชำระเงิน" returns with only the new amount. Rule only, not drawn. | Accept. **Accepted 2026-10-17** (Field). |
 | R6 | **DR-014 #6 impact (canvas update):** guest self-pay uses the venue's payment mode — gateway QR, or app-generated amount-locked PromptPay QR to the venue account (confirmed by staff slip scan / manual). | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
 
 ## 1. Overview
