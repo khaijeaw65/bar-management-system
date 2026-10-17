@@ -6,7 +6,7 @@
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
-| **PR** | <executor fills> |
+| **PR** | https://github.com/khaijeaw65/bar-management-system/pull/45 |
 | **Affected apps** | backend · contracts |
 | **Revision** | 1 |
 | **Depends on** | **BRIEF-009 merged** (contracts enums, envelope `code`, OpenAPI helper) · **BRIEF-007 merged** (JwtAuthGuard, `{ sub, sid }`, Redis provider) |
