@@ -41,20 +41,30 @@ Applied already-decided items to canvases + handoffs (handoff revision bumped, R
 - FRD updated to DR-012/013/014 (§2, §3, §5, §6, §7, §8, §9, §10, §11, §12, §13).
 
 ## Next session (in order)
-1. **Start BRIEF-011 (tables + visits) with an executor** — first gate-slice backend brief; dependencies met (BRIEF-009 #34, BRIEF-007 #35, BRIEF-015 #41/#43). Week 1 build slipped; checkpoint 25 Oct, gate 8 Nov. New executors follow `backend.md` → Clean Code (lint-enforced) + types-in-types-files.
-2. **Workflow guard (proposed, needs Field):** PR #35 and #41 were merged while their audit still said CHANGES REQUIRED. Add one pre-merge check for the git hand — read the last `Result:` line in `docs/audits/<brief>.md`, merge only on PASS. Optional: GitHub "Automatically delete head branches".
+1. **Write BRIEF-012 (orders)** — Cowork drafts, Field approves Ready. Sources: DR-012/013/014 + API notes from CD-08 R10, CD-15 R5, CD-02 R5, CD-04 R8. Include: kitchen off = one ticket (DR-013 pass), "แจ้งโอนแล้ว" call-staff reason (CD-07 Q1), manager PIN for void/comp (CD-02 Q1). Builds on BRIEF-011's `VisitService` (first order moves `open → active` — use a conditional write like `closeIfLive`, see BRIEF-011 audit Finding 1). **First brief under workflow Rev 18 (audit before PR).**
+2. Execute BRIEF-012 (Cursor) → push branch, no PR → `audit BRIEF-012` → PR only after PASS. Checkpoint 25 Oct, gate 8 Nov.
 3. Advisor heads-up: AI feature → owner insight (DR-014).
 4. Field: add `--chart-1` / `--chart-2` to the DS (CD-05 R2); review CD-03 screens (R3) before BRIEF-013.
 5. BRIEF-013: verify EasySlip receiver match (masked number → visible digits + name) with one real slip (CD-03 Q2, decided 17 Oct).
-6. Write BRIEF-012 (orders, DR-012/013/014 + API notes from CD-08 R10, CD-15 R5, CD-02 R5, CD-04 R8). Include: kitchen off = one ticket (DR-013 pass), "แจ้งโอนแล้ว" call-staff reason (CD-07 Q1), manager PIN for void/comp (CD-02 Q1).
-7. Design: CD-11 re-copy (R1 + R5, demo kitchen off) just before the 8 Nov export · CD-02 to add the "แจ้งโอนแล้ว" POS alert variant on its next revision.
+6. Design: CD-11 re-copy (R1 + R5, demo kitchen off) just before the 8 Nov export · CD-02 to add the "แจ้งโอนแล้ว" POS alert variant on its next revision.
+7. Housekeeping: delete merged branch `docs/planning-brief-015-done`; optional GitHub "Automatically delete head branches" + squash merge (Field, settings).
+
+## Follow-ups (not blocking — pick up when the area is touched)
+- **Before a real-bar pilot:** disconnect staff sockets of a `sid` on logout / session revoke (BRIEF-011 S3); IAM brief must land (`@RequirePermissions` is metadata only).
+- Normalise `FRONTEND_URL` with `new URL(...).origin` for socket origin + HTTP CORS (trailing slash would refuse browsers) — BRIEF-011 re-audit note.
+- `VisitService.summaryFor` scans all seats → `findSummaryById` (BRIEF-011 S1) · attach edge retry (S4).
+- Lua scripts are standalone-Redis only (`numkeys 0`) → `ponytail:` comment naming the cluster ceiling (BRIEF-015 S3) · `token.service.spec.ts` needs real Redis in the unit suite (S4).
+- Old IAM names (`staffUsers`, `users`, `identities`) → role names at the next IAM change.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
-**Current goal: build the gate slice (order → pay → close, 8 Nov). Semester-1 UI design is done:** CD housekeeping (DR-014 redraw, DR-013 kitchen-off pass, all Field Q decisions 17 Oct) merged as PR #36 (`b835e3d`). Only CD-11 re-copy remains, just before export.
-**Next action:** "Next session" item 1 (BRIEF-011). **BRIEF-015 Done 17 Oct** (PR #41 + #43 for Finding 4; audit PASS): revocation-safe refresh rotation (one Lua script each for rotate/revoke), auth module refactored, oxlint enforces Clean Code. `backend.md` rules added 17 Oct (Field-approved): Clean Code section, ≤ 3 params (constructor injection + Nest handler params exempt), types only in `*.types.ts` / port / `dto/` files. `SESSION_STATE.md` still shows BRIEF-015 at Finding 4 (stale — merged); the next executor overwrites it.
+**Current goal: build the gate slice (order → pay → close, 8 Nov).** Semester-1 UI design is done (PR #36); only CD-11 re-copy remains, just before export.
+**Next action:** "Next session" item 1 — write BRIEF-012.
+**Done 17 Oct:** BRIEF-015 (auth repair, #41 + #43) and **BRIEF-011 (tables + visits + staff socket, #45, audit PASS on `839e32c`)** — DB-enforced open race, conditional close, socket origin = `FRONTEND_URL`, one access-token check for HTTP + socket, Lua scripts in `token.scripts.ts`.
+**Rules changed 17 Oct (all Field-approved):** `backend.md` — Clean Code section (lint-enforced: ≤ 20 lines, depth ≤ 2, explicit `public`/`private`, return types), ≤ 3 params (constructor injection + Nest handler params exempt), types only in `*.types.ts` / port / `dto/` files. `workflow.md` **Rev 18 (#46)** — **audit before PR** (executor pushes the branch, no PR until audit PASS; at PASS one docs commit with the audit, then PR); auditors may read Git + GitHub API; **Cowork may commit on `docs/*` branches** in a clean main checkout (no push — the git hand pushes and opens the PR).
+`SESSION_STATE.md` still shows BRIEF-011 mid-review (stale — merged); the next executor overwrites it.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
-Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. Merged 17 Oct: #32 (`docs/ui-retrofit`), #35 (BRIEF-007), #36 (`docs/cd-housekeeping`), #37 (C6 audit), #39 (Clean Code rule + BRIEF-015 draft), #40 (BRIEF-015 Ready), #41 + #43 (BRIEF-015), #42 (types rule). Branches cleaned 17 Oct — only `main` remains.
+Session start: `git status` (read-only). Cowork commits only on `docs/*` branches (Rev 18) — end with `push docs/<branch> and open PR` for the git hand. Merged 17 Oct: #32, #35 (BRIEF-007), #36, #37, #39, #40, #41 + #43 (BRIEF-015), #42 (types rule), #44 (planning), #45 (BRIEF-011), #46 (workflow Rev 18).
 
 ## Retrofit checklist (per canvas, from cd-template.md)
 1. `read` the canvas `project/canvas.json` + boards (Field may have edited — keep his edits). Re-upload Lucide only if adding boards that need it (blob ids are per canvas; existing boards already reference their own blob).
