@@ -1,23 +1,23 @@
 # State — KJ
-Updated: 2026-10-17 20:40 · Agent: Cowork
+Updated: 2026-10-17 20:50 · Agent: Cowork
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-Field reviews BRIEF-012 Draft Rev 1 and decides Q1–Q5 (Q1 blocks Ready: menu + venue tables don't exist yet).
+Cowork seeds BRIEF-016 Draft (venue settings + menu read + seed) — BRIEF-012 Rev 2 has Q1–Q5 decided, waits for Ready approval + BRIEF-016.
 
 ## Active
-- Brief: BRIEF-012 orders · Stage: Draft (seed on `feat/BRIEF-012-orders`, local, not pushed)
+- Brief: BRIEF-012 orders · Stage: Draft Rev 2, Q1–Q5 decided (seed on `feat/BRIEF-012-orders`, local, not pushed)
 - Uncommitted: none · Checks: docs only
 - Done 17 Oct: BRIEF-009 (#34), BRIEF-007 (#35), BRIEF-015 (#41 + #43), BRIEF-011 (#45), workflow Rev 18 (#46), Rev 19 (#48)
 
 ## Next steps
-1. Field decides BRIEF-012 Q1–Q5. Q1 = A → Cowork seeds BRIEF-016 (venue settings + menu read + seed, ~1.5 d) first
-2. Field approves Ready → `ทำ BRIEF-016` then `ทำ BRIEF-012` (Cursor) → `ตรวจ` → PR after PASS
-3. Q2 = yes → Cowork drafts BRIEF-017 (void/comp + PIN, issue/resolve, auto-cancelled, sold-out auto-cancel)
+1. Cowork seeds BRIEF-016 (read-only menu, ~1.5 d) → Field approves Ready → `ทำ BRIEF-016`
+2. Field approves BRIEF-012 Rev 2 Ready → `ทำ BRIEF-012` (Cursor) → `ตรวจ` → PR after PASS
+3. Cowork drafts BRIEF-017 (void/comp + PIN, issue/resolve, auto-cancelled, sold-out + 86 toggle); note CD-02 R5 / CD-15 R5 retarget + CD-15 `/tickets` names
 4. Confirm PR #47 closed unmerged (superseded by #48)
 
 ## Blockers / Coordination
-- BRIEF-012 Ready blocked on Q1 · Shared files: none · Review queue: none
+- BRIEF-012 builds on BRIEF-016 · Shared files: none · Review queue: none
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; 2–8 Nov no new features) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -28,9 +28,9 @@ Field reviews BRIEF-012 Draft Rev 1 and decides Q1–Q5 (Q1 blocks Ready: menu +
 - Design: CD-11 re-copy (R1 + R5) before the 8 Nov export · CD-02 "แจ้งโอนแล้ว" alert variant next revision · canvas index/recipe → `docs/design/README.md`
 
 ## Queue
-1. BRIEF-016 venue settings + menu read (if Q1 = A)
+1. BRIEF-016 venue settings + menu read
 2. BRIEF-012 orders
-3. BRIEF-017 void/comp + PIN + issue flow (if Q2 = yes)
+3. BRIEF-017 void/comp + PIN + issue flow
 4. BRIEF-013 payment + webhook
 5. IAM brief (full policy editor)
 6. Web screen briefs after CDs

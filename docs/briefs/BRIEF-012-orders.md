@@ -7,8 +7,8 @@
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts |
-| **Revision** | 1 |
-| **Depends on** | **BRIEF-011 merged** (PR #45 — `VisitService`, `NotificationsService`, `closeIfLive`) · **BRIEF-016 merged** (proposed, Q1 — `venue` settings row + menu tables/read + seed) |
+| **Revision** | 2 |
+| **Depends on** | **BRIEF-011 merged** (PR #45 — `VisitService`, `NotificationsService`, `closeIfLive`) · **BRIEF-016 merged** (Q1 — `venue` settings row + menu tables/read + seed) |
 | **References** | FRD §6 · `docs/schema.sql` §6 (`order_record`, `order_ticket`, `order_item`, `order_item_modifier`, `order_status`) · DR-011 · DR-012 (+ Amendment 1) · DR-013 · DR-014 #1 #4 · `docs/api/README.md` (Orders, Idempotency, Realtime) · CD-04 R8 · CD-08 R10-1, R10-4 · CD-15 · BRIEF-011 audit Finding 1 · `docs/rules/backend.md` |
 | **Audit depth** | Full (core flow, concurrency, money) |
 | **Size** | ~3 days (target: API live by checkpoint 25 Oct) |
@@ -37,12 +37,12 @@ Staff can place an order on a live visit; it gets a daily number (#001), splits 
   | `POST /tickets/:id/ready` | `accepted → ready` | only when `kitchen_display_enabled` **and** seat kind = `table` (DR-011, DR-014 #1); otherwise 409 |
   | `POST /tickets/:id/send` | `ready → sent`, or `accepted → sent` when READY is skipped | sets `sent_at`; `accepted → sent` while READY applies → 409 |
 - **Reads:** `GET /tickets?status=&visitId=` (queue; default `pending,accepted,ready`; excludes charge tickets; each ticket carries `orderNumber`, `station`, seat label/kind, items with modifiers + `orderedByName`, `acceptedBy` display name, `createdAt`) · `GET /orders/:id` (order + all tickets + items — CD-08 R10-1) · `GET /visits/:id` gains `orders[]` · `GET /tables` fills `currentVisit.total` and `itemCount` (non-cancelled lines: `quantity × (unit + Σ deltas)`).
-- **Realtime:** add room `staff`, joined by every authenticated `/staff` socket (CD-08 R10-4, Q3); `NotificationsService.emitToStaff()`. `order.created` and `ticket.status_changed` go to `staff`; `visit.*` stays on `pos`.
+- **Realtime:** add room `staff`, joined by every authenticated `/staff` socket (CD-08 R10-4, Q3 decided); `NotificationsService.emitToStaff()`. `order.created` and `ticket.status_changed` go to `staff`; `visit.*` stays on `pos`.
 - **Contracts:** request/response schemas for the endpoints above, `TicketSchema`, `OrderSchema`, event schemas `order.created`, `ticket.status_changed`; error codes `ITEM_UNAVAILABLE`, `IDEMPOTENCY_KEY_REUSED`. Confirm `OrderStatusSchema` matches `schema.sql` (state noted a drift; today both list 6 values incl. `cancelled` — auditor re-checks).
 - **Docs:** `docs/api/README.md` Orders table + event list updated to the DR-013 names (`/tickets/:id/…`, `ticket.status_changed`); `docs/api/openapi.json` regenerated.
 
 ### Out (do NOT build here)
-- Cancel / void / comp + manager PIN + self-approve flag, ticket auto-`cancelled`, `flag-issue` / `resolve` / escalate, sold-out auto-cancel (DR-014 #3) → **BRIEF-017** (proposed, Q2).
+- Cancel / void / comp + manager PIN + self-approve flag, ticket auto-`cancelled`, `flag-issue` / `resolve` / escalate, sold-out auto-cancel (DR-014 #3) → **BRIEF-017** (Q2).
 - `409 PAYMENT_IN_FLIGHT`, bill, payments → BRIEF-013.
 - Customer QR order `POST /public/visits/:id/orders`, call-staff ack → customer-QR brief (after 8 Nov).
 - Menu CRUD, venue settings API → BRIEF-016 / back-office briefs. Expo push token → notifications brief. Kitchen display screen (S2).
@@ -112,14 +112,12 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - Thai user-facing `message` (e.g. "รายการนี้หมดหรือยังไม่เปิดขาย"), English `code`.
 
 ## 7. Decision Points (Field Guard)
-- **Q1 — Menu + venue dependency (blocks Ready).** Today only `staff_*`, `table_seat` and `visit` are migrated; `order_item` needs `menu_item_variant`, and ticket routing needs `venue.kitchen_display_enabled` / `business_day_cutoff`. No brief in the queue covers them.
-  - **A (recommended):** new **BRIEF-016 — venue settings + menu read + seed** (~1.5 days, before this): migrate `venue` (one seeded row) + menu tables from `schema.sql` §4, `seed:menu` (every orderable item ≥ 1 variant — README D4), `GET /menu/categories`, `GET /menu/items` with `available_now` (CD-04, DR-010). *Why:* POS order entry (CD-04) needs the menu read anyway, and this brief stays ≤ 3 days.
-  - **B:** fold menu + venue migrations and seed (no menu API) into this brief → ~4 days, over the size rule; menu read still needs its own brief.
-- **Q2 — Split void / issue flow to BRIEF-017 (proposed).** CD-02 R5 and CD-15 R5 were accepted "into BRIEF-012" (void + comp + PIN, resolve, auto-`cancelled`). *Recommend* moving them to BRIEF-017 right after this one: the 8 Nov gate (order → pay → close) does not need them, and PIN + comp + issue is another ~2 days. Field confirms the target change.
-- **Q3 — Staff-app room.** *Recommend* one room `staff` joined by every authenticated socket (POS included) for order/ticket events; `pos` stays for `visit.*`. *Alternative:* client sends `auth.surface` and joins one room — more moving parts, no current need.
-- **Q4 — Endpoint and event names.** Use DR-013 names (`/tickets/:id/accept|ready|send`, `ticket.status_changed`) over the older README rows (`/orders/:id/accept`, `order.status_changed`); this brief updates `docs/api/README.md`. (Approved DR > docs.)
-- **Q5 — Order number allocation.** *Recommend* `pg_advisory_xact_lock(<business date key>)` then `MAX(order_number)+1` in the placement transaction — no retries, the lock ends with the transaction. *Alternative:* insert + retry on `uq_order_number_per_day` (up to 3) — no lock, but retry code and a rare 500 under burst.
-- **Pre-decided (if Q1–Q5 approved as recommended):** error codes `ITEM_UNAVAILABLE`, `IDEMPOTENCY_KEY_REUSED` · permissions `orders:create`, `orders:read`, `orders:update_status` · no new packages (Redis provider, socket.io from BRIEF-011).
+- **Q1 — Menu + venue dependency. ✅ Decided (Field, 2026-10-17): A.** New **BRIEF-016 — venue settings + menu read + seed** lands first: `venue` (one seeded row) + menu tables from `schema.sql` §4, `seed:menu` (every orderable item ≥ 1 variant — README D4), `GET /menu/categories`, `GET /menu/items` with `available_now` (CD-04, DR-010). **Read-only** — availability toggle (86) goes to BRIEF-017. *Why:* POS order entry (CD-04) needs the menu read anyway; this brief stays ≤ 3 days.
+- **Q2 — Void / issue flow. ✅ Decided (Field, 2026-10-17): A — BRIEF-017**, right after this brief: void + comp + manager 4-digit PIN + self-approve flag, ticket auto-`cancelled`, `flag-issue` / `resolve` / escalate, sold-out auto-cancel (DR-014 #3) + availability toggle. Retargets CD-02 R5 and CD-15 R5 from BRIEF-012 to BRIEF-017. *Why:* not on the 8 Nov gate path; PIN handling gets its own focused audit; no unapproved void path in the meantime.
+- **Q3 — Staff-app room. ✅ Decided (Field, 2026-10-17): A** — one room `staff`, joined by every authenticated `/staff` socket (POS included); `order.created` + `ticket.status_changed` → `staff`; `visit.*` stays on `pos`. *Why:* smallest change; both surfaces need the same events; a kitchen-display room can be added later without breaking this.
+- **Q4 — Names. ✅ Decided (Field, 2026-10-17): A — DR-013 names:** `/tickets/:id/accept|ready|send`, `GET /tickets`, `GET /orders/:id`, events `order.created`, `ticket.status_changed`. This brief updates `docs/api/README.md` (Orders table + event list). *Why:* status lives on the ticket; `/orders/:id/accept` is ambiguous once an order has bar + food tickets.
+- **Q5 — Order number. ✅ Decided (Field, 2026-10-17): A** — in the placement transaction: `pg_advisory_xact_lock(<business date key>)` → `MAX(order_number) + 1` → insert; `uq_order_number_per_day` stays as the safety net; one-line code comment says why the lock exists. *Why:* correct by construction, no retry code, no gaps on rollback; lock scope = one business date, held for milliseconds.
+- **Pre-decided:** error codes `ITEM_UNAVAILABLE`, `IDEMPOTENCY_KEY_REUSED` · permissions `orders:create`, `orders:read`, `orders:update_status` · room `staff` + `NotificationsService.emitToStaff()` · no new packages (Redis provider, socket.io from BRIEF-011).
 - **Likely DRs:** TypeORM pessimistic lock inside `@Transactional()` with the CLS transaction manager · advisory-lock key from a date.
 
 ## 8. Unlocked Protected Files
@@ -130,10 +128,11 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 ## Ready Checklist
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
-- [ ] No unresolved decision blocking the main outcome (Q1–Q5 open)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] No unresolved decision blocking the main outcome (Q1–Q5 decided 2026-10-17)
+- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision (Ready also waits for BRIEF-016 to be Ready)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-17 | Initial Draft (Cowork) — from DR-012/013/014, CD-04 R8, CD-08 R10-1/R10-4, CD-15 R5, CD-02 R5, BRIEF-011 Finding 1; Q1–Q5 open |
+| 2 | 2026-10-17 | Q1–Q5 decided by Field in session (all A), recorded by Cowork on Field's explicit instruction; Pre-decided list completed |
