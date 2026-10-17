@@ -26,6 +26,7 @@ describe('TransformResponseInterceptor', () => {
       lastValueFrom(interceptor.intercept(context, next)),
     ).resolves.toEqual({
       status: 200,
+      code: '',
       message: 'success',
       data: { status: 'ok', db: 'up' },
     });
@@ -53,6 +54,7 @@ describe('TransformResponseInterceptor', () => {
       .expect(201)
       .expect({
         status: 201,
+        code: '',
         message: 'success',
         data: { id: '1' },
       });

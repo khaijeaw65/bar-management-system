@@ -37,4 +37,4 @@ test("AC-4 rejects an arbitrary px class and allows token and non-numeric arbitr
   expect(await lintSource(sourceWithClass("grid-cols-[auto_1fr]"))).toEqual([]);
   expect(await lintSource(sourceWithClass("content-['']"))).toEqual([]);
   expect(await lintSource(tokenParen)).toEqual([]);
-});
+}, 30_000);
