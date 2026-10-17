@@ -1,8 +1,8 @@
 ---
 id: CD-14
 title: Staff app — new order
-revision: 4
-status: approved          # rev 3 = CD template pilot, passed · rev 4 = queue card layout from CD-08 R7
+revision: 5
+status: approved          # rev 3 = CD template pilot, passed · rev 4 = queue card layout from CD-08 R7 · rev 5 = DR-013 check, no canvas change
 approved_by: Field
 approved_on: 2026-10-10
 canvas: https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW
@@ -134,6 +134,7 @@ Pushed stack screen (no tab bar): header top pad 48, IconButton back + title `--
 | 2 | 2026-10-10 | Journey pilot (J1, J2), full-width search, **no quick add**, DR-010 promo states, highlight fix; R1 queue keeps CD-08 order · R2 seat tiles 3/row · R3 ice in one row · R4 CD-08 sheet gets "สั่งออเดอร์" · R5 "ค่าบริการ" badge neutral — **approved** | Field |
 | 3 | 2026-10-10 | collision now asks before joining (J2 4b dialog → 5b) — Field · CD template pilot: overview + seat-sheet boards, menu 8–9, cart 10–11, YAML header, state matrix, action table; J2 E3b corrected to `200 attached:true` (BRIEF-011) | Field — approved (R6–R9) |
 | 4 | 2026-10-10 | Queue cards (J1·1, J1·8, J2 queue phones, cart·4) use the CD-08 R7 layout: status chip on the top row, status button bottom-left ≤ 190 px so it never sits under the "+ ออเดอร์" FAB (FAB position unchanged). No flow change. | Field (CD-08 R7) |
+| 5 | 2026-10-17 | DR-013 pass (kitchen off = one ticket per order): checked all 9 boards — no station label or บาร์/ครัว split anywhere (send → one order in the queue; "คิวบาร์" in the overview is the generic queue name). **No redraw; canvas unchanged (1791626200-39b3), §11 snapshot still valid.** | Decided 2026-10-17 (Field) · Cowork checked |
 
 ## 11. Source snapshot
 Taken 2026-10-10 from canvas version **1791626200-39b3** (rev 4 approved + sticky R10), DS **1791561405-c72e** (`cd-template.md` §6). 25 files, byte copies read through the artifact service; hashes re-verified on disk after copy (all match).

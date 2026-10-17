@@ -1,18 +1,18 @@
 ---
 id: CD-03
 title: POS — payment (PromptPay QR, cash, manual confirm, split-equal, in-flight lock)
-revision: 2
-status: review            # rev 1 decisions approved (Q1–Q3 2026-10-04, F1–F4 2026-10-09); rev-1 screens not yet reviewed (R3); rev 2 = CD template retrofit
+revision: 4
+status: review            # rev 1 decisions approved (Q1–Q3 2026-10-04, F1–F4 2026-10-09); rev-1 screens not yet reviewed (R3); rev 2 = CD template retrofit; rev 3 = DR-014 #6 payment modes drawn (R6)
 approved_by: Field        # rev 1 decisions
 approved_on: 2026-10-09
 canvas: https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb
-canvas_version: 1791644100-e257
+canvas_version: 1792226119-bee3
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-03/   # taken after rev 2 approval (§11)
 surfaces: [web-pos]
 sizes: [1280x800, 1024x768]
 brief: CD-03-pos-payment.md
-drs: [DR-009, DR-012]
+drs: [DR-009, DR-012, DR-014]
 depends_on: [CD-00, CD-02, CD-04]
 supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
 ---
@@ -31,7 +31,9 @@ Rev 1 decisions Q1–Q3, F1–F4 stay (§10). Rev-2 items (✓ = accepted):
 | R3 ⏸ | **Content review of rev 1 screens** — decisions were approved, the screens never were: split rule (last part takes satang; charges added after the split) · cash helper optional · completed auto-advances after 3 s · whole bill locked while any part pending · receipt on screen only. | Field: walk J1 / J2 + state boards. **Parked 2026-10-12** until Field reviews the canvases. |
 | R4 ✓ | **New states:** checkout at 1024×768 (checkout·4) · create-QR failed, nothing locked (checkout·5) · promptpay at 1024×768 (·7). Rules: no `payments:create` → "ชำระเงิน" hidden · no `payments:mark_paid` → "ยืนยันด้วยตนเอง" hidden · disconnected → poll `GET /payments/:id` every 5 s. | Accept. **Accepted 2026-10-12** (Field). |
 | R5 ✓ | **Needs API (BRIEF-013, not written):** `confirmed_via` / `status_reason` / `status_note` (F1) · whole-bill lock while any part pending (F2) · `409 PAYMENT_IN_FLIGHT` on void / comp / close · cancel + 15-min system expiry (Q1) · GB Prime Pay webhook → `payment.status_changed`. | Write into BRIEF-013. **Accepted 2026-10-12** (Field). |
-| R6 | **DR-014 #6 impact (canvas update):** payment modes per venue — gateway webhook, or "normal way": app-generated amount-locked PromptPay QR to the venue account + **scan slip → verify** (evidence stored; reused slip / wrong receiver / short amount rejected) + manual confirm fallback. Gate = manual confirm. | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
+| R6 ✓ | **DR-014 #6 impact (canvas update):** payment modes per venue — gateway webhook, or "normal way": app-generated amount-locked PromptPay QR to the venue account + **scan slip → verify** (evidence stored; reused slip / wrong receiver / short amount rejected) + manual confirm fallback. Gate = manual confirm. | Field approved DR-014 2026-10-12. **Drawn rev 3** (Field still reviews the screens — R3): `promptpay-slip` 1 waiting (venue QR, primary "สแกนสลิป") · 2 scan · 3 verifying · 4 verified → completed + evidence (`confirmed_via = slip_verify`) · `promptpay-slip-errors` 5 slip already used · 6 receiver ≠ venue · 7 amount short · 8 verify service down → manual confirm; flow lane added. Checkout method chip per mode = rule (§9), not redrawn. |
+| Q1 ✓ | **Scan device.** | **Decided 2026-10-17 (Field):** the POS tablet camera scans the slip QR (money actions stay on POS, DR-009). Staff-app scanning = S2, only if asked. Scan-box copy updated (slip·2). |
+| Q2 ✓ | **EasySlip receiver data.** | **Decided 2026-10-17 (Field):** the response carries receiver name (TH/EN), bank, and account number or PromptPay proxy, but the number is usually **masked** → match the visible digits + name. Clear mismatch = state 6; no clean match → manual confirm (DR-014 fallback). **BRIEF-013: verify with one real slip** before relying on it. |
 
 ## 1. Overview
 - **Goal:** the cashier collects the whole bill or an equal split; PromptPay confirms itself from the bank, the amount is locked while waiting, and settling never closes the table by itself.
@@ -56,7 +58,9 @@ Rev 1 decisions Q1–Q3, F1–F4 stay (§10). Rev-2 items (✓ = accepted):
 | `manual-confirm` | STATES | no reason · อื่นๆ + detail · result |
 | `in-flight` | STATES | locked · new order after QR · 409 Toast |
 | `done` | STATES | panel after settlement · realtime Toast on grid |
-| `flow` | FLOW MAP | panel → checkout → promptpay / split / cash → done |
+| `promptpay-slip` | STATES | venue PromptPay mode (DR-014 #6): 1 waiting for transfer · 2 scan slip · 3 verifying · 4 verified → paid + evidence |
+| `promptpay-slip-errors` | STATES | 5 slip already used · 6 receiver not the venue account · 7 amount short · 8 verify service down → manual confirm |
+| `flow` | FLOW MAP | panel → checkout → promptpay / split / cash → done · venue-PromptPay lane (slip scan) |
 Shared (not boards to review): `PosFrame`, `Grid`, `Panel`.
 
 ## 3. State coverage
@@ -89,6 +93,7 @@ Shared (not boards to review): `PosFrame`, `Grid`, `Panel`.
 | Poll status | `GET /payments/:id` every 5 s while disconnected | `payments:read` | as webhook | — | — | — | n/a |
 | Cancel QR | `POST /payments/:id/cancel` | `payments:create` | `cancelled` (`staff_cancel`), bill unlocked when no part pending (F2) | 409 already completed → done | — | — | repeat → 409 refetch |
 | Expiry | server job at 15 min (Q1) | system | ·4 expired (`status_reason = expired`) | — | สร้าง QR ใหม่ | — | — |
+| Verify slip (venue PromptPay mode) | **needs API** (BRIEF-013, DR-014 #6): e.g. `POST /payments/:id/verify-slip {slipQr}` → slip-verification adapter (EasySlip) | `payments:create` | completed, `confirmed_via = slip_verify`, evidence stored (ref, receiver, amount, time) → promptpay-slip·4 | reused `slip_trans_ref` → ·5 · receiver ≠ venue → ·6 · amount < bill → ·7 · provider down → ·8 (manual confirm) | scan again / manual confirm | QR + lock kept | unique `slip_trans_ref` |
 | Manual confirm | `POST /payments/:id/mark-paid {reason, note?}` | `payments:mark_paid` | completed + Badge "ยืนยันด้วยตนเอง" (`confirmed_via = manual`) | 409 already completed → close modal | — | reason | repeat → 409 |
 | Cash | `POST /visits/:visitId/payments {method:'cash'}` (completed immediately) | `payments:create` | done | network → Alert | retry same key | received (client only) | Idempotency-Key |
 | Void / close while pending | CD-02 actions | — | — | `409 PAYMENT_IN_FLIGHT` → in-flight·3 | cancel QR first | — | — |
@@ -389,6 +394,8 @@ Kit-local (not in the DS bundle): RadioCard (Radio inside 56px card), BillSummar
 - **Lock:** creating a payment locks the bill amount; while any part is `pending` the whole bill is locked (F2): void / comp / close → `409 PAYMENT_IN_FLIGHT`. Orders arriving meanwhile show under "ออเดอร์ใหม่หลังสร้าง QR — ไม่รวมในยอดนี้" and remain due after.
 - **Confirmation:** only the webhook (or poll fallback) marks PromptPay completed; staff can't except via manual confirm (`payments:mark_paid`, reason required, "อื่นๆ" needs detail, flagged — Q3).
 - **Expiry:** QR lifetime 15 min; expiry = `cancelled` + `status_reason = expired`, heading "QR หมดเวลา" (Q1, F1).
+- **Payment mode (DR-014 #6):** per venue setting. *Gateway webhook* = boards `promptpay` (confirmed only by webhook / poll). *Venue PromptPay* = app-made amount-locked EMVCo QR to the venue account; no bank callback, so the pending side shows "สแกนสลิป" as the primary action; checks are ours (slip ref unique, receiver = venue PromptPay, amount ≥ bill); manual confirm stays the fallback and is the **only** path at the gate (8 Nov). Checkout's PromptPay row chip reads "ยืนยันอัตโนมัติ" in webhook mode and "สแกนสลิปยืนยัน" in venue mode (rule — not redrawn). Lock, 409, 15-min expiry, cancel and split behave the same in both modes.
+- **Slip receiver match (Q2):** receiver = venue account when the name matches and the visible (unmasked) digits match the venue PromptPay / account; clear mismatch → slip·6 "โอนเข้าบัญชีอื่น"; partial / unclear → offer manual confirm (reason, flagged). Scan with the POS tablet camera (Q1).
 - **Split:** n 2–10; part = floor(non-charge × 100 / n) / 100; last part = remainder; charge items added to their assigned part (Q2).
 - **Cash:** stores only the bill amount; "รับเงินมา" is a client helper; confirm disabled only when filled and short.
 - **Settlement ≠ close:** done keeps the table open; "ปิดโต๊ะ" goes through CD-02 close-confirm.
@@ -405,6 +412,8 @@ Kit-local (not in the DS bundle): RadioCard (Radio inside 56px card), BillSummar
 | 1 | 2026-10-09 | Claude Design boards; F1 `confirmed_via` / `status_reason` / `status_note` · F2 split locks whole bill · F3 detail required for อื่นๆ · F4 `cancelled` chip | Field |
 | 1 | 2026-10-09 | Ported to the Design canvas (P1 sample consistency, P2 QR placeholder, P3 manual result) | Cowork |
 | 2 | 2026-10-10 | CD template retrofit: overview, J1 / J2, pills + sections, 1024×768 frames, create-QR failure; R2 DR-012 panel + sample consistent with CD-02 / CD-04; R1 pain point assumption; R3 screen review; R4 states; R5 API gaps | R2 via DR-012 · R1, R3–R5 pending |
+| 3 | 2026-10-17 | R6 DR-014 #6 drawn: `promptpay-slip` (1–4) + `promptpay-slip-errors` (5–8) boards, flow lane, overview badges · stickies R1 / R4 / R5 green · Q1 scan device, Q2 EasySlip receiver raised · R3 screen review still open | DR-014 (Field 12 Oct) · Cowork drew |
+| 4 | 2026-10-17 | Field decisions Q1–Q2 recorded: scan box = POS tablet camera (slip·2, errors) · receiver check copy = name + visible digits (scan step, errors caption, slip·6 body) · §9 slip receiver rule · stickies Q1–Q2 green. R3 screen review still open. | Decided 2026-10-17 (Field) · Cowork drew |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 2 (`cd-template.md` §6). Lucide blob `/_blob/7564fb1d7f942a27438b0405aa632b96` (CD-03). QR image `/_blob/9a623a27027ed88647a51f86c0a108f1` is a placeholder (not EMVCo).

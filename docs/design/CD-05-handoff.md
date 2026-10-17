@@ -1,18 +1,18 @@
 ---
 id: CD-05
 title: Back office — dashboard (owner money view · manager today view · comps/voids)
-revision: 1
+revision: 3
 status: review
 approved_by:
 approved_on:
 canvas: https://claude.ai/artifact/WiY9xummEw5w2rPdnRqBdf
-canvas_version: 1791711450-7294
+canvas_version: 1792226326-31c0
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-05/   # taken after approval (§11)
 surfaces: [web-backoffice]
 sizes: [1280x800, 1024x768, 390x844]
 brief: CD-05-dashboard.md
-drs: [DR-009, DR-010]
+drs: [DR-009, DR-010, DR-014, DR-015]
 depends_on: [CD-02, CD-03, CD-12, CD-15]
 supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
 ---
@@ -32,7 +32,8 @@ Brief D1–D3 apply (§10). Rev-1 items:
 | R4 ✓ | **"สูงกว่าปกติ" rule:** > 2× the weekly average of the previous 4 weeks, per reason; no flag until 4 weeks of data exist. | Field: confirm the threshold. **Accepted 2026-10-17** (Field): > 2× the 4-week weekly average, no flag before 4 weeks of data. |
 | R5 ✓ | **Needs API (dashboard brief):** `GET /reports/summary?from&to` (revenue, bills, average, payment split + previous period) · `/reports/daily` · `/reports/items?sort=top|bottom` · `/reports/today` (hourly, open seats, pending / issue counts) · `/reports/comps-voids` (by reason, by person, self-approved, spike flag). Business day cut-off 06:00 (as DR-013). | Add to the dashboard brief. **Accepted 2026-10-17** (Field). |
 | R6 ✓ | **Counting rules:** bottom-5 excludes items that are unavailable or added < 7 days ago · average bill excludes ฿0 bills (whole-bill comp) · promos (`is_promo`, DR-010) can be split later, not in S1. | Accept. **Accepted 2026-10-17** (Field). |
-| R7 | **DR-014 #11 impact (canvas update):** add the **AI owner insight** card (sales summary, anomaly/fraud alerts, menu & stock suggestions) — SQL calculates, AI explains, source numbers shown; alerts say "ควรตรวจสอบ". | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
+| R7 ✓ | **DR-014 #11 impact (canvas update):** add the **AI owner insight** card (sales summary, anomaly/fraud alerts, menu & stock suggestions) — SQL calculates, AI explains, source numbers shown; alerts say "ควรตรวจสอบ". | Field approved DR-014 2026-10-12. **Drawn rev 2:** board `ai-insight` — 1 1280 (3 sections: ยอดขาย · ควรตรวจสอบ · เมนูและสต็อก, each item with its source numbers, alerts = Badge "ควรตรวจสอบ" + link to the list) · 2 390 stacked · 3 generating · 4 not enough data / failed; privacy line (totals only, staff as codes). |
+| Q1 ✓ | **Placement + audience.** | **Decided 2026-10-17 (Field):** the AI card sits at the **top of ภาพรวมรายได้, under the KPI row** (no separate tab). Per-person staff alerts (names) = **Owner only**; Managers see the same alerts grouped by reason, no names (ai-insight·5). The overview screen frames are not redrawn with the card in place — placement is the §9 rule; build inserts it. |
 
 ## 1. Overview
 - **Goal:** the owner sees money in, what sells and what doesn't, and unusual voids / comps; the manager sees tonight right now — from a computer or a phone.
@@ -40,7 +41,7 @@ Brief D1–D3 apply (§10). Rev-1 items:
 - **User + context:** owner — weekly check, often on the phone (DR-009) · manager — mid-shift glance.
 - **Entry → exit:** rail / nav drawer "รายงาน" (`reports:read`); default tab by group (owner → ภาพรวมรายได้, manager → วันนี้; D2). Exits: มีปัญหา / ออเดอร์รอทำ → CD-15 · seat → CD-02 panel · manual confirmations → CD-03 list.
 - **Outcome:** three questions answered on one screen (how much, what sells, anything unusual) with no staff ranking (D3).
-- **Out of scope:** margin / cost / stock (S2, shown as a "เร็วๆ นี้" card), staff performance / leaderboards (cut), Excel export, AI insights (S2), LINE OA.
+- **Out of scope:** margin / cost / stock (S2, shown as a "เร็วๆ นี้" card), staff performance / leaderboards (cut), Excel export, AI "ask your data" (stretch, DR-014 #11), LINE OA. AI owner insight is **in** (DR-014 #11, board `ai-insight`).
 - **Journeys:** J1 1280 owner: 30-day overview → comps / voids (E1) · J2 390 manager: tab วันนี้ → issue tile → CD-15 (E1–E2).
 
 ## 2. Boards
@@ -52,6 +53,7 @@ Brief D1–D3 apply (§10). Rev-1 items:
 | `overview` | STATES | 1 1280 with hover tooltip · 2 1024 · 3 390 full length |
 | `today` | STATES | 1 1280 · 2 390 full length |
 | `comps-voids` | STATES | 1 1280 · 2 390 full length |
+| `ai-insight` | STATES | 1 1280 loaded · 2 390 · 3 generating · 4 not enough data + failed (DR-014 #11) |
 | `states` | STATES | loading · empty period · error — at 1280 and 390 |
 | `flow` | FLOW MAP | owner · manager · states |
 
@@ -76,6 +78,8 @@ Brief D1–D3 apply (§10). Rev-1 items:
 | Change period | same with `from`/`to` | `reports:read` | refetch, Skeleton | as above |
 | Load today | `GET /reports/today` + WS / refetch every 60 s (planned) | `reports:read` | tiles + hourly + open seats | stale → keeps last data, live dot grey "ไม่ได้อัปเดต" |
 | Load comps / voids | `GET /reports/comps-voids` (planned) | `reports:read` | tables | Alert + retry |
+| Load AI insight | **needs API** (dashboard / AI brief): latest stored `ai_insight` for the period (DR-014 #11) | `reports:read` | ai-insight·1 | none yet → ·4 not enough data · failed → ·4 Alert, report numbers stay |
+| Regenerate insight | **needs API**: enqueue BullMQ job, return when stored (DR-014 #11) | `reports:read` (owner — Q1) | Skeleton (·3) → ·1 | failed → ·4 |
 
 ## 5. e2e script
 - **J1** (1280) owner opens รายงาน → ภาพรวมรายได้ · 30 วัน: ยอดขาย, จำนวนบิล, เฉลี่ยต่อบิล (each +x% vs previous 30 days), PromptPay 72% / เงินสด 28%, daily line (hover 10 ต.ค. ฿24,440.00), top / bottom 5 · E1 tap "ยกเลิก / Comp 10 รายการ · ฿1,460.00" → page, period 7 วัน: by reason (บริการพิเศษ "สูงกว่าปกติ") and by person sorted by name (ต้น "อนุมัติด้วยตนเอง 2").
@@ -100,7 +104,8 @@ Sample: 30 days 11 ก.ย. – 10 ต.ค. by weekday pattern (Fri / Sat peaks)
 |---|---|
 | Tabs / period | Tabs · Select (DateRangePicker for กำหนดเอง) |
 | Tiles | Card (pressable) — DS StatTile has no slot for the split bar, so Card is used |
-| Charts | custom SVG / CSS (no chart lib in S1) + Tooltip on hover |
+| Charts | Recharts (DR-015) with `--chart-1` / `--chart-2` + Tooltip on hover |
+| AI insight | Card + Badge (warning "ควรตรวจสอบ") + Chip for source numbers + Skeleton / Alert |
 | Lists / tables | Table |
 | Flags | Chip (warning) |
 | Feedback | Skeleton · Alert · EmptyState |
@@ -110,7 +115,9 @@ Sample: 30 days 11 ก.ย. – 10 ต.ค. by weekday pattern (Fri / Sat peaks)
 - **Tabs (D2):** default by group (owner / manager); anyone with `reports:read` can switch; last choice remembered per user.
 - **No ranking (D3):** people sorted by name; no "top staff", no scores. Spikes flagged per reason (R4), self-approved flag from CD-02.
 - **Today:** live via WS `payment.completed` + refetch every 60 s; hourly bars from paid bills; open seats sorted by time open; idle threshold as CD-02.
-- **Business day:** 06:00 cut-off, Asia/Bangkok.
+- **Business day:** 06:00 cut-off, Asia/Bangkok (venue setting, DR-014 #4).
+- **AI insight (DR-014 #11):** SQL calculates every number; the model only explains and never computes; each insight shows its source numbers. Only totals go to OpenAI — no guest data, staff as aliases mapped back on our server. Alerts state facts + "ควรตรวจสอบ", never accuse. Stored in `ai_insight`, made by a daily / weekly BullMQ job or on demand ("สร้างใหม่"). Spike rule = R4.
+- **AI insight placement / audience (Q1):** top of ภาพรวมรายได้, directly under the KPI tiles. Owner sees named staff alerts; Manager gets the same alert list with names removed and items grouped by reason (e.g. "อนุมัติยกเลิกด้วยตนเอง 2 ครั้ง"); card title "AI สรุป (ผู้จัดการ)".
 - **Charts:** one axis only; single-series = `--chart-1`; numbers and labels in text tokens, never the series colour; a table view link for the line chart.
 - **Standard questions:** Filters → period single select, 30 วัน default (owner) / วันนี้ fixed (today tab). Search → n/a. Long and short → item names 1 line. Interaction → hover tooltip on desktop, tap on phone. Accessibility → charts have `role="img"` + summary labels, table view link, split bar labelled. Data → missing previous period → no delta shown.
 - **User-mindset checks:** ✓ one question per section · ✓ targets ≥ 44 on links · ✓ no destructive action · ✓ status has text · ✓ no colour-only meaning · ☐ walkthrough with the owner.
@@ -120,6 +127,8 @@ Sample: 30 days 11 ก.ย. – 10 ต.ค. by weekday pattern (Fri / Sat peaks)
 |---|---|---|---|
 | 0 | 2026-10-09 | Brief D1–D3 | Field |
 | 1 | 2026-10-11 | First canvas built to `cd-template.md` v2: overview, J1 (1280) / J2 (390), overview / today / comps-voids / states boards, flow; R1–R6 raised; chart colours validated | Cowork — review pending |
+| 2 | 2026-10-17 | R7 DR-014 #11 drawn: `ai-insight` board (4 states), overview out-of-scope + badges updated; stickies R1–R6 green; Q1 placement / audience raised | DR-014 (Field 12 Oct) · Cowork drew |
+| 3 | 2026-10-17 | Q1 decided and drawn: ai-insight caption + frame 1 label (top, under KPI) · new frame 5 manager view (reason-grouped, no names) · board 5372 wide, stickies R7 / Q1 moved right · Q1 green | Decided 2026-10-17 (Field) · Cowork drew |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 1. Lucide UMD `/_blob/b453750cfe40fe5127eeb679cdc9317d`.

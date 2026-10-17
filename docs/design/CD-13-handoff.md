@@ -1,18 +1,18 @@
 ---
 id: CD-13
 title: Back office — tables & QR setup, staff, groups, policies (IAM, time-bound membership)
-revision: 1
+revision: 3
 status: review
 approved_by:
 approved_on:
 canvas: https://claude.ai/artifact/PF5pdKMY4b2w1oaunrHJH3
-canvas_version: 1791711811-7aff
+canvas_version: 1792226054-895f
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-13/   # taken after approval (§11)
 surfaces: [web-backoffice]
 sizes: [1280x800, 1024x768, 390x844]
 brief: CD-13-backoffice-tables-staff.md
-drs: [DR-005, DR-009]
+drs: [DR-005, DR-009, DR-013, DR-014]
 depends_on: [CD-01, CD-02, CD-12]
 supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
 ---
@@ -34,7 +34,10 @@ Brief Q1–Q2, D1–D4 apply (§10). Rev-1 items:
 | R6 ✓ | **Rules / states beyond the brief:** self-deactivate blocked (Switch disabled + Toast) · deactivate revokes refresh tokens on every device, including the 30-day mobile token (DR-005 A2) · expired membership struck "หมดอายุ" · delete-group dialog lists permissions that would be lost (computed most-permissive-wins) · policy in use by many → warning Alert. | Accept. **Accepted 2026-10-17** (Field). |
 | R7 ✓ | **Needs API (IAM brief):** 1) `GET /staff/access-requests`, `POST …/:id/approve {displayName, memberships[]}`, `POST …/:id/reject` · 2) memberships with `validUntil` · 3) `409 IAM_LOCKOUT` (no one left with `staff:manage` / last owner), `409 SELF_DEACTIVATE` · 4) deactivate → revoke sessions · 5) `409 SEAT_LABEL_TAKEN`, `409 SEAT_IN_USE` · 6) `GET /staff/:id/effective-permissions` with source per permission. | Add to the IAM brief. **Accepted 2026-10-17** (Field). |
 | R8 ✓ | **DS gaps:** no DatePicker / TimeInput (Input + icon used), Dropdown menu, Modal frame; Avatar shows initials (real build uses LINE `avatar_url`); A4 print preview drawn from tokens. | Add to DS, or use HeroUI directly. **Decided 2026-10-17** (Field): HeroUI v3 directly + DS tokens (same as CD-12 R8). |
-| R9 | **DR-014 impact (canvas update):** seed **3 groups (Owner / Manager / Staff)**, policy matrix under "ขั้นสูง" (#11) · staff POS PIN set/reset (#8) · venue settings: business-day cut-off, kitchen screen, payment mode + PromptPay ID, counter QR (#4–#6). | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
+| R9 ✓ | **DR-014 impact (canvas update):** seed **3 groups (Owner / Manager / Staff)**, policy matrix under "ขั้นสูง" (#11) · staff POS PIN set/reset (#8) · venue settings: business-day cut-off, kitchen screen, payment mode + PromptPay ID, counter QR (#4–#6). | Field approved DR-014 2026-10-12. **Drawn rev 2:** default groups เจ้าของ · ผู้จัดการ · พนักงาน (+ custom แคชเชียร์) across staff / J1 / detail / groups; default policies ทั้งหมด · จัดการร้าน · งานพนักงาน; settings card + tab "ขั้นสูง · นโยบายสิทธิ์"; staff-detail "PIN สำหรับ POS" section + reset dialog (·6); new board `venue` (ร้าน): cut-off Select 06:00 · จอครัว Switch (off) · การชำระเงิน PromptPay ของร้าน + ID / Gateway · QR เคาน์เตอร์ Switch (off). |
+| Q1 ✓ | **Kitchen screen switch:** KDS is S2; should the S1 switch be hidden / disabled until then? | **Decided 2026-10-17 (Field):** the switch exists in S1 (venue setting, default off). On with no kitchen display → staff mark READY from the staff app / POS. Drawn in the switch description (venue). |
+| Q2 ✓ | **Who edits ร้าน** (payout account). | **Decided 2026-10-17 (Field):** Owner only — payout PromptPay, payment mode, cut-off. Every change → `audit_log` + AI anomaly alert to the owner. Drawn as a lock line on the venue screen + board caption. Permission code → IAM brief. |
+| Q3 ✓ | **PIN flow.** | **Decided 2026-10-17 (Field):** staff set their own PIN at the first POS switch-in after LINE login · Owner / Manager "reset" clears it (staff sets a new one next switch-in) · nobody sees anyone else's PIN · the manager's PIN is also the void / comp approval PIN (CD-02 Q1). Drawn in the PIN hint (staff-detail). |
 
 ## 1. Overview
 - **Goal:** owner / manager set up seats and print QR codes, let new staff in from a LINE login request, and give rights by group — permanent or until the end of the night.
@@ -43,23 +46,24 @@ Brief Q1–Q2, D1–D4 apply (§10). Rev-1 items:
 - **Entry → exit:** rail / nav drawer "ตั้งค่า" → cards (โต๊ะและ QR · พนักงาน · กลุ่ม · นโยบายสิทธิ์ · ร้าน "เร็วๆ นี้"); subpages switch with Tabs (≥ 1024) or back (390). Requests come from CD-01 J2. Changes apply at once (Redis ACL invalidation); new / regenerated QR → CD-06.
 - **Outcome:** every person has their own account · approve = 3 taps · temporary manager = 4 taps, expires by itself · deactivate signs out everywhere · the shop can't lock itself out.
 - **Out of scope:** deny rules, shop settings, billing, shift cash-out, audit log viewer, LINE OA.
-- **Journeys:** J1 1280 approve ฝน into บาร์เทนเดอร์ (E1–E3) · J2 390 give เจ ผู้จัดการ until end of shift (E1–E4).
+- **Journeys:** J1 1280 approve ฝน into พนักงาน (E1–E3) · J2 390 give เจ ผู้จัดการ until end of shift (E1–E4).
 
 ## 2. Boards
 | Board | Type | States |
 |---|---|---|
 | `overview` | OVERVIEW | goal, pain point, user/context, outcome, entry/exit, journeys, out of scope, key decisions |
-| `journey-1` | JOURNEY | staff + 2 requests (E1 อนุมัติ) → approve modal (E2 tick บาร์เทนเดอร์) → ถาวร (E3 อนุมัติ) → ฝน row highlighted + Toast |
+| `journey-1` | JOURNEY | staff + 2 requests (E1 อนุมัติ) → approve modal (E2 tick พนักงาน) → ถาวร (E3 อนุมัติ) → ฝน row highlighted + Toast |
 | `journey-2` | JOURNEY | 390 staff (E1 เจ) → detail (E2 เพิ่มกลุ่ม) → modal (E3 ถึงสิ้นกะคืนนี้, E4 เพิ่มกลุ่ม) → ผู้จัดการ ถึง 06:00 + new permissions + Toast |
 | `settings` | STATES | 1 1280 · 2 1024 · 3 390 · 4 390 nav drawer |
 | `tables` | STATES | 1 loaded · 2 bulk select · 3 ⋯ menu · 4 add · 5 duplicate name · 6 regenerate confirm |
 | `tables (ต่อ) · print` | STATES | 7 deactivate blocked · 8 empty · print·1 A4 · print·2 counter cards · 9–10 390 · print·3 390 |
 | `staff` | STATES | 1 loaded + requests · 2 no requests · 3 approve · 4 reject · 5 deactivate · 6 self → Toast |
 | `staff · 390` | STATES | 1 loaded · 2 approve · 3 reject · 4 deactivate |
-| `staff-detail` | STATES | 1 time-bound group · 2 add group custom date · 3 expired membership · 4 390 full length · 5 390 add group |
-| `groups` | STATES | 1 list · 2 custom group · 3 default group (no delete) · 4 delete confirm · 5–6 390 |
+| `staff-detail` | STATES | 1 time-bound group · 2 add group custom date · 3 expired membership · 4 390 full length · 5 390 add group · 6 reset POS PIN (DR-014 #8) |
+| `groups` | STATES | 1 list (3 defaults เจ้าของ · ผู้จัดการ · พนักงาน + custom แคชเชียร์) · 2 custom group · 3 default group (no delete) · 4 delete confirm · 5–6 390 |
 | `policies` | STATES | 1 list · 2 edit · 3 saved · 4 used-by warning · 5 lock-out guard · 6 390 edit |
-| `flow` | FLOW MAP | tables & QR · staff · groups & policies |
+| `venue` | STATES | 1 PromptPay ของร้าน (S1 default) · 2 Gateway · 3 saved · 4 390 full length (DR-014 #1/#4/#5/#6) |
+| `flow` | FLOW MAP | tables & QR · staff · groups & policies · venue & PIN |
 
 ## 3. State coverage
 ✓ drawn · n/a (reason) · rule (§9).
@@ -87,6 +91,8 @@ Brief Q1–Q2, D1–D4 apply (§10). Rev-1 items:
 | Seats CRUD / reorder | `POST/PATCH /tables`, `PATCH /tables/order` (BRIEF-011 + planned) | `tables:manage` | list updates, Toast | `409 SEAT_LABEL_TAKEN` → ·5 · `409 SEAT_IN_USE` → ·7 | reorder sends full order |
 | Regenerate QR | `POST /tables/:id/qr/regenerate` (available) | `tables:manage` | new QR, old invalid | network → Alert | each call = new token (confirm guards it) |
 | Print QR | client-side (same token) | `tables:manage` | browser print dialog | — | n/a |
+| Save venue settings | **needs API** (venue settings, DR-014 follow-up schema: `venue` cut-off, kitchen_display_enabled, payment mode, PromptPay ID/type, counter QR) | owner (Q2) | Toast venue·3 | validation → field errors | one PATCH |
+| Reset POS PIN | **needs API** (DR-014 #8, staff POS PIN) | `staff:manage` | PIN state "ยังไม่ได้ตั้ง" + Toast | 409 / network → Alert | repeat = no-op |
 | Approve request | `POST /staff/access-requests/:id/approve` (planned, R7) | `staff:manage` | staff row + Toast | 409 already decided → refresh | one decision per request |
 | Reject request | `POST …/:id/reject` (planned) | `staff:manage` | request removed | as above | as above |
 | Deactivate staff | `PATCH /staff/:id {isActive:false}` + revoke sessions (planned) | `staff:manage` | Switch off, row greyed | `409 SELF_DEACTIVATE` → ·6 · `409 IAM_LOCKOUT` | idempotent |
@@ -95,14 +101,14 @@ Brief Q1–Q2, D1–D4 apply (§10). Rev-1 items:
 | Effective permissions | `GET /staff/:id/effective-permissions` (planned, R7) | `staff:manage` | detail right column | — | n/a |
 
 ## 5. e2e script
-- **J1** (1280) ฝน logs in with LINE → CD-01 J2 "ส่งคำขอแล้ว" → request appears · E1 อนุมัติ on Fon.P → modal, display name prefilled → typed ฝน · E2 tick บาร์เทนเดอร์ (until = ถาวร) · E3 อนุมัติ → staff_user + identity + membership created → row ฝน highlighted, Toast "อนุมัติ ฝน แล้ว"; ฝน's next login works.
-- **J2** (390) E1 tap เจ → detail (บาร์เทนเดอร์ ถาวร) · E2 เพิ่มกลุ่ม → modal, Select ผู้จัดการ · E3 ถึงสิ้นกะคืนนี้ (06:00 · 12 ต.ค.) · E4 เพิ่มกลุ่ม → membership `validUntil` set → chip "ผู้จัดการ · ถึง 06:00", permissions column shows "จากกลุ่ม ผู้จัดการ · ถึง 06:00", Toast. At 06:00 the permissions drop without any action.
+- **J1** (1280) ฝน logs in with LINE → CD-01 J2 "ส่งคำขอแล้ว" → request appears · E1 อนุมัติ on Fon.P → modal, display name prefilled → typed ฝน · E2 tick พนักงาน (until = ถาวร) · E3 อนุมัติ → staff_user + identity + membership created → row ฝน highlighted, Toast "อนุมัติ ฝน แล้ว"; ฝน's next login works.
+- **J2** (390) E1 tap เจ → detail (พนักงาน ถาวร) · E2 เพิ่มกลุ่ม → modal, Select ผู้จัดการ · E3 ถึงสิ้นกะคืนนี้ (06:00 · 12 ต.ค.) · E4 เพิ่มกลุ่ม → membership `validUntil` set → chip "ผู้จัดการ · ถึง 06:00", permissions column shows "จากกลุ่ม ผู้จัดการ · ถึง 06:00", Toast. At 06:00 the permissions drop without any action.
 - **Edge:** Beam switches off his own account → Toast "ปิดบัญชีตัวเองไม่ได้" · untick `staff:manage` from จัดการร้าน → lock-out Alert, save disabled · deactivate T3 with guests → ·7 · add seat "T3" → ชื่อนี้มีอยู่แล้ว.
 
 ## 6. Strings & sample data
 Copy and sample data live in `Screen` `renderVals()` and markup. Key strings: ตั้งค่า · โต๊ะและ QR · พนักงาน · กลุ่ม · นโยบายสิทธิ์ · ร้าน · เร็วๆ นี้ · คำขอ 2 · **Tables** เพิ่มที่นั่ง · พิมพ์ QR (n) · เคาน์เตอร์ / โต๊ะ · ใช้งาน · มีแขก · ปิดอยู่ · แก้ไข / พิมพ์ QR / สร้าง QR ใหม่ · เลือก n ที่นั่ง · ล้าง · ชื่อ (เช่น T7 หรือ C9) · ชื่อนี้มีอยู่แล้ว · สร้าง QR ให้อัตโนมัติ · สร้าง QR ใหม่ — T3? (CD-02 copy) · ปิดไม่ได้ — T3 มีแขกอยู่ / ปิดบิลหรือย้ายแขกก่อน แล้วค่อยปิดที่นั่ง · ยังไม่มีที่นั่ง · **Print** แผ่น A4 · 3×4 (โต๊ะ) · บัตรเล็ก · 2×5 (เคาน์เตอร์) · สแกนเพื่อสั่งอาหาร · แสดงให้พนักงานเมื่อออก · ตัดตามเส้นประ · QR เดิม · **Staff** คำขอเข้าใช้งาน · เข้าสู่ระบบด้วย LINE แต่ยังไม่ได้ลงทะเบียน · อนุมัติ / ปฏิเสธ · คุณ · ปิดใช้งาน · ชิป "ผู้จัดการ · ถึง 06:00" · อนุมัติคำขอเข้าใช้งาน · ชื่อที่แสดง · กลุ่ม (เลือกอย่างน้อย 1) · ถึงเมื่อไร ถาวร / ถึงสิ้นกะคืนนี้ (06:00) / กำหนดเอง · ปฏิเสธคำขอของ Nat_bkk? · ปิดการใช้งาน มิ้นท์? … ออกจากระบบทุกเครื่องทันที · ปิดบัญชีตัวเองไม่ได้ · **Detail** นโยบายเฉพาะบุคคล · สิทธิ์ที่ได้รับ · รวมจากทุกกลุ่มและนโยบาย — สิทธิ์มากที่สุดชนะ · จากกลุ่ม X · หมดอายุ · มีผลทันที · หมดเวลาแล้วสิทธิ์หายเอง · **Groups** ค่าเริ่มต้น · กลุ่มค่าเริ่มต้น — แก้ได้ ลบไม่ได้ · นโยบายที่แนบ · สิทธิ์รวมของกลุ่ม · ลบกลุ่ม แคชเชียร์? · **Policies** ไม่มีการห้าม (deny) — สิทธิ์มากที่สุดชนะ · บันทึกนโยบายแล้ว — มีผลทันที · บันทึกไม่ได้ — ต้องมีอย่างน้อย 1 คนที่จัดการพนักงานได้ · นโยบายนี้ใช้อยู่กับ 2 กลุ่ม · 3 คน.
 Permission labels: ดูโต๊ะ · ตั้งค่าโต๊ะและ QR · ดูการเปิดโต๊ะ · เปิดโต๊ะ · ปิดบิล · ดูออเดอร์ · สั่งออเดอร์ · เปลี่ยนสถานะออเดอร์ · ยกเลิก / Comp · ดูการชำระ · รับชำระ · ยืนยันรับเงินเอง · ดูเมนู · แก้เมนู · เปิด / ปิด พร้อมขาย · ดูรายงาน · จัดการพนักงานและสิทธิ์.
-Sample: ก้อง (เจ้าของ) · บีม (ผู้จัดการ, logged in) · ต้น · เจ (บาร์เทนเดอร์ + ผู้จัดการ ถึง 06:00) · มิ้นท์ · ปลา (ปิดใช้งาน) · requests Fon.P / Nat_bkk · seats C1–C8, T1–T6 (CD-02). Default policies ทั้งหมด · จัดการร้าน · งานบาร์ · งานเสิร์ฟ; custom รับชำระเงิน / group แคชเชียร์.
+Sample: ก้อง (เจ้าของ) · บีม (ผู้จัดการ, logged in) · ต้น · เจ (พนักงาน + ผู้จัดการ ถึง 06:00) · มิ้นท์ · ปลา (ปิดใช้งาน) · requests Fon.P / Nat_bkk · seats C1–C8, T1–T6 (CD-02). Default groups เจ้าของ · ผู้จัดการ · พนักงาน (DR-014 #11); default policies ทั้งหมด · จัดการร้าน · งานพนักงาน; custom รับชำระเงิน / group แคชเชียร์. Venue: cut-off 06:00 · PromptPay เบอร์มือถือ 081-xxx-4821 · ชื่อ เดอะ ลอฟท์ บาร์.
 
 ## 7. Layout & tokens
 - Shell = CD-12 (rail 88 + top bar 56 ≥ 1024; top bar + nav Drawer < 768). Rail "ตั้งค่า".
@@ -133,6 +139,9 @@ Sample: ก้อง (เจ้าของ) · บีม (ผู้จัดก
 - **Lock-out guards (D4):** at least one active member must keep the เจ้าของ group · at least one active person must keep `staff:manage` · nobody can deactivate themselves or remove their own `staff:manage` · default groups editable, not deletable · deleting a custom group / policy in use lists who loses what. Server enforces with `409 IAM_LOCKOUT`; UI disables save and shows the reason.
 - **Deactivate (D3):** never delete staff or seats with history. Staff deactivate revokes all refresh tokens (POS + 30-day mobile, DR-005 A2) → signed out everywhere. Seat deactivate: blocked while a visit is open (`409 SEAT_IN_USE`); inactive seat disappears from the POS grid and its QR shows "QR ไม่ถูกต้อง" (CD-06).
 - **QR (D2):** print = same token, client-side; regenerate = confirm, old token invalid at once (CD-02).
+- **Seeded groups (DR-014 #11):** เจ้าของ · ผู้จัดการ · พนักงาน, not deletable; the policy matrix is under "ขั้นสูง" (most venues never open it).
+- **POS PIN (DR-014 #8):** 4 digits, linked to the person's LINE identity; every POS action is attributed to whoever switched in. Managers reset (old PIN invalid at once); nobody sees a PIN (Q3).
+- **Venue settings (DR-014 #1/#4/#5/#6):** business-day cut-off (default 06:00; used by order number, reports, "ถึงสิ้นกะคืนนี้") · kitchen screen (off = one ticket per order, no พร้อมเสิร์ฟ — DR-013) · counter QR (off = staff open counter seats) · payment mode: venue PromptPay (ID + type + display name; slip checks against it) or Gateway (GB Prime Pay). Changes apply to bills / QR created afterwards.
 - **Every IAM change applies immediately** (Redis ACL invalidation, FRD §2).
 - **Standard questions:** Filters → none (small lists). Search → n/a in S1 (≤ 20 staff). Long and short → names truncate, labels max 20. Interaction → DS pressed / pending; no hover reliance. Accessibility → checkbox labels name the seat / permission; dialogs `role=dialog/alertdialog`; time-bound chips include the time in text, not colour only. Data → missing LINE picture → initials.
 - **User-mindset checks:** ✓ one dominant action per page · ✓ targets ≥ 44 · ✓ ack < 1 s · ✓ every loss confirmed (regenerate, reject, deactivate, delete group) · ✓ errors say how to fix · ✓ task cost stated (approve 3, temp manager 4) · ✓ status has text · ☐ walkthrough with an owner.
@@ -142,6 +151,8 @@ Sample: ก้อง (เจ้าของ) · บีม (ผู้จัดก
 |---|---|---|---|
 | 0 | 2026-10-09 | Brief Q1 access requests, Q2 full policy editor in S1, D1–D4 | Field |
 | 1 | 2026-10-11 | Toast failure tone fixed (DS has `error`, not `danger`) · First canvas built to `cd-template.md` v2: overview, J1 (1280) / J2 (390), settings, tables ×2 + print, staff ×2, staff-detail, groups, policies, flow; R1–R8 raised | Cowork — review pending |
+| 2 | 2026-10-17 | R9 DR-014 drawn: 3 seeded groups, policies under ขั้นสูง, POS PIN section + reset (staff-detail·6), new `venue` board (4 states), flow lane, overview · stickies R1–R8 green · Q1–Q3 raised | DR-014 / Field 12 + 17 Oct · Cowork drew |
+| 3 | 2026-10-17 | Field decisions Q1–Q3 recorded: kitchen switch copy (READY from app / POS when on without KDS) · venue = owner only + audit + AI alert (lock line, board caption) · PIN hint (self-set, reset clears, manager PIN = void approval) · stickies Q1–Q3 green | Decided 2026-10-17 (Field) · Cowork drew |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 1. Lucide UMD `/_blob/9a3515b513ca33d99eba87f535e4db24`; QR placeholder `/_blob/f422f3d7cdccf5e05a16f2e793ee86b1` (copied from CD-07).

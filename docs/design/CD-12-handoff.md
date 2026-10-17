@@ -1,18 +1,18 @@
 ---
 id: CD-12
 title: Back office — responsive shell + menu management (items, photos, variants, modifiers, categories, 86'd)
-revision: 1
+revision: 2
 status: review
 approved_by:
 approved_on:
 canvas: https://claude.ai/artifact/DXNTpCExFkMNmJodR9CpZJ
-canvas_version: 1791711808-d035
+canvas_version: 1792214317-d186
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-12/   # taken after approval (§11)
 surfaces: [web-backoffice, web-pos-shell]
 sizes: [1280x800, 1024x768, 390x844]
 brief: CD-12-backoffice-menu.md
-drs: [DR-009, DR-010, DR-012]
+drs: [DR-009, DR-010, DR-012, DR-013, DR-014]
 depends_on: [CD-01, CD-04, CD-06]
 supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
 ---
@@ -34,7 +34,7 @@ Brief D1–D4 apply (§10). Rev-1 items:
 | R6 ✓ | **States beyond the brief:** Switch failure (list·6) · 409 someone saved first (editor·9) · type สูตร saves like ทั่วไป + S2 note (editor·6) · ค่าบริการ hides ส่งไปที่ (editor·5) · 1024 with no `menu:write` but `menu:toggle_availability` (shell·2) · delete group in use disabled (modifiers·2). | Accept. **Accepted 2026-10-17** (Field). |
 | R7 ✓ | **Needs API (menu-management brief):** 1) PATCH carries `updatedAt` → `409 MENU_ITEM_STALE` · 2) photo presign `POST /menu/items/image-upload-url` → `{ url, key }`, type + 5 MB checked server-side · 3) `409 CATEGORY_NOT_EMPTY`, `409 MODIFIER_GROUP_IN_USE` · 4) `max_select ≤ option count`, `is_required ⇒ min_select ≥ 1` · 5) `menu.availability_changed` event on mark-(un)available. | Add to the brief. **Accepted 2026-10-17** (Field). |
 | R8 ✓ | **DS gaps:** no TextArea, NumberField (QuantityStepper used), Drawer / Modal frame, Breadcrumbs, ProgressBar, upload drop zone — drawn from tokens. | Add to DS, or use HeroUI directly. **Decided 2026-10-17** (Field): use HeroUI v3 components directly, styled with DS tokens; wrap into the DS only if a pattern repeats. |
-| R9 | **DR-014 impact:** station field stays (used only when the kitchen screen is on, DR-013) · S1 promo creation (#10). | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
+| R9 ✓ | **DR-014 impact:** station field stays (used only when the kitchen screen is on, DR-013) · S1 promo creation (#10). | Field approved DR-014 2026-10-12. **Drawn rev 2:** station hint "แยกใบ บาร์ / ครัว เมื่อร้านเปิดจอครัว · จอครัวปิด = ออเดอร์เป็นใบเดียว (DR-013)" (field stays required) · editor Switch "เมนูโปร" (S1 create/remove promo, price as-is, window = S2); editor·10 relabelled; overview badges updated. |
 
 ## 1. Overview
 - **Goal:** the manager adds and edits menu items (photo, price options, station, modifiers, category) and marks items sold out in one tap, from a computer, tablet or phone; every surface updates at once.
@@ -55,7 +55,7 @@ Brief D1–D4 apply (§10). Rev-1 items:
 | `list · 1280` | STATES | 1 loaded · 2 loading · 3 empty · 4 error · 5 off + Toast · 6 toggle failed |
 | `list · 390` | STATES | 1 loaded · 2 loading · 3 empty · 4 error · 5 no result · 6 off · 7 on · 8 no `menu:write` |
 | `editor · 1280` | STATES | 1 edit (โอลด์แฟชั่น, 2 options) · 2 new · 3 validation · 4 upload error · 5 charge · 6 recipe |
-| `editor · 1280 (ต่อ)` | STATES | 7 saving · 8 leave dialog · 9 conflict 409 · 10 promo item |
+| `editor · 1280 (ต่อ)` | STATES | 7 saving · 8 leave dialog · 9 conflict 409 · 10 promo item (Switch "เมนูโปร", S1 — DR-014 #10) |
 | `editor · 390` | STATES | 1 edit (full length) · 2 new (full length) · 3 validation (full length) · 4 uploading · 5 leave dialog |
 | `modifiers` | STATES | 1 group list · 2 group editor Drawer 480 · 3 validation · 4–6 same at 390 (full page) |
 | `categories` | STATES | 1 default · 2 hidden category · 3 delete blocked · 4 adding · 5–6 at 390 (page) |
@@ -141,6 +141,7 @@ Sample menu = CD-04 (ช้างดราฟต์ ฿120 … ค่าเป�
 |---|---|---|---|
 | 0 | 2026-10-09 | Brief D1–D4 | Field |
 | 1 | 2026-10-11 | Toast failure tone fixed (DS has `error`, not `danger`) · First canvas built to `cd-template.md` v2: overview, J1 (1280) / J2 (390), shell, list ×2, editor ×3, modifiers, categories, flow; R1–R8 raised | Cowork — review pending |
+| 2 | 2026-10-17 | R9 DR-014 drawn (station hint per DR-013, "เมนูโปร" Switch, editor·10 label, overview) · stickies R1–R8 green | DR-014 / Field 12 + 17 Oct · Cowork drew |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 1. Lucide UMD `/_blob/88329802c31715a0490e055643ce3ede`; photo placeholders copied from CD-06.
