@@ -5,11 +5,11 @@
 | **Implementer** | kj |
 | **Date** | 2026-10-17 |
 | **Brief revision** | 2 |
-| **Branch** | `feat/BRIEF-019-class-helpers` (PR opens after audit PASS) |
-| **Commit** | `a0f48cdc5e58772e58c164761597cf4b2bfe0d6d` |
-| **Status** | Implemented — awaiting audit |
+| **Branch / PR** | `feat/BRIEF-019-class-helpers` · PR opens after this PASS commit |
+| **Commit** | `a0f48cdc5e58772e58c164761597cf4b2bfe0d6d` (audited work). Implemented handoff was `755498f`. |
+| **Status** | Audit PASS — merged PR determines Done |
 
-> Gate evidence below was run on the work tree that became `a0f48cd`, before this docs commit. Node v24.14.0, pnpm 10.0.0.
+> Gate evidence below was run on the work tree that became `a0f48cd`. This handoff is the later PASS docs commit. Node v24.14.0, pnpm 10.0.0.
 
 ## Summary
 Backend class files no longer mix a class with module-level functions. Helpers are plain `private` methods called with `this.` (Rev 2). Shared copies live once. `lint` runs `scripts/check-class-files.mjs`, which fails if the pattern returns. Behaviour, routes, and the OpenAPI document are unchanged.
@@ -50,8 +50,8 @@ Backend class files no longer mix a class with module-level functions. Helpers a
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-019`
-- Work SHA: `a0f48cdc5e58772e58c164761597cf4b2bfe0d6d` · self-check: brief §2 A–D against the class files, `request-hash.ts`, the four shared homes, and `docs/api/openapi.json` (no diff)
+- Audit: PASS on `a0f48cdc5e58772e58c164761597cf4b2bfe0d6d`. Must fix: 0. Suggestions 1–4 are follow-ups, not this PR.
+- Next: open the PR from this PASS commit. Merge when `ci` is green on that head. Field's own PR is pre-approved.
 
 ## Notes for Reviewer
 - Rev 2: every moved helper is `private` and called with `this.`, including helpers that do not read `this`. There is no `private static` in `src/`.
