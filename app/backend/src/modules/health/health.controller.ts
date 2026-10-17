@@ -8,13 +8,12 @@ import {
 import { z } from 'zod';
 import { ApiEnvelopedOk } from '../../common/openapi/api-enveloped.js';
 import { HealthService } from './health.service.js';
+import type { HealthStatus } from './health.types.js';
 
 const HealthDataSchema = z.object({
   status: z.literal('ok'),
   db: z.literal('up'),
 });
-
-type HealthStatus = { status: 'ok'; db: 'up' };
 
 @ApiTags('health')
 @Public()

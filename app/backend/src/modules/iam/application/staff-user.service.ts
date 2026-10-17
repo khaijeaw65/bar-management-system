@@ -3,8 +3,8 @@ import type { IdentityProvider } from '@bar/contracts';
 import {
   STAFF_USER_REPOSITORY,
   type StaffUserRepository,
-  type StaffUserView,
 } from '../domain/staff-user.repository.js';
+import type { StaffUserView } from '../domain/staff-user.types.js';
 
 @Injectable()
 export class StaffUserService {

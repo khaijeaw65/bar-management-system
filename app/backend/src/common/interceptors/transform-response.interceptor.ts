@@ -5,6 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
+import type { HttpResponseState } from './transform-response.types.js';
 
 @Injectable()
 export class TransformResponseInterceptor implements NestInterceptor {
@@ -27,11 +28,6 @@ function envelope(context: ExecutionContext, data: unknown): unknown {
     data,
   };
 }
-
-type HttpResponseState = {
-  statusCode: number;
-  headersSent?: boolean;
-};
 
 function httpResponse(context: ExecutionContext): HttpResponseState {
   return context.switchToHttp().getResponse<HttpResponseState>();

@@ -3,27 +3,12 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtConfigService } from '../../../providers/config/jwt/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
-
-interface RefreshRecord {
-  userId: string;
-  familyId: string;
-}
-
-export type IssuedSession = {
-  accessToken: string;
-  refreshToken: string;
-  familyId: string;
-};
-
-export type RotateResult =
-  | { status: 'ok'; accessToken: string; refreshToken: string }
-  | { status: 'invalid' }
-  | { status: 'reused' };
-
-type RotationOutcome =
-  | { kind: 'ok'; userId: string; familyId: string }
-  | { kind: 'reused' }
-  | { kind: 'invalid' };
+import type {
+  IssuedSession,
+  RefreshRecord,
+  RotateResult,
+  RotationOutcome,
+} from './token.types.js';
 
 @Injectable()
 export class TokenService {

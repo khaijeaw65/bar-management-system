@@ -18,11 +18,13 @@ import { configureApp } from '../src/bootstrap/configure-app.js';
 import {
   LINE_CLIENT,
   buildLineAuthorizeUrl,
-  type LineAuthorizeInput,
   type LineClient,
-  type LineProfile,
-  type LineTokenExchange,
 } from '../src/modules/auth/domain/line-client.js';
+import type {
+  LineAuthorizeInput,
+  LineProfile,
+  LineTokenExchange,
+} from '../src/modules/auth/domain/line-client.types.js';
 import { JwtConfigService } from '../src/providers/config/jwt/config.service.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 

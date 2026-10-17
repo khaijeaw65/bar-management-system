@@ -1,16 +1,9 @@
 import type { CookieOptions, Response } from 'express';
+import type { SessionCookies } from './dto/auth.dto.js';
 
 const BASE_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   sameSite: 'lax',
-};
-
-type SessionCookies = {
-  nodeEnv: string;
-  accessTtlSeconds: number;
-  refreshTtlSeconds: number;
-  accessToken: string;
-  refreshToken: string;
 };
 
 export function accessCookieOptions(

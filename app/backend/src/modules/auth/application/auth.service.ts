@@ -10,33 +10,16 @@ import { AccessRequestService } from '../../iam/application/access-request.servi
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { AppConfigService } from '../../../providers/config/app/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
-import {
-  LINE_CLIENT,
-  type LineClient,
-  type LineProfile,
-} from '../domain/line-client.js';
+import { LINE_CLIENT, type LineClient } from '../domain/line-client.js';
+import type { LineProfile } from '../domain/line-client.types.js';
+import type {
+  LineLoginCallbackInput,
+  LoginResult,
+  RefreshResult,
+} from './auth.types.js';
 import { TokenService } from './token.service.js';
 
 const OAUTH_TTL_SECONDS = 600;
-
-export type LoginResult =
-  | {
-      kind: 'session';
-      location: string;
-      accessToken: string;
-      refreshToken: string;
-    }
-  | { kind: 'redirect'; location: string };
-
-export type RefreshResult =
-  | { kind: 'ok'; accessToken: string; refreshToken: string }
-  | { kind: 'unauthorized' };
-
-export type LineLoginCallbackInput = {
-  code?: string;
-  state?: string;
-  error?: string;
-};
 
 @Injectable()
 export class AuthService {

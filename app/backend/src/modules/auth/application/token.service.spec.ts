@@ -5,7 +5,8 @@ import { Test } from '@nestjs/testing';
 import { Redis } from 'ioredis';
 import { JwtConfigService } from '../../../providers/config/jwt/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
-import { TokenService, type RotateResult } from './token.service.js';
+import { TokenService } from './token.service.js';
+import type { RotateResult } from './token.types.js';
 
 const SECRET = 'x'.repeat(32);
 const REDIS_URL = process.env.REDIS_URL ?? 'redis://127.0.0.1:6379';
