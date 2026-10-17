@@ -1,19 +1,19 @@
 # State — KJ
-Updated: 2026-10-17 21:05 · Agent: Cursor
+Updated: 2026-10-17 21:00 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-016 Implemented on `feat/BRIEF-016-venue-menu-read`. Next: `ตรวจ BRIEF-016` (Cowork). No PR until PASS.
+BRIEF-016 audit PASS on `feat/BRIEF-016-venue-menu-read`. PR opens from this head. Merge when `ci` is green (Field's own PR, pre-approved).
 
 ## Active
-- Brief: BRIEF-016 venue + menu read · Stage: Implemented (Rev 2)
-- Branch: `feat/BRIEF-016-venue-menu-read` · Work SHA: `7be2120` · PR: none yet
-- Checks: G1 green — contracts 13, backend unit 48, e2e 38, lint / typecheck / build / openapi:check exit 0
+- Brief: BRIEF-016 venue + menu read · Stage: Audit PASS (Rev 2)
+- Branch: `feat/BRIEF-016-venue-menu-read` · Work SHA: `8c523b1` · PR: opens after this commit
+- Checks: G1 on `8c523b1` — contracts 13, backend unit 50, e2e 39, lint / typecheck / build / openapi:check exit 0
 - Next brief: BRIEF-012 Draft Rev 3 (local `feat/BRIEF-012-orders`) waits for Ready and this merge
 
 ## Next steps
-1. Cowork `ตรวจ BRIEF-016` on work SHA `7be2120`
-2. After PASS: one docs commit (audit + handoff + state), then open the PR
+1. Open the PR from this head
+2. Merge when CI is green on that head
 3. Field approves BRIEF-012 Rev 3 Ready → `ทำ BRIEF-012`
 
 ## Blockers / Coordination
