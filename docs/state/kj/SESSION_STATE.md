@@ -1,5 +1,5 @@
 # State — KJ
-Updated: 2026-10-12 01:50 · Agent: Cowork (decisions) — session end
+Updated: 2026-10-17 12:00 · Agent: Cowork (decisions + git workflow) — session end
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Parked decisions (Field 10 Oct — "park, finish CDs first")
@@ -8,7 +8,14 @@ Updated: 2026-10-12 01:50 · Agent: Cowork (decisions) — session end
 - DS StatusChip label `accepted` = "กำลังเตรียม" (Field to change in the DS; canvases pass `label` meanwhile).
 - CD-14: success state for a cart that splits into 2 tickets (DR-012).
 
-## Decided 11–12 Oct (read before anything else)
+## Decided 17 Oct (read first)
+- **Git workflow (workflow rev 15–17):** docs branches short-lived (PR same day, ≤ 3 days) · **Cowork / Codex never run Git** — they end with a *ship line*; the **git hand** (Claude Code; Cursor once `gh` works in its sandbox) commits exactly those files, pushes, opens/updates the PR · executors in their own worktree · Field only reviews/merges PRs, runs no git commands.
+- **GitHub:** classic protection removed → rulesets `main-review` (admin bypass, PR only) + `main-ci` (`ci` required, no bypass). Found: old protection had an empty checks list → `ci` was never enforced. 7 merged branches deleted.
+- DR-014 follow-ups done: CLAUDE.md / AGENTS.md → AI owner insight · 37 tables / 10 domains · `bottle_keep.customer_id` optional + `guest_label` + CHECK (validated PG16).
+- **All open CD review items decided** (handoffs marked ✓): 25 accepted as proposed + CD-06 R2 sheet-per-tap · CD-08 R16 "T3 · ต้น · บาร์" · CD-15 R6 warning strip · CD-05 R4 2× / 4 wk · CD-05 R2 chart tokens → DS · CD-12/13 R8 HeroUI direct + tokens · CD-13 R4 reopen link · CD-11 R2 captions · **DR-009 Amendment 1** · **DR-015 Recharts** (approved).
+- Still open: CD-03 R3 (Field screen review) · customer session (CD-06 R3–R5, CD-07 R4) parked to after 8 Nov · CD-15 R4 DS StatusChip (Field edits DS) · DR-014 impact rows = canvas redraw only.
+
+## Decided 11–12 Oct
 - **DR-013 approved (B):** order → tickets → items. `order_record` = order "#001" (`order_number`, `business_date`); new `order_ticket` owns status/station/issue/`sent_at`; `order_item.ticket_id` + cancellation fields; 35 tables (schema/ERD/CLAUDE.md done, `fbabebe`).
 - **DR-014 approved (ops simplification):** READY only with kitchen screen · no idle auto-close · 86 auto-cancels waiting items · business-day cut-off venue setting (06:00) · counter QR optional/off · **payment modes: gateway webhook OR own PromptPay + app amount-locked QR + scan slip → EasySlip verify (manual fallback)** · shift close S1 after gate · POS PIN switch · bottle keep = simple record · promos: no crossed-out price · **AI = owner insight suite (sales / anomaly-fraud / menu), guest summary dropped** · 3 seeded groups.
 - **agent-boundaries:** any protected file editable by an agent only with Field's explicit OK on the exact change.
@@ -17,18 +24,20 @@ Updated: 2026-10-12 01:50 · Agent: Cowork (decisions) — session end
 - FRD updated to DR-012/013/014 (§2, §3, §5, §6, §7, §8, §9, §10, §11, §12, §13).
 
 ## Next session (in order)
-1. ~~DR-014 schema~~ **done 12 Oct** (37 tables, 10 domains; validated PG16; ERD synced). **Still needs Field OK:** CLAUDE.md "Key differentiators" line (AI guest intelligence → AI owner insight) + table count 35 → 37 in CLAUDE.md and agent-boundaries · bottle_keep: make `customer_id` optional + `guest_label`? (Cowork recommends yes).
-2. **Advisor heads-up:** AI feature moved to owner insight.
-3. Remaining review batches: CD-08 + CD-15 (R8–R11, R5/R6), CD-05/06/07/11/12/13 (incl. CD-13 R4, CD-05 R4 threshold, CD-15 R6 strip), then canvas revisions for DR-013/014.
-4. Before BRIEF-013: confirm EasySlip response includes the receiver account.
-5. Write BRIEF-012 (orders, DR-012/013/014) — build restarts 12 Oct.
+1. **Start BRIEF-009 with an executor now** — Week 1 build slipped; checkpoint 25 Oct, gate 8 Nov.
+2. Field: review + merge the `docs/cd-review-decisions` PR (this session's decisions).
+3. Advisor heads-up: AI feature → owner insight (DR-014).
+4. Field: add `--chart-1` / `--chart-2` to the DS (CD-05 R2); review CD-03 screens (R3) before BRIEF-013.
+5. Before BRIEF-013: confirm EasySlip response includes the receiver account.
+6. Write BRIEF-012 (orders, DR-012/013/014 + API notes from CD-08 R10, CD-15 R5, CD-02 R5, CD-04 R8).
+7. Canvas redraw pass for DR-013/014 impact rows (CD-02/03/05/06/07/08/12/13/15) — after the gate unless needed for briefs.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
 **Next action:** retrofit batch done 10 Oct (CD-08 rev 3, CD-02 / CD-01 / CD-04 / CD-03 rev 2 — all in review, see table). CD-14 source snapshot taken (`docs/design/source/CD-14/`, handoff §11). Snapshots for the others after Field approves each. Then new CDs to the template: CD-06 (rev 1 in review) → CD-07 (rev 1 in review) → CD-15 (rev 1 canvas done 11 Oct, in review) → CD-12 (rev 1 done 11 Oct, in review) → CD-13 (rev 1 done 11 Oct, in review) → CD-05 (rev 1 done 11 Oct, in review) → CD-11 (rev 1 done 11 Oct, in review) — all Ready CDs now have a rev-1 canvas + handoff. CD-09 = S2. Parked decisions stay parked.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
-Session start: ask Field once for delete permission on the project folder (git locks), `git status`, branch **`docs/ui-retrofit`** (from main @ ed1ef8a, after PR #30).
+Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. PR #32 (`docs/ui-retrofit`) merged 17 Oct; current docs branch **`docs/cd-review-decisions`**.
 
 ## Retrofit checklist (per canvas, from cd-template.md)
 1. `read` the canvas `project/canvas.json` + boards (Field may have edited — keep his edits). Re-upload Lucide only if adding boards that need it (blob ids are per canvas; existing boards already reference their own blob).
@@ -110,7 +119,7 @@ Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core
 - **Next impl briefs (not written):** BRIEF-012 orders (see DR-012 inputs below) · BRIEF-013 payment + GB Prime Pay webhook + 409 in-flight (include CD-03 F1 columns `confirmed_via`, `status_reason`, `status_note`; F2 split locks whole bill) · IAM brief (full policy editor) · web screen briefs after CDs · Metee Week 1.
 - **DR-013 Pending (parked 10 Oct): order → ticket model, setting-based split, order number, issue/served/cancel columns — decide before writing BRIEF-012; overrides parts of the DR-012 inputs below.**
 - **BRIEF-012 inputs from DR-012 (approved 10 Oct, before the gate):** status per order ticket, no per-item progress (`order_item.status` uses only `pending` / `cancelled`) · placement split by `menu_item.kitchen_tag` (`bar` | `food`, `both` dropped) → one `order_record` per station + shared `placement_id` · charge items → own ticket created `sent` · always split, no venue setting · `order_status += cancelled`, auto-set when every item on a ticket is cancelled · counter seats `accepted → sent` (DR-011) · label `accepted` = "กำลังเตรียม" · customer view = ticket steps + cancelled items struck · `POST /visits/:visitId/orders` returns all tickets of the placement (one Idempotency-Key per placement) · fix contracts drift: `app/packages/contracts/src/enums.ts` OrderStatus is CONFIRMED/PREPARING/SERVED, schema is pending/accepted/ready/sent/issue(+cancelled) · schema.sql + erd.html DR-012 diff approved by Field 10 Oct (option A, no number column) · **open: order display number** — `order_record` has no `number` column but cards show "#0041" (BRIEF-010 `number`); Cowork recommends one number per placement shared by its tickets ("#0041 · บาร์ / ครัว") → decide in BRIEF-012 (schema change).
-- Engineering: BRIEF-002 on `feat/BRIEF-002-expo-scaffold` (0a95185) — no PR, needs audit; blocks BRIEF-010. Done briefs: 001, 003–006, 008, 014.
+- Engineering: BRIEF-002 merged (PR #25, 12 Oct) — BRIEF-010 unblocked. Done briefs: 001, 003–006, 008, 014.
 
 - **POC passed (10 Oct):** approved canvas → byte-copied source snapshot → Cursor implemented `/poc/menu` with no screenshots (BRIEF-900, PR #28 closed unmerged, kept as worked example in `docs/design/poc-source-handoff/`). Findings → cd-template v2 + **BRIEF-014 (merged PR #29)** (DS type/radius/tracking/motion as Tailwind utilities + lint gate against arbitrary px). Vault: `02 Learning/Design to Implement Pipeline.md`.
 

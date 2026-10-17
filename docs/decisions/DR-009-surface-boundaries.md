@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Approved |
+| **Status** | Approved · Amendment 1 (DR-012/014 alignment) approved 2026-10-17 |
 | **Raised by** | Field via Cowork · 2026-10-04 |
 | **Brief** | Re-plan 2026-10-04 · follows DR-008 (ownership split) |
 | **Category** | Flow/Architecture |
@@ -44,22 +44,29 @@ Rules: no web `/staff` (staff app is the only staff surface) · POS is not made 
 |---|---|---|---|---|
 | New order | push + queue | toast + badge | — | status |
 | Call staff | push | sticky toast | — | — |
-| Order ready | push (waiter) | item chip | — | status |
+| Order ready | push (waiter) | ticket chip พร้อมเสิร์ฟ (A1) | — | status |
 | Payment confirmed | — | toast | feed | success |
-| Idle table | push | card + alert | — | — |
+| Idle table | push "T4 ไม่มีความเคลื่อนไหว 25 นาที" (A1) | card + alert — warning only, no auto-close (DR-014) | — | — |
 | Restock / low stock | — | toast | feed | — |
 
 ## Gate demo (8 Nov)
-POS: open table → order for customer → payment (PromptPay sandbox / cash) → close. Bonus if ready: staff app shows the order arriving live and marks it ready → POS item chip updates. **The core slice never depends on the staff app.**
+POS: open table → order for customer → payment (PromptPay sandbox / cash) → close. Bonus if ready: staff app shows the order arriving live and marks it ready → POS ticket chip updates (A1). **The core slice never depends on the staff app.**
 
 ## Refinement
 This is the high-level boundary. Details found while writing briefs are added as a brief **Pre-decided** item (within these boundaries) or as an amendment to this DR (if they move a feature between surfaces or phases).
 
 **Follow-ups:** FRD §1/§2/§13/§14 updated in this PR · CLAUDE.md "Shape" (drop web `/staff`, mobile exists, Metee = mobile) — Field edits (protected) · `docs/briefs/ui/staff-mobile.md` stale (PWA, old tokens) — reference only.
 
+## Amendment 1 — align with DR-012 / DR-014 · 2026-10-17
+1. **Order ready → POS:** no per-item chip (DR-012: status lives on the station ticket). The POS shows the **ticket chip "พร้อมเสิร์ฟ"**. READY exists only when the kitchen screen is on (DR-014 #1).
+2. **เมนูหมด** is not a notification event. Sold-out items turn grey on every surface via `menu.availability_changed` (CD-12 R7); no push, no toast to guests.
+3. **Idle table:** staff-app push copy "T4 ไม่มีความเคลื่อนไหว 25 นาที"; POS card + alert. Warning only — no auto-close (DR-014 #2).
+Source: CD-11 R3.
+
 ---
 
 ## Decision — Field only
 **Decision:** Approved: surface boundaries as above; gate = POS full slice + staff app login + order queue.
 **Why:** Context-based surfaces with permission-based access fit small bars where one person holds several roles, keep the gate independent of the staff app, and remove the duplicate web staff surface.
+**Amendment 1:** Approved 2026-10-17 (all three items) · recorded by Cowork on Field's explicit instruction.
 **Date:** 2026-10-04 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR
