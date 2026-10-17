@@ -6,7 +6,7 @@
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
-| **PR** | <executor fills> |
+| **PR** | https://github.com/khaijeaw65/bar-management-system/pull/34 |
 | **Affected apps** | contracts / backend / tooling |
 | **Revision** | 1 |
 | **Depends on** | BRIEF-004 (Done — backend scaffold, envelope). Runs **in parallel with BRIEF-008** (Metee, frontend only) — no shared files except `pnpm-lock.yaml` (lockfile rule from BRIEF-005 §6) |

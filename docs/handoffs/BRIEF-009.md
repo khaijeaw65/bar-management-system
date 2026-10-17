@@ -5,7 +5,7 @@
 | **Implementer** | kj |
 | **Date** | 2026-10-17 |
 | **Brief revision** | 1 |
-| **Branch / PR** | `feat/BRIEF-009-contracts-openapi-foundation` · PR link filled after open |
+| **Branch / PR** | `feat/BRIEF-009-contracts-openapi-foundation` · https://github.com/khaijeaw65/bar-management-system/pull/34 |
 | **Commit** | `39c042f655dd9ee69ba01ae2832de07b7ccbbf93` |
 | **Status** | Implemented — awaiting audit |
 
@@ -67,7 +67,7 @@ Run on the work tree of `39c042f`, before this handoff commit. Node v24.14.0, pn
 ## Review Routing
 - Assigned auditor: Cowork
 - Next command: `audit BRIEF-009`
-- PR: filled after open · Work SHA: `39c042f655dd9ee69ba01ae2832de07b7ccbbf93` · self-check: SQL `CREATE TYPE` list ↔ `schemaEnumBySqlName`; D1 envelope keys ↔ interceptor, filter, `ApiErrorSchema`; D4 menu fields ↔ `MenuItemSummarySchema`; generated `docs/api/openapi.json` ↔ `/api/health` e2e.
+- PR: https://github.com/khaijeaw65/bar-management-system/pull/34 · Work SHA: `39c042f655dd9ee69ba01ae2832de07b7ccbbf93` · self-check: SQL `CREATE TYPE` list ↔ `schemaEnumBySqlName`; D1 envelope keys ↔ interceptor, filter, `ApiErrorSchema`; D4 menu fields ↔ `MenuItemSummarySchema`; generated `docs/api/openapi.json` ↔ `/api/health` e2e.
 
 ## Notes for Reviewer
 - Export choice: a Nest testing module with `HealthController` and a stub `HealthService`, not `AppModule`. TypeORM never starts. Comment is on `documentedControllers` in `document.ts`.

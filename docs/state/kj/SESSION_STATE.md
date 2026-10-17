@@ -3,7 +3,7 @@ Updated: 2026-10-17 12:20 · Agent: Cursor
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
 ## Resume
-Wait for CI on the BRIEF-009 PR, then `audit BRIEF-009`.
+Wait for CI on https://github.com/khaijeaw65/bar-management-system/pull/34, then `audit BRIEF-009`.
 
 ## Active
 - Brief: BRIEF-009 — Contracts foundation + OpenAPI · Revision: 1
@@ -11,7 +11,7 @@ Wait for CI on the BRIEF-009 PR, then `audit BRIEF-009`.
 - Stage: Implemented
 - Branch: feat/BRIEF-009-contracts-openapi-foundation
 - Work commit: 39c042f655dd9ee69ba01ae2832de07b7ccbbf93
-- PR: opening
+- PR: https://github.com/khaijeaw65/bar-management-system/pull/34
 
 ## Working tree
 - Uncommitted: clean after this state commit
