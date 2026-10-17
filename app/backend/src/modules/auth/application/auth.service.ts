@@ -9,7 +9,6 @@ import { LINE_CLIENT, type LineClient } from '../domain/line-client.js';
 import { TokenService } from './token.service.js';
 
 const OAUTH_TTL_SECONDS = 600;
-const LOGIN_FAILED = '/login?error=login_failed';
 
 export type LoginResult =
   | {
@@ -56,10 +55,10 @@ export class AuthService {
   }): Promise<LoginResult> {
     if (input.error || !input.code || !input.state) {
       if (input.state) await this.consumeNonce(input.state);
-      return { kind: 'redirect', location: LOGIN_FAILED };
+      return this.loginFailed();
     }
     const nonce = await this.consumeNonce(input.state);
-    if (!nonce) return { kind: 'redirect', location: LOGIN_FAILED };
+    if (!nonce) return this.loginFailed();
 
     let profile: { sub: string; name: string | null; picture: string | null };
     try {
@@ -67,7 +66,7 @@ export class AuthService {
       profile = await this.line.verifyIdToken(exchanged.idToken, nonce);
     } catch {
       this.logger.warn('LINE login failed');
-      return { kind: 'redirect', location: LOGIN_FAILED };
+      return this.loginFailed();
     }
 
     const user = await this.staff.findByIdentity('line', profile.sub);
@@ -122,6 +121,13 @@ export class AuthService {
       id: user.id,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
+    };
+  }
+
+  private loginFailed(): LoginResult {
+    return {
+      kind: 'redirect',
+      location: `${this.frontendBase()}/login?error=login_failed`,
     };
   }
 

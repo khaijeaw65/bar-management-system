@@ -86,11 +86,20 @@ Installed versions match the brief: `ioredis@5.11.1` (npm `latest` is 6.0.0; the
 ## Deviations from Brief
 - none
 
+## Clarifications, Field 2026-10-17
+- **F2** — `login_failed` redirects to `${FRONTEND_URL}/login?error=login_failed`, the same host as success and `not_registered`. The brief table wrote the path without `FRONTEND_URL`. Field approved that as a clarification, not a deviation. E2e asserts the full URL.
+
+## Audit fixes (Findings 1–2)
+Cowork audit on `d300674` / head `3ef5f85`: CHANGES REQUIRED (`docs/audits/BRIEF-007.md`).
+
+- **F1** — `TokenService.rotate()` takes the refresh record with `GETDEL`, so two concurrent refreshes of the same token cannot both mint a live token. The winner then publishes the new token, the family pointer, the session, and the used marker in one Redis script, and `revokeFamily` deletes the pointed-to token in one script, so a concurrent loser cannot leave a live token behind. `token.service.spec.ts` "lets one caller win, and logout with either token keeps the family dead" uses real Redis: `Promise.all([rotate(t), rotate(t)])` → exactly one `ok`. Logout with the winning token, and again with the original token, then neither token of that family rotates and `sessionExists` stays false.
+- **F2** — see Clarifications above. `auth.e2e-spec.ts` expects `http://localhost:3000/login?error=login_failed`.
+
 ## Known Gaps / Follow-ups
-- Any callback failure other than "not registered" redirects to `/login?error=login_failed` with no `FRONTEND_URL` prefix, which is the path written in the brief. Success and `not_registered` use `FRONTEND_URL`. A failed login therefore stays on the API host until a later brief says otherwise.
 - `POST /api/auth/refresh` does not require an access token. The brief's Auth column for that route is the refresh cookie.
 - E2e runs with `fileParallelism: false` so the health and auth files do not race `CREATE TYPE`.
 - The PIN column exists. There is no PIN endpoint.
+- Audit suggestions 3–6 (login state cookie, access-request upsert, absolute session lifetime, single-flight refresh) are out of this fix.
 
 ## AI Usage
 **High** — Cursor wrote the auth and IAM code, the migration, the tests, and this handoff.

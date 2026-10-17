@@ -39,8 +39,10 @@ export class TokenService {
 
   async rotate(rawRefresh: string): Promise<RotateResult> {
     const hash = sha256(rawRefresh);
+    // One winner. GET plus DEL lets two concurrent refreshes both read the
+    // record and mint two live tokens; logout then only revokes one of them.
     const current = readRecord<RefreshRecord>(
-      await this.redis.client.get(refreshKey(hash)),
+      await this.redis.client.getdel(refreshKey(hash)),
     );
     if (!current) {
       const used = readRecord<{ familyId: string }>(
@@ -50,16 +52,8 @@ export class TokenService {
       await this.revokeFamily(used.familyId);
       return { status: 'reused' };
     }
-    await this.redis.client.del(refreshKey(hash));
-    await this.redis.client.set(
-      usedKey(hash),
-      JSON.stringify({ familyId: current.familyId }),
-      'EX',
-      this.ttl(),
-    );
     const refreshToken = newRefreshToken();
-    await this.storeRefresh(refreshToken, current);
-    await this.storeSession(current.familyId, current.userId);
+    await this.publishRotation(hash, refreshToken, current);
     const accessToken = await this.signAccess(current.userId, current.familyId);
     return { status: 'ok', accessToken, refreshToken };
   }
@@ -83,6 +77,22 @@ export class TokenService {
   }
 
   async revokeFamily(familyId: string): Promise<void> {
+    if (typeof this.redis.client.eval === 'function') {
+      // Read the family pointer and delete that refresh token in one script.
+      // A separate GET can observe the pre-rotation pointer and then delete
+      // the new pointer, leaving the new refresh token alive.
+      await this.redis.client.eval(
+        `local hash = redis.call('GET', KEYS[1])
+         if hash then redis.call('DEL', ARGV[1] .. hash) end
+         redis.call('DEL', KEYS[1], KEYS[2])
+         return 1`,
+        2,
+        familyKey(familyId),
+        sessionKey(familyId),
+        'refresh:',
+      );
+      return;
+    }
     const currentHash = await this.redis.client.get(familyKey(familyId));
     if (currentHash) {
       await this.redis.client.del(refreshKey(currentHash));
@@ -93,6 +103,45 @@ export class TokenService {
   async sessionExists(familyId: string): Promise<boolean> {
     const value = await this.redis.client.get(sessionKey(familyId));
     return value !== null;
+  }
+
+  private async publishRotation(
+    oldHash: string,
+    refreshToken: string,
+    record: RefreshRecord,
+  ): Promise<void> {
+    const hash = sha256(refreshToken);
+    const ttl = String(this.ttl());
+    if (typeof this.redis.client.eval === 'function') {
+      // The used marker appears only together with the new token and session,
+      // so the loser of GETDEL cannot revoke a half-published family.
+      await this.redis.client.eval(
+        `redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[5])
+         redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[5])
+         redis.call('SET', KEYS[3], ARGV[3], 'EX', ARGV[5])
+         redis.call('SET', KEYS[4], ARGV[4], 'EX', ARGV[5])
+         return 1`,
+        4,
+        refreshKey(hash),
+        familyKey(record.familyId),
+        sessionKey(record.familyId),
+        usedKey(oldHash),
+        JSON.stringify(record),
+        hash,
+        JSON.stringify({ userId: record.userId }),
+        JSON.stringify({ familyId: record.familyId }),
+        ttl,
+      );
+      return;
+    }
+    await this.redis.client.set(
+      usedKey(oldHash),
+      JSON.stringify({ familyId: record.familyId }),
+      'EX',
+      this.ttl(),
+    );
+    await this.storeRefresh(refreshToken, record);
+    await this.storeSession(record.familyId, record.userId);
   }
 
   private async storeRefresh(rawRefresh: string, record: RefreshRecord): Promise<void> {

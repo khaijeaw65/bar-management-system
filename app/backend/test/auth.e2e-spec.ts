@@ -222,7 +222,7 @@ describe('Auth (e2e)', () => {
 
     const unknown = await callback('missing-state');
     expect(unknown.status).toBe(302);
-    expect(unknown.headers.location).toBe('/login?error=login_failed');
+    expect(unknown.headers.location).toBe(`${FRONTEND}/login?error=login_failed`);
     expect(cookieValue(setCookieHeaders(unknown), 'access_token')).toBeUndefined();
 
     line.profile = { sub: 'U-owner', name: 'Owner', picture: null };
@@ -230,7 +230,7 @@ describe('Auth (e2e)', () => {
     const { state } = await startLogin();
     await callback(state).expect(302);
     const replay = await callback(state, 'auth-code-replay');
-    expect(replay.headers.location).toBe('/login?error=login_failed');
+    expect(replay.headers.location).toBe(`${FRONTEND}/login?error=login_failed`);
 
     const text = messages.join('\n');
     expect(text).not.toContain('auth-code');
