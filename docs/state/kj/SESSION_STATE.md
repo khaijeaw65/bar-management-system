@@ -1,38 +1,38 @@
 # State — KJ
-Updated: 2026-10-17 13:30 · Agent: Cursor
+Updated: 2026-10-17 16:42 · Agent: Cursor
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 Planning notes (Cowork-owned): docs/state/kj/PLANNING.md
 
 ## Resume
-BRIEF-007 audit was CHANGES REQUIRED. Findings 1–2 are fixed on this branch. Next: compact re-audit of the head after `ci` is green.
+BRIEF-015 is Implemented on PR #41. Next: Cowork runs `audit BRIEF-015` once `ci` is green on the head.
 
 ## Active
-- Brief: BRIEF-007 — Backend auth · Revision: 3
-- Brief file: docs/briefs/BRIEF-007-backend-auth.md
-- Stage: Implemented — audit fixes for Findings 1–2
-- Branch: feat/BRIEF-007-backend-auth
-- Work commit: d300674b0033be5c9feab3f0119e11a912d27584 (original) · audit `b8a0a59` · fix is this branch head
-- PR: https://github.com/khaijeaw65/bar-management-system/pull/35
+- Brief: BRIEF-015 — Backend auth repair · Revision: 1
+- Brief file: docs/briefs/BRIEF-015-backend-auth-repair.md
+- Stage: Implemented — awaiting audit
+- Branch: feat/BRIEF-015-backend-auth-repair
+- Work commit: 4d9422aa6ef66260e9b9251acca66d6b061fa628
+- PR: https://github.com/khaijeaw65/bar-management-system/pull/41
 
 ## Working tree
-- Uncommitted: clean after the Finding 1–2 commit
-- Checks: unit + e2e re-run on the fix. CI must be green on this head.
+- Uncommitted: clean after this handoff/state commit
+- Checks: lint, typecheck, test (31), test:e2e (22), build, openapi diff all exit 0 on work commit `4d9422a`. CI not green yet.
 
 ## Progress
-- Completed: Findings 1–2 (atomic refresh rotation, `login_failed` on `FRONTEND_URL`)
-- Remaining: CI green, compact re-audit
+- Completed: AC-1–AC-8 locally; AC-9 local gates. C1–C7 carried from the BRIEF-007 audit.
+- Remaining: `ci` on the PR head, then Cowork audit
 
 ## Next steps
-1. Confirm `ci` on the Finding 1–2 head
-2. Compact re-audit of Findings 1–2
+1. Confirm `ci` on PR #41
+2. `audit BRIEF-015` (Cowork)
 3. Field reviews the audit and the PR
 
 ## Blockers / Coordination
 - none
-- Shared files: `pnpm-lock.yaml`, `.github/workflows/ci.yml` (Redis service and auth test env only), `docs/api/openapi.json`
-- Review queue: PR #35
+- Shared files: none in this diff (`pnpm-lock.yaml`, workflows, and `docs/api/openapi.json` unchanged)
+- Review queue: PR #41
 
 ## Queue
-1. BRIEF-007 audit
+1. BRIEF-015 audit
 2. BRIEF-011 tables and visits
 3. BRIEF-012 orders

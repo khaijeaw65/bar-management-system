@@ -6,7 +6,7 @@
 | **Implementer** | kj (executor: Cursor; Git via the git hand per workflow §4 until Cursor's `gh` is verified) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Field, 2026-10-17 — default, no fallback |
-| **PR** | <executor fills> |
+| **PR** | https://github.com/khaijeaw65/bar-management-system/pull/41 |
 | **Affected apps** | backend |
 | **Revision** | 1 |
 | **Depends on** | BRIEF-007 merged (PR #35, `7436119`) · `backend.md` Clean Code section merged (Field-approved 2026-10-17) |
