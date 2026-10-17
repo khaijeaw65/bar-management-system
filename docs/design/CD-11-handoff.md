@@ -32,12 +32,13 @@ Seven 1920×1080 boards for the 8 Nov gate demo and the advisor presentation, **
 | R2 ✓ | **Sample data doesn't line up across CDs:** walk-in customer is T3 while the staff queue shows T5 / #0039 · issue path ends on the T3 bill (เนโกรนี cancelled) instead of T2 ยำหมูยอ · admin: CD-12 marks ยำหมูยอ sold out, CD-06 shows ถั่วทอดสมุนไพร sold out · counter split / cash frames are the CD-03 T3 bill. Captions say "(ตัวอย่าง…)". | Field: accept captions, or add matching states to CD-06 / CD-03 / CD-08 later. **Accepted 2026-10-17** (Field): keep "(ตัวอย่าง…)" captions, no redraw. |
 | R3 ✓ | **DR-009 notification table needs an amendment:** "Order ready → POS item chip" conflicts with DR-012 (no per-item progress chips; the ticket chip shows พร้อมเสิร์ฟ) · the brief's row "เมนูหมด" isn't a DR-009 event — shown as a footnote (greyed everywhere via `menu.availability_changed`) · the staff-app push for an idle table has no copy in CD-08 yet — drawn as "T4 ไม่มีความเคลื่อนไหว 25 นาที" (proposal). | Amend DR-009 (Field decision). **Accepted 2026-10-17** (Field): DR-009 Amendment 1 (all 3 items). |
 | R4 ✓ | **Counter journey uses C3**, the free counter seat in the CD-02 sample, instead of the brief's C2 (C2 is occupied in the sample). | Accept. **Accepted 2026-10-17** (Field). |
+| R5 ✓ | **Demo runs with the kitchen screen off** (DR-014 #1, DR-009 Amendment 1 #4): `journey-walkin` drops the ready step — queue shows รับ → เสิร์ฟแล้ว, guest tab and POS chip skip พร้อมเสิร์ฟ. | **Decided 2026-10-17 (Field).** Redraw happens in the R1 re-copy just before export — canvas not touched now. |
 
 ## 1. Boards
 | Board | Story | Composed from |
 |---|---|---|
 | `overview` | 4 surfaces side by side + Semester 2 teaser | CD-06 menu · CD-08 queue · CD-02 POS grid · CD-12 list (desktop) + CD-05 overview (phone) |
-| `journey-walkin` | scan → order → queue buzzes → marked ready → customer sees พร้อมเสิร์ฟ → POS drawer | CD-06 welcome / cart / tab ready · CD-08 queue (new order, ready button) · CD-02 grid + panel |
+| `journey-walkin` | scan → order → queue buzzes → marked ready → customer sees พร้อมเสิร์ฟ → POS drawer · **to change at re-copy (R5): รับ → เสิร์ฟแล้ว, no ready step** | CD-06 welcome / cart / tab ready · CD-08 queue (new order, ready button) · CD-02 grid + panel |
 | `journey-pay` | **headline:** PromptPay QR → bank webhook card "ธนาคารยืนยัน — ปลอมสลิปไม่ได้" (visual centre) → customer done → POS toast → table closes; manual-confirm side path flagged for the owner | CD-07 qr pending / done · CD-03 done · CD-02 close-confirm · CD-03 manual-confirm + CD-05 reference |
 | `journey-counter` | open C3 → order at POS → split or cash → close | CD-02 open-table · CD-04 order (CD-15 copy with `table`) · CD-03 split / cash · CD-02 close-confirm |
 | `notifications` | DR-009 matrix: events × surfaces, real component cells (Toast, StatusChip, TableCard, push copy) | copy from CD-02 / 06 / 07 / 08 / 15; footnote for เมนูหมด |

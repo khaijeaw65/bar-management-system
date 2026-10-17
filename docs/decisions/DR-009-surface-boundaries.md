@@ -51,6 +51,7 @@ Rules: no web `/staff` (staff app is the only staff surface) · POS is not made 
 
 ## Gate demo (8 Nov)
 POS: open table → order for customer → payment (PromptPay sandbox / cash) → close. Bonus if ready: staff app shows the order arriving live and marks it ready → POS ticket chip updates (A1). **The core slice never depends on the staff app.**
+> Amended (Amendment 1 #4): the demo runs with the kitchen screen **off** — no ready step; staff app marks รับ → เสิร์ฟแล้ว.
 
 ## Refinement
 This is the high-level boundary. Details found while writing briefs are added as a brief **Pre-decided** item (within these boundaries) or as an amendment to this DR (if they move a feature between surfaces or phases).
@@ -61,12 +62,13 @@ This is the high-level boundary. Details found while writing briefs are added as
 1. **Order ready → POS:** no per-item chip (DR-012: status lives on the station ticket). The POS shows the **ticket chip "พร้อมเสิร์ฟ"**. READY exists only when the kitchen screen is on (DR-014 #1).
 2. **เมนูหมด** is not a notification event. Sold-out items turn grey on every surface via `menu.availability_changed` (CD-12 R7); no push, no toast to guests.
 3. **Idle table:** staff-app push copy "T4 ไม่มีความเคลื่อนไหว 25 นาที"; POS card + alert. Warning only — no auto-close (DR-014 #2).
-Source: CD-11 R3.
+4. **Gate demo = kitchen screen off** (DR-014 #1 default): the bonus path is "staff app shows the order arriving live → รับ → เสิร์ฟแล้ว → POS ticket chip updates". No ready step and no "พร้อมเสิร์ฟ" in the demo. Added 2026-10-17.
+Source: CD-11 R3 (items 1–3) · Field decision 17 Oct (item 4).
 
 ---
 
 ## Decision — Field only
 **Decision:** Approved: surface boundaries as above; gate = POS full slice + staff app login + order queue.
 **Why:** Context-based surfaces with permission-based access fit small bars where one person holds several roles, keep the gate independent of the staff app, and remove the duplicate web staff surface.
-**Amendment 1:** Approved 2026-10-17 (all three items) · recorded by Cowork on Field's explicit instruction.
+**Amendment 1:** Approved 2026-10-17 (items 1–3) · item 4 Decided 2026-10-17 (Field) · recorded by Cowork on Field's explicit instruction.
 **Date:** 2026-10-04 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR

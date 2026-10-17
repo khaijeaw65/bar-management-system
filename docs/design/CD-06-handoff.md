@@ -1,18 +1,18 @@
 ---
 id: CD-06
 title: Customer QR — scan → nickname → menu → item → cart → running tab, call staff
-revision: 1
+revision: 2
 status: review
 approved_by:
 approved_on:
 canvas: https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi
-canvas_version: 1791708052-d3a9
+canvas_version: 1792214141-3a19
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-06/   # taken after approval (§11)
 surfaces: [web-customer]
 sizes: [390x844, 360x780]
 brief: CD-06-customer-qr-order.md
-drs: [DR-009, DR-010, DR-012]
+drs: [DR-009, DR-010, DR-012, DR-014]
 depends_on: [CD-00, CD-04, CD-07, CD-12]
 supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
 ---
@@ -32,7 +32,7 @@ Brief decisions Q1 (photos) and D1–D4 apply (§10). Rev-1 items (✓ = accepte
 | R4 ⏸ | **Parked — discuss separately** (Field 2026-10-11). "ของฉัน" must not match by name → needs a per-phone id (visit-session token on `order_record`). Decides how customer sessions work. | — |
 | R5 ⏸ | **Parked until R3 + R4** (Field 2026-10-11). Customer-QR API contract: menu `imageUrl` + `available_now` + window · running tab per ticket · call-staff + 60 s throttle · WS `/customer`. The customer-QR brief stays on hold. | — |
 | R6 ✓ | **Photos** (Field 2026-10-11): canvas uses placeholder illustrations; real photos = `menu_item.image_key` from CD-12; no photo = category icon on `--surface-raised`, 4:3 — both drawn. | Done. |
-| R7 | **DR-014 #10 impact:** promo items show the promo price as-is — no crossed-out "was" price on alcohol. | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
+| R7 ✓ | **DR-014 #10 impact:** promo items show the promo price as-is — no crossed-out "was" price on alcohol. | Field approved DR-014 2026-10-12. **Checked rev 2:** already compliant — promo tiles show only the promo price; the only strikethrough is the void line of an expired promo in the cart (not a "was" price). Overview badge + sticky added. |
 
 ## 1. Overview
 - **Goal:** a guest scans the table QR, orders on their own phone without login, sees the whole table's orders with status, and can call staff.
@@ -124,7 +124,7 @@ Tab sample = the same T3 bill as CD-02 / CD-03 / CD-04 (฿1,240.00; ต้น �
 - **No login.** The QR token gives a visit-session token stored on this phone; nickname is optional (D1), ≤ 30 chars, trimmed, sent as `orderedByName`.
 - **Sheet before add (R2):** "+" and card tap always open a sheet. No-option item → half sheet (qty + note); already in cart → starts at current qty, "อัปเดตตะกร้า", qty 0 → "ลบออกจากตะกร้า". Item with options → full sheet, always a new line (existing lines with other options are edited in the cart).
 - **Charge items** (corkage etc.) are not on the customer menu; when staff add one it appears in the tab with no status (D3).
-- **Promos (DR-010):** promo tab; out-of-window greyed, no "+", start time shown; server decides; expired in cart → cart·4.
+- **Promos (DR-010, DR-014 #10):** promo tab; promo price shown as-is — never a crossed-out "was" price; out-of-window greyed, no "+", start time shown; server decides; expired in cart → cart·4.
 - **Send:** one `POST` per cart with Idempotency-Key; cart locked while pending; the first order on a free table opens the visit.
 - **Tab (D2, D3, DR-012):** whole table, newest placement first; one status per station ticket (เครื่องดื่ม / อาหาร), no item progress; cancelled items struck "รายการถูกยกเลิก" and excluded from totals; "ของฉัน" filters by this phone (R4), not by name.
 - **Realtime:** `/customer` room; on disconnect show banner, keep last data, refetch on reconnect.
@@ -139,6 +139,7 @@ Tab sample = the same T3 bill as CD-02 / CD-03 / CD-04 (฿1,240.00; ต้น �
 | 0 | 2026-10-10 | D3 per station ticket (DR-012), customer label "ร้านกำลังเตรียม" (DR-012 A1) | Field |
 | 1 | 2026-10-10 | First canvas built to `cd-template.md` v2: overview, J1 / J2, 6 state boards, flow; R1–R6 raised | Cowork |
 | 1 | 2026-10-11 | Field review: R1 + R6 accepted · R2 Field's sheet-before-add idea drawn (item·1–3, ·7; J1 now E1–E8) · R3 / R4 / R5 parked for a separate discussion | Field (R1, R6) · R2 pending |
+| 2 | 2026-10-17 | Housekeeping: R7 DR-014 #10 checked (already compliant) · overview copy fixed (R2 sheet-per-tap badge, 5 taps, pain point = field research) · R2 sticky green | Field 17 Oct (R2) · DR-014 · Cowork |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 1 (`cd-template.md` §6). Assets on the canvas: Lucide UMD `/_blob/8d9605710cbf0935649fa04801cfffca`; placeholder photo illustrations `/_blob/0521bae84b976a31c39d9d4d511ef00e` (beer), `e2a89ae45cad300bf94455372a662b88` (bottle), `15f3198af1081fec566d0ff51ed73e39` (rocks), `84a7473d8958d44bf3c9747c67a1d684` (negroni), `9bd9f6147882a151e9ebf0676c1debc3` (food).

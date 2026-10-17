@@ -1,18 +1,18 @@
 ---
 id: CD-07
 title: Customer QR — pay from the phone (PromptPay merge / split-equal, cash via staff)
-revision: 1
+revision: 3
 status: review
 approved_by:
 approved_on:
 canvas: https://claude.ai/artifact/JDoXZyWWF2tLybdY9dufQe
-canvas_version: 1791708326-9c5a
+canvas_version: 1792226250-1447
 ds_version: 1791561405-c72e
 source: docs/design/source/CD-07/   # taken after approval (§11)
 surfaces: [web-customer]
 sizes: [390x844, 360x780]
 brief: CD-07-customer-payment.md
-drs: [DR-009, DR-012]
+drs: [DR-009, DR-012, DR-014]
 depends_on: [CD-00, CD-03, CD-06]
 supersedes: brief paste text and acceptance where they conflict (see brief "Revisions")
 ---
@@ -31,7 +31,8 @@ Brief decisions Q1 (no claiming) and D1–D4 apply (§10). Rev-1 items:
 | R3 ✓ | **Paying with the phone that shows the QR** can't scan itself → primary "บันทึก QR" + 2-step hint (open the bank app → scan → pick from gallery). A friend can still scan the screen directly. | Accept. **Accepted 2026-10-17** (Field). |
 | R4 ⏸ | **Parked with CD-06 R3 / R4 / R5** (customer session). The customer payment API (visit-session auth, create / cancel / status, realtime `payment.status_changed`) is written after the session decision; rules as CD-03. | — |
 | R5 ✓ | **Ordering after full payment** creates a new balance on the same table; "ชำระเงิน" returns with only the new amount. Rule only, not drawn. | Accept. **Accepted 2026-10-17** (Field). |
-| R6 | **DR-014 #6 impact (canvas update):** guest self-pay uses the venue's payment mode — gateway QR, or app-generated amount-locked PromptPay QR to the venue account (confirmed by staff slip scan / manual). | Field approved DR-014 2026-10-12; apply in the next canvas revision. |
+| R6 ✓ | **DR-014 #6 impact (canvas update):** guest self-pay uses the venue's payment mode — gateway QR, or app-generated amount-locked PromptPay QR to the venue account (confirmed by staff slip scan / manual). | Field approved DR-014 2026-10-12. **Drawn rev 2:** qr·9 venue mode pending ("โอนแล้ว แสดงสลิปให้พนักงานสแกน — สถานะเปลี่ยนเป็นชำระแล้วเอง") · qr·10 paid after the staff slip check ("พนักงานตรวจสลิปแล้ว"); journeys stay on gateway mode. |
+| Q1 ✓ | **Venue mode — how the guest reaches staff.** | **Decided 2026-10-17 (Field):** guest taps **"แจ้งโอนแล้ว"** (qr·9 → qr·11) → sticky POS alert **"T3 แจ้งโอนแล้ว ฿…"** using the call-staff mechanism (qr·12; stays until the slip is verified or manually confirmed) → staff scan the slip at the POS (CD-03 slip·2, POS tablet camera). |
 
 ## 1. Overview
 - **Goal:** guests pay the whole table or an equal split with PromptPay from their own phones, confirmed automatically by the bank, or call staff for cash.
@@ -49,7 +50,7 @@ Brief decisions Q1 (no claiming) and D1–D4 apply (§10). Rev-1 items:
 | `journey-1` | JOURNEY | tab (E1 ชำระเงิน) → intent merge (E2 สร้าง QR) → QR pending (E3 บันทึก QR, then system webhook) → paid (E4 กลับ) → tab paid |
 | `journey-2` | JOURNEY | intent split 3 (E1) → split 1/3 (E2 part 2) → part QR → (other phone pays) → part paid elsewhere (E3) → split 2/3 (E4 part 3 → pay) → all paid |
 | `intent` | STATES | 1 merge · 2 split 3 · 3 per-person charge (D2) · 4 cash · 5 payment already pending (D3) |
-| `qr` | STATES | 1 pending · 2 completed · 3 failed · 4 expired · 5 disconnected · 6 split part 2/3 · 7 part paid elsewhere · 8 360×780 |
+| `qr` | STATES | 1 pending · 2 completed · 3 failed · 4 expired · 5 disconnected · 6 split part 2/3 · 7 part paid elsewhere · 8 360×780 · 9 venue PromptPay: show slip to staff · 10 venue: paid after staff slip check (DR-014 #6) |
 | `split` | STATES | 1 0/3 · 2 1/3 · 3 with per-person charge · 4 3/3 · 5 360×780 |
 | `cash · after` | STATES | 1 cash: staff called · 2 tab after full payment |
 | `flow` | FLOW MAP | merge · split / cash · errors / collisions |
@@ -115,7 +116,8 @@ Totals = the T3 bill used in CD-02/03/04/06 (฿1,240.00 → 413.33 / 413.33 / 4
 - **One attempt at a time (D3):** if any payment is pending for the visit (POS or another phone), intent shows it and only "ดู QR"; never create another.
 - **Merge:** create = lock the bill (CD-03); QR lifetime 15 min; expiry = `cancelled` + `status_reason expired`.
 - **Split (Q1):** n chosen once by whoever starts; parts = floor(total×100/n)/100, last part takes the remainder; per-person charges excluded and paid with staff (D2); every phone sees the same list; opening a part shows its existing QR; a part paid elsewhere flips live to "ส่วนนี้ชำระแล้ว". Whole bill stays locked until all parts are settled (CD-03 F2).
-- **Confirmation:** webhook only; disconnected → banner + poll, "ไม่ต้องโอนซ้ำ".
+- **Confirmation (DR-014 #6, per venue mode):** gateway → webhook only; disconnected → banner + poll, "ไม่ต้องโอนซ้ำ". Venue PromptPay → the guest never confirms; staff scan the slip at the POS (CD-03 `promptpay-slip`) or confirm manually; the guest phone flips to paid via `payment.status_changed` (qr·9 → ·10). Lock, 15-min expiry, split and change-method rules are the same in both modes.
+- **แจ้งโอนแล้ว (Q1):** venue mode only. Tap → reuses the call-staff event, carrying "transfer notified" + amount (event name → customer payment brief); button becomes disabled "แจ้งพนักงานแล้ว · เวลา"; POS alert is sticky until the payment leaves `pending`. The tap never changes payment status. POS table-card chip drawn here as a reference; CD-02 owns the real alert (add the reason variant when CD-02 is next revised).
 - **Change method (R2):** merge anytime while pending; split only before the first part is paid.
 - **Paid ≠ closed:** after full payment the guest returns to the tab; the table stays open; new orders start a new balance (R5).
 - **Same-phone payment (R3):** "บันทึก QR" saves the image; instructions show the gallery path.
@@ -127,6 +129,8 @@ Totals = the T3 bill used in CD-02/03/04/06 (฿1,240.00 → 413.33 / 413.33 / 4
 |---|---|---|---|
 | 0 | 2026-10-09 | Brief: Q1 no claiming · D1 pay-how sheet · D2 per-person charges with staff · D3 pending → existing QR · D4 PDPA / LINE → S2 | Field |
 | 1 | 2026-10-11 | First canvas built to `cd-template.md` v2: overview, J1 / J2, intent / qr / split / cash boards, flow; R1–R5 raised (R4 parked with CD-06 session items) | Cowork — review pending |
+| 2 | 2026-10-17 | R6 DR-014 #6 drawn (qr·9, ·10, Screen state venue / venueDone) · overview copy (R1 confirmed, confirmation per mode) · stickies R1 / R2 / R3 / R5 green · Q1 raised | DR-014 (Field 12 Oct) · Cowork drew |
+| 3 | 2026-10-17 | Q1 decided and drawn: "แจ้งโอนแล้ว" button on qr·9, new qr·11 (sent, Screen state `venueSent`) and qr·12 (POS sticky alert reference) · qr board 5170 wide, stickies R2 / R6 / Q1 moved right · Q1 green | Decided 2026-10-17 (Field) · Cowork drew |
 
 ## 11. Source snapshot
 Pending — after Field approves rev 1. Assets: Lucide UMD `/_blob/a526b3bd0f8acf1689edb6a78d043874`; QR placeholder `/_blob/f74631823081a93d4cbeb45f60cd9c30` (copied from CD-03).
