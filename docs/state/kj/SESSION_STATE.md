@@ -1,137 +1,37 @@
 # State — KJ
-Updated: 2026-10-17 12:00 · Agent: Cowork (decisions + git workflow) — session end
+Updated: 2026-10-17 12:20 · Agent: Cursor
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 
-## Parked decisions (Field 10 Oct — "park, finish CDs first")
-- **CD-06 R3 + R4 (customer session):** where the nickname is changed, and identifying "my" orders by phone (visit-session token on `order_record`) instead of by name — decides customer session handling. **R5** customer-QR API contract waits on both; customer-QR brief on hold. CD-07 R4 (customer payment API) waits on the same decision. (Field 11 Oct: discuss in a separate session.)
-- CD-08 R8–R11 (summary "เสิร์ฟแล้ว" section, served Toast/no undo, API gaps list, filter rule) — drawn as proposed, orange on canvas.
-- DS StatusChip label `accepted` = "กำลังเตรียม" (Field to change in the DS; canvases pass `label` meanwhile).
-- CD-14: success state for a cart that splits into 2 tickets (DR-012).
-
-## Decided 17 Oct (read first)
-- **Git workflow (workflow rev 15–17):** docs branches short-lived (PR same day, ≤ 3 days) · **Cowork / Codex never run Git** — they end with a *ship line*; the **git hand** (Claude Code; Cursor once `gh` works in its sandbox) commits exactly those files, pushes, opens/updates the PR · executors in their own worktree · Field only reviews/merges PRs, runs no git commands.
-- **GitHub:** classic protection removed → rulesets `main-review` (admin bypass, PR only) + `main-ci` (`ci` required, no bypass). Found: old protection had an empty checks list → `ci` was never enforced. 7 merged branches deleted.
-- DR-014 follow-ups done: CLAUDE.md / AGENTS.md → AI owner insight · 37 tables / 10 domains · `bottle_keep.customer_id` optional + `guest_label` + CHECK (validated PG16).
-- **All open CD review items decided** (handoffs marked ✓): 25 accepted as proposed + CD-06 R2 sheet-per-tap · CD-08 R16 "T3 · ต้น · บาร์" · CD-15 R6 warning strip · CD-05 R4 2× / 4 wk · CD-05 R2 chart tokens → DS · CD-12/13 R8 HeroUI direct + tokens · CD-13 R4 reopen link · CD-11 R2 captions · **DR-009 Amendment 1** · **DR-015 Recharts** (approved).
-- Still open: CD-03 R3 (Field screen review) · customer session (CD-06 R3–R5, CD-07 R4) parked to after 8 Nov · CD-15 R4 DS StatusChip (Field edits DS) · DR-014 impact rows = canvas redraw only.
-
-## Decided 11–12 Oct
-- **DR-013 approved (B):** order → tickets → items. `order_record` = order "#001" (`order_number`, `business_date`); new `order_ticket` owns status/station/issue/`sent_at`; `order_item.ticket_id` + cancellation fields; 35 tables (schema/ERD/CLAUDE.md done, `fbabebe`).
-- **DR-014 approved (ops simplification):** READY only with kitchen screen · no idle auto-close · 86 auto-cancels waiting items · business-day cut-off venue setting (06:00) · counter QR optional/off · **payment modes: gateway webhook OR own PromptPay + app amount-locked QR + scan slip → EasySlip verify (manual fallback)** · shift close S1 after gate · POS PIN switch · bottle keep = simple record · promos: no crossed-out price · **AI = owner insight suite (sales / anomaly-fraud / menu), guest summary dropped** · 3 seeded groups.
-- **agent-boundaries:** any protected file editable by an agent only with Field's explicit OK on the exact change.
-- Research: `docs/research/Grok_/Gemini_Bar_Operation_research.md` + `Claude_verified_ops_findings.md` (primary-source check).
-- Handoffs: all R1 pain points ✓ confirmed · CD-02 R4/R5, CD-03 R4/R5, CD-04 R6–R8 ✓ · CD-03 R3 ⏸ (screen review) · CD-12 R5 ✓ · CD-13 R3 ✓ · CD-15 R2 ✓ · DR-014 impact rows added (CD-02/03/05/06/07/08/12/13/15) — canvases not yet redrawn.
-- FRD updated to DR-012/013/014 (§2, §3, §5, §6, §7, §8, §9, §10, §11, §12, §13).
-
-## Next session (in order)
-1. **Start BRIEF-009 with an executor now** — Week 1 build slipped; checkpoint 25 Oct, gate 8 Nov.
-2. Field: review + merge the `docs/cd-review-decisions` PR (this session's decisions).
-3. Advisor heads-up: AI feature → owner insight (DR-014).
-4. Field: add `--chart-1` / `--chart-2` to the DS (CD-05 R2); review CD-03 screens (R3) before BRIEF-013.
-5. Before BRIEF-013: confirm EasySlip response includes the receiver account.
-6. Write BRIEF-012 (orders, DR-012/013/014 + API notes from CD-08 R10, CD-15 R5, CD-02 R5, CD-04 R8).
-7. Canvas redraw pass for DR-013/014 impact rows (CD-02/03/05/06/07/08/12/13/15) — after the gate unless needed for briefs.
-
-## Resume (start here)
-**Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
-**Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
-**Next action:** retrofit batch done 10 Oct (CD-08 rev 3, CD-02 / CD-01 / CD-04 / CD-03 rev 2 — all in review, see table). CD-14 source snapshot taken (`docs/design/source/CD-14/`, handoff §11). Snapshots for the others after Field approves each. Then new CDs to the template: CD-06 (rev 1 in review) → CD-07 (rev 1 in review) → CD-15 (rev 1 canvas done 11 Oct, in review) → CD-12 (rev 1 done 11 Oct, in review) → CD-13 (rev 1 done 11 Oct, in review) → CD-05 (rev 1 done 11 Oct, in review) → CD-11 (rev 1 done 11 Oct, in review) — all Ready CDs now have a rev-1 canvas + handoff. CD-09 = S2. Parked decisions stay parked.
-Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
-Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. PR #32 (`docs/ui-retrofit`) merged 17 Oct; current docs branch **`docs/cd-review-decisions`**.
-
-## Retrofit checklist (per canvas, from cd-template.md)
-1. `read` the canvas `project/canvas.json` + boards (Field may have edited — keep his edits). Re-upload Lucide only if adding boards that need it (blob ids are per canvas; existing boards already reference their own blob).
-2. **Overview board** (leftmost, x = −1840, 1760×1100): goal, pain point (field research — ask Field, never invent; mark "สมมติฐาน" if unknown), user + context line, outcome, entry/exit, journeys index, out of scope, key decisions, status badge.
-3. **1–2 Journey boards** (main path + highest-risk alternate): one subject followed, E# arrows, overlay tap rings (12 px side / 6 px vertical inset), legend box, success phone last; phones copied exactly from the States boards. Existing boards → add `STATES · ไม่ใช่ลำดับ` pill; flow board → `FLOW MAP` pill; section `title1` notes Journeys / States / Flow map.
-4. **State coverage**: fill the template §3 matrix per screen; draw missing states (typical gaps found in CD-14: loading/error of sheets, permission denied, disconnected, long Thai text, smallest size, keyboard open). POS smallest = 1024×768; phone = 360×780.
-5. **Action table**: real endpoints from briefs only (BRIEF-011 available; orders = BRIEF-012 planned; payment = BRIEF-013 planned; menu = menu-management brief planned); every failure reason drawn. **Check API semantics against the brief** — CD-14 had attach drawn as a 409 but BRIEF-011 returns `200 attached:true`.
-6. Handoff rewritten to the template (YAML header, §0–§10, revision bump, status `review`); R# open items as sticky notes on the canvas (orange → green when accepted).
-7. Brief gets a "Revisions" table if decisions changed it.
-8. After Field approves: source snapshot (cd-template §6) → handoff §11 (inventory + SHA-256 verified, dependencies, repo drift D# items). PNG export optional (presentation only). Answer the standard behaviour questions (§5) in §9.
-
-Known retrofit items per canvas:
-- **CD-02 POS tables:** seat-open collision must **ask before joining** (same dialog as CD-14 J2 4b: opener/time/guest, "สั่งเข้าโต๊ะเดิม" / "เลือกโต๊ะอื่น"; uses BRIEF-011 Q3 `openedBy`/`openedVia`).
-- **CD-04 POS order entry:** keeps quick add (Field 10 Oct); "ค่าบริการ" badge → tone `neutral` (CD-14 R5); add DR-010 promo states (category, greyed out-of-window, expired promo cart line = `409 ITEM_UNAVAILABLE reason out_of_window`).
-- **CD-03 POS payment + CD-04:** still awaiting Field review of rev-1 content — get that review during the retrofit.
-- **CD-08 staff app core:** table summary sheet gets primary "สั่งออเดอร์" (CD-14 R4).
-- **CD-01:** P1 copy item still open.
-
-## Design canvases (claude.ai Artifacts, type Design, DS "The Loft Bar Design System")
-| CD | Canvas | Status |
-|---|---|---|
-| CD-01 POS login/shell/menu | https://claude.ai/artifact/GDCe3opjPBQ7YxAZ6RwEBo | Field OK (rev 1) · retrofit pending |
-| CD-02 POS tables + session | https://claude.ai/artifact/WEfv8fV7z1FMAu8tFSqCRG | Field OK (rev 1) · retrofit pending (+ join confirm) |
-| CD-03 POS payment | https://claude.ai/artifact/1NiEZaPhKTRsKtHh4WcqZb | rev 2 retrofit done 10 Oct (review: R1, R3–R5 pending; R3 = first screen review) |
-| CD-04 POS order entry | https://claude.ai/artifact/8xBUgRiM4ZmQoNvinbVSsz | rev 2 retrofit done 10 Oct (review: R1, R6–R8 pending) |
-| CD-06 customer QR order | https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi | rev 1 built 10 Oct · Field 11 Oct: R1 R6 ✓, R2 drawn (pending), R3–R5 parked |
-| CD-07 customer payment | https://claude.ai/artifact/JDoXZyWWF2tLybdY9dufQe | rev 1 built 11 Oct (review: R1–R3, R5; R4 parked with CD-06 session) |
-| CD-15 POS orders + issues | https://claude.ai/artifact/QvCcTKGEBD77NqW4ZarhcL | rev 1 built 11 Oct (review: R1, R3, R5, R6; R2 + R4 parked) |
-| CD-12 back-office menu | https://claude.ai/artifact/DXNTpCExFkMNmJodR9CpZJ | rev 1 built 11 Oct (review: R1–R8; R5 = S1 promo creation decision) |
-| CD-13 back-office tables/staff/IAM | https://claude.ai/artifact/PF5pdKMY4b2w1oaunrHJH3 | rev 1 built 11 Oct (review: R1–R8; R3 06:00 cut-off, R4 rejected re-login = decisions) |
-| CD-05 dashboard | https://claude.ai/artifact/WiY9xummEw5w2rPdnRqBdf | rev 1 built 11 Oct (review: R1–R6; R2 = chart tokens into DS) |
-| CD-11 journeys + notifications (presentation) | https://claude.ai/artifact/PpcMLoSNUudmcQU3kiYDsG | rev 1 built 11 Oct (review: R1–R4; R3 = DR-009 amendment; re-copy sources after other approvals) |
-| CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | Field OK (R1–R5) · retrofit pending (+ สั่งออเดอร์) |
-| CD-14 staff new order | https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW | **rev 3 approved 10 Oct — template reference** (images in docs/design/assets/CD-14/) |
-Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e). CD-14 Lucide blob `/_blob/55621ac7d8cfe40fb69092b2ed520365` (CD-14 only).
-
-## How to build a canvas (proven recipe)
-1. `Artifact publish type_url=https://claude.ai/artifact/QKN21svewxgyPb6SYRqWnd title="CD-## …" auto_open=after_first_write`.
-2. Upload Lucide UMD as an asset on that canvas (`npm pack lucide@0.468.0` → `package/dist/umd/lucide.min.js`; scratchpad doesn't survive sessions) → `/_blob/<id>`; blobs are per canvas.
-3. Write `project/canvas.json` (all boards pre-declared, 80 px row gap / 120 px between rows, `designSystems` record) + Main + shared children; publish in ONE call with DS server copies: `project/ds/theloftbardesignsystem_99bbff/{styles.css,_ds_bundle.js,tokens/{fonts,colors,typography,spacing,radius,elevation,motion,heroui,base}.css,assets/fonts/NotoSansThai-{Regular,SemiBold,Bold}.ttf}` ← `{"artifact": DS url, "path": "project/<same>"}` (DS has no tokens.json).
-4. Then one board per write → publish. Don't verify/render unless Field asks.
-5. Head per board: `support.js` · `ds/…/styles.css` · lucide blob · `ds/…/_ds_bundle.js`. Mount DS via `<x-import component-from-global-scope="TheLoftBarDesignSystem_99bbff.<Comp>">`. Theme: root `data-theme="{{theme}}"` + enum tweak dark/light, pass `theme="{{theme}}"` to every `dc-import`.
-6. Board pattern (phone boards: see CD-14 — 390×844 frames, radius 36, gap 40; Journey arrows 136 px wide, margin-top 440): 40 px padding, `--bg-sunken`, h1 `--text-heading` + one-line note, frames 1280×800 side by side (gap 40): PosFrame (inset 0) + content child (left 88, top 56) + optional scrim/drawer (right 0, top 56, 400×744) + modal overlay (`--scrim` + `--blur-overlay`).
-7. Write/refresh `docs/design/CD-##-handoff.md` to the template, commit (with delete permission granted, git cleans its own locks).
-
-## Canvas gotchas (each one cost a fix)
-- Shared child roots need `position: relative; isolation: isolate` or DS badges (`z-index: var(--z-raised)`) leak over modals.
-- `style="…"` on `x-import` is ignored → wrap in a `<div style>`.
-- Numeric props must be holes (`width="{{w84}}"`), not strings (`width="84"` renders wrong).
-- Toast body = children (no `description`); `action={{ {label} }}`. Input/Select error = `error="text"` (no `error-message`); Select supports `is-open`, `options=[{value,label}]`. PromptPayPanel: `amount` string, `qr-src`, `qr-size`, `status` (completed/cancelled/expired), `expires-in`.
-- DS Badge tones: neutral · accent · new · making · served · void · bottle (no `info`). StatusChip `kind="menu" status="soldout"` exists.
-- DS `Dialog` takes JSX `actions` → can't set from markup; draw alert dialogs from tokens + DS Buttons.
-- To stretch a DS component (e.g. SearchField) the `x-import` host must be the flex item: wrapper `class="sf"` + helmet `.sf > *{flex:1 1 auto;display:flex;min-width:0}`.
-- Journey phones must match the state boards exactly (same chips/header) — no simplified copies.
-- Never name a DC prop `name` (selects the component) — CD-04 uses `who`.
-- If a publish is refused (Field edited the canvas): `read` the files, re-apply, republish. Field sometimes edits defaults (e.g. Grid default mode) — keep them.
-- Bundle source for prop lookups: `read` any canvas's `project/ds/theloftbardesignsystem_99bbff/_ds_bundle.js` (scratchpad does not survive sessions); grep `function <Comp>(` for props.
-- Row tap ring = overlay span (`left/right -12px, top/bottom 6px`, 2.5 px accent border, radius 12) — not `outline` on the full row.
-- Protected files (incl. `docs/rules/**`): edit only with Field's explicit OK on the exact change in the session (agent-boundaries rev 11 Oct); trailer `Approved-by: Field (session)`. Snapshots under `docs/design/source/**` and `docs/handoff.md` are never edited. Validate schema changes by running the whole file on a throwaway Postgres (binaries are in the cloud container: /usr/lib/postgresql/*/bin, run as user postgres in /var/tmp).
-
-## Plan (to 8 Nov) — DR-008: Metee = Expo mobile, KJ = backend + web, reviews mobile
-| Week | KJ | Metee (mobile, after 20:00, ~1 brief/wk ≤10 h, contracts fixtures) |
-|---|---|---|
-| 0 · 5–11 Oct | push branch, BRIEF-002 PR, finish UI design | merge BRIEF-002 → app shell + mocked login |
-| 1 · 12–18 Oct | BRIEF-009 → BRIEF-007 auth → guard · BRIEF-008 POS shell | table list (mocks) |
-| 2 · 19–25 Oct | tables/visits/orders API + WS · menu list + grid (web) | new-order flow (mocks) |
-| 3 · 26 Oct–1 Nov | payment + webhook + close · drawer + checkout (web) | wire to real API + realtime |
-| 4 · 2–8 Nov | integration, seed, demo — no new features | fixes; demo: phone order → POS live |
-| 9–20 Nov | AWS deploy · bottle keep if time | polish |
-Checkpoint 25 Oct: if orders API not live, cut web checkout polish, not the core slice. If ahead: bottle keep → dashboard → customer QR. LINE OA → Sem 2.
+## Resume
+Wait for CI on the BRIEF-009 PR, then `audit BRIEF-009`.
 
 ## Active
-- Branch: **`docs/ui-retrofit`** from main @ `ed1ef8a` — holds only this state commit. `docs/ui-design-cd06` merged as **PR #30** (CD-14 rev 3, cd-template v2, POC example + BRIEF-900, BRIEF-014 rev 2, schema/erd 34 tables, agent-boundaries update, DR-009/010) — delete it.
-- **main now has:** v2 tokens + Noto Sans Thai (BRIEF-008), DS type/radius/tracking/motion utilities + no-arbitrary-px lint (BRIEF-014, PR #29), frontend.md Styling rule, agent-boundaries with Field-approved edits + `docs/design/source/**` protection.
-- Decided 10 Oct: CD template v1 (`docs/design/cd-template.md`, Cowork + Codex review) · CD-14 rev 3 approved (R6 cart in memory · R7 permission UI · R8 pain point = paper/verbal orders · R9 opener on visit) · seat-open collision asks before joining (CD-14 J2; apply to CD-02 POS in retrofit; BRIEF-011 Q3 added: `visit.opened_by` + `opened_via`) · board convention (`docs/design/board-convention.md`) · staff app no quick add, POS keeps quick add · DR-010 promo windows.
-- Decided: DR-008, DR-009, DR-005 A1 (`sid` session check), CD-03 Q1–Q3 + F1–F4, CD-04 Q1 + F1–F4, BRIEF-007 D1–D4, BRIEF-011 Q1–Q2, `payment_status += cancelled`, schema `menu_item.image_key`, `staff_access_request`.
-- **Ready briefs:** BRIEF-007 auth Rev 2 (after 009) · BRIEF-008 POS shell · BRIEF-009 · BRIEF-010 mobile shell/queue (Metee) · BRIEF-011 tables + visits + realtime · `docs/rules/mobile.md`.
-- **Ready design briefs:** CD-05, 06, 07, 11, 12, 13, 14, 15 (CD-10 merged into CD-11).
-- **Next impl briefs (not written):** BRIEF-012 orders (see DR-012 inputs below) · BRIEF-013 payment + GB Prime Pay webhook + 409 in-flight (include CD-03 F1 columns `confirmed_via`, `status_reason`, `status_note`; F2 split locks whole bill) · IAM brief (full policy editor) · web screen briefs after CDs · Metee Week 1.
-- **DR-013 Pending (parked 10 Oct): order → ticket model, setting-based split, order number, issue/served/cancel columns — decide before writing BRIEF-012; overrides parts of the DR-012 inputs below.**
-- **BRIEF-012 inputs from DR-012 (approved 10 Oct, before the gate):** status per order ticket, no per-item progress (`order_item.status` uses only `pending` / `cancelled`) · placement split by `menu_item.kitchen_tag` (`bar` | `food`, `both` dropped) → one `order_record` per station + shared `placement_id` · charge items → own ticket created `sent` · always split, no venue setting · `order_status += cancelled`, auto-set when every item on a ticket is cancelled · counter seats `accepted → sent` (DR-011) · label `accepted` = "กำลังเตรียม" · customer view = ticket steps + cancelled items struck · `POST /visits/:visitId/orders` returns all tickets of the placement (one Idempotency-Key per placement) · fix contracts drift: `app/packages/contracts/src/enums.ts` OrderStatus is CONFIRMED/PREPARING/SERVED, schema is pending/accepted/ready/sent/issue(+cancelled) · schema.sql + erd.html DR-012 diff approved by Field 10 Oct (option A, no number column) · **open: order display number** — `order_record` has no `number` column but cards show "#0041" (BRIEF-010 `number`); Cowork recommends one number per placement shared by its tickets ("#0041 · บาร์ / ครัว") → decide in BRIEF-012 (schema change).
-- Engineering: BRIEF-002 merged (PR #25, 12 Oct) — BRIEF-010 unblocked. Done briefs: 001, 003–006, 008, 014.
+- Brief: BRIEF-009 — Contracts foundation + OpenAPI · Revision: 1
+- Brief file: docs/briefs/BRIEF-009-contracts-openapi-foundation.md
+- Stage: Implemented
+- Branch: feat/BRIEF-009-contracts-openapi-foundation
+- Work commit: 39c042f655dd9ee69ba01ae2832de07b7ccbbf93
+- PR: opening
 
-- **POC passed (10 Oct):** approved canvas → byte-copied source snapshot → Cursor implemented `/poc/menu` with no screenshots (BRIEF-900, PR #28 closed unmerged, kept as worked example in `docs/design/poc-source-handoff/`). Findings → cd-template v2 + **BRIEF-014 (merged PR #29)** (DS type/radius/tracking/motion as Tailwind utilities + lint gate against arbitrary px). Vault: `02 Learning/Design to Implement Pipeline.md`.
+## Working tree
+- Uncommitted: clean after this state commit
+- Checks: G1 exit 0 on 39c042f (see docs/handoffs/BRIEF-009.md). CI not confirmed.
 
-## Field to-do (any order)
-0. (done 10 Oct) BRIEF-014 merged (PR #29) + frontend.md Styling line added by Field.
-1. Open BRIEF-002 PR + auditor. (PR #26 design canvases merged 10 Oct.)
-2. Review CD-03 + CD-04 content during the retrofit; CD-01 P1. (done 10 Oct: schema.sql DR-010 + BRIEF-011 Q3, erd.html synced incl. staff_access_request, CLAUDE.md 34 tables — Cowork Field-approved edits.) DR-009 line refined to DR-010. CD-14 images exported 10 Oct → docs/design/assets/CD-14/.
-3. Protected edits: CLAUDE.md / AGENTS.md (Metee, mobile owner, drop web `/staff`), `frontend.md` `/staff` row, Project instructions AI-split line.
-4. Branch protection; delete stale remote branches (`docs/brief-006-sonar`, `docs/brief-007-auth`, `docs/ui-design-screens`, `feat/BRIEF-006-local-sonar`).
-5. (done 10 Oct) stale git locks cleared; delete permission granted per session — ask once at session start.
-6. Delete merged branches: `docs/ui-design-cd06` (remote + local), `feat/BRIEF-014-design-tokens-tailwind` if still local.
+## Progress
+- Completed: AC-1–AC-8 and local AC-9 gates
+- Remaining: CI green, Cowork audit
+
+## Next steps
+1. Open the PR and confirm `ci` on this head
+2. `audit BRIEF-009`
+3. BRIEF-007 auth after merge
 
 ## Blockers / Coordination
-- Pending docs: FRD §13. (erd.html synced to 34 tables 10 Oct.)
-- Stale inputs: `docs/briefs/ui/*.md` (old tokens, PWA), FRD §13/§15 PWA wording.
+- none
+- Shared files: `pnpm-lock.yaml` only. The other checkout (`docs/cd-review-decisions`) has uncommitted CD-02 and CD-15 handoff edits; they were not touched.
+- Review queue: this PR
+
+## Queue
+1. BRIEF-007 auth
+2. BRIEF-011 tables and visits
+3. BRIEF-012 orders
