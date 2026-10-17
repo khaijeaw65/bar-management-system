@@ -5,7 +5,7 @@
 | **Auditor** | <actual Cowork / Codex reviewer; session reference> |
 | **Assignment** | <brief auditor + Field instruction/date; fallback/reassignment reason> |
 | **Date** | YYYY-MM-DD |
-| **PR / commit** | #<n> · `<sha>` (the audited commit) |
+| **Branch / commit** | <branch> · `<sha>` (the audited commit) |
 | **Depth** | Full · Compact |
 | **Brief revision** | <n> |
 | **Recommendation** | PASS · CHANGES REQUIRED · BLOCKED  ← Field makes the final call |
@@ -45,7 +45,7 @@
 - Reviewed work SHA: <S>
 - Sources/diff inspected independently: <paths, ACs>
 - Tests run or independently inspected: <commands, SHA, results, limitations>
-- Audit is committed after S; pre-merge summary must verify S..head contains evidence-only changes (§7).
+- Written uncommitted; the executor commits it unchanged at PASS (H). Pre-merge summary must verify S..H contains evidence-only changes (§7).
 - Repeated blocker: <attempts/evidence and decision needed, or none>
 
 ## Sonar (local scan)

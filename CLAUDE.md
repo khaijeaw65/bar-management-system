@@ -124,7 +124,7 @@ Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `a
 - **Field** (KJ) is the only decision authority. Any new dependency, brief deviation, flow/architecture change, schema change, or auth/payment/PDPA change → needs approval: an exact Pre-decided item in the Ready brief, or an Approved DR. Neither → raise a DR and stop that path. Never decide alone.
 - **Roles:** Cowork = auditor + decision partner (no app code). Claude Code / Cursor / Antigravity / Codex = executors (only inside a `Ready` brief).
 - **Lifecycle:** executor marks `Implemented` → assigned auditor reviews → merge: Field's own PRs pre-approved once audit PASS + checks green on the audited head; Methee's PRs need Field's `อนุมัติ merge` for the exact head → merged PR means `Done`.
-- **Every implementation session:** read `docs/state/<person>/SESSION_STATE.md` + run the checkout check at start, overwrite state at end.
+- **Every implementation session:** read `docs/state/<person>/SESSION_STATE.md` + run the checkout check at start, overwrite state at end (keep its *Carry over* section). Commit/push per `docs/rules/workflow.md` §3 — one brief = one branch = one PR, opened only after audit PASS.
 
 ---
 

@@ -2,7 +2,7 @@
 <!-- One brief per PR. Title format: "<ID>: <title>" -->
 - Brief: `docs/briefs/<ID>-<slug>.md` (Rev <n>)
 - Handoff: `docs/handoffs/<ID>.md`
-- Audit: `docs/audits/<ID>.md` · audited commit `<sha>` (implementer/Field adds the link once the assigned auditor writes it)
+- Audit: `docs/audits/<ID>.md` · audited commit `<sha>` (committed at PASS, before this PR opened)
 
 ## Deviations from brief
 - [ ] None
@@ -26,4 +26,4 @@
 - Audit result: <PASS / CHANGES REQUIRED / BLOCKED> · outstanding Must fix: <count>
 - Audited work SHA: <S> · proposed head: <H> · S..H evidence-only delta: <summary>
 - Field approval: <instruction/date for exact H, or pending>
-- Draft WIP may have failed/unrun checks; Implemented/merge must satisfy the gates.
+- This PR opens only after audit PASS (workflow §3); merge must satisfy the gates.

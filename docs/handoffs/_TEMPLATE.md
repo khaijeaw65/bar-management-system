@@ -5,11 +5,11 @@
 | **Implementer** | <person> |
 | **Date** | YYYY-MM-DD |
 | **Brief revision** | <n> |
-| **Branch / PR** | <branch> · PR #<n> |
+| **Branch** | <branch> (PR opens after audit PASS) |
 | **Commit** | `<sha>` (the commit the evidence below was run on) |
-| **Status** | Implemented — awaiting audit · Changes requested (merged PR determines Done) |
+| **Status** | Implemented — awaiting audit · Changes requested · Audit PASS (merged PR determines Done) |
 
-> Created at `Implemented`. Update it if review requests changes. Frozen at merge.
+> Created at `Implemented` (one docs commit). Updated once in the PASS commit. Frozen at merge.
 
 ## Summary
 <2–4 lines: what was built.>
@@ -50,7 +50,7 @@ One row per gate command from the brief. Exact command, run on the commit above.
 ## Review Routing
 - Assigned auditor: <Cowork / Field-assigned Codex>
 - Next command: `audit <ID>`
-- PR: <link> · Work SHA: <sha> · self-check source/contract comparison: <evidence>
+- Work SHA: <sha> · self-check source/contract comparison: <evidence>
 
 ## Notes for Reviewer
 - <where to look first, tricky parts>
