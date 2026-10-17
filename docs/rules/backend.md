@@ -363,7 +363,7 @@ oxlint enforces the measurable rules (CI fails); the audit enforces the rest (vi
 ### Functions
 - **Small:** ≤ 20 lines per function (lint). Aim for less.
 - **One purpose:** if describing it needs "and", split it. A public method that coordinates work reads as a short list of steps; the details live in private helpers.
-- **≤ 3 parameters** for functions and methods (review). More → one named input type. Constructor injection is exempt — many injected dependencies is a sign the class does too much; flag it, don't contort.
+- **≤ 3 parameters** for functions and methods (review). More → one named input type. Constructor injection and Nest-decorated handler parameters (`@Query`, `@Param`, `@Body`, `@Req`, `@Res`, `@CurrentUser`) are exempt — the framework supplies them, nobody calls them by hand. Many injected dependencies is still a sign the class does too much; flag it, don't contort.
 - **Nesting depth ≤ 2** (lint).
 - **Guard clauses first:** handle invalid input, failures and edge cases at the top with an early `return` / `throw`. The main path follows without nesting and without `else` after a `return`.
   ```typescript
@@ -395,6 +395,13 @@ oxlint enforces the measurable rules (CI fails); the audit enforces the rest (vi
 - Every class member declares `public`, `private` or `protected` (lint).
 - Public methods declare their return type (lint).
 - No inline object types in signatures → name them (`LineLoginCallbackInput`). Reuse an existing type before declaring a new one.
+- **Where types live:** source files contain behaviour only — no `type` / `interface` declarations outside `*.types.ts` files, port files (`domain/…` port interfaces + tokens) and `dto/` files. Entities and Zod schemas are not affected. Types go in a types file in the layer that owns them:
+  - `domain/<subject>.types.ts` — business concepts and port inputs/outputs (framework-free)
+  - `application/<subject>.types.ts` — service inputs and results (e.g. `LoginResult`, `AccessRequestInput`)
+  - `infrastructure/http/dto/` — HTTP request/response shapes (Zod + `z.infer`)
+  - `common/<area>/<subject>.types.ts` — types for `common/` code (e.g. the response interceptor)
+  - `providers/<area>/<subject>.types.ts` — types for provider code (e.g. database options)
+  - shared across modules or with the frontend → `@bar/contracts` (brief/DR)
 
 ### Reading order (stepdown)
 - Public methods first, then private helpers in the order they are called — the file reads like a story from top to bottom.
