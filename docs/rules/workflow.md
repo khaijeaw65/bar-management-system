@@ -1,6 +1,6 @@
 # Workflow — Roles, Briefs, Gates, Field Guard
 
-> Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
+> Rev 16 — 2026-10-17 (+ git hand / ship line: planners and auditors never run Git, Field-approved). Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
 > This file governs execution. Briefs define outcomes; scoped rules define code conventions. Historical revisions remain in Git.
 
 ## 1. People, Roles, Session Types
@@ -14,9 +14,9 @@
 | Session | Ready brief? | Allowed writes |
 |---|---|---|
 | Implementation | Yes | Scoped implementation, own state, handoff, Pending DRs |
-| Audit | No | Audit report only; no implementation or state edits |
+| Audit | No | Audit report only; no implementation or state edits; no Git — end with a ship line (§4) |
 | Onboarding | No | Local identity and missing own state; preserve existing progress |
-| Planning | No | Cowork's Drafts, explicit approved records, KJ state only under the coordinated branch rule in §2 |
+| Planning | No | Cowork's Drafts, explicit approved records, KJ state only under the coordinated branch rule in §2; no Git — end with a ship line (§4) |
 | Field-authorized workflow maintenance | No | Only the concrete documents/changes Field explicitly requests; no general permission to rewrite rules |
 
 Field decides; agents recommend or execute an explicit decision. Naming a developer does not grant that person's approval authority.
@@ -71,7 +71,17 @@ Cowork presents the brief/change and asks for explicit Ready approval. Record ap
 
 One brief = one task branch = one PR. Open a Draft PR after the first suitable commit; convert it to ready for review only after all ACs and G1 pass, handoff exists and state is current. WIP/state pushes may contain failing or unrun tests if disclosed honestly; they do not establish Implemented or authorize merge.
 
-**Who can open / merge PRs (tool reality, 2026-09-24):** Claude Code runs in Field's own terminal with an authenticated `gh`, so it can push, open and merge PRs. Cursor's sandbox usually cannot reach `api.github.com` — it pushes and gives Field the compare link, unless Field allows a narrow network rule for `gh`. Cowork has no GitHub credentials — it commits locally and gives Field the push/PR commands. Any tool that cannot create the PR hands over the exact compare link; it never claims the PR exists.
+**Who runs Git (Field, 2026-10-17):** the **git hand** is any executor running on Field's machine with an authenticated `gh` — today Claude Code; Cursor once `gh` / `api.github.com` is allowed in its sandbox and `gh pr create` is verified. Planners and auditors (Cowork, Codex) never run Git.
+
+| Tool | Writes | Commit | Push | Open/update PR | Merge |
+|---|---|---|---|---|---|
+| Cowork (planner, default auditor) | docs, Drafts, approved records, audit report | ✗ | ✗ | ✗ | ✗ |
+| Codex (fallback auditor) | audit report only | ✗ | ✗ | ✗ | ✗ |
+| Cursor (executor) | brief scope, handoff, own state | ✓ | ✓ | git hand only | git hand only |
+| Claude Code (executor, git hand) | brief scope, handoff, own state | ✓ | ✓ | ✓ | Field's own PRs under §7 |
+| Field | anything | ✓ | ✓ | ✓ | ✓ (only approver of Metee's PRs) |
+
+One git hand per branch at a time: the executor that owns the brief ships its branch; docs branches go to whoever Field hands the ship line to. Executors work in their own worktree (`git worktree add ../bar-BRIEF-###`), never in the checkout Cowork edits.
 
 Approved bookkeeping can ride with an open task PR as a separate docs commit at a coordinated clean point. Changes after an audit/approval require the head/evidence checks in §7. Do not create a separate PR only to mark an already merged brief Done.
 
@@ -98,6 +108,10 @@ Read AGENTS/CLAUDE, workflow, own state, exact brief revision and linked DRs. Ch
 Execute is idempotent: continue WIP, fix in-scope Must fix findings, report waiting review, or report Done for an already merged PR. Never create duplicate branches/PRs. A missing/duplicate ID or implementer mismatch must be clarified; legacy IDs resolve only through §10.
 
 At Implemented, provide the PR, handoff, assigned auditor and `audit BRIEF-###` as the next action. Dispatch across tools only if an available integration actually supports it and the task authorizes it; otherwise provide the handoff command. Do not claim an external auditor has started when it has not.
+
+### Ship line
+
+A planner/auditor session ends with one line for the git hand: `ship <branch>: "<commit message>" — files: <exact paths> — <Approved-by trailer if protected files>`. The git hand commits **exactly** those files without editing them (packaging only), pushes, and opens or updates the PR. If `git status` shows any other change, or a listed file is missing, it stops and reports. An audit report shipped this way is evidence-only (S..H, §7).
 
 ### Concurrent work and state
 
