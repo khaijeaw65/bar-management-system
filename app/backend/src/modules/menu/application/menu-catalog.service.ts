@@ -147,6 +147,11 @@ export class MenuCatalogService {
     now: Date,
   ): OrderableVariant {
     const decision = menuAvailability(availabilityInput(record), now);
+    // A turned-off variant is sold out even when the item is also outside its window.
+    const availableNow = decision.availableNow && variant.isAvailable;
+    const unavailableReason = variant.isAvailable
+      ? decision.unavailableReason
+      : 'sold_out';
     return {
       variantId: variant.id,
       price: money(variant.price),
@@ -154,8 +159,8 @@ export class MenuCatalogService {
       variantName: variant.name,
       itemType: record.itemType,
       kitchenTag: record.kitchenTag,
-      availableNow: decision.availableNow,
-      unavailableReason: decision.unavailableReason,
+      availableNow,
+      unavailableReason,
       modifierGroups: variant.modifierGroups.map(toGroup),
     };
   }

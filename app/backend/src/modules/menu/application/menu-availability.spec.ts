@@ -82,7 +82,10 @@ describe('menuAvailability', () => {
       { categoryActive: false, isAvailable: true, windows: [] },
       at('2026-10-16T19:00:00'),
     );
-    expect(decision.listed).toBe(false);
-    expect(decision.availableNow).toBe(false);
+    expect(decision).toEqual({
+      listed: false,
+      availableNow: false,
+      unavailableReason: 'sold_out',
+    });
   });
 });

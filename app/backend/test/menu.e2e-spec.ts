@@ -16,6 +16,7 @@ import { seedMenu } from '../src/cli/seed-menu-catalog.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
 import { CLOCK } from '../src/modules/menu/domain/clock.js';
 import { MenuCatalogService } from '../src/modules/menu/application/menu-catalog.service.js';
+import { MenuItemVariant } from '../src/modules/menu/infrastructure/persistence/menu-item-variant.entity.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
 
 const UNKNOWN_ID = '99999999-9999-4999-8999-999999999999';
@@ -164,6 +165,31 @@ describe('Menu and venue read (e2e)', () => {
       .set(auth())
       .expect(400);
     expect(badFlag.body.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('treats a turned-off variant as sold out in getOrderable', async () => {
+    const menu = MenuItemListSchema.parse(await get('/api/menu/items'));
+    const chang = itemNamed(menu.items, 'ช้างดราฟต์').variants[0];
+    if (!chang) throw new Error('seed variants missing');
+
+    const variants = dataSource.getRepository(MenuItemVariant);
+    const row = await variants.findOneByOrFail({ id: chang.id });
+    row.isAvailable = false;
+    await variants.save(row);
+
+    const lookup = await app.get(MenuCatalogService).getOrderable(
+      [chang.id],
+      FRIDAY_2300,
+    );
+    expect(lookup.missing).toEqual([]);
+    expect(lookup.found).toEqual([
+      expect.objectContaining({
+        variantId: chang.id,
+        price: '120.00',
+        availableNow: false,
+        unavailableReason: 'sold_out',
+      }),
+    ]);
   });
 
   it('reports a missing variant from getOrderable without throwing', async () => {

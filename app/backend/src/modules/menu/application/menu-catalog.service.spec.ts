@@ -97,6 +97,28 @@ describe('MenuCatalogService.getOrderable', () => {
     });
   });
 
+  it('reports a turned-off variant as sold out', async () => {
+    const item = record();
+    const variant = item.variants[0];
+    if (!variant) throw new Error('fixture variant missing');
+    variant.isAvailable = false;
+    findVariants.mockResolvedValue([item]);
+    const lookup = await service.getOrderable([VARIANT], NOON);
+    expect(lookup.found[0]).toMatchObject({
+      availableNow: false,
+      unavailableReason: 'sold_out',
+    });
+  });
+
+  it('reports an inactive category as sold out', async () => {
+    findVariants.mockResolvedValue([record({ categoryActive: false })]);
+    const lookup = await service.getOrderable([VARIANT], NOON);
+    expect(lookup.found[0]).toMatchObject({
+      availableNow: false,
+      unavailableReason: 'sold_out',
+    });
+  });
+
   it('does not throw when every id is missing', async () => {
     findVariants.mockResolvedValue([]);
     await expect(service.getOrderable([MISSING], NOON)).resolves.toEqual({

@@ -40,11 +40,14 @@ export function menuAvailability(
   const inside =
     input.windows.length === 0 ||
     input.windows.some((window) => windowContains(window, now));
-  const unavailableReason = !input.isAvailable
-    ? 'sold_out'
-    : input.windows.length > 0 && !inside
-      ? 'out_of_window'
-      : null;
+  // An inactive category is hidden from the list and not orderable.
+  // sold_out is the reason BRIEF-012 can attach; the contract has no other code.
+  const unavailableReason =
+    !input.categoryActive || !input.isAvailable
+      ? 'sold_out'
+      : input.windows.length > 0 && !inside
+        ? 'out_of_window'
+        : null;
   return {
     listed: input.categoryActive,
     availableNow: input.categoryActive && input.isAvailable && inside,
