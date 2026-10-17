@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-17 |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-17 |
 | **Implementer** | kj (executor agent — Cursor) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · tooling |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | **`docs/rules-class-helpers` merged** (`docs/rules/backend.md` → *Where functions live*, commit `16156bf`) · BRIEF-012 merged (PR #50) |
 | **References** | `docs/rules/backend.md` → Clean Code (*Where functions live*, *Reading order*, checklist item 7) · `docs/rules/ponytail.md` |
 | **Audit depth** | Compact (refactor, no behaviour change) — but every moved function is checked for identical behaviour |
@@ -20,7 +20,7 @@ No backend file mixes a class with module-level functions: helpers become `priva
 
 ## 2. Scope
 ### In
-**A. Class files → private methods.** Every module-level function in these files becomes a `private` method of the file's class (`private static` when it doesn't use `this`), placed in stepdown order after the public method that first calls it:
+**A. Class files → private methods.** Every module-level function in these files becomes a `private` method of the file's class, called with `this.` — **not `static`** (Rev 2), placed in stepdown order after the public method that first calls it:
 
 | File | Functions |
 |---|---|
@@ -102,7 +102,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 
 ## 6. Constraints
 - **No behaviour change.** Move code; don't rewrite it. A body changes only for `this.` / `ClassName.` calls, the renamed row readers in C, and imports.
-- `private static` for helpers that don't use `this` — don't add `this` usage just to avoid `static`.
+- **No `static` helpers (Rev 2):** plain `private`, called with `this.`, even when the helper doesn't read `this`. Any `private static` already written in WIP is converted.
 - Stepdown order: public methods first, private helpers after, in call order.
 - ≤ 20 lines per function and depth ≤ 2 still apply to moved code (lint).
 - `.js` import extensions (ESM). Stage explicit paths only.
@@ -130,3 +130,4 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-17 | Initial — after BRIEF-012 review found module-level helpers in class files · Ready approved by Field 2026-10-17 |
+| 2 | 2026-10-17 | Helpers are plain `private` methods called with `this.` — no `private static` (rule `backend.md` updated in the same commit) · approved by Field 2026-10-17 |
