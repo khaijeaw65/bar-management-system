@@ -67,3 +67,51 @@ The important part is right: rotation and revocation are each one atomic Redis s
 - Handoff Sonar section present: yes — not run (optional in this brief).
 - Remaining issues have reasons; no unapproved exclusions: n/a.
 - Learning mode: n/a (Field brief).
+
+## Re-audit — 2026-10-17 · `8d426b806cba410457dba728126b1fd3e8572077`
+
+- **Depth:** Compact (Findings 1–3 only). Head `516527b` changes only `docs/handoffs/BRIEF-015.md` and `docs/state/kj/SESSION_STATE.md` (evidence-only).
+- **Result: PASS, conditional on one Field decision** — see Finding 3.
+
+| # | Status | Evidence |
+|---|---|---|
+| 1 | ✅ Resolved | Named types: `LineAuthorizeInput`, `LineTokenExchange`, `LineAuthorizeUrlInput` (`domain/line-client.ts`), `AccessTokenPayload` (`jwt.strategy.ts`), `RedirectTarget`, `AuthOkResponse = z.infer<typeof AuthOkSchema>` (`auth.controller.ts`), `HttpResponseState` (interceptor, duplicate removed), `HealthStatus`. Fake LINE client in e2e uses the same types. |
+| 2 | ✅ Resolved | `redisService`, `jwtService`, `accessRequestService`, `appConfigService`, `authService`, `lineConfigService`, `accessRequestRepository`; `refreshTtlSeconds`, `revokedTtlSeconds()`, `parseRotationOutcome()`, `parseNonce()`. |
+| 3 | ✅ Resolved (access request) · ⏳ Field decision (`lineCallback`) | `recordRequest` / `insertRequest` take `AccessRequestInput`; caller in `auth.service.ts` passes one object with the same four values. `AuthController.lineCallback` keeps four Nest-decorated parameters pending Field's decision on the exemption. |
+
+- **Behaviour check:** the diff is renames, type aliases and one input object only. No Lua script, key name, redirect, cookie or HTTP path changed. `auth.e2e-spec.ts` changes are type imports on the fake client; no assertion changed.
+- **Evidence:** handoff re-ran lint / typecheck / test (31) / test:e2e (22) / build / OpenAPI diff on `8d426b8`, all 0. GitHub check run `ci` = success on head `516527b`. Not re-run by Cowork (same limitation as above).
+- **Suggestions S1–S4:** not implemented; optional, carry as follow-ups if Field wants them.
+
+**Recommendation to Field:** if you approve exempting Nest-decorated handler parameters (one phrase in `backend.md`), this is a clean PASS and PR #41 meets the §7 merge condition (audit PASS + `ci` green on the audited head; S..head evidence-only). If you don't, the one remaining change is a `LineCallbackQuery` object for `lineCallback`, then a one-line re-check.
+
+### Field decisions after the re-audit — 2026-10-17
+- **Handler parameters:** Field approved exempting Nest-decorated handler parameters (and constructor injection) from the ≤ 3 rule. `backend.md` updated (Approved-by: Field). → `AuthController.lineCallback` **resolved**, no code change.
+- **Where types live:** Field approved a new `backend.md` rule — classes contain behaviour only; types go in a types file in the layer that owns them. The current code predates the rule, so it becomes one new finding for this PR (auth is the reference module the next briefs copy).
+
+### Finding 4 — Must fix · Low: move types out of classes (new rule)
+Moves only — no rename, no shape change, no behaviour change. Update imports (`.js` extensions).
+
+| From | Types | To |
+|---|---|---|
+| `modules/auth/application/auth.service.ts` | `LoginResult`, `RefreshResult`, `LineLoginCallbackInput` | `modules/auth/application/auth.types.ts` |
+| `modules/auth/application/token.service.ts` | `RefreshRecord`, `IssuedSession`, `RotateResult`, `RotationOutcome` | `modules/auth/application/token.types.ts` |
+| `modules/auth/domain/line-client.ts` | `LineProfile`, `LineAuthorizeInput`, `LineTokenExchange`, `LineAuthorizeUrlInput` | `modules/auth/domain/line-client.types.ts` (the `LineClient` port interface, `LINE_CLIENT` token and `buildLineAuthorizeUrl` stay) |
+| `modules/auth/infrastructure/http/auth.controller.ts` | `AuthOkSchema`, `AuthOkResponse`, `RedirectTarget` | `modules/auth/infrastructure/http/dto/auth.dto.ts` |
+| `modules/auth/infrastructure/http/jwt.strategy.ts` | `AccessTokenPayload` | `modules/auth/infrastructure/http/dto/auth.dto.ts` |
+| `modules/iam/application/access-request.service.ts` | `AccessRequestInput` | `modules/iam/application/access-request.types.ts` |
+| `modules/iam/domain/staff-user.repository.ts` | `StaffUserView` | `modules/iam/domain/staff-user.types.ts` (the `StaffUserRepository` port interface stays) |
+| `modules/health/health.controller.ts` | `HealthStatus` | `modules/health/health.types.ts` |
+| `common/interceptors/transform-response.interceptor.ts` | `HttpResponseState` | `common/interceptors/transform-response.types.ts` |
+| `common/filters/http-exception.filter.ts` | `ErrorEnvelope` | `common/filters/http-exception.types.ts` |
+| `common/decorators/current-user.decorator.ts` | `CurrentUserPayload` | `common/decorators/current-user.types.ts` |
+| `modules/auth/infrastructure/http/auth-cookies.ts` | `SessionCookies` | `modules/auth/infrastructure/http/dto/auth.dto.ts` |
+| `providers/database/database-options.ts` | `DatabaseConnectionInput`, `DatabaseConnectionOptions` | `providers/database/database-options.types.ts` |
+
+Gates: lint / typecheck / test / test:e2e / build / OpenAPI diff (must stay empty). Then a one-line re-check.
+
+Check (auditor and executor): `git grep -n -E "^(export )?(type|interface) [A-Z]" -- 'app/backend/src/**/*.ts' ':!*.types.ts' ':!**/dto/**' ':!*.spec.ts'` → only port interfaces (`LineClient`, `StaffUserRepository`) remain.
+
+- Field widened the rule the same day (Approved-by: Field) from "classes" to all source files, so the last four rows (filter, decorator, cookie helpers, database options) are in scope.
+
+**Status after Field decisions: CHANGES REQUIRED — Finding 4 only.** Findings 1–3 resolved.
