@@ -1,3 +1,7 @@
 import { InitExtensions1758662400000 } from './migrations/1758662400000-InitExtensions.js';
+import { StaffIdentity1760659200000 } from './migrations/1760659200000-StaffIdentity.js';
 
-export const migrations = [InitExtensions1758662400000];
+export const migrations = [
+  InitExtensions1758662400000,
+  StaffIdentity1760659200000,
+];

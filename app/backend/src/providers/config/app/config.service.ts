@@ -12,4 +12,8 @@ export class AppConfigService {
   get port(): number {
     return this.configService.getOrThrow('app.port');
   }
+
+  get frontendUrl(): string {
+    return this.configService.getOrThrow('app.frontendUrl');
+  }
 }

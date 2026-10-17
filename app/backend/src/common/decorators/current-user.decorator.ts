@@ -1,13 +1,12 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 export interface CurrentUserPayload {
-  sub: string;       // staff_user.id
-  role: string;      // staff role name
-  venueId: string;
+  sub: string;
+  sid: string;
 }
 
 /**
- * @CurrentUser() — extracts the JWT payload attached by JwtAuthGuard.
+ * @CurrentUser() — the access-token identity attached by JwtAuthGuard.
  * Usage: handler(@CurrentUser() user: CurrentUserPayload)
  */
 export const CurrentUser = createParamDecorator(

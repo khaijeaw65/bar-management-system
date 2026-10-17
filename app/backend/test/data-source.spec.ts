@@ -6,6 +6,7 @@ describe('CLI data source', () => {
     process.env.PGUSER = 'bar';
     process.env.PGPASSWORD = 'bar';
     process.env.PGDATABASE = 'bar';
+    process.env.FRONTEND_URL = 'http://localhost:3000';
 
     const { AppDataSource } =
       await import('../src/providers/database/data-source.js');
