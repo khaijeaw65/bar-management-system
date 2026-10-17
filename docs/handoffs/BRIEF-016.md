@@ -1,0 +1,72 @@
+# Handoff — BRIEF-016 Venue settings and menu read
+
+| | |
+|---|---|
+| **Implementer** | kj |
+| **Date** | 2026-10-17 |
+| **Brief revision** | 2 |
+| **Branch / PR** | `feat/BRIEF-016-venue-menu-read` · PR not opened (audit before PR) |
+| **Commit** | `7be2120eb66e7eb70258093e95b725a0fb3cc3b7` |
+| **Status** | Implemented — awaiting audit |
+
+> Evidence below was run on that commit's tree. This handoff is a later docs commit.
+
+## Summary
+The backend stores one venue and the CD-04 sample menu, and staff can read both. `menuAvailability` is the only clock rule: Asia/Bangkok, injected `now`, end instant exclusive, and a window that crosses midnight belongs to the day it starts. `MenuCatalogService.getOrderable` uses that same rule and always reads the database. `GET /venue` returns the five POS fields and nothing about payment.
+
+## Acceptance Criteria
+| AC | Result | Test |
+|---|---|---|
+| AC-1 | ✅ | `test/menu-seed.e2e-spec.ts` — seed twice, same ids, one venue, 11 items, charge has no station, every item has a variant |
+| AC-2 | ✅ | `test/menu.e2e-spec.ts` — category and item order, `?categoryId`, `?available=true` drops ยำหมูยอ and the closed promo |
+| AC-3 | ✅ | `src/modules/menu/application/menu-availability.spec.ts` — no window, sold out, 20:59 in / 21:00 out, Fri–Sat overnight including Sat 01:00 and Sun 01:00, inactive category not listed |
+| AC-4 | ✅ | `menu-catalog.service.spec.ts` reports a missing variant without throwing · `test/menu.e2e-spec.ts` checks price, station, and sold out on real rows |
+| AC-5 | ✅ | `test/menu.e2e-spec.ts` — seeded settings, response keys have no payment fields |
+| AC-6 | ✅ | `test/menu.e2e-spec.ts` — unknown item 404 `NOT_FOUND`; bad `categoryId` and `available=false` are 400 `VALIDATION_ERROR` |
+| AC-7 | ✅ | `docs/api/openapi.json` lists the 4 endpoints; each description starts with `Permission:`. `openapi:check` exit 0 |
+| AC-8 | ✅ | Gate table below |
+| AC-9 | ✅ | `app/backend/README.md` seed order `seed:staff` → `seed:venue` → `seed:menu`, each safe to re-run |
+
+## Gate Evidence (G1)
+Run on the work tree of `7be2120`. Node v24.14.0, pnpm 10.0.0. E2e used Postgres `bar` on localhost:5432 and Redis `redis://127.0.0.1:6379`.
+
+| Command | Exit | Result |
+|---|---|---|
+| `pnpm --filter @bar/contracts test` | 0 | 13 passed · 0 failed |
+| `pnpm --filter @bar/backend lint` | 0 | pass |
+| `pnpm --filter @bar/backend typecheck` | 0 | pass |
+| `pnpm --filter @bar/backend test` | 0 | 48 passed · 0 failed |
+| `pnpm --filter @bar/backend test:e2e` | 0 | 38 passed · 0 failed |
+| `pnpm --filter @bar/backend build` | 0 | pass |
+| `pnpm --filter @bar/backend openapi:check` | 0 | pass (export produced no diff) |
+
+## Sonar (local scan)
+- Not run. The brief marks the local scan optional.
+
+## Decisions Raised
+- none. `SMALLINT[]` maps with TypeORM `array: true`. Bangkok time uses `Intl`. No new package.
+
+## Deviations from Brief
+- None.
+
+## Known Gaps / Follow-ups
+- `@RequirePermissions` is metadata only until the IAM brief, as the brief already records.
+- `imageUrl` is always `null`. `image_key` exists and is unused.
+- No menu or venue writes, no Redis menu cache, no 86 toggle. Those are BRIEF-017. `getOrderable` is a service method for BRIEF-012, not an HTTP route.
+- Promo rows are `item_type = simple`. Recipe stock is out of this brief. The charge row is the only `charge`, and its `kitchen_tag` is null.
+
+## AI Usage
+**High** — Cursor implemented the menu module, venue read, seeds, contracts, tests, and this handoff.
+
+## Review Routing
+- Assigned auditor: Cowork
+- Next command: `ตรวจ BRIEF-016`
+- Work SHA: `7be2120eb66e7eb70258093e95b725a0fb3cc3b7`
+
+## Notes for Reviewer
+- The venue row is `slug` `main`, name `The Loft Bar`, kitchen display off, cut-off `06:00`. Re-running the seed updates those three and does not clear a PromptPay id that a later brief may set.
+- Sample promos follow the brief's two windows, named from CD-04 / CD-14: `ลีโอ 4 ขวด + ถังน้ำแข็ง` every day 17:00–21:00, and `ค็อกเทล 1 แถม 1` Friday–Saturday 22:00–02:00. The design also draws `ไฮบอลมะนาวโซดา 2 แก้ว` as a second daily tile; this seed keeps one daily item.
+- โอลด์แฟชั่น is `ปกติ` ฿260 and `ดับเบิล` ฿360. Both variants link to `น้ำแข็ง` (required, 1 of ปกติ / ก้อนใหญ่) and `เพิ่ม` (optional, 0–1 เชอร์รี่ +฿20).
+- Category `sort_order` follows the CD tab order, with โปรโมชั่น first.
+- List, detail, and `getOrderable` call `menuAvailability`. The list omits an inactive category. Detail still returns that item, with `availableNow` false.
+- The menu list is five queries (categories, items, windows, variants, modifier join). `getOrderable` is five as well. Nothing is cached.
