@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import type { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import {
   DocumentBuilder,
   SwaggerModule,
@@ -8,14 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { ApiErrorSchema, apiResponseSchema } from '@bar/contracts';
 import { z } from 'zod';
-import { HealthController } from '../../modules/health/health.controller.js';
-import { HealthService } from '../../modules/health/health.service.js';
 import { zodToOpenApi } from './zod-to-openapi.js';
-
-// ponytail: export boots only the controllers we publish, with HealthService
-// stubbed, so it never connects to Postgres or Redis. Add a controller here
-// when its brief lands.
-const documentedControllers = [HealthController];
 
 export function backendVersion(): string {
   const packageJson = new URL('../../../package.json', import.meta.url);
@@ -49,26 +41,6 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
   return applyContractComponents(
     SwaggerModule.createDocument(app, openApiConfig(backendVersion())),
   );
-}
-
-export async function createOpenApiDocument(): Promise<OpenAPIObject> {
-  const moduleRef = await Test.createTestingModule({
-    controllers: documentedControllers,
-    providers: [
-      {
-        provide: HealthService,
-        useValue: { checkDb: async () => 'up' as const },
-      },
-    ],
-  }).compile();
-  const app = moduleRef.createNestApplication({ logger: false });
-  app.setGlobalPrefix('api');
-  await app.init();
-  try {
-    return buildOpenApiDocument(app);
-  } finally {
-    await app.close();
-  }
 }
 
 export function stableJson(value: unknown): string {

@@ -54,10 +54,14 @@ Run on the work tree of `39c042f`, before this handoff commit. Node v24.14.0, pn
 - none
 
 ## Deviations from Brief
-- None. The September enum list named `orderItemStatus`, which is not a `CREATE TYPE` in current `docs/schema.sql` (cancellation is `order_item.cancelled_at`, DR-012/013). AC-1 requires equality with the SQL file, so every current `CREATE TYPE` is exported and `orderItemStatus` is not.
+Approved by Field 2026-10-17 (audit BRIEF-009):
+- (a) Contracts devDependencies `vitest@^4.1.2`, `oxlint@^1.58.0`, `@types/node@^24.0.0`, `typescript@^6.0.2` — same versions as `@bar/backend`, not in the brief's pre-decided list.
+- (b) `app/mobile` two files (`src/app/index.tsx`, `src/__tests__/home.test.tsx`) updated so removing the old enum does not break typecheck or Jest.
+- (c) `app/frontend/src/lib/lint/no-arbitrary-values.test.ts` timeout raised to 30_000 ms so CI's cold ESLint run can finish (Finding 2).
+- (d) Enum set follows current `docs/schema.sql` (18 `CREATE TYPE`s). The brief's September list named `orderItemStatus`, which is not in the schema (`order_item.cancelled_at`, DR-012/013).
 
 ## Known Gaps / Follow-ups
-- `openapi:export` lists controllers in `createOpenApiDocument`. The next endpoint brief adds its controller there.
+- `openapi:export` lists controllers in `scripts/create-openapi-document.ts`. The next endpoint brief adds its controller there.
 - Zod's OpenAPI 3.0 conversion of `data: null` is `type: string, nullable: true, enum: [null]`. Swagger accepted it. Revisit only if a client generator misreads it.
 - Mobile home test keeps `createRoot(<Home />)` and casts the argument. `test-renderer` 1.3's types take options, not an element; the previous call is what passes at runtime.
 
@@ -69,8 +73,22 @@ Run on the work tree of `39c042f`, before this handoff commit. Node v24.14.0, pn
 - Next command: `audit BRIEF-009`
 - PR: https://github.com/khaijeaw65/bar-management-system/pull/34 · Work SHA: `39c042f655dd9ee69ba01ae2832de07b7ccbbf93` · self-check: SQL `CREATE TYPE` list ↔ `schemaEnumBySqlName`; D1 envelope keys ↔ interceptor, filter, `ApiErrorSchema`; D4 menu fields ↔ `MenuItemSummarySchema`; generated `docs/api/openapi.json` ↔ `/api/health` e2e.
 
+## Audit fixes (Finding 1 import graph)
+`createOpenApiDocument` and `@nestjs/testing` now live in `scripts/create-openapi-document.ts`, imported only by `scripts/openapi-export.ts`. After `nest build` on this fix:
+
+```
+graph-files 31
+testing-hits (none)
+grep -R "@nestjs/testing" app/backend/dist --include='*.js'
+(no matches in dist)
+grep -n "@nestjs/testing" app/backend/src/common/openapi/document.ts
+(no matches in document.ts)
+```
+
+The graph walk starts at `app/backend/dist/main.js` and follows relative `from '...'` imports (31 files). None contain `@nestjs/testing`.
+
 ## Notes for Reviewer
-- Export choice: a Nest testing module with `HealthController` and a stub `HealthService`, not `AppModule`. TypeORM never starts. Comment is on `documentedControllers` in `document.ts`.
+- Export choice: `scripts/create-openapi-document.ts` (imported only by `scripts/openapi-export.ts`) boots `HealthController` with a stub `HealthService`. `dist/main.js` does not import it. TypeORM never starts.
 - Frontend consumes `dist`. No `transpilePackages`.
 - `OPENAPI_ENABLED` defaults to `true` when unset or empty. `.env.example` says production is `false`.
 - The mobile screen line changed from `OrderStatus.PENDING` to `OrderStatusSchema.enum.pending` so the deleted enum does not break `tsc` / Jest once contracts is in the affected set.

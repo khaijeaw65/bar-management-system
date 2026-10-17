@@ -1,6 +1,7 @@
 # State — KJ
 Updated: 2026-10-17 12:20 · Agent: Cursor
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
+Planning notes (Cowork-owned): docs/state/kj/PLANNING.md
 
 ## Resume
 Wait for CI on https://github.com/khaijeaw65/bar-management-system/pull/34, then `audit BRIEF-009`.
