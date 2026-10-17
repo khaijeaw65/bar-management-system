@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-17 |
 | **Implementer** | kj (executor agent — Cursor) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -124,9 +124,9 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
-| 1 | 2026-10-17 | Initial — after BRIEF-012 review found module-level helpers in class files |
+| 1 | 2026-10-17 | Initial — after BRIEF-012 review found module-level helpers in class files · Ready approved by Field 2026-10-17 |
