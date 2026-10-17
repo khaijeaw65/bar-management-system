@@ -1,6 +1,6 @@
 # State — <KJ | Metee>
 Updated: YYYY-MM-DD HH:mm · Agent: <tool>
-> Tracked branch snapshot, ≤ 40 lines. Write only your own state; refresh at session end/before changing tools.
+> Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Write only your own state; keep *Carry over* unchanged unless you are Cowork/Field.
 
 ## Resume
 <One concrete next action with a file/command; matches Next steps item 1.>
@@ -11,7 +11,7 @@ Updated: YYYY-MM-DD HH:mm · Agent: <tool>
 - Stage: In Progress | Implemented | Changes requested | Done (merged PR evidence) (or onboarding/planning)
 - Branch: <actual branch>
 - Work commit: <implementation/evidence sha, not this state commit>
-- PR: <link or none>
+- PR: <link, or none — opens after audit PASS>
 
 ## Working tree
 - Uncommitted: <files + unfinished work, or clean>
@@ -31,5 +31,11 @@ Updated: YYYY-MM-DD HH:mm · Agent: <tool>
 - Shared files: <likely overlap + coordination needed, or none>
 - Review queue: <PRs awaiting review, or none>
 
-## Queue (optional — planning only, ≤ 6 lines)
+## Carry over (executors keep unchanged — Cowork/Field edit)
+- Milestones: <dates + cut rule, or none>
+- Parked: <decision → where it is recorded, or none>
+- Field to-do: <short items, or none>
+- Follow-ups: <pointers to audit/handoff findings, or none>
+
+## Queue (optional — ≤ 6 lines)
 1. <next item after the active brief>

@@ -46,7 +46,7 @@ Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `a
 1. Read `docs/rules/workflow.md` — roles, session types, brief lifecycle, gates, Field Guard.
 2. Decide your **session type** (workflow.md §1): Implementation · Audit · Planning · Onboarding · explicit Field-authorized workflow maintenance. Non-implementation sessions follow their own write limits and do not need a Ready brief.
 3. **Implementation sessions:** identify who runs this session (Field or เมธี) — ask if unclear. Read `docs/state/<person>/SESSION_STATE.md`, then the `Ready` brief and its linked DRs. Run the read-only checkout check (`git status`, branch, last commit) — mismatch → stop and report.
-4. Implementation sessions end by overwriting `docs/state/<person>/SESSION_STATE.md`. When all ACs pass G1 → handoff + status `Implemented`. Done is derived from the merged PR after Field approval; no status-only brief edit is required.
+4. Implementation sessions end by overwriting `docs/state/<person>/SESSION_STATE.md` (keep its *Carry over* section unchanged). When all ACs pass G1 → handoff + status `Implemented`. Commit and push per workflow.md §3 — one brief = one branch = one PR, opened only after audit PASS. Done is derived from the merged PR after Field approval; no status-only brief edit is required.
 
 **Field (KJ) is the only decision authority.** New dependency, brief deviation, flow/architecture change, schema/contracts change, or auth/payment/PDPA change — unless already **approved** (exact Pre-decided item in the Ready brief, or an Approved DR) → create a DR in `docs/decisions/`, stop that path, and start your reply with `FIELD REVIEW NEEDED: DR-### — <one line>`.
 
@@ -65,7 +65,7 @@ Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `a
 7. **Price snapshots are immutable** — `order_item.unit_price_snapshot` is frozen at order time.
 8. **Payment idempotency** — always check `gateway_tx_id` before processing a webhook.
 9. **Never decide alone** — anything on the Field Guard trigger list goes through a DR (workflow.md §5).
-10. **Never change brief scope/approval, rules, or the other person's state on your own initiative. The brief PR-link bookkeeping exception and explicit Field-authorized maintenance are defined in workflow.md.** Protected files only if the active brief lists the exact path under *Unlocked protected files*.
+10. **Never change brief scope/approval, rules, or the other person's state on your own initiative. Packaging commits (Field-approved brief revision, audit report at PASS) and explicit Field-authorized maintenance are defined in workflow.md.** Protected files only if the active brief lists the exact path under *Unlocked protected files*.
 
 ---
 

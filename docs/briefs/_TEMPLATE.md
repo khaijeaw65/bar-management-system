@@ -6,7 +6,6 @@
 | **Implementer** | kj / methee |
 | **Assigned auditor** | Cowork (default) / Codex (Field-assigned fallback) |
 | **Auditor assignment** | Field instruction/date; fallback reason or none |
-| **PR** | <link, executor may fill this field only> |
 | **Affected apps** | backend / frontend / mobile / contracts / tooling (select all in scope) |
 | **Revision** | 1 |
 | **Depends on** | <brief IDs, or none> |

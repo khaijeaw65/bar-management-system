@@ -2,7 +2,7 @@
 
 > **Always-on. All agents. No exceptions.**
 > Protected files are never edited by agents on their own initiative — not even with a comment or TODO. If you think one needs changing → raise a DR (`docs/decisions/_TEMPLATE.md`) or ask Field, and stop that path. An agent may edit a protected file **only with Field's explicit approval of the exact change** — see *Field-approved edits* below.
-> Explicit Field-requested workflow maintenance may change only the specified documents; this is not a standing executor exception. Onboarding may write `.agent-local.json` and initialize own state. Executors may fill only the brief PR link as bookkeeping. See workflow §1–4.
+> Explicit Field-requested workflow maintenance may change only the specified documents; this is not a standing executor exception. Onboarding may write `.agent-local.json` and initialize own state. Executors never edit briefs; they commit a Field-approved brief revision or the auditor's report exactly as written (packaging only). See workflow §1–4.
 > Workflow, roles and the Field Guard: `docs/rules/workflow.md`.
 
 ---
@@ -42,9 +42,9 @@ docs/erd.html                ← Field-approved edits by Cowork / Codex allowed 
 
 ### Workflow Documents (ownership-restricted)
 ```
-docs/briefs/**            ← Field only. Cowork may CREATE new briefs with Status: Draft, and revise / set Ready after Field approves in the session (workflow.md §3). Executors may fill the brief's PR field only
+docs/briefs/**            ← Field only. Cowork may CREATE new briefs with Status: Draft, and revise / set Ready after Field approves in the session (workflow.md §3). Executors never edit briefs (packaging commits only, workflow §3)
 docs/decisions/**         ← anyone may CREATE a new DR (Pending). Only Field writes Decision/Status — Cowork may record a decision Field states explicitly in the session (workflow.md §5)
-docs/audits/**            ← assigned Cowork/Codex auditor, or explicitly requested cross-check, only
+docs/audits/**            ← assigned Cowork/Codex auditor, or explicitly requested cross-check, only. The executor commits the report unchanged at PASS (packaging only)
 docs/state/<person>/SESSION_STATE.md    ← only the state file of the person running the session
 docs/handoff.md           ← frozen legacy log — do not edit
 docs/quality/README.md    ← Field-owned quality procedure (local SonarQube); change only with Field's approval

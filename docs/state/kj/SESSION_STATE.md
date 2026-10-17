@@ -1,36 +1,34 @@
 # State — KJ
-Updated: 2026-10-17 19:22 · Agent: Cursor
-> Tracked branch snapshot; brief/DR/PR evidence is authoritative.
-Planning notes (Cowork-owned): docs/state/kj/PLANNING.md
+Updated: 2026-10-17 20:15 · Agent: Cowork
+> Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-011 fixes for the Cowork audit are on PR #45. Next: Cowork runs a compact `audit BRIEF-011`.
+Cowork drafts BRIEF-012 (orders) as the seed of `feat/BRIEF-012-orders` — first brief under workflow Rev 19.
 
 ## Active
-- Brief: BRIEF-011 — Backend tables and visits · Revision: 1
-- Brief file: docs/briefs/BRIEF-011-backend-tables-visits.md
-- Stage: Changes requested — fixes committed, awaiting compact re-audit
-- Branch: feat/BRIEF-011-backend-tables-visits
-- Work commit: 839e32c4c12b5d785874774973c249d17111ffd4
-- PR: https://github.com/khaijeaw65/bar-management-system/pull/45
-
-## Working tree
-- Uncommitted: clean after this handoff/state commit
-- Checks: contracts test 13, lint, typecheck, test 40, test:e2e 33, build, openapi:check all exit 0 on `839e32c`
-
-## Progress
-- Completed: AC-1–AC-10, then audit findings 1–5
-- Remaining: compact re-audit
+- Brief: none — BRIEF-011 Done (PR #45, audit PASS on `839e32c`) · Stage: planning
+- Branch: `docs/workflow-rev19` (workflow Rev 19; `PLANNING.md` removed) · PR: pending
+- Uncommitted: clean after this docs commit · Checks: docs only
+- Done 17 Oct: BRIEF-009 (#34), BRIEF-007 (#35), BRIEF-015 (#41 + #43), BRIEF-011 (#45), workflow Rev 18 (#46)
 
 ## Next steps
-1. Cowork: `audit BRIEF-011`
-2. Field reviews the re-audit and the PR
+1. Cowork seeds BRIEF-012 Draft. Inputs: DR-012 (incl. contracts `OrderStatus` drift), DR-013 (kitchen off = one ticket, `order_number`), DR-014 · CD-08 R10, CD-15 R5, CD-02 R5 + PIN for void/comp, CD-04 R8, CD-07 "แจ้งโอนแล้ว" · first order moves visit `open → active` with a conditional write like `closeIfLive` (BRIEF-011 audit Finding 1)
+2. Field approves Ready → `ทำ BRIEF-012` (Cursor) → `ตรวจ BRIEF-012` → PR after PASS
+3. Close PR #47 unmerged (superseded by this branch)
 
 ## Blockers / Coordination
-- none
-- Shared files: `pnpm-lock.yaml`, `docs/api/openapi.json` (this PR)
-- Review queue: PR #45
+- none · Shared files: none · Review queue: `docs/workflow-rev19` PR
+
+## Carry over (executors keep unchanged — Cowork/Field edit)
+- Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; 2–8 Nov no new features) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
+- Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-03 R3 screen review (Field, before BRIEF-013) · CD-15 R4 DS StatusChip (Field edits DS)
+- Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete merged branches (#45, #46); optional auto-delete head branches
+- Follow-ups: before a real-bar pilot → BRIEF-011 audit S3 + IAM brief · BRIEF-011 S1/S4 + re-audit `FRONTEND_URL` note + old IAM names · BRIEF-015 audit S3/S4 · stale docs: FRD §13/§15 PWA, `docs/briefs/ui/*.md` tokens
+- BRIEF-013 inputs: CD-03 Q2 (one real EasySlip slip), F1 columns, F2 split lock, 409 in-flight
+- Design: CD-11 re-copy (R1 + R5) before the 8 Nov export · CD-02 "แจ้งโอนแล้ว" alert variant next revision · canvas index/recipe → `docs/design/README.md`
 
 ## Queue
-1. BRIEF-011 compact re-audit
-2. BRIEF-012 orders
+1. BRIEF-012 orders
+2. BRIEF-013 payment + webhook
+3. IAM brief (full policy editor)
+4. Web screen briefs after CDs
