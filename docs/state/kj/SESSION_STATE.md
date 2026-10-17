@@ -1,38 +1,38 @@
 # State — KJ
-Updated: 2026-10-17 12:20 · Agent: Cursor
+Updated: 2026-10-17 13:30 · Agent: Cursor
 > Tracked branch snapshot; brief/DR/PR evidence is authoritative.
 Planning notes (Cowork-owned): docs/state/kj/PLANNING.md
 
 ## Resume
-Wait for CI on https://github.com/khaijeaw65/bar-management-system/pull/34, then `audit BRIEF-009`.
+BRIEF-007 is Implemented on Draft PR #35. Next: `audit BRIEF-007` after `ci` is green on the head that includes the handoff.
 
 ## Active
-- Brief: BRIEF-009 — Contracts foundation + OpenAPI · Revision: 1
-- Brief file: docs/briefs/BRIEF-009-contracts-openapi-foundation.md
+- Brief: BRIEF-007 — Backend auth · Revision: 3
+- Brief file: docs/briefs/BRIEF-007-backend-auth.md
 - Stage: Implemented
-- Branch: feat/BRIEF-009-contracts-openapi-foundation
-- Work commit: 39c042f655dd9ee69ba01ae2832de07b7ccbbf93
-- PR: https://github.com/khaijeaw65/bar-management-system/pull/34
+- Branch: feat/BRIEF-007-backend-auth
+- Work commit: d300674b0033be5c9feab3f0119e11a912d27584
+- PR: https://github.com/khaijeaw65/bar-management-system/pull/35
 
 ## Working tree
-- Uncommitted: clean after this state commit
-- Checks: G1 exit 0 on 39c042f (see docs/handoffs/BRIEF-009.md). CI not confirmed.
+- Uncommitted: this handoff, the PR link in the brief, and this state file
+- Checks: G1 exit 0 on d300674 (see docs/handoffs/BRIEF-007.md). CI not confirmed.
 
 ## Progress
-- Completed: AC-1–AC-8 and local AC-9 gates
-- Remaining: CI green, Cowork audit
+- Completed: AC-1–AC-11 and local AC-12 gates
+- Remaining: CI green on this PR, Cowork audit
 
 ## Next steps
-1. Open the PR and confirm `ci` on this head
-2. `audit BRIEF-009`
-3. BRIEF-007 auth after merge
+1. Confirm `ci` on PR #35
+2. `audit BRIEF-007`
+3. Field reviews the audit and the PR
 
 ## Blockers / Coordination
 - none
-- Shared files: `pnpm-lock.yaml` only. The other checkout (`docs/cd-review-decisions`) has uncommitted CD-02 and CD-15 handoff edits; they were not touched.
-- Review queue: this PR
+- Shared files: `pnpm-lock.yaml`, `.github/workflows/ci.yml` (Redis service and auth test env only), `docs/api/openapi.json`
+- Review queue: PR #35
 
 ## Queue
-1. BRIEF-007 auth
+1. BRIEF-007 audit
 2. BRIEF-011 tables and visits
 3. BRIEF-012 orders

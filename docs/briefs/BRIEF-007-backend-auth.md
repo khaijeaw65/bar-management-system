@@ -6,7 +6,7 @@
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |
-| **PR** | <executor fills> |
+| **PR** | https://github.com/khaijeaw65/bar-management-system/pull/35 |
 | **Affected apps** | backend · infra/CI (Redis service) |
 | **Revision** | 3 |
 | **Depends on** | BRIEF-004 (Done), BRIEF-006 (Done), **BRIEF-009 merged** (envelope `code`, OpenAPI helper) |
