@@ -7,7 +7,7 @@
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts |
-| **Revision** | 2 |
+| **Revision** | 3 |
 | **Depends on** | **BRIEF-011 merged** (PR #45 — `VisitService`, `NotificationsService`, `closeIfLive`) · **BRIEF-016 merged** (Q1 — `venue` settings row + menu tables/read + seed) |
 | **References** | FRD §6 · `docs/schema.sql` §6 (`order_record`, `order_ticket`, `order_item`, `order_item_modifier`, `order_status`) · DR-011 · DR-012 (+ Amendment 1) · DR-013 · DR-014 #1 #4 · `docs/api/README.md` (Orders, Idempotency, Realtime) · CD-04 R8 · CD-08 R10-1, R10-4 · CD-15 · BRIEF-011 audit Finding 1 · `docs/rules/backend.md` |
 | **Audit depth** | Full (core flow, concurrency, money) |
@@ -24,7 +24,7 @@ Staff can place an order on a live visit; it gets a daily number (#001), splits 
 - **Module** `modules/order/` (hexagonal, same layout as `modules/venue/`): `OrderService` (placement), `TicketService` (all ticket transitions — the only place `order_ticket.status` changes), TypeORM adapters, controllers.
 - **Placement** `POST /visits/:visitId/orders` — one transaction:
   1. Lock the visit row (`SELECT … FOR UPDATE`, new `VisitService` method used by `OrderService`); state not `open|active|idle` → 409 `INVALID_STATE_TRANSITION`. `open|idle → active` in the same transaction (BRIEF-011 Finding 1 follow-through: no check-then-write).
-  2. Validate every line: variant exists and is orderable now (BRIEF-016 availability rule: `is_available` + DR-010 window) → else 409 `ITEM_UNAVAILABLE` naming the variant; modifier options belong to the variant's groups and meet `is_required` / `min_select` / `max_select` → else 400 `VALIDATION_ERROR`.
+  2. Validate every line: via BRIEF-016 `MenuCatalogService.getOrderable()` (never re-implement availability): unknown variant → 400 `VALIDATION_ERROR`; not orderable now → 409 `ITEM_UNAVAILABLE` with `details: [{ variantId, reason: "sold_out" | "out_of_window" }]` (DR-010 rule 11); an unavailable modifier option → same 409, `reason: "sold_out"`; modifier options belong to the variant's groups and meet `is_required` / `min_select` / `max_select` → else 400 `VALIDATION_ERROR`.
   3. `business_date` from `venue.business_day_cutoff` in Asia/Bangkok (local time before cut-off → previous date). `order_number` = next for that date under `pg_advisory_xact_lock` keyed on the date (Q5).
   4. Tickets: `venue.kitchen_display_enabled` off → one `bar` ticket for all non-charge items; on → `bar` / `food` by `menu_item.kitchen_tag`. Charge items → their own ticket (`station` NULL) created `sent` with `sent_at`. Decided once, never re-split (DR-013 Rule 1).
   5. Snapshots: `unit_price_snapshot` = variant price, `price_delta_snapshot` per modifier. `created_by` = staff from the JWT (customer QR orders are out of scope).
@@ -38,7 +38,7 @@ Staff can place an order on a live visit; it gets a daily number (#001), splits 
   | `POST /tickets/:id/send` | `ready → sent`, or `accepted → sent` when READY is skipped | sets `sent_at`; `accepted → sent` while READY applies → 409 |
 - **Reads:** `GET /tickets?status=&visitId=` (queue; default `pending,accepted,ready`; excludes charge tickets; each ticket carries `orderNumber`, `station`, seat label/kind, items with modifiers + `orderedByName`, `acceptedBy` display name, `createdAt`) · `GET /orders/:id` (order + all tickets + items — CD-08 R10-1) · `GET /visits/:id` gains `orders[]` · `GET /tables` fills `currentVisit.total` and `itemCount` (non-cancelled lines: `quantity × (unit + Σ deltas)`).
 - **Realtime:** add room `staff`, joined by every authenticated `/staff` socket (CD-08 R10-4, Q3 decided); `NotificationsService.emitToStaff()`. `order.created` and `ticket.status_changed` go to `staff`; `visit.*` stays on `pos`.
-- **Contracts:** request/response schemas for the endpoints above, `TicketSchema`, `OrderSchema`, event schemas `order.created`, `ticket.status_changed`; error codes `ITEM_UNAVAILABLE`, `IDEMPOTENCY_KEY_REUSED`. Confirm `OrderStatusSchema` matches `schema.sql` (state noted a drift; today both list 6 values incl. `cancelled` — auditor re-checks).
+- **Contracts:** request/response schemas for the endpoints above, `TicketSchema`, `OrderSchema`, event schemas `order.created`, `ticket.status_changed`; error code `ITEM_UNAVAILABLE` (`IDEMPOTENCY_KEY_REUSED` already exists). Confirm `OrderStatusSchema` matches `schema.sql` (state noted a drift; today both list 6 values incl. `cancelled` — auditor re-checks).
 - **Docs:** `docs/api/README.md` Orders table + event list updated to the DR-013 names (`/tickets/:id/…`, `ticket.status_changed`); `docs/api/openapi.json` regenerated.
 
 ### Out (do NOT build here)
@@ -67,7 +67,7 @@ Staff can place an order on a live visit; it gets a daily number (#001), splits 
 - **AC-3** — Given an `open` (or `idle`) visit, when its first order is placed, then the visit is `active` and `visit.state_changed` is emitted once; a closed/abandoned visit → 409 `INVALID_STATE_TRANSITION` and nothing is written.
 - **AC-4** — Given a close and an order racing on the same visit (`Promise.all`, e2e), then either the order is 201 and the close 200 after it, or the close 200 and the order 409 — never an order row on a visit closed before it.
 - **AC-5** — Given 5 concurrent orders on one business date, then numbers are unique and consecutive; given local time 05:59 vs 06:00 with cut-off 06:00, then `business_date` is the previous vs current day (unit, injected clock).
-- **AC-6** — Given an unavailable variant (flag off, or outside its window), then 409 `ITEM_UNAVAILABLE`; a modifier set breaking required/min/max or from another group → 400 `VALIDATION_ERROR`; nothing written.
+- **AC-6** — Given an unavailable variant (flag off, or outside its window), then 409 `ITEM_UNAVAILABLE` with `reason` `sold_out` / `out_of_window` per line; a modifier set breaking required/min/max or from another group → 400 `VALIDATION_ERROR`; nothing written.
 - **AC-7** — Given the same `Idempotency-Key` + body twice, then the second returns the first response and one order exists; same key + different body → 409 `IDEMPOTENCY_KEY_REUSED`.
 - **AC-8** — Ticket transitions follow §2 (incl. READY only for table seats with the kitchen screen on); a wrong-state call → 409; two concurrent `accept` on one ticket → one 200 + one 409 and exactly one `ticket.status_changed`; `acceptedBy` shows the accepting staff.
 - **AC-9** — `GET /tickets` defaults to `pending,accepted,ready`, excludes charge tickets, filters by `status` / `visitId`; `GET /orders/:id` returns all tickets incl. charge; `GET /tables` shows the visit's `total` / `itemCount`; `GET /visits/:id` lists its orders.
@@ -117,7 +117,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - **Q3 — Staff-app room. ✅ Decided (Field, 2026-10-17): A** — one room `staff`, joined by every authenticated `/staff` socket (POS included); `order.created` + `ticket.status_changed` → `staff`; `visit.*` stays on `pos`. *Why:* smallest change; both surfaces need the same events; a kitchen-display room can be added later without breaking this.
 - **Q4 — Names. ✅ Decided (Field, 2026-10-17): A — DR-013 names:** `/tickets/:id/accept|ready|send`, `GET /tickets`, `GET /orders/:id`, events `order.created`, `ticket.status_changed`. This brief updates `docs/api/README.md` (Orders table + event list). *Why:* status lives on the ticket; `/orders/:id/accept` is ambiguous once an order has bar + food tickets.
 - **Q5 — Order number. ✅ Decided (Field, 2026-10-17): A** — in the placement transaction: `pg_advisory_xact_lock(<business date key>)` → `MAX(order_number) + 1` → insert; `uq_order_number_per_day` stays as the safety net; one-line code comment says why the lock exists. *Why:* correct by construction, no retry code, no gaps on rollback; lock scope = one business date, held for milliseconds.
-- **Pre-decided:** error codes `ITEM_UNAVAILABLE`, `IDEMPOTENCY_KEY_REUSED` · permissions `orders:create`, `orders:read`, `orders:update_status` · room `staff` + `NotificationsService.emitToStaff()` · no new packages (Redis provider, socket.io from BRIEF-011).
+- **Pre-decided:** new error code `ITEM_UNAVAILABLE` with per-line `reason` (DR-010 rule 11; `IDEMPOTENCY_KEY_REUSED` already in contracts) · permissions `orders:create`, `orders:read`, `orders:update_status` · room `staff` + `NotificationsService.emitToStaff()` · no new packages (Redis provider, socket.io from BRIEF-011).
 - **Likely DRs:** TypeORM pessimistic lock inside `@Transactional()` with the CLS transaction manager · advisory-lock key from a date.
 
 ## 8. Unlocked Protected Files
@@ -136,3 +136,4 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 |---|---|---|
 | 1 | 2026-10-17 | Initial Draft (Cowork) — from DR-012/013/014, CD-04 R8, CD-08 R10-1/R10-4, CD-15 R5, CD-02 R5, BRIEF-011 Finding 1; Q1–Q5 open |
 | 2 | 2026-10-17 | Q1–Q5 decided by Field in session (all A), recorded by Cowork on Field's explicit instruction; Pre-decided list completed |
+| 3 | 2026-10-17 | Aligned with BRIEF-016: availability via `getOrderable()`; `ITEM_UNAVAILABLE` carries `reason` (DR-010 rule 11); `IDEMPOTENCY_KEY_REUSED` already exists — no decision change |

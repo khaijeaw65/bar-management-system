@@ -1,18 +1,19 @@
 # State — KJ
-Updated: 2026-10-17 20:50 · Agent: Cowork
+Updated: 2026-10-17 21:05 · Agent: Cowork
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-Cowork seeds BRIEF-016 Draft (venue settings + menu read + seed) — BRIEF-012 Rev 2 has Q1–Q5 decided, waits for Ready approval + BRIEF-016.
+Field decides BRIEF-016 Q1–Q3 and approves Ready → `ทำ BRIEF-016`. BRIEF-012 (Rev 3, Q1–Q5 decided) waits for Ready + BRIEF-016 merge.
 
 ## Active
-- Brief: BRIEF-012 orders · Stage: Draft Rev 2, Q1–Q5 decided (seed on `feat/BRIEF-012-orders`, local, not pushed)
+- Brief: BRIEF-016 venue + menu read · Stage: Draft Rev 1 (seed on `feat/BRIEF-016-venue-menu-read`, local)
+- Next brief: BRIEF-012 orders · Draft Rev 3 (seed on `feat/BRIEF-012-orders`, local; rebase on main after #016 merges — state file reconcile)
 - Uncommitted: none · Checks: docs only
 - Done 17 Oct: BRIEF-009 (#34), BRIEF-007 (#35), BRIEF-015 (#41 + #43), BRIEF-011 (#45), workflow Rev 18 (#46), Rev 19 (#48)
 
 ## Next steps
-1. Cowork seeds BRIEF-016 (read-only menu, ~1.5 d) → Field approves Ready → `ทำ BRIEF-016`
-2. Field approves BRIEF-012 Rev 2 Ready → `ทำ BRIEF-012` (Cursor) → `ตรวจ` → PR after PASS
+1. Field decides BRIEF-016 Q1–Q3 → Ready → `ทำ BRIEF-016` (Cursor) → `ตรวจ` → PR after PASS
+2. Field approves BRIEF-012 Rev 3 Ready → `ทำ BRIEF-012` (Cursor) → `ตรวจ` → PR after PASS
 3. Cowork drafts BRIEF-017 (void/comp + PIN, issue/resolve, auto-cancelled, sold-out + 86 toggle); note CD-02 R5 / CD-15 R5 retarget + CD-15 `/tickets` names
 4. Confirm PR #47 closed unmerged (superseded by #48)
 
