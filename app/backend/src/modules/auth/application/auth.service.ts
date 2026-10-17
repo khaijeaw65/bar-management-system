@@ -38,7 +38,7 @@ export class AuthService {
     const state = randomBytes(32).toString('base64url');
     const nonce = randomBytes(32).toString('base64url');
     await this.redisService.client.set(
-      oauthKey(state),
+      this.oauthKey(state),
       JSON.stringify({ nonce }),
       'EX',
       OAUTH_TTL_SECONDS,
@@ -84,8 +84,8 @@ export class AuthService {
   }
 
   private async consumeNonce(state: string): Promise<string | null> {
-    const raw = await this.redisService.client.getdel(oauthKey(state));
-    return parseNonce(raw);
+    const raw = await this.redisService.client.getdel(this.oauthKey(state));
+    return this.parseNonce(raw);
   }
 
   private createLoginFailedRedirect(): LoginResult {
@@ -156,25 +156,25 @@ export class AuthService {
   private frontendBaseUrl(): string {
     return this.appConfigService.frontendUrl.replace(/\/$/, '');
   }
-}
 
-function oauthKey(state: string): string {
-  return `oauth:${state}`;
-}
-
-function parseNonce(raw: string | null): string | null {
-  if (!raw) return null;
-  try {
-    return readNonce(JSON.parse(raw));
-  } catch {
-    return null;
+  private oauthKey(state: string): string {
+    return `oauth:${state}`;
   }
-}
 
-function readNonce(parsed: unknown): string | null {
-  if (typeof parsed !== 'object' || parsed === null || !('nonce' in parsed))
-    return null;
-  const nonce = (parsed as { nonce: unknown }).nonce;
-  if (typeof nonce !== 'string' || nonce.length === 0) return null;
-  return nonce;
+  private parseNonce(raw: string | null): string | null {
+    if (!raw) return null;
+    try {
+      return this.readNonce(JSON.parse(raw));
+    } catch {
+      return null;
+    }
+  }
+
+  private readNonce(parsed: unknown): string | null {
+    if (typeof parsed !== 'object' || parsed === null || !('nonce' in parsed))
+      return null;
+    const nonce = (parsed as { nonce: unknown }).nonce;
+    if (typeof nonce !== 'string' || nonce.length === 0) return null;
+    return nonce;
+  }
 }

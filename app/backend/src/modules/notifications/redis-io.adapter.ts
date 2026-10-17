@@ -18,22 +18,22 @@ export class RedisIoAdapter extends IoAdapter {
   public override createIOServer(port: number, options?: ServerOptions): Server {
     const server = super.createIOServer(
       port,
-      staffSocketOptions(options, this.frontendUrl),
+      this.staffSocketOptions(options, this.frontendUrl),
     ) as Server;
     server.adapter(createAdapter(this.publisher, this.subscriber));
     return server;
   }
-}
 
-function staffSocketOptions(
-  options: ServerOptions | undefined,
-  frontendUrl: string,
-): ServerOptions {
-  return {
-    ...options,
-    cors: { origin: frontendUrl, credentials: true },
-    allowRequest: (request, callback) => {
-      allowStaffOrigin(request, frontendUrl, callback);
-    },
-  } as ServerOptions;
+  private staffSocketOptions(
+    options: ServerOptions | undefined,
+    frontendUrl: string,
+  ): ServerOptions {
+    return {
+      ...options,
+      cors: { origin: frontendUrl, credentials: true },
+      allowRequest: (request, callback) => {
+        allowStaffOrigin(request, frontendUrl, callback);
+      },
+    } as ServerOptions;
+  }
 }
