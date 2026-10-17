@@ -7,7 +7,7 @@
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | **BRIEF-011 merged** (PR #45 — `modules/venue/`, `seed:venue`, envelope + OpenAPI helper) |
 | **References** | `docs/schema.sql` §1 (`venue`, enums `venue_payment_mode`, `promptpay_id_type`) + §4 (`menu_category`, `menu_item`, `menu_item_availability`, `menu_item_variant`, `modifier_group`, `modifier_option`, `menu_variant_modifier_group`, enums `item_type`, `kitchen_station`) · DR-010 (rules 1, 3, 5, 10–12) · DR-012 (station tag) · DR-014 #1 #4 · BRIEF-012 Q1 (Field, 2026-10-17) · `docs/api/README.md` (Menu, D4) · CD-04 (R2 quick add, R4 promos, R8, menu data) · `docs/rules/backend.md` |
 | **Audit depth** | Full (core-flow input: prices + availability feed orders) |
@@ -39,7 +39,7 @@ The backend has the venue's settings and a seeded bar menu, and POS / staff app 
 
 ### Out (do NOT build here)
 - 86 / un-86 (`mark-unavailable` / `mark-available`), `menu.availability_changed` event, sold-out auto-cancel → BRIEF-017.
-- Menu / venue write APIs, back-office (CD-12) · customer `GET /public/menu` (customer-QR brief) · images: `imageUrl` returned `null` until an S3 brief (`image_key` column exists, unused).
+- Redis menu cache (BRIEF-017, Q1) · menu / venue write APIs, back-office (CD-12) · customer `GET /public/menu` (customer-QR brief) · images: `imageUrl` returned `null` until an S3 brief (`image_key` column exists, unused).
 - Inventory / recipe tables (`menu_variant_ingredient`) · orders (BRIEF-012) · `PermissionsGuard` enforcement (IAM brief — metadata only).
 
 ## 3. Contract
@@ -56,6 +56,7 @@ The backend has the venue's settings and a seeded bar menu, and POS / staff app 
 - **AC-6** — Unknown item id → 404 `NOT_FOUND`; malformed query → 400 `VALIDATION_ERROR`.
 - **AC-7** — OpenAPI lists the 4 endpoints with permissions; `openapi:check` passes.
 - **AC-8** — lint / typecheck / test / test:e2e / build exit 0; contracts tests pass.
+- **AC-9** — `app/backend/README.md` lists the seed order `seed:staff` → `seed:venue` → `seed:menu` and that each is safe to re-run.
 
 ## 5. Test Gate
 | AC | Test type | Location (expected) |
@@ -65,6 +66,7 @@ The backend has the venue's settings and a seeded bar menu, and POS / staff app 
 | AC-3 | unit | `src/modules/menu/application/menu-availability.spec.ts` |
 | AC-4 | unit + e2e | `src/modules/menu/application/menu-catalog.service.spec.ts` · `test/menu.e2e-spec.ts` |
 | AC-7 | command | `openapi:check` |
+| AC-9 | review | `app/backend/README.md` |
 
 Gate commands (all must pass):
 ```bash
@@ -88,10 +90,12 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - Hexagonal layout, ports + tokens, Zod DTOs; `save()` for audited entities (seed included); Thai `message`, English `code`.
 
 ## 7. Decision Points (Field Guard)
-- **Q1 — List shape.** *Recommend* `GET /menu/items` returns the full item (variants + modifier groups + windows): small menus (~20–80 items), and the POS quick-add rule (CD-04 R2: 1 variant + no required modifier → tap adds) needs it on the tile. `GET /menu/items/:id` returns the same shape (staff-app push / deep links). *Alternative:* list without modifiers + detail call on tap — smaller payload, one extra request per sheet open.
-- **Q2 — `GET /venue` in this brief.** *Recommend* yes: POS board columns depend on `kitchenDisplayEnabled` (CD-15 R7) and Metee needs it before BRIEF-012. Read-only, no payment fields (those come with BRIEF-013).
-- **Q3 — Seed scripts.** *Recommend* add `"seed:menu": "nest build && node --env-file=.env ./dist/cli/seed-menu.js"` to `app/backend/package.json` (same pattern as `seed:venue`) and extend `seed:venue` with the venue row. Script change only, no dependency.
-- **Pre-decided (if Q1–Q3 approved as recommended):** permissions `menu:read`, `venue:read` · no new packages · no new error codes.
+- **Q1 — List shape. ✅ Decided (Field, 2026-10-17): A** — `GET /menu/items` returns the full item (variants + modifier groups + windows); `GET /menu/items/:id` returns the same shape. *Why:* small menus (~20–80 items); one request loads the POS; CD-04 R2 quick-add needs variants + required groups on the tile. Load: ~5 fixed queries per call, ~4 calls/min per bar (60 s refetch, DR-010 rule 12).
+  - **Scaling path (decided, not built here):** Redis cache-aside of the raw menu, invalidated on every menu write — built in **BRIEF-017** together with the first write (86 toggle). Availability is always computed per request (clock-dependent), never cached.
+  - **Rule:** `getOrderable()` always reads the DB, never a cache — order placement prices are never stale.
+- **Q2 — `GET /venue`. ✅ Decided (Field, 2026-10-17): A** — read-only `{ name, slug, kitchenDisplayEnabled, businessDayCutoff, counterQrEnabled }`; no PromptPay / payment fields (BRIEF-013). *Why:* POS board columns (CD-15 R7) and the staff-app READY button depend on `kitchenDisplayEnabled`; no hardcoded UI assumption.
+- **Q3 — Seed scripts. ✅ Decided (Field, 2026-10-17): A** — add `"seed:menu": "nest build && node --env-file=.env ./dist/cli/seed-menu.js"` to `app/backend/package.json`; `seed:venue` also upserts the venue row. Document the local order `seed:staff` → `seed:venue` → `seed:menu` in `app/backend/README.md`. *Why:* one seed per module; Metee can rebuild his local DB alone; same pattern as BRIEF-011.
+- **Pre-decided:** permissions `menu:read`, `venue:read` · `app/backend/package.json` script `seed:menu` exactly as Q3 · no new packages · no new error codes.
 - **Likely DRs:** TypeORM mapping for `SMALLINT[]` (`days_of_week`) · time-zone handling without a new date library (use `Intl` / plain arithmetic; a new package needs a DR).
 
 ## 8. Unlocked Protected Files
@@ -102,10 +106,11 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 ## Ready Checklist
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
-- [ ] No unresolved decision blocking the main outcome (Q1–Q3 open)
+- [x] No unresolved decision blocking the main outcome (Q1–Q3 decided 2026-10-17)
 - [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-17 | Initial Draft (Cowork) — split out of BRIEF-012 by Field's Q1 decision (2026-10-17); read-only menu |
+| 2 | 2026-10-17 | Q1–Q3 decided by Field in session (all A) + cache scaling path → BRIEF-017 + `getOrderable` DB-only rule + seed README AC, recorded by Cowork on Field's explicit instruction |
