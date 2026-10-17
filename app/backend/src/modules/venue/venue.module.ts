@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IamModule } from '../iam/iam.module.js';
+import { OrderModule } from '../order/order.module.js';
 import { TableSeatService } from './application/table-seat.service.js';
 import { VenueSettingsService } from './application/venue-settings.service.js';
 import { VisitService } from './application/visit.service.js';
@@ -18,7 +19,11 @@ import { Visit } from './infrastructure/persistence/visit.entity.js';
 import { VisitTypeormRepository } from './infrastructure/persistence/visit.typeorm-repository.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TableSeat, Visit, Venue]), IamModule],
+  imports: [
+    TypeOrmModule.forFeature([TableSeat, Visit, Venue]),
+    IamModule,
+    forwardRef(() => OrderModule),
+  ],
   controllers: [TablesController, VisitsController, VenueController],
   providers: [
     TableSeatTypeormRepository,

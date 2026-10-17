@@ -7,6 +7,12 @@ import { HealthController } from '../dist/modules/health/health.controller.js';
 import { HealthService } from '../dist/modules/health/health.service.js';
 import { MenuCatalogService } from '../dist/modules/menu/application/menu-catalog.service.js';
 import { MenuController } from '../dist/modules/menu/infrastructure/http/menu.controller.js';
+import { IdempotencyService } from '../dist/modules/order/application/idempotency.service.js';
+import { OrderQueryService } from '../dist/modules/order/application/order-query.service.js';
+import { OrderService } from '../dist/modules/order/application/order.service.js';
+import { TicketService } from '../dist/modules/order/application/ticket.service.js';
+import { OrdersController } from '../dist/modules/order/infrastructure/http/orders.controller.js';
+import { TicketsController } from '../dist/modules/order/infrastructure/http/tickets.controller.js';
 import { TableSeatService } from '../dist/modules/venue/application/table-seat.service.js';
 import { VenueSettingsService } from '../dist/modules/venue/application/venue-settings.service.js';
 import { VisitService } from '../dist/modules/venue/application/visit.service.js';
@@ -26,6 +32,8 @@ const documentedControllers = [
   VisitsController,
   VenueController,
   MenuController,
+  OrdersController,
+  TicketsController,
 ];
 
 export async function createOpenApiDocument(): Promise<OpenAPIObject> {
@@ -41,6 +49,10 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: VisitService, useValue: {} },
       { provide: VenueSettingsService, useValue: {} },
       { provide: MenuCatalogService, useValue: {} },
+      { provide: OrderService, useValue: {} },
+      { provide: OrderQueryService, useValue: {} },
+      { provide: TicketService, useValue: {} },
+      { provide: IdempotencyService, useValue: {} },
       {
         provide: AppConfigService,
         useValue: { nodeEnv: 'test', frontendUrl: 'http://localhost:3000' },

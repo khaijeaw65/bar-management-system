@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { VisitOpenSource } from '@bar/contracts';
+import type { VisitOpenSource, VisitState } from '@bar/contracts';
 import { In, QueryFailedError, Repository } from 'typeorm';
 import type { VisitRepository } from '../../domain/visit.repository.js';
 import type {
@@ -20,11 +22,22 @@ const CLOSE_IF_LIVE = `
             guest_label, opened_by, opened_via
 `;
 
+const LOCK_VISIT = `
+  SELECT id, table_seat_id, state, opened_at, closed_at, guest_label, opened_by, opened_via
+  FROM visit WHERE id = $1 FOR UPDATE
+`;
+const ACTIVATE_VISIT = `
+  UPDATE visit SET state = 'active', updated_at = now()
+  WHERE id = $1 AND state IN ('open', 'idle')
+  RETURNING id, table_seat_id, state, opened_at, closed_at, guest_label, opened_by, opened_via
+`;
+
 @Injectable()
 export class VisitTypeormRepository implements VisitRepository {
   public constructor(
     @InjectRepository(Visit)
     private readonly visitOrmRepository: Repository<Visit>,
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
 
   public async insert(input: NewVisit): Promise<InsertVisitResult> {
@@ -47,6 +60,18 @@ export class VisitTypeormRepository implements VisitRepository {
       where: { tableSeatId, state: In([...LIVE_STATES]) },
     });
     return visit ? toRecord(visit) : null;
+  }
+
+  public async lockById(id: string): Promise<VisitRecord | null> {
+    const result: unknown = await this.txHost.tx.query(LOCK_VISIT, [id]);
+    const row = firstRow(result);
+    return row ? toAnyRecord(row) : null;
+  }
+
+  public async activateIfWaiting(id: string): Promise<VisitRecord | null> {
+    const result: unknown = await this.txHost.tx.query(ACTIVATE_VISIT, [id]);
+    const row = firstRow(result);
+    return row ? toAnyRecord(row) : null;
   }
 
   public async closeIfLive(id: string): Promise<VisitRecord | null> {
@@ -82,6 +107,46 @@ function toRecord(visit: Visit): VisitRecord {
     openedBy: visit.openedBy,
     openedVia: visit.openedVia,
   };
+}
+
+function firstRow(result: unknown): Record<string, unknown> | null {
+  const rows = listed(result);
+  const row = rows[0];
+  if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
+  return row as Record<string, unknown>;
+}
+
+function listed(result: unknown): unknown[] {
+  if (!Array.isArray(result)) return [];
+  if (Array.isArray(result[0])) return result[0] as unknown[];
+  return result;
+}
+
+function toAnyRecord(row: Record<string, unknown>): VisitRecord {
+  return {
+    id: text(row.id),
+    tableSeatId: text(row.table_seat_id),
+    state: visitState(row.state),
+    openedAt: asDate(row.opened_at),
+    closedAt: optionalDate(row.closed_at),
+    guestLabel: optionalText(row.guest_label),
+    openedBy: optionalText(row.opened_by),
+    openedVia: openSource(row.opened_via),
+  };
+}
+
+function visitState(value: unknown): VisitState {
+  if (isVisitState(value)) return value;
+  throw new Error('visit row has an unknown state');
+}
+
+function isVisitState(value: unknown): value is VisitState {
+  return value === 'open' || value === 'active' || value === 'idle' || value === 'closed' || value === 'abandoned';
+}
+
+function optionalDate(value: unknown): Date | null {
+  if (value === null || value === undefined) return null;
+  return asDate(value);
 }
 
 function firstUpdatedRow(result: unknown): Record<string, unknown> | null {

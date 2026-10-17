@@ -21,11 +21,13 @@ import {
   OpenVisitRequestSchema,
   OpenVisitResponseSchema,
   UuidSchema,
+  VisitDetailSchema,
   VisitSchema,
   apiResponseSchema,
   type OpenVisitRequest,
   type OpenVisitResponse,
   type Visit,
+  type VisitDetail,
 } from '@bar/contracts';
 import type { Response } from 'express';
 import { CurrentUser } from '../../../../common/decorators/current-user.decorator.js';
@@ -33,6 +35,7 @@ import type { CurrentUserPayload } from '../../../../common/decorators/current-u
 import { RequirePermissions } from '../../../../common/decorators/require-permissions.decorator.js';
 import { ApiEnvelopedOk, ApiStandardErrors } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
+import { OrderQueryService } from '../../../order/application/order-query.service.js';
 import type { OpenVisitInput } from '../../application/visit.types.js';
 import { VisitService } from '../../application/visit.service.js';
 import { blankToNull, requireUuid, staffAccess } from './http-input.js';
@@ -41,7 +44,10 @@ import { toVisitBody } from './visit.mapper.js';
 @ApiTags('venue')
 @Controller('visits')
 export class VisitsController {
-  public constructor(private readonly visitService: VisitService) {}
+  public constructor(
+    private readonly visitService: VisitService,
+    private readonly orders: OrderQueryService,
+  ) {}
 
   @Post()
   @RequirePermissions('visits:open')
@@ -64,14 +70,15 @@ export class VisitsController {
   @Get(':id')
   @RequirePermissions('visits:read')
   @ApiOperation({
-    summary: 'Visit header',
+    summary: 'Visit header and its orders',
     description: staffAccess('visits:read'),
   })
   @ApiParam({ name: 'id', schema: zodToOpenApi(UuidSchema) })
-  @ApiEnvelopedOk(VisitSchema)
-  public async getOne(@Param('id') id: string): Promise<Visit> {
+  @ApiEnvelopedOk(VisitDetailSchema)
+  public async getOne(@Param('id') id: string): Promise<VisitDetail> {
     const visitId = requireUuid(id, 'ไม่พบการเข้าใช้');
-    return toVisitBody(await this.visitService.getById(visitId));
+    const visit = toVisitBody(await this.visitService.getById(visitId));
+    return { ...visit, orders: await this.orders.forVisit(visitId) };
   }
 
   @Post(':id/close')

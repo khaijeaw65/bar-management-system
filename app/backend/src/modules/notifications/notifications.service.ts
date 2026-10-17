@@ -10,4 +10,8 @@ export class NotificationsService {
   public emitToPos(event: string, payload: unknown): void {
     this.notificationsGateway.emitToPos(event, payload);
   }
+
+  public emitToStaff(event: string, payload: unknown): void {
+    this.notificationsGateway.emitToStaff(event, payload);
+  }
 }

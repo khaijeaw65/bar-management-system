@@ -23,3 +23,9 @@ export interface OpenVisitResult {
   visit: VisitView;
   attached: boolean;
 }
+
+export interface OrderClaim {
+  activated: boolean;
+  visitId: string;
+  tableSeatId: string;
+}

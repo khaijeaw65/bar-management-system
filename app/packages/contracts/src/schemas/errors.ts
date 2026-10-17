@@ -11,6 +11,7 @@ export const ErrorCodeSchema = z.enum([
   'INTERNAL_ERROR',
   'IDEMPOTENCY_KEY_REUSED',
   'INVALID_STATE_TRANSITION',
+  'ITEM_UNAVAILABLE',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;

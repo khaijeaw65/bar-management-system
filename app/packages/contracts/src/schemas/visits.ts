@@ -5,6 +5,7 @@ import {
   VisitOpenSourceSchema,
   VisitStateSchema,
 } from './enums.js';
+import { OrderSchema } from './orders.js';
 
 // Card on GET /tables. total, itemCount, and staffCalled stay empty until
 // BRIEF-012, BRIEF-013, and the customer QR brief fill them.
@@ -57,6 +58,12 @@ export const VisitSchema = z.object({
 });
 
 export type Visit = z.infer<typeof VisitSchema>;
+
+export const VisitDetailSchema = VisitSchema.extend({
+  orders: z.array(OrderSchema),
+});
+
+export type VisitDetail = z.infer<typeof VisitDetailSchema>;
 
 // Staff open only. `qr` is set by the later customer QR route, not this body.
 export const StaffOpenViaSchema = z.enum(

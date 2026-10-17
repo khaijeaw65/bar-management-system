@@ -24,6 +24,11 @@ export function staffSession(
 }
 
 export async function clearStaffAndVenue(dataSource: DataSource): Promise<void> {
+  await dataSource.query('DELETE FROM order_item_modifier');
+  await dataSource.query('UPDATE order_ticket SET issue_item_id = NULL');
+  await dataSource.query('DELETE FROM order_item');
+  await dataSource.query('DELETE FROM order_ticket');
+  await dataSource.query('DELETE FROM order_record');
   await dataSource.query('DELETE FROM menu_variant_modifier_group');
   await dataSource.query('DELETE FROM modifier_option');
   await dataSource.query('DELETE FROM modifier_group');

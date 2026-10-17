@@ -27,6 +27,10 @@ export class NotificationsGateway implements OnGatewayInit {
     this.server.to('pos').emit(event, payload);
   }
 
+  public emitToStaff(event: string, payload: unknown): void {
+    this.server.to('staff').emit(event, payload);
+  }
+
   private async admit(socket: Socket, next: HandshakeNext): Promise<void> {
     const admitted = await this.tryJoinPos(socket);
     if (!admitted) {
@@ -50,6 +54,7 @@ export class NotificationsGateway implements OnGatewayInit {
     const user = await this.tokenService.authenticateAccessToken(token);
     if (!user) return false;
     await socket.join('pos');
+    await socket.join('staff');
     return true;
   }
 }

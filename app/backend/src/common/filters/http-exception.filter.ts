@@ -73,7 +73,7 @@ function domainEnvelope(exception: DomainException): ErrorEnvelope {
     status: exception.getStatus(),
     code: exception.code,
     message: exception.message,
-    data: null,
+    data: exception.errorData,
   };
 }
 
