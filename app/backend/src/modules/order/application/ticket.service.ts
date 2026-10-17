@@ -17,7 +17,7 @@ import {
 } from '../domain/order.repository.js';
 import type { LockedTicket } from '../domain/order.types.js';
 import { OrderQueryService } from './order-query.service.js';
-import type { TicketView } from './present-order.js';
+import { withoutVisit, type TicketView } from './present-order.js';
 import { nextTicketStatus, readyStepApplies, type TicketAction } from './ticket-transition.js';
 
 @Injectable()
@@ -57,7 +57,7 @@ export class TicketService {
     const locked = await this.requireTicket(id);
     const readyStep = await this.readyStep(locked);
     const status = nextTicketStatus(action, locked.status, readyStep);
-    await this.orders.saveStatus(id, status, sentAt(action, status, locked, this.clock.now()));
+    await this.orders.saveStatus(id, status, this.sentAt(action, status, locked, this.clock.now()));
   }
 
   private async requireTicket(id: string): Promise<LockedTicket> {
@@ -75,31 +75,26 @@ export class TicketService {
     const staff = await this.staff.findById(staffId);
     this.notifications.emitToStaff(
       TICKET_STATUS_CHANGED,
-      payload(ticket, staffId, staff?.displayName),
+      this.payload(ticket, staffId, staff?.displayName),
     );
   }
-}
 
-function sentAt(action: TicketAction, status: OrderStatus, locked: LockedTicket, now: Date): Date | null {
-  if (action === 'send' && status === 'sent') return now;
-  return locked.sentAt;
-}
+  private sentAt(action: TicketAction, status: OrderStatus, locked: LockedTicket, now: Date): Date | null {
+    if (action === 'send' && status === 'sent') return now;
+    return locked.sentAt;
+  }
 
-function payload(
-  ticket: TicketView,
-  staffId: string,
-  displayName: string | undefined,
-): TicketStatusChangedPayload {
-  return {
-    ticketId: ticket.id,
-    orderId: ticket.orderId,
-    visitId: ticket.visitId,
-    status: ticket.status,
-    updatedBy: { staffId, displayName: displayName ?? 'พนักงาน' },
-  };
-}
-
-function withoutVisit(ticket: TicketView): Ticket {
-  const { visitId: _visitId, ...body } = ticket;
-  return body;
+  private payload(
+    ticket: TicketView,
+    staffId: string,
+    displayName: string | undefined,
+  ): TicketStatusChangedPayload {
+    return {
+      ticketId: ticket.id,
+      orderId: ticket.orderId,
+      visitId: ticket.visitId,
+      status: ticket.status,
+      updatedBy: { staffId, displayName: displayName ?? 'พนักงาน' },
+    };
+  }
 }

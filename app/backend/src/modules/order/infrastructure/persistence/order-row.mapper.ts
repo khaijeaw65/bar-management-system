@@ -1,3 +1,9 @@
+import {
+  readDate,
+  readOptionalDate,
+  readOptionalText,
+  readText,
+} from '../../../../common/persistence/row-values.js';
 import type { OrderRow } from '../../domain/order-row.types.js';
 
 export function toOrderRow(raw: Record<string, unknown>): OrderRow {
@@ -10,64 +16,43 @@ export function toOrderRow(raw: Record<string, unknown>): OrderRow {
 
 function orderPart(raw: Record<string, unknown>) {
   return {
-    orderId: text(raw.order_id),
-    visitId: text(raw.visit_id),
+    orderId: readText(raw.order_id),
+    visitId: readText(raw.visit_id),
     orderNumber: Number(raw.order_number),
-    businessDate: text(raw.business_date).slice(0, 10),
-    orderCreatedAt: asDate(raw.order_created_at),
-    orderCreatedBy: optionalText(raw.order_created_by),
+    businessDate: readText(raw.business_date).slice(0, 10),
+    orderCreatedAt: readDate(raw.order_created_at),
+    orderCreatedBy: readOptionalText(raw.order_created_by),
   };
 }
 
 function ticketPart(raw: Record<string, unknown>) {
   return {
-    ticketId: text(raw.ticket_id),
-    station: optionalText(raw.station),
-    status: text(raw.status),
-    sentAt: optionalDate(raw.sent_at),
-    ticketCreatedAt: asDate(raw.ticket_created_at),
-    ticketUpdatedAt: asDate(raw.ticket_updated_at),
-    ticketUpdatedBy: optionalText(raw.ticket_updated_by),
-    seatId: text(raw.seat_id),
-    seatLabel: text(raw.seat_label),
-    seatKind: text(raw.seat_kind),
+    ticketId: readText(raw.ticket_id),
+    station: readOptionalText(raw.station),
+    status: readText(raw.status),
+    sentAt: readOptionalDate(raw.sent_at),
+    ticketCreatedAt: readDate(raw.ticket_created_at),
+    ticketUpdatedAt: readDate(raw.ticket_updated_at),
+    ticketUpdatedBy: readOptionalText(raw.ticket_updated_by),
+    seatId: readText(raw.seat_id),
+    seatLabel: readText(raw.seat_label),
+    seatKind: readText(raw.seat_kind),
   };
 }
 
 function itemPart(raw: Record<string, unknown>) {
   return {
-    itemId: text(raw.item_id),
-    variantId: text(raw.variant_id),
-    itemName: text(raw.item_name),
-    variantName: text(raw.variant_name),
+    itemId: readText(raw.item_id),
+    variantId: readText(raw.variant_id),
+    itemName: readText(raw.item_name),
+    variantName: readText(raw.variant_name),
     quantity: Number(raw.quantity),
-    unitPrice: text(raw.unit_price),
-    orderedByName: optionalText(raw.ordered_by_name),
-    notes: optionalText(raw.notes),
-    cancelledAt: optionalDate(raw.cancelled_at),
-    optionId: optionalText(raw.option_id),
-    optionName: optionalText(raw.option_name),
-    priceDelta: optionalText(raw.price_delta),
+    unitPrice: readText(raw.unit_price),
+    orderedByName: readOptionalText(raw.ordered_by_name),
+    notes: readOptionalText(raw.notes),
+    cancelledAt: readOptionalDate(raw.cancelled_at),
+    optionId: readOptionalText(raw.option_id),
+    optionName: readOptionalText(raw.option_name),
+    priceDelta: readOptionalText(raw.price_delta),
   };
-}
-
-function text(value: unknown): string {
-  if (typeof value !== 'string') throw new Error('order row is missing a string');
-  return value;
-}
-
-function optionalText(value: unknown): string | null {
-  if (value === null || value === undefined) return null;
-  return text(value);
-}
-
-function asDate(value: unknown): Date {
-  if (value instanceof Date) return value;
-  if (typeof value === 'string') return new Date(value);
-  throw new Error('order row is missing a timestamp');
-}
-
-function optionalDate(value: unknown): Date | null {
-  if (value === null || value === undefined) return null;
-  return asDate(value);
 }

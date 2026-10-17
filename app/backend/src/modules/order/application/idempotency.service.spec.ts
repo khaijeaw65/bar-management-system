@@ -1,7 +1,8 @@
 import type { Redis } from 'ioredis';
 import { DomainException } from '../../../common/domain-exception.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
-import { IdempotencyService, requestHash } from './idempotency.service.js';
+import { IdempotencyService } from './idempotency.service.js';
+import { requestHash } from './request-hash.js';
 
 describe('idempotency while a placement is still running', () => {
   it('returns CONFLICT for the same body', async () => {

@@ -37,6 +37,11 @@ export function toTicket(ticket: FoldedTicket, names: ReadonlyMap<string, string
   };
 }
 
+export function withoutVisit(ticket: TicketView): Ticket {
+  const { visitId: _visitId, ...body } = ticket;
+  return body;
+}
+
 function accepterId(ticket: FoldedTicket): string | null {
   if (ticket.status !== 'accepted') return null;
   return ticket.updatedById;

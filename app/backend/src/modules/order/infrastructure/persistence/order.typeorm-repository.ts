@@ -48,7 +48,7 @@ export class OrderTypeormRepository implements OrderRepository {
   public async lockTicket(id: string): Promise<LockedTicket | null> {
     const result: unknown = await this.manager.query(LOCK_TICKET_SQL, [id]);
     const row = rowList(result)[0];
-    return row ? toLocked(row) : null;
+    return row ? this.toLocked(row) : null;
   }
 
   public async saveStatus(
@@ -77,7 +77,7 @@ export class OrderTypeormRepository implements OrderRepository {
   public async bills(visitIds: readonly string[]): Promise<BillRow[]> {
     if (visitIds.length === 0) return [];
     const result: unknown = await this.manager.query(BILL_SQL, [visitIds]);
-    return rowList(result).map(toBill);
+    return rowList(result).map((row) => this.toBill(row));
   }
 
   private get manager(): EntityManager {
@@ -101,7 +101,7 @@ export class OrderTypeormRepository implements OrderRepository {
     const charge = ticket.bucket === 'charge';
     return this.manager.getRepository(OrderTicket).create({
       orderId,
-      station: stationColumn(ticket.bucket),
+      station: this.stationColumn(ticket.bucket),
       status: charge ? 'sent' : 'pending',
       sentAt: charge ? placedAt : null,
       issueReason: null,
@@ -143,6 +143,42 @@ export class OrderTypeormRepository implements OrderRepository {
       priceDeltaSnapshot: modifier.priceDelta,
     }));
   }
+
+  private stationColumn(bucket: TicketBucket): 'bar' | 'food' | null {
+    if (bucket === 'bar' || bucket === 'food') return bucket;
+    return null;
+  }
+
+  private toLocked(row: Record<string, unknown>): LockedTicket {
+    return {
+      id: this.required(row.id),
+      orderId: this.required(row.order_id),
+      visitId: this.required(row.visit_id),
+      status: this.statusOf(this.required(row.status)),
+      sentAt: row.sent_at instanceof Date ? row.sent_at : null,
+      seatKind: this.required(row.seat_kind) === 'counter' ? 'counter' : 'table',
+    };
+  }
+
+  private required(value: unknown): string {
+    if (typeof value !== 'string') throw new Error('order row is missing a string');
+    return value;
+  }
+
+  private statusOf(value: string): LockedTicket['status'] {
+    if (value === 'pending' || value === 'accepted' || value === 'ready' || value === 'sent' || value === 'issue' || value === 'cancelled') {
+      return value;
+    }
+    throw new Error('order row has an unknown status');
+  }
+
+  private toBill(row: Record<string, unknown>): BillRow {
+    return {
+      visitId: this.required(row.visit_id),
+      total: this.required(row.total),
+      itemCount: Number(row.item_count),
+    };
+  }
 }
 
 const NEXT_NUMBER = `
@@ -150,39 +186,3 @@ const NEXT_NUMBER = `
   FROM order_record
   WHERE business_date = $1
 `;
-
-function stationColumn(bucket: TicketBucket): 'bar' | 'food' | null {
-  if (bucket === 'bar' || bucket === 'food') return bucket;
-  return null;
-}
-
-function toLocked(row: Record<string, unknown>): LockedTicket {
-  return {
-    id: required(row.id),
-    orderId: required(row.order_id),
-    visitId: required(row.visit_id),
-    status: statusOf(required(row.status)),
-    sentAt: row.sent_at instanceof Date ? row.sent_at : null,
-    seatKind: required(row.seat_kind) === 'counter' ? 'counter' : 'table',
-  };
-}
-
-function toBill(row: Record<string, unknown>): BillRow {
-  return {
-    visitId: required(row.visit_id),
-    total: required(row.total),
-    itemCount: Number(row.item_count),
-  };
-}
-
-function required(value: unknown): string {
-  if (typeof value !== 'string') throw new Error('order row is missing a string');
-  return value;
-}
-
-function statusOf(value: string): LockedTicket['status'] {
-  if (value === 'pending' || value === 'accepted' || value === 'ready' || value === 'sent' || value === 'issue' || value === 'cancelled') {
-    return value;
-  }
-  throw new Error('order row has an unknown status');
-}

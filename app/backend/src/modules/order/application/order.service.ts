@@ -50,7 +50,7 @@ export class OrderService {
     return {
       orderNumber: await this.orders.nextNumber(date),
       businessDate: date,
-      tickets: groupTickets(await this.priced(input, now), settings.kitchenDisplayEnabled),
+      tickets: this.groupTickets(await this.priced(input, now), settings.kitchenDisplayEnabled),
       placedAt: now,
     };
   }
@@ -72,6 +72,15 @@ export class OrderService {
       state: 'active',
     });
   }
+
+  private groupTickets(lines: readonly PricedLine[], kitchenOn: boolean): NewTicket[] {
+    const groups = new Map<TicketBucket, PricedLine[]>();
+    for (const line of lines) {
+      const bucket = bucketFor(line, kitchenOn);
+      groups.set(bucket, [...(groups.get(bucket) ?? []), line]);
+    }
+    return [...groups.entries()].map(([bucket, grouped]) => ({ bucket, lines: grouped }));
+  }
 }
 
 interface PlacedOrder {
@@ -79,13 +88,4 @@ interface PlacedOrder {
   activated: boolean;
   visitId: string;
   tableSeatId: string;
-}
-
-function groupTickets(lines: readonly PricedLine[], kitchenOn: boolean): NewTicket[] {
-  const groups = new Map<TicketBucket, PricedLine[]>();
-  for (const line of lines) {
-    const bucket = bucketFor(line, kitchenOn);
-    groups.set(bucket, [...(groups.get(bucket) ?? []), line]);
-  }
-  return [...groups.entries()].map(([bucket, grouped]) => ({ bucket, lines: grouped }));
 }

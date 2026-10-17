@@ -1,6 +1,6 @@
 import type { KitchenStation, OrderLine, OrderStatus, TableSeatKind } from '@bar/contracts';
 import type { OrderRow } from '../domain/order-row.types.js';
-import { fromCents, lineCents, money } from './money.js';
+import { money } from '../../../common/money.js';
 import type { FoldedOrder, FoldedTicket } from './folded-order.types.js';
 
 export function foldOrders(rows: readonly OrderRow[]): FoldedOrder[] {
@@ -145,4 +145,23 @@ function isStatus(value: string): value is OrderStatus {
 function kindOf(value: string): TableSeatKind {
   if (value === 'table' || value === 'counter') return value;
   throw new Error('order row has an unknown seat kind');
+}
+
+function toCents(value: string): number {
+  const negative = value.startsWith('-');
+  const [whole = '0', fraction = ''] = value.replace('-', '').split('.');
+  const cents = Number(whole) * 100 + Number(`${fraction}00`.slice(0, 2));
+  return negative ? -cents : cents;
+}
+
+function fromCents(cents: number): string {
+  const sign = cents < 0 ? '-' : '';
+  const absolute = Math.abs(cents);
+  const fraction = String(absolute % 100).padStart(2, '0');
+  return `${sign}${Math.trunc(absolute / 100)}.${fraction}`;
+}
+
+function lineCents(unit: string, deltas: readonly string[], quantity: number): number {
+  const one = deltas.reduce((sum, delta) => sum + toCents(delta), toCents(unit));
+  return one * quantity;
 }

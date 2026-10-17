@@ -1,22 +1,24 @@
-import { Body, Controller, Get, Headers, Param, Post, Res, applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { Body, Controller, Get, Headers, Param, Post, Res } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
 import {
   OrderSchema,
   PlaceOrderRequestSchema,
   UuidSchema,
-  apiResponseSchema,
   type Order,
   type PlaceOrderRequest,
 } from '@bar/contracts';
 import type { Response } from 'express';
-import { ApiEnvelopedOk, ApiStandardErrors } from '../../../../common/openapi/api-enveloped.js';
-import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { RequirePermissions } from '../../../../common/decorators/require-permissions.decorator.js';
-import { IdempotencyService, requestHash } from '../../application/idempotency.service.js';
+import { requireUuid, staffAccess } from '../../../../common/http/http-input.js';
+import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
+import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
+import { IdempotencyService } from '../../application/idempotency.service.js';
+import { requestHash } from '../../application/request-hash.js';
 import { requestedLines } from '../../application/order.types.js';
-import { OrderService } from '../../application/order.service.js';
-import { idempotencyKey, requireUuid, staffAccess } from './http-input.js';
 import { OrderQueryService } from '../../application/order-query.service.js';
+import { OrderService } from '../../application/order.service.js';
+import { idempotencyKey } from './http-input.js';
+import { ApiCreatedOrder } from './orders.openapi.js';
 
 @Controller()
 export class OrdersController {
@@ -63,7 +65,7 @@ export class OrdersController {
     const key = idempotencyKey(header);
     const hash = requestHash({ visitId, items: parsed.items });
     const gate = await this.idempotency.begin(key, hash);
-    if (gate.kind === 'replay') return created(response, gate.order);
+    if (gate.kind === 'replay') return this.created(response, gate.order);
     return this.placeNew(visitId, parsed, key, hash, response);
   }
 
@@ -77,25 +79,15 @@ export class OrdersController {
     try {
       const order = await this.orders.place({ visitId, items: requestedLines(parsed) });
       await this.idempotency.finish(key, hash, order);
-      return created(response, order);
+      return this.created(response, order);
     } catch (error) {
       await this.idempotency.cancel(key);
       throw error;
     }
   }
-}
 
-function created(response: Response, order: Order): Order {
-  response.status(201);
-  return order;
-}
-
-function ApiCreatedOrder(): MethodDecorator {
-  return applyDecorators(
-    ApiCreatedResponse({
-      description: 'Created the order',
-      schema: zodToOpenApi(apiResponseSchema(OrderSchema)),
-    }),
-    ApiStandardErrors(),
-  );
+  private created(response: Response, order: Order): Order {
+    response.status(201);
+    return order;
+  }
 }
