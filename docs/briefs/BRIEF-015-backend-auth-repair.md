@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
-| **Implementer** | kj (executor: Claude Code — git hand) |
-| **Assigned auditor** | _Field to assign_ — Cowork (default) or Codex (Codex holds the C1–C6 context; needs Field's explicit instruction) |
-| **Auditor assignment** | pending Field |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-17 |
+| **Implementer** | kj (executor: Cursor; Git via the git hand per workflow §4 until Cursor's `gh` is verified) |
+| **Assigned auditor** | Cowork (default) |
+| **Auditor assignment** | Field, 2026-10-17 — default, no fallback |
 | **PR** | <executor fills> |
 | **Affected apps** | backend |
 | **Revision** | 1 |
@@ -106,12 +106,13 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 ---
 
 ## Ready Checklist
-- [ ] Named implementer and auditor; scope/ACs/contracts/references complete
-- [ ] Exact gates and evidence; dependencies have completion conditions
-- [ ] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Named implementer and auditor; scope/ACs/contracts/references complete
+- [x] Exact gates and evidence; dependencies have completion conditions
+- [x] No unresolved decision blocking the main outcome
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-17 | Initial draft (Cowork) — carries BRIEF-007 audit C1–C6 + C7 (Field review of the callback guard) + Clean Code lint |
+| 1 | 2026-10-17 | Ready — approved by Field ("approve ready"); auditor Cowork, executor Cursor. Recorded by Cowork on Field's explicit instruction. No content change. |
