@@ -41,8 +41,8 @@ Applied already-decided items to canvases + handoffs (handoff revision bumped, R
 - FRD updated to DR-012/013/014 (§2, §3, §5, §6, §7, §8, §9, §10, §11, §12, §13).
 
 ## Next session (in order)
-1. **BRIEF-015 auth repair (Draft, 17 Oct)** — carries BRIEF-007 audit C1–C6 + C7 (callback guard, Field review) + Clean Code lint. Triage done: C1 is High (logout during refresh rotation revives the session) → repair **before** BRIEF-009-dependent work builds on auth. **Ready 17 Oct** (Field) — executor Cursor, auditor Cowork. Next: `execute BRIEF-015` in Cursor from a fresh worktree on main → `audit BRIEF-015` (Cowork). Note: PR #35 merged while its audit still said CHANGES REQUIRED — the fix goes in the new PR, #35 history stays as is.
-2. **Start BRIEF-009 with an executor** — Week 1 build slipped; checkpoint 25 Oct, gate 8 Nov.
+1. **Start BRIEF-011 (tables + visits) with an executor** — first gate-slice backend brief; dependencies met (BRIEF-009 #34, BRIEF-007 #35, BRIEF-015 #41/#43). Week 1 build slipped; checkpoint 25 Oct, gate 8 Nov. New executors follow `backend.md` → Clean Code (lint-enforced) + types-in-types-files.
+2. **Workflow guard (proposed, needs Field):** PR #35 and #41 were merged while their audit still said CHANGES REQUIRED. Add one pre-merge check for the git hand — read the last `Result:` line in `docs/audits/<brief>.md`, merge only on PASS. Optional: GitHub "Automatically delete head branches".
 3. Advisor heads-up: AI feature → owner insight (DR-014).
 4. Field: add `--chart-1` / `--chart-2` to the DS (CD-05 R2); review CD-03 screens (R3) before BRIEF-013.
 5. BRIEF-013: verify EasySlip receiver match (masked number → visible digits + name) with one real slip (CD-03 Q2, decided 17 Oct).
@@ -52,9 +52,9 @@ Applied already-decided items to canvases + handoffs (handoff revision bumped, R
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: build the gate slice (order → pay → close, 8 Nov). Semester-1 UI design is done:** CD housekeeping (DR-014 redraw, DR-013 kitchen-off pass, all Field Q decisions 17 Oct) merged as PR #36 (`b835e3d`). Only CD-11 re-copy remains, just before export.
-**Next action:** "Next session" item 1 (`execute BRIEF-015` in Cursor), then BRIEF-009. `backend.md` gained a Clean Code section (Field-approved 17 Oct: small functions, naming, guard clauses, explicit `public`/`private`, stepdown reading order; lint-enforced parts land with BRIEF-015). `SESSION_STATE.md` still shows BRIEF-007 / PR #35 as open (stale — merged); the next executor overwrites it.
+**Next action:** "Next session" item 1 (BRIEF-011). **BRIEF-015 Done 17 Oct** (PR #41 + #43 for Finding 4; audit PASS): revocation-safe refresh rotation (one Lua script each for rotate/revoke), auth module refactored, oxlint enforces Clean Code. `backend.md` rules added 17 Oct (Field-approved): Clean Code section, ≤ 3 params (constructor injection + Nest handler params exempt), types only in `*.types.ts` / port / `dto/` files. `SESSION_STATE.md` still shows BRIEF-015 at Finding 4 (stale — merged); the next executor overwrites it.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
-Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. Merged 17 Oct: PR #32 (`docs/ui-retrofit`), #35 (BRIEF-007), #36 (`docs/cd-housekeeping`). #37 (C6 post-merge audit), #39 (Clean Code rule + BRIEF-015 draft). Open docs branch: `docs/brief-015-ready`.
+Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. Merged 17 Oct: #32 (`docs/ui-retrofit`), #35 (BRIEF-007), #36 (`docs/cd-housekeeping`), #37 (C6 audit), #39 (Clean Code rule + BRIEF-015 draft), #40 (BRIEF-015 Ready), #41 + #43 (BRIEF-015), #42 (types rule). Branches cleaned 17 Oct — only `main` remains.
 
 ## Retrofit checklist (per canvas, from cd-template.md)
 1. `read` the canvas `project/canvas.json` + boards (Field may have edited — keep his edits). Re-upload Lucide only if adding boards that need it (blob ids are per canvas; existing boards already reference their own blob).
