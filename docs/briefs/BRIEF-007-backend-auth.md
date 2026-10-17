@@ -2,15 +2,15 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 2 approved by Field 2026-10-04 · Week 1, runs after BRIEF-009 |
+| **Status** | Ready — Rev 3 approved by Field 2026-10-17 · Week 1, BRIEF-009 merged (PR #34) |
 | **Implementer** | kj |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | Default, no fallback |
 | **PR** | <executor fills> |
 | **Affected apps** | backend · infra/CI (Redis service) |
-| **Revision** | 2 |
+| **Revision** | 3 |
 | **Depends on** | BRIEF-004 (Done), BRIEF-006 (Done), **BRIEF-009 merged** (envelope `code`, OpenAPI helper) |
-| **References** | handoff 2026-09-20 "Auth & Session Architecture" · DR-005 (mobile auth — **not** in this brief) · DR-007 (frontend axios — BRIEF-008) · `docs/rules/backend.md` · `docs/schema.sql` (`identity_provider`, `staff_user`, `staff_user_identity`) · LINE Login v2.1 |
+| **References** | handoff 2026-09-20 "Auth & Session Architecture" · DR-005 (mobile auth — **not** in this brief) · DR-007 (frontend axios — BRIEF-008) · `docs/rules/backend.md` · `docs/schema.sql` (`identity_provider`, `staff_user`, `staff_user_identity`, `staff_access_request`) · CD-01 R2 / CD-13 Q1 (access requests) · BRIEF-009 (envelope `code`, OpenAPI helper) · LINE Login v2.1 |
 | **Audit depth** | Full — auth |
 
 ---
@@ -26,8 +26,8 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
   - `line` — `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET`, `LINE_CALLBACK_URL`
   - `app` — add `FRONTEND_URL` (CORS origin + post-login redirect)
 - **Redis provider:** `providers/redis/redis.module.ts` (global) + `redis.service.ts` exposing one `ioredis` client; closed on shutdown.
-- **Migration** `…-StaffIdentity.ts`: `identity_provider` enum, `staff_user`, `staff_user_identity` — **exactly as `docs/schema.sql`**.
-- **IAM module (minimal):** `modules/iam/` — `StaffUser`, `StaffUserIdentity` entities; repository port + TypeORM adapter; `StaffUserService` with `findByIdentity(provider, externalId)` and `findActiveById(id)`. No groups/policies yet (IAM brief, TBD). These two tables have no audit columns in `schema.sql` → the entities do **not** extend `BaseEntity`.
+- **Migration** `…-StaffIdentity.ts`: `identity_provider` enum, `staff_user`, `staff_user_identity`, `staff_access_request` — **exactly as `docs/schema.sql`** (all `staff_user` columns incl. `pos_pin_hash`; the PIN feature itself is out of scope).
+- **IAM module (minimal):** `modules/iam/` — `StaffUser`, `StaffUserIdentity` entities; repository port + TypeORM adapter; `StaffUserService` with `findByIdentity(provider, externalId)` and `findActiveById(id)`; `StaffAccessRequest` entity + `AccessRequestService.recordRequest(provider, externalId, displayName, avatarUrl)` (Rev 3, see callback). No groups/policies yet (IAM brief, TBD). These two tables have no audit columns in `schema.sql` → the entities do **not** extend `BaseEntity`.
 - **Auth module** (replace the unused strategy stubs with one real JWT strategy):
   - `LineClient` behind a port: build authorize URL, exchange code (`https://api.line.me/oauth2/v2.1/token`), verify ID token (`POST https://api.line.me/oauth2/v2.1/verify` with `nonce`). Plain `fetch`.
   - `TokenService`: access JWT (HS256, payload `{ sub, sid }`, TTL from config; `sid` = refresh family id) via `@nestjs/jwt`; **opaque refresh tokens** (32 random bytes) stored in Redis **hashed** (`refresh:<sha256>` → `{ userId, familyId }`, TTL = refresh TTL); rotation on every use; **reuse of an already-rotated token revokes the whole family**. Session record `session:<familyId>` → `{ userId }` (TTL = refresh TTL, extended on rotation); revoking a family deletes it.
@@ -38,7 +38,7 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
   | Method | Path | Auth | Behaviour |
   |---|---|---|---|
   | GET | `/auth/line/login` | public | 302 → LINE authorize (`scope=profile openid`, `state`, `nonce`) |
-  | GET | `/auth/line/callback` | public | verify `state` (single use) → exchange code → verify ID token → find active identity. **Found:** set `access_token` + `refresh_token` cookies, 302 → `FRONTEND_URL/`. **Not found / inactive:** 302 → `FRONTEND_URL/login?error=not_registered`, log LINE `sub` at `info` (for provisioning). **Any other failure:** 302 → `/login?error=login_failed`. |
+  | GET | `/auth/line/callback` | public | verify `state` (single use) → exchange code → verify ID token → find active identity. **Found:** set `access_token` + `refresh_token` cookies, 302 → `FRONTEND_URL/`. **Not found:** upsert `staff_access_request` (`provider='line'`, `external_id`=LINE `sub`, `display_name`/`avatar_url` from the LINE profile) — new row → `pending`; existing row → refresh `display_name`/`avatar_url` only, **status unchanged** (a `rejected` request stays rejected — CD-13 R4); then 302 → `FRONTEND_URL/login?error=not_registered`. **Inactive identity:** no request row (the owner reactivates the staff member); 302 → `not_registered`. Log LINE `sub` at `info` in both cases. **Any other failure:** 302 → `/login?error=login_failed`. |
   | POST | `/auth/refresh` | refresh cookie | rotate → new cookies → `{ ok: true }`; invalid/reused → 401 + clear cookies |
   | POST | `/auth/logout` | public (cookie optional) | revoke refresh family if present, clear cookies → `{ ok: true }` |
   | GET | `/auth/me` | access token | `{ id, displayName, avatarUrl }` |
@@ -52,13 +52,17 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 - Mobile endpoints (`/auth/mobile/token`, `/auth/mobile/refresh`, PKCE) — with the Expo auth brief (DR-005).
 - Frontend login page, axios, 401 interceptor — BRIEF-008.
 - Groups, policies, `PermissionsGuard`, permission cache — IAM brief (TBD).
+- Access-request list / approve / reject endpoints and the owner UI — IAM brief (CD-13 R7). This brief only **creates** requests.
+- POS PIN switch (DR-014 #8: set/verify PIN, switch user on the shared POS) — separate brief after the 8 Nov gate (Field 2026-10-17).
 - `notification` / `staff_push_token` tables — with the notifications brief.
 - Rate limiting, account linking, phone OTP, customer login.
 
 ## 3. Contract
 - Env vars listed in §2 (exact names). Test/dev values only in `.env.example` and CI — never real secrets.
-- `GET /api/auth/me` → `{ status: 200, message: 'success', data: { id: uuid, displayName: string, avatarUrl: string | null } }`
-- Unauthenticated protected route → `401 { status: 401, message: 'Unauthorized', data: null }`.
+- Envelope per BRIEF-009 (D1): `GET /api/auth/me` → `{ status: 200, code: '', message: 'success', data: { id: uuid, displayName: string, avatarUrl: string | null } }`
+- Unauthenticated protected route → `401 { status: 401, code: 'UNAUTHORIZED', message: 'Unauthorized', data: null }`.
+- **OpenAPI:** JSON endpoints (`/auth/refresh`, `/auth/logout`, `/auth/me`) documented with the BRIEF-009 helper; add the auth controller to `scripts/create-openapi-document.ts` (stub its providers) and commit the regenerated `docs/api/openapi.json`. Redirect endpoints documented as 302.
+- Response schemas for `/auth/me` live in `@bar/contracts` (`src/schemas/auth.ts`, `AuthMeSchema`).
 
 ## 4. Acceptance Criteria
 - **AC-1** — Missing/short `JWT_ACCESS_SECRET` or missing `LINE_*`/`REDIS_URL`/`FRONTEND_URL` → app refuses to boot, message names the variable.
@@ -66,20 +70,21 @@ A pre-registered staff member signs in with LINE on the web, receives HttpOnly J
 - **AC-3** — `GET /auth/line/login` → 302 to `access.line.me/oauth2/v2.1/authorize` with `response_type=code`, `client_id`, `redirect_uri`, `state`, `nonce`, `scope=profile openid`; state stored once.
 - **AC-4** — Callback with a registered identity (fake LINE client in e2e) → both cookies with the flags in §2, 302 to `FRONTEND_URL/`; `GET /auth/me` with the cookie returns the user.
 - **AC-5** — Callback with unknown/replayed `state` → `login_failed`; unregistered or inactive identity → `not_registered`, no cookies, LINE `sub` logged.
+- **AC-5b** (Rev 3) — Unregistered identity → exactly one `staff_access_request` row `pending` with LINE display name/avatar; a second login updates name/avatar, still one row; a `rejected` row stays `rejected`; an inactive identity creates no row.
 - **AC-6** — `POST /auth/refresh` rotates both cookies; using the **old** refresh token again → 401, cookies cleared, and the **new** token of that family is also revoked.
 - **AC-7** — `POST /auth/logout` revokes the family and clears cookies; the old refresh token then fails **and the still-unexpired access token of that session gets 401 on the next request**; another session of the same user keeps working.
 - **AC-8** — Any non-`@Public` route without a token → 401 envelope; with `Authorization: Bearer <access>` it passes (extractor order); `/api/health` stays public.
 - **AC-9** — Refresh tokens are never stored in plain text (Redis key is a hash); tokens/secrets never logged.
 - **AC-10** — `seed:staff` creates the user + identity; second run reports "already registered".
 - **AC-11** — Exactly one passport strategy (`jwt`) remains; unused stubs removed; lint 0 warnings in `modules/auth`.
-- **AC-12** — lint / typecheck / test / test:e2e / build exit 0; `ci` green with the Redis service.
+- **AC-12** — lint / typecheck / test / test:e2e / build exit 0; `ci` green with the Redis service (incl. the OpenAPI spec check).
 
 ## 5. Test Gate
 | AC | Test type | Location |
 |---|---|---|
 | AC-1 | unit | `providers/config/{jwt,line,redis}/configuration.spec.ts` |
 | AC-2 | e2e / manual | migration run + revert output in handoff |
-| AC-3–AC-8 | e2e | `test/auth.e2e-spec.ts` (real Postgres + Redis, fake `LineClient` provider) |
+| AC-3–AC-8, AC-5b | e2e | `test/auth.e2e-spec.ts` (real Postgres + Redis, fake `LineClient` provider) |
 | AC-6, AC-9 | unit | `modules/auth/application/token.service.spec.ts` |
 | AC-10 | manual | command output in handoff |
 | AC-11, AC-12 | command output + `ci` link | handoff |
@@ -130,3 +135,4 @@ pnpm --filter @bar/backend build
 | 1 | 2026-10-04 | Off hold. D1 pre-registered, D3 `{ sub }`, D4 keep passport (passport-jwt strategy) — Field. D2 open |
 | 2 | 2026-10-04 | D2 decided: Redis session + per-request `sid` check; D3 payload `{ sub, sid }`; AC-7 extended |
 | 2 | 2026-10-04 | Ready — approved by Field in session; depends on BRIEF-009 |
+| 3 | 2026-10-17 | Unregistered LINE login upserts `staff_access_request` (CD-01 R2 copy / CD-13 Q1; rejected stays rejected per CD-13 R4; inactive → no row) + AC-5b · envelope `code` + OpenAPI per BRIEF-009 · POS PIN (DR-014 #8) explicitly out → separate brief after the gate. Ready — approved by Field in session (Cowork) |
