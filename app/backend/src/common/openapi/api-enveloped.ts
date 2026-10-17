@@ -13,17 +13,31 @@ import { zodToOpenApi } from './zod-to-openapi.js';
 
 const apiErrorRef = { $ref: '#/components/schemas/ApiError' };
 
-export function ApiStandardErrors() {
+export function ApiStandardErrors(): ClassDecorator & MethodDecorator {
   return applyDecorators(
-    ApiBadRequestResponse({ description: 'Validation failed', schema: apiErrorRef }),
-    ApiUnauthorizedResponse({ description: 'Missing or expired access', schema: apiErrorRef }),
-    ApiForbiddenResponse({ description: 'Missing permission', schema: apiErrorRef }),
-    ApiNotFoundResponse({ description: 'Resource not found', schema: apiErrorRef }),
+    ApiBadRequestResponse({
+      description: 'Validation failed',
+      schema: apiErrorRef,
+    }),
+    ApiUnauthorizedResponse({
+      description: 'Missing or expired access',
+      schema: apiErrorRef,
+    }),
+    ApiForbiddenResponse({
+      description: 'Missing permission',
+      schema: apiErrorRef,
+    }),
+    ApiNotFoundResponse({
+      description: 'Resource not found',
+      schema: apiErrorRef,
+    }),
     ApiConflictResponse({ description: 'State conflict', schema: apiErrorRef }),
   );
 }
 
-export function ApiEnvelopedOk(data: z.ZodType) {
+export function ApiEnvelopedOk(
+  data: z.ZodType,
+): ClassDecorator & MethodDecorator {
   return applyDecorators(
     ApiOkResponse({
       description: 'Standard success envelope',

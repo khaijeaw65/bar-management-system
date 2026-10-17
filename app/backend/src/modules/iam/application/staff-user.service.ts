@@ -8,19 +8,19 @@ import {
 
 @Injectable()
 export class StaffUserService {
-  constructor(
+  public constructor(
     @Inject(STAFF_USER_REPOSITORY)
     private readonly staffUsers: StaffUserRepository,
   ) {}
 
-  findByIdentity(
+  public findByIdentity(
     provider: IdentityProvider,
     externalId: string,
   ): Promise<StaffUserView | null> {
     return this.staffUsers.findByIdentity(provider, externalId);
   }
 
-  findActiveById(id: string): Promise<StaffUserView | null> {
+  public findActiveById(id: string): Promise<StaffUserView | null> {
     return this.staffUsers.findActiveById(id);
   }
 }

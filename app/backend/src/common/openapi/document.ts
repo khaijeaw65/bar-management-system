@@ -17,7 +17,9 @@ export function backendVersion(): string {
   return pkg.version;
 }
 
-export function openApiConfig(version: string) {
+export function openApiConfig(
+  version: string,
+): ReturnType<DocumentBuilder['build']> {
   return new DocumentBuilder()
     .setTitle('The Loft Bar API')
     .setVersion(version)
@@ -28,7 +30,9 @@ export function openApiConfig(version: string) {
     .build();
 }
 
-export function applyContractComponents(document: OpenAPIObject): OpenAPIObject {
+export function applyContractComponents(
+  document: OpenAPIObject,
+): OpenAPIObject {
   document.components ??= {};
   document.components.schemas ??= {};
   document.components.schemas.ApiError = zodToOpenApi(ApiErrorSchema);

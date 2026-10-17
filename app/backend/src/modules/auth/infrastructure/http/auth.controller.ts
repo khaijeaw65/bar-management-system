@@ -11,7 +11,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthMeSchema } from '@bar/contracts';
+import { AuthMeSchema, type AuthMe } from '@bar/contracts';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { CurrentUser } from '../../../../common/decorators/current-user.decorator.js';
@@ -24,12 +24,14 @@ import { AuthService } from '../../application/auth.service.js';
 import { clearSessionCookies, writeSessionCookies } from './auth-cookies.js';
 
 const AuthOkSchema = z.object({ ok: z.literal(true) });
+type AuthOkResponse = z.infer<typeof AuthOkSchema>;
+type RedirectTarget = { url: string; statusCode: number };
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly auth: AuthService,
+  public constructor(
+    private readonly authService: AuthService,
     private readonly appConfig: AppConfigService,
     private readonly jwtConfig: JwtConfigService,
   ) {}
@@ -38,9 +40,12 @@ export class AuthController {
   @Public()
   @Redirect()
   @ApiOperation({ summary: 'Start LINE login' })
-  @ApiResponse({ status: 302, description: 'Redirect to the LINE authorize URL' })
-  async lineLogin(): Promise<{ url: string; statusCode: number }> {
-    return { url: await this.auth.startLineLogin(), statusCode: 302 };
+  @ApiResponse({
+    status: 302,
+    description: 'Redirect to the LINE authorize URL',
+  })
+  public async lineLogin(): Promise<RedirectTarget> {
+    return { url: await this.authService.startLineLogin(), statusCode: 302 };
   }
 
   @Get('line/callback')
@@ -55,13 +60,17 @@ export class AuthController {
     description:
       'Redirect to the frontend home, or to a login error URL. No JSON envelope.',
   })
-  async lineCallback(
+  public async lineCallback(
     @Query('code') code: string | undefined,
     @Query('state') state: string | undefined,
     @Query('error') error: string | undefined,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ url: string; statusCode: number }> {
-    const result = await this.auth.handleLineCallback({ code, state, error });
+  ): Promise<RedirectTarget> {
+    const result = await this.authService.handleLineCallback({
+      code,
+      state,
+      error,
+    });
     if (result.kind === 'session') {
       this.writeCookies(res, result.accessToken, result.refreshToken);
     }
@@ -77,11 +86,11 @@ export class AuthController {
       'Public to the access-token guard. The refresh cookie is the credential, so an expired access cookie can still be rotated.',
   })
   @ApiEnvelopedOk(AuthOkSchema)
-  async refresh(
+  public async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ ok: true }> {
-    const result = await this.auth.refresh(req.cookies?.refresh_token);
+  ): Promise<AuthOkResponse> {
+    const result = await this.authService.refresh(req.cookies?.refresh_token);
     if (result.kind === 'unauthorized') {
       clearSessionCookies(res, this.appConfig.nodeEnv);
       throw new UnauthorizedException();
@@ -95,11 +104,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Revoke this session and clear cookies' })
   @ApiEnvelopedOk(AuthOkSchema)
-  async logout(
+  public async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ ok: true }> {
-    await this.auth.logout(req.cookies?.refresh_token);
+  ): Promise<AuthOkResponse> {
+    await this.authService.logout(req.cookies?.refresh_token);
     clearSessionCookies(res, this.appConfig.nodeEnv);
     return { ok: true };
   }
@@ -107,21 +116,25 @@ export class AuthController {
   @Get('me')
   @ApiOperation({
     summary: 'Current staff user',
-    description: 'Access token from the access_token cookie, or Authorization: Bearer.',
+    description:
+      'Access token from the access_token cookie, or Authorization: Bearer.',
   })
   @ApiEnvelopedOk(AuthMeSchema)
-  me(@CurrentUser() user: CurrentUserPayload) {
-    return this.auth.me(user.sub);
+  public me(@CurrentUser() user: CurrentUserPayload): Promise<AuthMe> {
+    return this.authService.getCurrentStaffUser(user.sub);
   }
 
-  private writeCookies(res: Response, accessToken: string, refreshToken: string): void {
-    writeSessionCookies(
-      res,
-      this.appConfig.nodeEnv,
-      this.jwtConfig.accessTtlSeconds,
-      this.jwtConfig.refreshTtlSeconds,
+  private writeCookies(
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+  ): void {
+    writeSessionCookies(res, {
+      nodeEnv: this.appConfig.nodeEnv,
+      accessTtlSeconds: this.jwtConfig.accessTtlSeconds,
+      refreshTtlSeconds: this.jwtConfig.refreshTtlSeconds,
       accessToken,
       refreshToken,
-    );
+    });
   }
 }

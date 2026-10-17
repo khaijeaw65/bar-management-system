@@ -3,8 +3,10 @@ import { z } from 'zod';
 import { LineConfigService } from '../../../../providers/config/line/config.service.js';
 import {
   buildLineAuthorizeUrl,
+  type LineAuthorizeInput,
   type LineClient,
   type LineProfile,
+  type LineTokenExchange,
 } from '../../domain/line-client.js';
 
 const TokenResponseSchema = z.object({
@@ -20,62 +22,81 @@ const VerifyResponseSchema = z.object({
 
 @Injectable()
 export class LineClientHttp implements LineClient {
-  constructor(private readonly config: LineConfigService) {}
+  public constructor(private readonly lineConfigService: LineConfigService) {}
 
-  authorizeUrl(input: { state: string; nonce: string }): string {
+  public authorizeUrl(input: LineAuthorizeInput): string {
     return buildLineAuthorizeUrl({
-      channelId: this.config.channelId,
-      callbackUrl: this.config.callbackUrl,
+      channelId: this.lineConfigService.channelId,
+      callbackUrl: this.lineConfigService.callbackUrl,
       state: input.state,
       nonce: input.nonce,
     });
   }
 
-  async exchangeCode(code: string): Promise<{ idToken: string }> {
-    const body = new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: this.config.callbackUrl,
-      client_id: this.config.channelId,
-      client_secret: this.config.channelSecret,
-    });
-    const response = await fetch('https://api.line.me/oauth2/v2.1/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
-    });
-    if (!response.ok) {
-      throw new Error('LINE token exchange failed');
-    }
-    const parsed = TokenResponseSchema.safeParse(await response.json());
-    if (!parsed.success) {
-      throw new Error('LINE token exchange failed');
-    }
-    return { idToken: parsed.data.id_token };
+  public async exchangeCode(code: string): Promise<LineTokenExchange> {
+    const body = await this.postForm(
+      'https://api.line.me/oauth2/v2.1/token',
+      {
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: this.lineConfigService.callbackUrl,
+        client_id: this.lineConfigService.channelId,
+        client_secret: this.lineConfigService.channelSecret,
+      },
+      'LINE token exchange failed',
+    );
+    return readIdToken(body);
   }
 
-  async verifyIdToken(idToken: string, nonce: string): Promise<LineProfile> {
-    const body = new URLSearchParams({
-      id_token: idToken,
-      client_id: this.config.channelId,
-      nonce,
-    });
-    const response = await fetch('https://api.line.me/oauth2/v2.1/verify', {
+  public async verifyIdToken(
+    idToken: string,
+    nonce: string,
+  ): Promise<LineProfile> {
+    const body = await this.postForm(
+      'https://api.line.me/oauth2/v2.1/verify',
+      {
+        id_token: idToken,
+        client_id: this.lineConfigService.channelId,
+        nonce,
+      },
+      'LINE ID token verification failed',
+    );
+    return readLineProfile(body, nonce);
+  }
+
+  private async postForm(
+    url: string,
+    fields: Record<string, string>,
+    failure: string,
+  ): Promise<unknown> {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
+      body: new URLSearchParams(fields),
     });
-    if (!response.ok) {
-      throw new Error('LINE ID token verification failed');
-    }
-    const parsed = VerifyResponseSchema.safeParse(await response.json());
-    if (!parsed.success || (parsed.data.nonce !== undefined && parsed.data.nonce !== nonce)) {
-      throw new Error('LINE ID token verification failed');
-    }
-    return {
-      sub: parsed.data.sub,
-      name: parsed.data.name ?? null,
-      picture: parsed.data.picture ?? null,
-    };
+    if (!response.ok) throw new Error(failure);
+    return response.json() as Promise<unknown>;
   }
+}
+
+function readIdToken(body: unknown): LineTokenExchange {
+  const parsed = TokenResponseSchema.safeParse(body);
+  if (!parsed.success) throw new Error('LINE token exchange failed');
+  return { idToken: parsed.data.id_token };
+}
+
+function readLineProfile(body: unknown, nonce: string): LineProfile {
+  const parsed = VerifyResponseSchema.safeParse(body);
+  if (!parsed.success || nonceMismatch(parsed.data.nonce, nonce)) {
+    throw new Error('LINE ID token verification failed');
+  }
+  return {
+    sub: parsed.data.sub,
+    name: parsed.data.name ?? null,
+    picture: parsed.data.picture ?? null,
+  };
+}
+
+function nonceMismatch(tokenNonce: string | undefined, nonce: string): boolean {
+  return tokenNonce !== undefined && tokenNonce !== nonce;
 }

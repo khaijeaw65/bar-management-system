@@ -1,8 +1,16 @@
 import type { CookieOptions, Response } from 'express';
 
-const BASE: CookieOptions = {
+const BASE_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   sameSite: 'lax',
+};
+
+type SessionCookies = {
+  nodeEnv: string;
+  accessTtlSeconds: number;
+  refreshTtlSeconds: number;
+  accessToken: string;
+  refreshToken: string;
 };
 
 export function accessCookieOptions(
@@ -10,7 +18,7 @@ export function accessCookieOptions(
   maxAgeSeconds: number,
 ): CookieOptions {
   return {
-    ...BASE,
+    ...BASE_COOKIE_OPTIONS,
     secure: nodeEnv === 'production',
     path: '/',
     maxAge: maxAgeSeconds * 1000,
@@ -29,26 +37,30 @@ export function refreshCookieOptions(
 
 export function writeSessionCookies(
   res: Response,
-  nodeEnv: string,
-  accessTtlSeconds: number,
-  refreshTtlSeconds: number,
-  accessToken: string,
-  refreshToken: string,
+  cookies: SessionCookies,
 ): void {
   res.cookie(
     'access_token',
-    accessToken,
-    accessCookieOptions(nodeEnv, accessTtlSeconds),
+    cookies.accessToken,
+    accessCookieOptions(cookies.nodeEnv, cookies.accessTtlSeconds),
   );
   res.cookie(
     'refresh_token',
-    refreshToken,
-    refreshCookieOptions(nodeEnv, refreshTtlSeconds),
+    cookies.refreshToken,
+    refreshCookieOptions(cookies.nodeEnv, cookies.refreshTtlSeconds),
   );
 }
 
 export function clearSessionCookies(res: Response, nodeEnv: string): void {
   const secure = nodeEnv === 'production';
-  res.clearCookie('access_token', { ...BASE, secure, path: '/' });
-  res.clearCookie('refresh_token', { ...BASE, secure, path: '/api/auth' });
+  res.clearCookie('access_token', {
+    ...BASE_COOKIE_OPTIONS,
+    secure,
+    path: '/',
+  });
+  res.clearCookie('refresh_token', {
+    ...BASE_COOKIE_OPTIONS,
+    secure,
+    path: '/api/auth',
+  });
 }

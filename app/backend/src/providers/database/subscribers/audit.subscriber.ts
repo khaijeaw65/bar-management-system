@@ -18,18 +18,18 @@ import { BaseEntity } from '../../../common/base/base.entity.js';
  * decorated with `@EventSubscriber()`.
  */
 export class AuditSubscriber implements EntitySubscriberInterface {
-  constructor(
+  public constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly cls: ClsService,
   ) {
     dataSource.subscribers.push(this);
   }
 
-  listenTo() {
+  public listenTo(): typeof BaseEntity {
     return BaseEntity;
   }
 
-  beforeInsert(event: InsertEvent<BaseEntity>): void {
+  public beforeInsert(event: InsertEvent<BaseEntity>): void {
     const userId: string | undefined = this.cls.get('userId');
     if (userId) {
       event.entity.createdBy = userId;
@@ -37,7 +37,7 @@ export class AuditSubscriber implements EntitySubscriberInterface {
     }
   }
 
-  beforeUpdate(event: UpdateEvent<BaseEntity>): void {
+  public beforeUpdate(event: UpdateEvent<BaseEntity>): void {
     const userId: string | undefined = this.cls.get('userId');
     if (userId && event.entity) {
       (event.entity as BaseEntity).updatedBy = userId;

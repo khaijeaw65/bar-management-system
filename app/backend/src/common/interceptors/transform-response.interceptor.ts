@@ -8,24 +8,33 @@ import { map, Observable } from 'rxjs';
 
 @Injectable()
 export class TransformResponseInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+  public intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<unknown> {
     if (isRedirect(context)) return next.handle();
-    return next.handle().pipe(
-      map((data) => {
-        const response = context.switchToHttp().getResponse<{
-          statusCode: number;
-          headersSent?: boolean;
-        }>();
-        if (response.headersSent) return data;
-        return {
-          status: response.statusCode,
-          code: '' as const,
-          message: 'success' as const,
-          data,
-        };
-      }),
-    );
+    return next.handle().pipe(map((data: unknown) => envelope(context, data)));
   }
+}
+
+function envelope(context: ExecutionContext, data: unknown): unknown {
+  const response = httpResponse(context);
+  if (response.headersSent) return data;
+  return {
+    status: response.statusCode,
+    code: '' as const,
+    message: 'success' as const,
+    data,
+  };
+}
+
+type HttpResponseState = {
+  statusCode: number;
+  headersSent?: boolean;
+};
+
+function httpResponse(context: ExecutionContext): HttpResponseState {
+  return context.switchToHttp().getResponse<HttpResponseState>();
 }
 
 function isRedirect(context: ExecutionContext): boolean {

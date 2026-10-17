@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RedisConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  public constructor(private readonly configService: ConfigService) {}
 
-  get url(): string {
+  public get url(): string {
     return this.configService.getOrThrow('redis.url');
   }
 }

@@ -11,14 +11,14 @@ import { StaffUserIdentity } from './staff-user-identity.entity.js';
 
 @Injectable()
 export class StaffUserTypeormRepository implements StaffUserRepository {
-  constructor(
+  public constructor(
     @InjectRepository(StaffUser)
     private readonly users: Repository<StaffUser>,
     @InjectRepository(StaffUserIdentity)
     private readonly identities: Repository<StaffUserIdentity>,
   ) {}
 
-  async findByIdentity(
+  public async findByIdentity(
     provider: IdentityProvider,
     externalId: string,
   ): Promise<StaffUserView | null> {
@@ -31,7 +31,7 @@ export class StaffUserTypeormRepository implements StaffUserRepository {
     return this.toView(user, identity.avatarUrl);
   }
 
-  async findActiveById(id: string): Promise<StaffUserView | null> {
+  public async findActiveById(id: string): Promise<StaffUserView | null> {
     const user = await this.users.findOne({ where: { id, isActive: true } });
     if (!user) return null;
     const identity = await this.identities.findOne({

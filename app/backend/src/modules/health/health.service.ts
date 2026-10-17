@@ -4,9 +4,11 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class HealthService {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  public constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+  ) {}
 
-  async checkDb(): Promise<'up' | 'down'> {
+  public async checkDb(): Promise<'up' | 'down'> {
     try {
       await this.dataSource.query('SELECT 1');
       return 'up';

@@ -3,25 +3,25 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DatabaseConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  public constructor(private readonly configService: ConfigService) {}
 
-  get host(): string {
+  public get host(): string {
     return this.configService.getOrThrow('database.host');
   }
 
-  get port(): number {
+  public get port(): number {
     return this.configService.getOrThrow('database.port');
   }
 
-  get username(): string {
+  public get username(): string {
     return this.configService.getOrThrow('database.username');
   }
 
-  get password(): string {
+  public get password(): string {
     return this.configService.getOrThrow('database.password');
   }
 
-  get database(): string {
+  public get database(): string {
     return this.configService.getOrThrow('database.database');
   }
 }

@@ -2,8 +2,28 @@
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/rules.rs",
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-floating-promises": "warn"
+    "@typescript-eslint/no-floating-promises": "warn",
+    "max-lines-per-function": [
+      "error",
+      { "max": 20, "skipBlankLines": true, "skipComments": true }
+    ],
+    "max-depth": ["error", 2],
+    "typescript/explicit-member-accessibility": "error",
+    "typescript/explicit-module-boundary-types": "error"
   },
+  "overrides": [
+    {
+      "files": [
+        "test/**",
+        "**/*.spec.ts",
+        "src/providers/database/migrations/**"
+      ],
+      "rules": {
+        "max-lines-per-function": "off",
+        "max-depth": "off"
+      }
+    }
+  ],
   "env": {
     "node": true
   }

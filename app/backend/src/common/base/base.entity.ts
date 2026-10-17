@@ -13,17 +13,17 @@ import { COL } from '../constants/sql-column.constant.js';
  */
 export abstract class BaseEntity {
   @PrimaryGeneratedColumn(COL.UUID)
-  id!: string;
+  public id!: string;
 
   @Column({ type: COL.UUID, nullable: true, name: 'created_by' })
-  createdBy!: string | null;
+  public createdBy!: string | null;
 
   @Column({ type: COL.UUID, nullable: true, name: 'updated_by' })
-  updatedBy!: string | null;
+  public updatedBy!: string | null;
 
   @CreateDateColumn({ type: COL.TIMESTAMP, name: 'created_at' })
-  createdAt!: Date;
+  public createdAt!: Date;
 
   @UpdateDateColumn({ type: COL.TIMESTAMP, name: 'updated_at' })
-  updatedAt!: Date;
+  public updatedAt!: Date;
 }

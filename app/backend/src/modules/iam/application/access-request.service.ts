@@ -4,36 +4,50 @@ import type { IdentityProvider } from '@bar/contracts';
 import { Repository } from 'typeorm';
 import { StaffAccessRequest } from '../infrastructure/persistence/staff-access-request.entity.js';
 
+export type AccessRequestInput = {
+  provider: IdentityProvider;
+  externalId: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
+
 @Injectable()
 export class AccessRequestService {
-  constructor(
+  public constructor(
     @InjectRepository(StaffAccessRequest)
-    private readonly requests: Repository<StaffAccessRequest>,
+    private readonly accessRequestRepository: Repository<StaffAccessRequest>,
   ) {}
 
-  async recordRequest(
-    provider: IdentityProvider,
-    externalId: string,
+  public async recordRequest(input: AccessRequestInput): Promise<void> {
+    const existing = await this.accessRequestRepository.findOne({
+      where: { provider: input.provider, externalId: input.externalId },
+    });
+    if (!existing) {
+      await this.insertRequest(input);
+      return;
+    }
+    await this.updateRequest(existing, input.displayName, input.avatarUrl);
+  }
+
+  private async insertRequest(input: AccessRequestInput): Promise<void> {
+    await this.accessRequestRepository.save(
+      this.accessRequestRepository.create({
+        provider: input.provider,
+        externalId: input.externalId,
+        displayName: input.displayName,
+        avatarUrl: input.avatarUrl,
+        status: 'pending',
+      }),
+    );
+  }
+
+  private async updateRequest(
+    existing: StaffAccessRequest,
     displayName: string | null,
     avatarUrl: string | null,
   ): Promise<void> {
-    const existing = await this.requests.findOne({
-      where: { provider, externalId },
-    });
-    if (!existing) {
-      await this.requests.save(
-        this.requests.create({
-          provider,
-          externalId,
-          displayName,
-          avatarUrl,
-          status: 'pending',
-        }),
-      );
-      return;
-    }
     existing.displayName = displayName;
     existing.avatarUrl = avatarUrl;
-    await this.requests.save(existing);
+    await this.accessRequestRepository.save(existing);
   }
 }

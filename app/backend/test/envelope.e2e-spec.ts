@@ -19,17 +19,17 @@ const NameSchema = z.object({ name: z.string() });
 @Controller('probe')
 class ProbeController {
   @Post('zod')
-  zod(@Body() body: unknown) {
+  public zod(@Body() body: unknown): { name: string } {
     return NameSchema.parse(body);
   }
 
   @Get('conflict')
-  conflict() {
+  public conflict(): never {
     throw new DomainException('CONFLICT', 'state conflict', 409);
   }
 
   @Get('boom')
-  boom() {
+  public boom(): never {
     throw new Error('boom');
   }
 }
