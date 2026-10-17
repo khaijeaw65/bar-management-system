@@ -451,7 +451,8 @@ CREATE TABLE payment_order (
 
 CREATE TABLE bottle_keep (
   id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  customer_id         UUID NOT NULL REFERENCES customer(id),
+  customer_id         UUID REFERENCES customer(id),          -- optional: most regulars are not LINE-linked
+  guest_label         VARCHAR(100),   -- name on the post-it, e.g. 'พี่เอก' (DR-014)
   inventory_item_id   UUID NOT NULL REFERENCES inventory_item(id),
   quantity_registered SMALLINT NOT NULL DEFAULT 1,
   remaining_quantity  SMALLINT NOT NULL DEFAULT 1,
@@ -463,7 +464,8 @@ CREATE TABLE bottle_keep (
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by          UUID REFERENCES staff_user(id),
-  updated_by          UUID REFERENCES staff_user(id)
+  updated_by          UUID REFERENCES staff_user(id),
+  CONSTRAINT bottle_keep_owner_chk CHECK (customer_id IS NOT NULL OR guest_label IS NOT NULL)
 );
 
 

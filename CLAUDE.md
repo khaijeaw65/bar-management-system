@@ -9,7 +9,7 @@
 
 Senior capstone project (2 semesters, DPU Computer Engineering).
 A production-grade bar management system for small-to-medium counter bars in Thailand.
-Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR payment, real-time kitchen/bar display.
+Key differentiators: AI-powered owner insight (sales / anomaly-fraud / menu — DR-014), bottle-keep, PromptPay QR payment, real-time kitchen/bar display.
 
 **Team**
 - ณัฐวัฒน์ จิรกุลประดิษฐ์ (66210096) — Project Lead / Backend
@@ -87,9 +87,9 @@ Key differentiators: AI-powered guest intelligence, bottle-keep, PromptPay QR pa
 
 ---
 
-## Database (ERD — 9 domains, 35 tables)
+## Database (ERD — 10 domains, 37 tables)
 
-Domains: Venue & Tables · Guest & Identity · Staff IAM · Menu · Inventory · Order · Payment · Bottle Keep · Audit Log
+Domains: Venue & Tables · Guest & Identity · Staff IAM · Menu · Inventory · Order · Payment · Bottle Keep · Audit Log · Shift & AI Insight
 
 Full schema: `docs/schema.sql` | Visual ERD: `docs/erd.html`
 
