@@ -14,7 +14,7 @@ import { RequirePermissions } from '../../../../common/decorators/require-permis
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { MenuCatalogService } from '../../application/menu-catalog.service.js';
-import { requireUuid, staffAccess } from './http-input.js';
+import { requireUuid, staffAccess } from '../../../../common/http/http-input.js';
 
 @ApiTags('menu')
 @Controller('menu')

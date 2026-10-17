@@ -18,7 +18,7 @@ import type {
   MenuVariantRecord,
 } from '../domain/menu.types.js';
 import { menuAvailability } from './menu-availability.js';
-import { money } from './money.js';
+import { money } from '../../../common/money.js';
 
 export interface MenuListQuery {
   categoryId?: string;
@@ -107,12 +107,12 @@ export class MenuCatalogService {
   }
 
   private toListedItem(record: MenuItemRecord, now: Date): MenuItem | null {
-    if (!menuAvailability(availabilityInput(record), now).listed) return null;
+    if (!menuAvailability(this.availabilityInput(record), now).listed) return null;
     return this.toItem(record, now);
   }
 
   private toItem(record: MenuItemRecord, now: Date): MenuItem {
-    const decision = menuAvailability(availabilityInput(record), now);
+    const decision = menuAvailability(this.availabilityInput(record), now);
     return {
       id: record.id,
       categoryId: record.categoryId,
@@ -136,7 +136,7 @@ export class MenuCatalogService {
         name: variant.name,
         price: money(variant.price),
         isAvailable: variant.isAvailable,
-        modifierGroups: variant.modifierGroups.map(toGroup),
+        modifierGroups: variant.modifierGroups.map((group) => this.toGroup(group)),
       })),
     };
   }
@@ -146,7 +146,7 @@ export class MenuCatalogService {
     variant: MenuVariantRecord,
     now: Date,
   ): OrderableVariant {
-    const decision = menuAvailability(availabilityInput(record), now);
+    const decision = menuAvailability(this.availabilityInput(record), now);
     // A turned-off variant is sold out even when the item is also outside its window.
     const availableNow = decision.availableNow && variant.isAvailable;
     const unavailableReason = variant.isAvailable
@@ -161,31 +161,31 @@ export class MenuCatalogService {
       kitchenTag: record.kitchenTag,
       availableNow,
       unavailableReason,
-      modifierGroups: variant.modifierGroups.map(toGroup),
+      modifierGroups: variant.modifierGroups.map((group) => this.toGroup(group)),
     };
   }
-}
 
-function availabilityInput(record: MenuItemRecord) {
-  return {
-    categoryActive: record.categoryActive,
-    isAvailable: record.isAvailable,
-    windows: record.windows,
-  };
-}
+  private availabilityInput(record: MenuItemRecord) {
+    return {
+      categoryActive: record.categoryActive,
+      isAvailable: record.isAvailable,
+      windows: record.windows,
+    };
+  }
 
-function toGroup(group: MenuGroupRecord): MenuModifierGroup {
-  return {
-    id: group.id,
-    name: group.name,
-    isRequired: group.isRequired,
-    minSelect: group.minSelect,
-    maxSelect: group.maxSelect,
-    options: group.options.map((option) => ({
-      id: option.id,
-      name: option.name,
-      priceDelta: money(option.priceDelta),
-      isAvailable: option.isAvailable,
-    })),
-  };
+  private toGroup(group: MenuGroupRecord): MenuModifierGroup {
+    return {
+      id: group.id,
+      name: group.name,
+      isRequired: group.isRequired,
+      minSelect: group.minSelect,
+      maxSelect: group.maxSelect,
+      options: group.options.map((option) => ({
+        id: option.id,
+        name: option.name,
+        priceDelta: money(option.priceDelta),
+        isAvailable: option.isAvailable,
+      })),
+    };
+  }
 }

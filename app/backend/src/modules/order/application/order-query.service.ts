@@ -10,7 +10,7 @@ import type { OrderQuery } from '../domain/order.types.js';
 import { foldOrders } from './fold-orders.js';
 import type { FoldedOrder } from './folded-order.types.js';
 import type { VisitBill } from './order.types.js';
-import { toOrder, type TicketView } from './present-order.js';
+import { toOrder, withoutVisit, type TicketView } from './present-order.js';
 import { queueStatuses } from './ticket-query.js';
 
 @Injectable()
@@ -67,26 +67,21 @@ export class OrderQueryService {
 
   private async namesFor(orders: readonly FoldedOrder[]): Promise<Map<string, string>> {
     const names = new Map<string, string>();
-    for (const id of staffIds(orders)) {
+    for (const id of this.staffIds(orders)) {
       const staff = await this.staff.findById(id);
       if (staff) names.set(id, staff.displayName);
     }
     return names;
   }
-}
 
-function staffIds(orders: readonly FoldedOrder[]): string[] {
-  const ids = new Set<string>();
-  for (const order of orders) {
-    if (order.createdById) ids.add(order.createdById);
-    for (const ticket of order.tickets) {
-      if (ticket.updatedById) ids.add(ticket.updatedById);
+  private staffIds(orders: readonly FoldedOrder[]): string[] {
+    const ids = new Set<string>();
+    for (const order of orders) {
+      if (order.createdById) ids.add(order.createdById);
+      for (const ticket of order.tickets) {
+        if (ticket.updatedById) ids.add(ticket.updatedById);
+      }
     }
+    return [...ids];
   }
-  return [...ids];
-}
-
-function withoutVisit(ticket: TicketView): Ticket {
-  const { visitId: _visitId, ...body } = ticket;
-  return body;
 }

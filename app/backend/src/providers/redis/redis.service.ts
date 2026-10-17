@@ -23,15 +23,15 @@ export class RedisService implements OnApplicationShutdown {
 
   // After the socket adapter unsubscribes. Quitting earlier rejects its close.
   public async onApplicationShutdown(): Promise<void> {
-    await Promise.all(this.subscribers.map((client) => closeRedis(client)));
-    await closeRedis(this.client);
+    await Promise.all(this.subscribers.map((client) => this.closeRedis(client)));
+    await this.closeRedis(this.client);
   }
-}
 
-async function closeRedis(client: Redis): Promise<void> {
-  if (client.status === 'wait' || client.status === 'end') {
-    client.disconnect();
-    return;
+  private async closeRedis(client: Redis): Promise<void> {
+    if (client.status === 'wait' || client.status === 'end') {
+      client.disconnect();
+      return;
+    }
+    await client.quit();
   }
-  await client.quit();
 }

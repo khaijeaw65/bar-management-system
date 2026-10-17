@@ -404,7 +404,7 @@ oxlint enforces the measurable rules (CI fails); the audit enforces the rest (vi
   - shared across modules or with the frontend → `@bar/contracts` (brief/DR)
 
 ### Where functions live (Field, 2026-10-17)
-- **A file that declares a class holds that class only:** imports, plain constants and the class — no module-level functions or arrow-function consts. Helpers are `private` methods (`private static` when they don't use `this`), placed per the reading order below.
+- **A file that declares a class holds that class only:** imports, plain constants and the class — no module-level functions or arrow-function consts. Helpers are `private` methods called with `this.` — not `static`, even when they don't read `this` (Nest classes are injected instances; one consistent call style). Placed per the reading order below.
 - **Swagger decorator factories** (`ApiCreatedOrder()`) are functions by nature → `infrastructure/http/<subject>.openapi.ts`, not the controller file. Nest decorators in `common/decorators/` are unchanged.
 - **Function-only files** (no class) are allowed for pure logic: domain rules, mappers, value parsers, config factories, CLI scripts. Never mix a class and module-level functions in one file.
 - **Shared, not copied:** a helper two files need lives once, in a function-only file in the owning layer (or `common/` across modules) — never duplicated per file.

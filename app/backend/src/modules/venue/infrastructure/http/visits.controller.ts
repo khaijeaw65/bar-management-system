@@ -7,23 +7,13 @@ import {
   Param,
   Post,
   Res,
-  applyDecorators,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   OpenVisitRequestSchema,
-  OpenVisitResponseSchema,
   UuidSchema,
   VisitDetailSchema,
   VisitSchema,
-  apiResponseSchema,
   type OpenVisitRequest,
   type OpenVisitResponse,
   type Visit,
@@ -33,13 +23,15 @@ import type { Response } from 'express';
 import { CurrentUser } from '../../../../common/decorators/current-user.decorator.js';
 import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
 import { RequirePermissions } from '../../../../common/decorators/require-permissions.decorator.js';
-import { ApiEnvelopedOk, ApiStandardErrors } from '../../../../common/openapi/api-enveloped.js';
+import { requireUuid, staffAccess } from '../../../../common/http/http-input.js';
+import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { OrderQueryService } from '../../../order/application/order-query.service.js';
 import type { OpenVisitInput } from '../../application/visit.types.js';
 import { VisitService } from '../../application/visit.service.js';
-import { blankToNull, requireUuid, staffAccess } from './http-input.js';
+import { blankToNull } from './http-input.js';
 import { toVisitBody } from './visit.mapper.js';
+import { ApiOpenVisit } from './visits.openapi.js';
 
 @ApiTags('venue')
 @Controller('visits')
@@ -62,7 +54,7 @@ export class VisitsController {
     @CurrentUser() user: CurrentUserPayload,
     @Res({ passthrough: true }) response: Response,
   ): Promise<OpenVisitResponse> {
-    const result = await this.visitService.open(openInput(body, user.sub));
+    const result = await this.visitService.open(this.openInput(body, user.sub));
     response.status(result.attached ? HttpStatus.OK : HttpStatus.CREATED);
     return { visit: toVisitBody(result.visit), attached: result.attached };
   }
@@ -94,29 +86,14 @@ export class VisitsController {
     const visitId = requireUuid(id, 'ไม่พบการเข้าใช้');
     return toVisitBody(await this.visitService.close(visitId));
   }
-}
 
-function openInput(body: unknown, staffId: string): OpenVisitInput {
-  const parsed: OpenVisitRequest = OpenVisitRequestSchema.parse(body);
-  return {
-    tableSeatId: parsed.tableSeatId,
-    guestLabel: blankToNull(parsed.guestLabel),
-    via: parsed.via ?? 'pos',
-    staffId,
-  };
-}
-
-function ApiOpenVisit(): MethodDecorator {
-  const schema = zodToOpenApi(apiResponseSchema(OpenVisitResponseSchema));
-  return applyDecorators(
-    ApiCreatedResponse({
-      description: 'Created the visit. attached is false.',
-      schema,
-    }),
-    ApiOkResponse({
-      description: 'Attached to the live visit. attached is true.',
-      schema,
-    }),
-    ApiStandardErrors(),
-  );
+  private openInput(body: unknown, staffId: string): OpenVisitInput {
+    const parsed: OpenVisitRequest = OpenVisitRequestSchema.parse(body);
+    return {
+      tableSeatId: parsed.tableSeatId,
+      guestLabel: blankToNull(parsed.guestLabel),
+      via: parsed.via ?? 'pos',
+      staffId,
+    };
+  }
 }

@@ -47,7 +47,7 @@ export class LineClientHttp implements LineClient {
       },
       'LINE token exchange failed',
     );
-    return readIdToken(body);
+    return this.readIdToken(body);
   }
 
   public async verifyIdToken(
@@ -63,7 +63,7 @@ export class LineClientHttp implements LineClient {
       },
       'LINE ID token verification failed',
     );
-    return readLineProfile(body, nonce);
+    return this.readLineProfile(body, nonce);
   }
 
   private async postForm(
@@ -79,26 +79,26 @@ export class LineClientHttp implements LineClient {
     if (!response.ok) throw new Error(failure);
     return response.json() as Promise<unknown>;
   }
-}
 
-function readIdToken(body: unknown): LineTokenExchange {
-  const parsed = TokenResponseSchema.safeParse(body);
-  if (!parsed.success) throw new Error('LINE token exchange failed');
-  return { idToken: parsed.data.id_token };
-}
-
-function readLineProfile(body: unknown, nonce: string): LineProfile {
-  const parsed = VerifyResponseSchema.safeParse(body);
-  if (!parsed.success || nonceMismatch(parsed.data.nonce, nonce)) {
-    throw new Error('LINE ID token verification failed');
+  private readIdToken(body: unknown): LineTokenExchange {
+    const parsed = TokenResponseSchema.safeParse(body);
+    if (!parsed.success) throw new Error('LINE token exchange failed');
+    return { idToken: parsed.data.id_token };
   }
-  return {
-    sub: parsed.data.sub,
-    name: parsed.data.name ?? null,
-    picture: parsed.data.picture ?? null,
-  };
-}
 
-function nonceMismatch(tokenNonce: string | undefined, nonce: string): boolean {
-  return tokenNonce !== undefined && tokenNonce !== nonce;
+  private readLineProfile(body: unknown, nonce: string): LineProfile {
+    const parsed = VerifyResponseSchema.safeParse(body);
+    if (!parsed.success || this.nonceMismatch(parsed.data.nonce, nonce)) {
+      throw new Error('LINE ID token verification failed');
+    }
+    return {
+      sub: parsed.data.sub,
+      name: parsed.data.name ?? null,
+      picture: parsed.data.picture ?? null,
+    };
+  }
+
+  private nonceMismatch(tokenNonce: string | undefined, nonce: string): boolean {
+    return tokenNonce !== undefined && tokenNonce !== nonce;
+  }
 }

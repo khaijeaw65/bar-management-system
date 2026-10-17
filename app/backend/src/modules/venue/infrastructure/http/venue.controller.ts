@@ -4,7 +4,7 @@ import { VenueSettingsSchema, type VenueSettings } from '@bar/contracts';
 import { RequirePermissions } from '../../../../common/decorators/require-permissions.decorator.js';
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { VenueSettingsService } from '../../application/venue-settings.service.js';
-import { staffAccess } from './http-input.js';
+import { staffAccess } from '../../../../common/http/http-input.js';
 
 @ApiTags('venue')
 @Controller('venue')

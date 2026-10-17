@@ -15,7 +15,7 @@ import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { OrderQueryService } from '../../application/order-query.service.js';
 import { TicketService } from '../../application/ticket.service.js';
-import { requireUuid, staffAccess } from './http-input.js';
+import { requireUuid, staffAccess } from '../../../../common/http/http-input.js';
 
 @Controller('tickets')
 export class TicketsController {

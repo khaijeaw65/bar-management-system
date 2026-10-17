@@ -6,6 +6,7 @@ import type {
   SeatIdentity,
   SeatWithLiveVisit,
 } from '../../domain/table-seat.types.js';
+import { readDate } from '../../../../common/persistence/row-values.js';
 import { TableSeat } from './table-seat.entity.js';
 import type { SeatVisitRow } from './table-seat.types.js';
 
@@ -29,17 +30,17 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
 
   public async listActive(): Promise<SeatWithLiveVisit[]> {
     const rows: SeatVisitRow[] = await this.tableSeatOrmRepository.query(ACTIVE_SEATS);
-    return rows.map(toSeat);
+    return rows.map((row) => this.toSeat(row));
   }
 
   public async findById(id: string): Promise<SeatIdentity | null> {
     const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
-    return seat ? toIdentity(seat) : null;
+    return seat ? this.toIdentity(seat) : null;
   }
 
   public async findActiveById(id: string): Promise<SeatIdentity | null> {
     const seat = await this.tableSeatOrmRepository.findOne({ where: { id, isActive: true } });
-    return seat ? toIdentity(seat) : null;
+    return seat ? this.toIdentity(seat) : null;
   }
 
   public async replaceQrToken(id: string, qrToken: string): Promise<void> {
@@ -48,37 +49,33 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
     seat.qrToken = qrToken;
     await this.tableSeatOrmRepository.save(seat);
   }
-}
 
-function toIdentity(seat: TableSeat): SeatIdentity {
-  return {
-    id: seat.id,
-    label: seat.label,
-    kind: seat.kind,
-    sortOrder: seat.sortOrder,
-  };
-}
+  private toSeat(row: SeatVisitRow): SeatWithLiveVisit {
+    return {
+      id: row.id,
+      label: row.label,
+      kind: row.kind,
+      sortOrder: Number(row.sort_order),
+      currentVisit: row.visit_id ? this.toCard(row) : null,
+    };
+  }
 
-function toSeat(row: SeatVisitRow): SeatWithLiveVisit {
-  return {
-    id: row.id,
-    label: row.label,
-    kind: row.kind,
-    sortOrder: Number(row.sort_order),
-    currentVisit: row.visit_id ? toCard(row) : null,
-  };
-}
+  private toCard(row: SeatVisitRow): SeatWithLiveVisit['currentVisit'] {
+    if (!row.visit_id || !row.state || !row.opened_at) return null;
+    return {
+      id: row.visit_id,
+      state: row.state,
+      openedAt: readDate(row.opened_at),
+      guestLabel: row.guest_label,
+    };
+  }
 
-function toCard(row: SeatVisitRow): SeatWithLiveVisit['currentVisit'] {
-  if (!row.visit_id || !row.state || !row.opened_at) return null;
-  return {
-    id: row.visit_id,
-    state: row.state,
-    openedAt: asDate(row.opened_at),
-    guestLabel: row.guest_label,
-  };
-}
-
-function asDate(value: Date | string): Date {
-  return value instanceof Date ? value : new Date(value);
+  private toIdentity(seat: TableSeat): SeatIdentity {
+    return {
+      id: seat.id,
+      label: seat.label,
+      kind: seat.kind,
+      sortOrder: seat.sortOrder,
+    };
+  }
 }

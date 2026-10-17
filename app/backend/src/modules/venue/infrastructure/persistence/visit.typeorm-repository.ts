@@ -10,6 +10,12 @@ import type {
   NewVisit,
   VisitRecord,
 } from '../../domain/visit.types.js';
+import {
+  readDate,
+  readOptionalDate,
+  readOptionalText,
+  readText,
+} from '../../../../common/persistence/row-values.js';
 import { Visit } from './visit.entity.js';
 
 const LIVE_STATES = ['open', 'active', 'idle'] as const;
@@ -42,160 +48,141 @@ export class VisitTypeormRepository implements VisitRepository {
 
   public async insert(input: NewVisit): Promise<InsertVisitResult> {
     try {
-      const saved = await this.visitOrmRepository.save(this.visitOrmRepository.create(newRow(input)));
-      return { kind: 'created', visit: toRecord(saved) };
+      const saved = await this.visitOrmRepository.save(
+        this.visitOrmRepository.create(this.newRow(input)),
+      );
+      return { kind: 'created', visit: this.toRecord(saved) };
     } catch (error) {
-      if (!isLiveVisitConflict(error)) throw error;
+      if (!this.isLiveVisitConflict(error)) throw error;
       return { kind: 'taken' };
     }
   }
 
   public async findById(id: string): Promise<VisitRecord | null> {
     const visit = await this.visitOrmRepository.findOne({ where: { id } });
-    return visit ? toRecord(visit) : null;
+    return visit ? this.toRecord(visit) : null;
   }
 
   public async findLiveBySeat(tableSeatId: string): Promise<VisitRecord | null> {
     const visit = await this.visitOrmRepository.findOne({
       where: { tableSeatId, state: In([...LIVE_STATES]) },
     });
-    return visit ? toRecord(visit) : null;
+    return visit ? this.toRecord(visit) : null;
   }
 
   public async lockById(id: string): Promise<VisitRecord | null> {
     const result: unknown = await this.txHost.tx.query(LOCK_VISIT, [id]);
-    const row = firstRow(result);
-    return row ? toAnyRecord(row) : null;
+    const row = this.firstRow(result);
+    return row ? this.toAnyRecord(row) : null;
   }
 
   public async activateIfWaiting(id: string): Promise<VisitRecord | null> {
     const result: unknown = await this.txHost.tx.query(ACTIVATE_VISIT, [id]);
-    const row = firstRow(result);
-    return row ? toAnyRecord(row) : null;
+    const row = this.firstRow(result);
+    return row ? this.toAnyRecord(row) : null;
   }
 
   public async closeIfLive(id: string): Promise<VisitRecord | null> {
     const result: unknown = await this.visitOrmRepository.query(CLOSE_IF_LIVE, [
       id,
     ]);
-    const row = firstUpdatedRow(result);
-    return row ? toClosedRecord(row) : null;
+    const row = this.firstUpdatedRow(result);
+    return row ? this.toClosedRecord(row) : null;
   }
-}
 
-function newRow(input: NewVisit): Partial<Visit> {
-  return {
-    tableSeatId: input.tableSeatId,
-    state: 'open',
-    guestLabel: input.guestLabel,
-    openedBy: input.staffId,
-    openedVia: input.via,
-    openedAt: new Date(),
-    closedAt: null,
-    customerId: null,
-  };
-}
+  private newRow(input: NewVisit): Partial<Visit> {
+    return {
+      tableSeatId: input.tableSeatId,
+      state: 'open',
+      guestLabel: input.guestLabel,
+      openedBy: input.staffId,
+      openedVia: input.via,
+      openedAt: new Date(),
+      closedAt: null,
+      customerId: null,
+    };
+  }
 
-function toRecord(visit: Visit): VisitRecord {
-  return {
-    id: visit.id,
-    tableSeatId: visit.tableSeatId,
-    state: visit.state,
-    openedAt: visit.openedAt,
-    closedAt: visit.closedAt,
-    guestLabel: visit.guestLabel,
-    openedBy: visit.openedBy,
-    openedVia: visit.openedVia,
-  };
-}
+  private toRecord(visit: Visit): VisitRecord {
+    return {
+      id: visit.id,
+      tableSeatId: visit.tableSeatId,
+      state: visit.state,
+      openedAt: visit.openedAt,
+      closedAt: visit.closedAt,
+      guestLabel: visit.guestLabel,
+      openedBy: visit.openedBy,
+      openedVia: visit.openedVia,
+    };
+  }
 
-function firstRow(result: unknown): Record<string, unknown> | null {
-  const rows = listed(result);
-  const row = rows[0];
-  if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
-  return row as Record<string, unknown>;
-}
+  private isLiveVisitConflict(error: unknown): boolean {
+    if (!(error instanceof QueryFailedError)) return false;
+    const driver = error.driverError as { code?: string; constraint?: string };
+    if (driver.code !== '23505') return false;
+    return (
+      driver.constraint === LIVE_VISIT_INDEX ||
+      error.message.includes(LIVE_VISIT_INDEX)
+    );
+  }
 
-function listed(result: unknown): unknown[] {
-  if (!Array.isArray(result)) return [];
-  if (Array.isArray(result[0])) return result[0] as unknown[];
-  return result;
-}
+  private firstRow(result: unknown): Record<string, unknown> | null {
+    const rows = this.listed(result);
+    const row = rows[0];
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
+    return row as Record<string, unknown>;
+  }
 
-function toAnyRecord(row: Record<string, unknown>): VisitRecord {
-  return {
-    id: text(row.id),
-    tableSeatId: text(row.table_seat_id),
-    state: visitState(row.state),
-    openedAt: asDate(row.opened_at),
-    closedAt: optionalDate(row.closed_at),
-    guestLabel: optionalText(row.guest_label),
-    openedBy: optionalText(row.opened_by),
-    openedVia: openSource(row.opened_via),
-  };
-}
+  private listed(result: unknown): unknown[] {
+    if (!Array.isArray(result)) return [];
+    if (Array.isArray(result[0])) return result[0] as unknown[];
+    return result;
+  }
 
-function visitState(value: unknown): VisitState {
-  if (isVisitState(value)) return value;
-  throw new Error('visit row has an unknown state');
-}
+  private toAnyRecord(row: Record<string, unknown>): VisitRecord {
+    return {
+      id: readText(row.id),
+      tableSeatId: readText(row.table_seat_id),
+      state: this.visitState(row.state),
+      openedAt: readDate(row.opened_at),
+      closedAt: readOptionalDate(row.closed_at),
+      guestLabel: readOptionalText(row.guest_label),
+      openedBy: readOptionalText(row.opened_by),
+      openedVia: this.openSource(row.opened_via),
+    };
+  }
 
-function isVisitState(value: unknown): value is VisitState {
-  return value === 'open' || value === 'active' || value === 'idle' || value === 'closed' || value === 'abandoned';
-}
+  private visitState(value: unknown): VisitState {
+    if (this.isVisitState(value)) return value;
+    throw new Error('visit row has an unknown state');
+  }
 
-function optionalDate(value: unknown): Date | null {
-  if (value === null || value === undefined) return null;
-  return asDate(value);
-}
+  private isVisitState(value: unknown): value is VisitState {
+    return value === 'open' || value === 'active' || value === 'idle' || value === 'closed' || value === 'abandoned';
+  }
 
-function firstUpdatedRow(result: unknown): Record<string, unknown> | null {
-  if (!Array.isArray(result) || !Array.isArray(result[0])) return null;
-  const row: unknown = result[0][0];
-  if (!row || typeof row !== 'object') return null;
-  return row as Record<string, unknown>;
-}
+  private openSource(value: unknown): VisitOpenSource {
+    if (value === 'pos' || value === 'app' || value === 'qr') return value;
+    throw new Error('visit row has an unknown opened_via');
+  }
 
-function toClosedRecord(row: Record<string, unknown>): VisitRecord {
-  return {
-    id: text(row.id),
-    tableSeatId: text(row.table_seat_id),
-    state: 'closed',
-    openedAt: asDate(row.opened_at),
-    closedAt: asDate(row.closed_at),
-    guestLabel: optionalText(row.guest_label),
-    openedBy: optionalText(row.opened_by),
-    openedVia: openSource(row.opened_via),
-  };
-}
+  private firstUpdatedRow(result: unknown): Record<string, unknown> | null {
+    if (!Array.isArray(result) || !Array.isArray(result[0])) return null;
+    const row: unknown = result[0][0];
+    if (!row || typeof row !== 'object') return null;
+    return row as Record<string, unknown>;
+  }
 
-function text(value: unknown): string {
-  if (typeof value !== 'string') throw new Error('visit row is missing a string');
-  return value;
-}
-
-function optionalText(value: unknown): string | null {
-  if (value === null || value === undefined) return null;
-  return text(value);
-}
-
-function asDate(value: unknown): Date {
-  if (value instanceof Date) return value;
-  if (typeof value === 'string') return new Date(value);
-  throw new Error('visit row is missing a timestamp');
-}
-
-function openSource(value: unknown): VisitOpenSource {
-  if (value === 'pos' || value === 'app' || value === 'qr') return value;
-  throw new Error('visit row has an unknown opened_via');
-}
-
-function isLiveVisitConflict(error: unknown): boolean {
-  if (!(error instanceof QueryFailedError)) return false;
-  const driver = error.driverError as { code?: string; constraint?: string };
-  if (driver.code !== '23505') return false;
-  return (
-    driver.constraint === LIVE_VISIT_INDEX ||
-    error.message.includes(LIVE_VISIT_INDEX)
-  );
+  private toClosedRecord(row: Record<string, unknown>): VisitRecord {
+    return {
+      id: readText(row.id),
+      tableSeatId: readText(row.table_seat_id),
+      state: 'closed',
+      openedAt: readDate(row.opened_at),
+      closedAt: readDate(row.closed_at),
+      guestLabel: readOptionalText(row.guest_label),
+      openedBy: readOptionalText(row.opened_by),
+      openedVia: this.openSource(row.opened_via),
+    };
+  }
 }

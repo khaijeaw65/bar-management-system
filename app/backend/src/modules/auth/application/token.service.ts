@@ -29,7 +29,7 @@ export class TokenService {
 
   public async createSession(userId: string): Promise<IssuedSession> {
     const familyId = randomUUID();
-    const refreshToken = newRefreshToken();
+    const refreshToken = this.newRefreshToken();
     const record = { userId, familyId };
     await this.storeRefresh(refreshToken, record);
     await this.storeSession(familyId, userId);
@@ -38,7 +38,7 @@ export class TokenService {
   }
 
   public async rotate(rawRefresh: string): Promise<RotateResult> {
-    const refreshToken = newRefreshToken();
+    const refreshToken = this.newRefreshToken();
     const rawOutcome = await this.evalRotation(rawRefresh, refreshToken);
     return this.rotationResult(rawRefresh, refreshToken, rawOutcome);
   }
@@ -58,7 +58,7 @@ export class TokenService {
   public async authenticateClaims(
     payload: AccessClaims,
   ): Promise<CurrentUserPayload | null> {
-    const claims = parseAccessClaims(payload);
+    const claims = this.parseAccessClaims(payload);
     if (!claims) return null;
     const active = await this.sessionExists(claims.sid);
     if (!active) return null;
@@ -77,7 +77,7 @@ export class TokenService {
     rawRefresh: string,
     record: RefreshRecord,
   ): Promise<void> {
-    const hash = sha256(rawRefresh);
+    const hash = this.sha256(rawRefresh);
     const refreshTtlSeconds = this.jwtConfig.refreshTtlSeconds;
     await this.redisService.client.set(
       refreshKey(hash),
@@ -111,8 +111,8 @@ export class TokenService {
     refreshToken: string,
   ): Promise<unknown> {
     return this.evalScript(ROTATE_REFRESH, [
-      sha256(rawRefresh),
-      sha256(refreshToken),
+      this.sha256(rawRefresh),
+      this.sha256(refreshToken),
       this.refreshTtlArgument(),
     ]);
   }
@@ -122,7 +122,7 @@ export class TokenService {
     refreshToken: string,
     rawOutcome: unknown,
   ): Promise<RotateResult> {
-    const outcome = parseRotationOutcome(rawOutcome);
+    const outcome = this.parseRotationOutcome(rawOutcome);
     if (outcome.kind === 'reused') return this.reused(rawRefresh);
     if (outcome.kind !== 'ok') return { status: 'invalid' };
     return this.rotated(outcome.userId, outcome.familyId, refreshToken);
@@ -144,7 +144,7 @@ export class TokenService {
 
   private revokeFamily(rawRefresh: string): Promise<unknown> {
     return this.evalScript(REVOKE_FAMILY, [
-      sha256(rawRefresh),
+      this.sha256(rawRefresh),
       this.refreshTtlArgument(),
     ]);
   }
@@ -164,38 +164,38 @@ export class TokenService {
       return null;
     }
   }
-}
 
-function newRefreshToken(): string {
-  return randomBytes(32).toString('base64url');
-}
-
-function parseAccessClaims(payload: AccessClaims): CurrentUserPayload | null {
-  if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string') {
-    return null;
+  private newRefreshToken(): string {
+    return randomBytes(32).toString('base64url');
   }
-  return { sub: payload.sub, sid: payload.sid };
-}
 
-function sha256(value: string): string {
-  return createHash('sha256').update(value).digest('hex');
-}
+  private sha256(value: string): string {
+    return createHash('sha256').update(value).digest('hex');
+  }
 
-function parseRotationOutcome(result: unknown): RotationOutcome {
-  if (!Array.isArray(result)) return { kind: 'invalid' };
-  return outcomeFrom(result);
-}
+  private parseRotationOutcome(result: unknown): RotationOutcome {
+    if (!Array.isArray(result)) return { kind: 'invalid' };
+    return this.outcomeFrom(result);
+  }
 
-function outcomeFrom(result: unknown[]): RotationOutcome {
-  const [status, userId, familyId] = result;
-  if (status !== 'ok') return reusedOrInvalid(status);
-  if (typeof userId !== 'string' || typeof familyId !== 'string') {
+  private outcomeFrom(result: unknown[]): RotationOutcome {
+    const [status, userId, familyId] = result;
+    if (status !== 'ok') return this.reusedOrInvalid(status);
+    if (typeof userId !== 'string' || typeof familyId !== 'string') {
+      return { kind: 'invalid' };
+    }
+    return { kind: 'ok', userId, familyId };
+  }
+
+  private reusedOrInvalid(status: unknown): RotationOutcome {
+    if (status === 'reused') return { kind: 'reused' };
     return { kind: 'invalid' };
   }
-  return { kind: 'ok', userId, familyId };
-}
 
-function reusedOrInvalid(status: unknown): RotationOutcome {
-  if (status === 'reused') return { kind: 'reused' };
-  return { kind: 'invalid' };
+  private parseAccessClaims(payload: AccessClaims): CurrentUserPayload | null {
+    if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string') {
+      return null;
+    }
+    return { sub: payload.sub, sid: payload.sid };
+  }
 }

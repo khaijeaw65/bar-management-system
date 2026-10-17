@@ -1,3 +1,5 @@
+import { clockSeconds } from '../../../common/time-label.js';
+
 const BANGKOK = 'Asia/Bangkok';
 const formatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: BANGKOK,
@@ -30,11 +32,6 @@ function bangkok(now: Date): { isoDate: string; time: string } {
     isoDate: `${read('year')}-${read('month')}-${read('day')}`,
     time: `${hour}:${read('minute')}:${read('second')}`,
   };
-}
-
-function clockSeconds(value: string): number {
-  const [hours = '0', minutes = '0', seconds = '0'] = value.split(':');
-  return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds);
 }
 
 function previousDay(isoDate: string): string {

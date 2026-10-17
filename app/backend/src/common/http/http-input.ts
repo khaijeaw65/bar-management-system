@@ -1,5 +1,5 @@
 import { UuidSchema } from '@bar/contracts';
-import { DomainException } from '../../../../common/domain-exception.js';
+import { DomainException } from '../domain-exception.js';
 
 export function requireUuid(id: string, message: string): string {
   const parsed = UuidSchema.safeParse(id);
