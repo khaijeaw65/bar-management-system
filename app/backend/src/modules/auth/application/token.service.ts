@@ -1,9 +1,11 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import type { CurrentUserPayload } from '../../../common/decorators/current-user.types.js';
 import { JwtConfigService } from '../../../providers/config/jwt/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
 import type {
+  AccessClaims,
   IssuedSession,
   RefreshRecord,
   RotateResult,
@@ -64,6 +66,16 @@ export class TokenService {
     return value !== null;
   }
 
+  public async authenticateAccessToken(
+    token: string,
+  ): Promise<CurrentUserPayload | null> {
+    const claims = await this.readAccessClaims(token);
+    if (!claims) return null;
+    const active = await this.sessionExists(claims.sid);
+    if (!active) return null;
+    return claims;
+  }
+
   private async storeRefresh(
     rawRefresh: string,
     record: RefreshRecord,
@@ -104,10 +116,28 @@ export class TokenService {
   private evalScript(script: string, args: string[]): Promise<unknown> {
     return this.redisService.client.eval(script, 0, ...args);
   }
+
+  private async readAccessClaims(
+    token: string,
+  ): Promise<CurrentUserPayload | null> {
+    try {
+      const payload: AccessClaims = await this.jwtService.verifyAsync(token);
+      return accessClaims(payload);
+    } catch {
+      return null;
+    }
+  }
 }
 
 function newRefreshToken(): string {
   return randomBytes(32).toString('base64url');
+}
+
+function accessClaims(payload: AccessClaims): CurrentUserPayload | null {
+  if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string') {
+    return null;
+  }
+  return { sub: payload.sub, sid: payload.sid };
 }
 
 function sha256(value: string): string {

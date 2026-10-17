@@ -4,3 +4,8 @@ export interface StaffUserView {
   isActive: boolean;
   avatarUrl: string | null;
 }
+
+export interface StaffUserLookup {
+  id: string;
+  isActive?: boolean;
+}

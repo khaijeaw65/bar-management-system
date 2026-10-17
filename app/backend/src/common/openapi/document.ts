@@ -27,6 +27,7 @@ export function openApiConfig(
     .addBearerAuth()
     .addTag('health')
     .addTag('auth')
+    .addTag('venue')
     .build();
 }
 

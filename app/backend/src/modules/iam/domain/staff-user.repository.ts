@@ -7,6 +7,7 @@ export interface StaffUserRepository {
     externalId: string,
   ): Promise<StaffUserView | null>;
   findActiveById(id: string): Promise<StaffUserView | null>;
+  findById(id: string): Promise<StaffUserView | null>;
 }
 
 export const STAFF_USER_REPOSITORY = Symbol('STAFF_USER_REPOSITORY');
