@@ -15,9 +15,12 @@ import { CurrentUserPayload } from '../decorators/current-user.decorator.js';
  */
 @Injectable()
 export class ClsUserInterceptor implements NestInterceptor {
-  constructor(private readonly cls: ClsService) {}
+  public constructor(private readonly cls: ClsService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+  public intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<unknown> {
     const request = context
       .switchToHttp()
       .getRequest<{ user?: CurrentUserPayload }>();

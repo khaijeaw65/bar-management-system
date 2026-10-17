@@ -6,7 +6,7 @@ export class SnakeNamingStrategy
   extends DefaultNamingStrategy
   implements NamingStrategyInterface
 {
-  override columnName(
+  public override columnName(
     propertyName: string,
     customName: string,
     embeddedPrefixes: string[],
@@ -16,14 +16,14 @@ export class SnakeNamingStrategy
     );
   }
 
-  override joinColumnName(
+  public override joinColumnName(
     relationName: string,
     referencedColumnName: string,
   ): string {
     return snakeCase(`${relationName}_${referencedColumnName}`);
   }
 
-  override joinTableColumnName(
+  public override joinTableColumnName(
     tableName: string,
     propertyName: string,
     columnName?: string,

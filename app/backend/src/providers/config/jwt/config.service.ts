@@ -3,25 +3,25 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  public constructor(private readonly configService: ConfigService) {}
 
-  get accessSecret(): string {
+  public get accessSecret(): string {
     return this.configService.getOrThrow('jwt.accessSecret');
   }
 
-  get accessTtl(): string {
+  public get accessTtl(): string {
     return this.configService.getOrThrow('jwt.accessTtl');
   }
 
-  get accessTtlSeconds(): number {
+  public get accessTtlSeconds(): number {
     return this.configService.getOrThrow('jwt.accessTtlSeconds');
   }
 
-  get refreshTtlDays(): number {
+  public get refreshTtlDays(): number {
     return this.configService.getOrThrow('jwt.refreshTtlDays');
   }
 
-  get refreshTtlSeconds(): number {
+  public get refreshTtlSeconds(): number {
     return this.configService.getOrThrow('jwt.refreshTtlSeconds');
   }
 }

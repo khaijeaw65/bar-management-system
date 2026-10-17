@@ -6,12 +6,12 @@ import { StaffAccessRequest } from '../infrastructure/persistence/staff-access-r
 
 @Injectable()
 export class AccessRequestService {
-  constructor(
+  public constructor(
     @InjectRepository(StaffAccessRequest)
     private readonly requests: Repository<StaffAccessRequest>,
   ) {}
 
-  async recordRequest(
+  public async recordRequest(
     provider: IdentityProvider,
     externalId: string,
     displayName: string | null,
@@ -21,17 +21,34 @@ export class AccessRequestService {
       where: { provider, externalId },
     });
     if (!existing) {
-      await this.requests.save(
-        this.requests.create({
-          provider,
-          externalId,
-          displayName,
-          avatarUrl,
-          status: 'pending',
-        }),
-      );
+      await this.insertRequest(provider, externalId, displayName, avatarUrl);
       return;
     }
+    await this.updateRequest(existing, displayName, avatarUrl);
+  }
+
+  private async insertRequest(
+    provider: IdentityProvider,
+    externalId: string,
+    displayName: string | null,
+    avatarUrl: string | null,
+  ): Promise<void> {
+    await this.requests.save(
+      this.requests.create({
+        provider,
+        externalId,
+        displayName,
+        avatarUrl,
+        status: 'pending',
+      }),
+    );
+  }
+
+  private async updateRequest(
+    existing: StaffAccessRequest,
+    displayName: string | null,
+    avatarUrl: string | null,
+  ): Promise<void> {
     existing.displayName = displayName;
     existing.avatarUrl = avatarUrl;
     await this.requests.save(existing);

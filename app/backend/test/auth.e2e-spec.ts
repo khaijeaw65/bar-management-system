@@ -27,9 +27,9 @@ import { RedisService } from '../src/providers/redis/redis.service.js';
 const FRONTEND = 'http://localhost:3000';
 
 class FakeLineClient implements LineClient {
-  profile: LineProfile = { sub: 'U-unset', name: null, picture: null };
+  public profile: LineProfile = { sub: 'U-unset', name: null, picture: null };
 
-  authorizeUrl(input: { state: string; nonce: string }): string {
+  public authorizeUrl(input: { state: string; nonce: string }): string {
     return buildLineAuthorizeUrl({
       channelId: process.env.LINE_CHANNEL_ID ?? '',
       callbackUrl: process.env.LINE_CALLBACK_URL ?? '',
@@ -38,11 +38,11 @@ class FakeLineClient implements LineClient {
     });
   }
 
-  exchangeCode(): Promise<{ idToken: string }> {
+  public exchangeCode(): Promise<{ idToken: string }> {
     return Promise.resolve({ idToken: 'fake-id-token' });
   }
 
-  verifyIdToken(): Promise<LineProfile> {
+  public verifyIdToken(): Promise<LineProfile> {
     return Promise.resolve(this.profile);
   }
 }
@@ -118,7 +118,11 @@ describe('Auth (e2e)', () => {
     return id;
   }
 
-  async function startLogin(): Promise<{ state: string; nonce: string; location: string }> {
+  async function startLogin(): Promise<{
+    state: string;
+    nonce: string;
+    location: string;
+  }> {
     const res = await request(app.getHttpServer())
       .get('/api/auth/line/login')
       .expect(302);
@@ -127,7 +131,8 @@ describe('Auth (e2e)', () => {
     const url = new URL(location);
     const state = url.searchParams.get('state');
     const nonce = url.searchParams.get('nonce');
-    if (!state || !nonce) throw new Error('login redirect is missing state or nonce');
+    if (!state || !nonce)
+      throw new Error('login redirect is missing state or nonce');
     return { state, nonce, location };
   }
 
@@ -189,7 +194,9 @@ describe('Auth (e2e)', () => {
     expect(printed).toContain('SameSite=Lax');
     expect(printed).not.toMatch(/(?:^|;\s*)Secure(?:;|$)/);
     const accessLine = headers.find((item) => item.startsWith('access_token='));
-    const refreshLine = headers.find((item) => item.startsWith('refresh_token='));
+    const refreshLine = headers.find((item) =>
+      item.startsWith('refresh_token='),
+    );
     expect(accessLine).toMatch(/Path=\/(?:;|$)/);
     expect(refreshLine).toContain('Path=/api/auth');
     const jwt = app.get(JwtConfigService);
@@ -222,15 +229,21 @@ describe('Auth (e2e)', () => {
 
     const unknown = await callback('missing-state');
     expect(unknown.status).toBe(302);
-    expect(unknown.headers.location).toBe(`${FRONTEND}/login?error=login_failed`);
-    expect(cookieValue(setCookieHeaders(unknown), 'access_token')).toBeUndefined();
+    expect(unknown.headers.location).toBe(
+      `${FRONTEND}/login?error=login_failed`,
+    );
+    expect(
+      cookieValue(setCookieHeaders(unknown), 'access_token'),
+    ).toBeUndefined();
 
     line.profile = { sub: 'U-owner', name: 'Owner', picture: null };
     await insertStaff({ externalId: 'U-owner', displayName: 'Owner' });
     const { state } = await startLogin();
     await callback(state).expect(302);
     const replay = await callback(state, 'auth-code-replay');
-    expect(replay.headers.location).toBe(`${FRONTEND}/login?error=login_failed`);
+    expect(replay.headers.location).toBe(
+      `${FRONTEND}/login?error=login_failed`,
+    );
 
     const text = messages.join('\n');
     expect(text).not.toContain('auth-code');
@@ -241,9 +254,11 @@ describe('Auth (e2e)', () => {
 
   it('records one pending access request and keeps a rejected row rejected', async () => {
     const messages: string[] = [];
-    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation((message) => {
-      messages.push(String(message));
-    });
+    const log = vi
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation((message) => {
+        messages.push(String(message));
+      });
     line.profile = {
       sub: 'U-new',
       name: 'New Staff',
@@ -252,8 +267,12 @@ describe('Auth (e2e)', () => {
 
     const first = await startLogin();
     const created = await callback(first.state).expect(302);
-    expect(created.headers.location).toBe(`${FRONTEND}/login?error=not_registered`);
-    expect(cookieValue(setCookieHeaders(created), 'access_token')).toBeUndefined();
+    expect(created.headers.location).toBe(
+      `${FRONTEND}/login?error=not_registered`,
+    );
+    expect(
+      cookieValue(setCookieHeaders(created), 'access_token'),
+    ).toBeUndefined();
     expect(messages.some((line) => line.includes('sub=U-new'))).toBe(true);
 
     line.profile = {
@@ -300,9 +319,11 @@ describe('Auth (e2e)', () => {
 
   it('does not create an access request for an inactive identity', async () => {
     const messages: string[] = [];
-    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation((message) => {
-      messages.push(String(message));
-    });
+    const log = vi
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation((message) => {
+        messages.push(String(message));
+      });
     await insertStaff({
       externalId: 'U-inactive',
       displayName: 'Inactive',
@@ -406,15 +427,12 @@ describe('Auth (e2e)', () => {
   });
 
   it('requires an access token, accepts a bearer token, and leaves health public', async () => {
-    await request(app.getHttpServer())
-      .get('/api/auth/me')
-      .expect(401)
-      .expect({
-        status: 401,
-        code: 'UNAUTHORIZED',
-        message: 'Unauthorized',
-        data: null,
-      });
+    await request(app.getHttpServer()).get('/api/auth/me').expect(401).expect({
+      status: 401,
+      code: 'UNAUTHORIZED',
+      message: 'Unauthorized',
+      data: null,
+    });
 
     await insertStaff({ externalId: 'U-bearer', displayName: 'Bearer' });
     line.profile = { sub: 'U-bearer', name: 'Bearer', picture: null };

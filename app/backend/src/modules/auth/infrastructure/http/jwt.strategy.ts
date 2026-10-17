@@ -8,9 +8,9 @@ import { TokenService } from '../../application/token.service.js';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(
+  public constructor(
     jwtConfig: JwtConfigService,
-    private readonly tokens: TokenService,
+    private readonly tokenService: TokenService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -22,11 +22,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: { sub?: unknown; sid?: unknown }): Promise<CurrentUserPayload> {
+  public async validate(payload: {
+    sub?: unknown;
+    sid?: unknown;
+  }): Promise<CurrentUserPayload> {
     if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string') {
       throw new UnauthorizedException();
     }
-    const active = await this.tokens.sessionExists(payload.sid);
+    const active = await this.tokenService.sessionExists(payload.sid);
     if (!active) throw new UnauthorizedException();
     return { sub: payload.sub, sid: payload.sid };
   }

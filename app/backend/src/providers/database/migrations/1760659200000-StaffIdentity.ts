@@ -7,7 +7,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  * staff_user are created with those tables.
  */
 export class StaffIdentity1760659200000 implements MigrationInterface {
-  async up(queryRunner: QueryRunner): Promise<void> {
+  public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TYPE identity_provider AS ENUM ('line', 'phone_otp')`,
     );
@@ -49,7 +49,7 @@ export class StaffIdentity1760659200000 implements MigrationInterface {
     `);
   }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('DROP TABLE staff_access_request');
     await queryRunner.query('DROP TABLE staff_user_identity');
     await queryRunner.query('DROP TABLE staff_user');

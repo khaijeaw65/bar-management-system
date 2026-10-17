@@ -20,133 +20,71 @@ export type RotateResult =
   | { status: 'invalid' }
   | { status: 'reused' };
 
+type RotationOutcome =
+  | { kind: 'ok'; userId: string; familyId: string }
+  | { kind: 'reused' }
+  | { kind: 'invalid' };
+
 @Injectable()
 export class TokenService {
-  constructor(
+  public constructor(
     private readonly redis: RedisService,
     private readonly jwt: JwtService,
     private readonly jwtConfig: JwtConfigService,
   ) {}
 
-  async createSession(userId: string): Promise<IssuedSession> {
+  public async createSession(userId: string): Promise<IssuedSession> {
     const familyId = randomUUID();
     const refreshToken = newRefreshToken();
-    await this.storeRefresh(refreshToken, { userId, familyId });
+    const record = { userId, familyId };
+    await this.storeRefresh(refreshToken, record);
     await this.storeSession(familyId, userId);
     const accessToken = await this.signAccess(userId, familyId);
     return { accessToken, refreshToken, familyId };
   }
 
-  async rotate(rawRefresh: string): Promise<RotateResult> {
-    const hash = sha256(rawRefresh);
-    // One winner. GET plus DEL lets two concurrent refreshes both read the
-    // record and mint two live tokens; logout then only revokes one of them.
-    const current = readRecord<RefreshRecord>(
-      await this.redis.client.getdel(refreshKey(hash)),
+  public async rotate(rawRefresh: string): Promise<RotateResult> {
+    const refreshToken = newRefreshToken();
+    const outcome = rotationOutcome(
+      await this.evalScript(ROTATE_REFRESH, [
+        sha256(rawRefresh),
+        sha256(refreshToken),
+        String(this.jwtConfig.refreshTtlSeconds),
+      ]),
     );
-    if (!current) {
-      const used = readRecord<{ familyId: string }>(
-        await this.redis.client.get(usedKey(hash)),
-      );
-      if (!used?.familyId) return { status: 'invalid' };
-      await this.revokeFamily(used.familyId);
+    if (outcome.kind === 'reused') {
+      await this.evalScript(REVOKE_FAMILY, [
+        sha256(rawRefresh),
+        this.revokedTtl(),
+      ]);
       return { status: 'reused' };
     }
-    const refreshToken = newRefreshToken();
-    await this.publishRotation(hash, refreshToken, current);
-    const accessToken = await this.signAccess(current.userId, current.familyId);
+    if (outcome.kind !== 'ok') return { status: 'invalid' };
+    const accessToken = await this.signAccess(outcome.userId, outcome.familyId);
     return { status: 'ok', accessToken, refreshToken };
   }
 
-  async revokeByRefreshToken(rawRefresh: string | undefined): Promise<void> {
+  public async revokeByRefreshToken(
+    rawRefresh: string | undefined,
+  ): Promise<void> {
     if (!rawRefresh) return;
-    const hash = sha256(rawRefresh);
-    const current = readRecord<RefreshRecord>(
-      await this.redis.client.get(refreshKey(hash)),
-    );
-    if (current) {
-      await this.revokeFamily(current.familyId);
-      return;
-    }
-    const used = readRecord<{ familyId: string }>(
-      await this.redis.client.get(usedKey(hash)),
-    );
-    if (used?.familyId) {
-      await this.revokeFamily(used.familyId);
-    }
+    await this.evalScript(REVOKE_FAMILY, [
+      sha256(rawRefresh),
+      this.revokedTtl(),
+    ]);
   }
 
-  async revokeFamily(familyId: string): Promise<void> {
-    if (typeof this.redis.client.eval === 'function') {
-      // Read the family pointer and delete that refresh token in one script.
-      // A separate GET can observe the pre-rotation pointer and then delete
-      // the new pointer, leaving the new refresh token alive.
-      await this.redis.client.eval(
-        `local hash = redis.call('GET', KEYS[1])
-         if hash then redis.call('DEL', ARGV[1] .. hash) end
-         redis.call('DEL', KEYS[1], KEYS[2])
-         return 1`,
-        2,
-        familyKey(familyId),
-        sessionKey(familyId),
-        'refresh:',
-      );
-      return;
-    }
-    const currentHash = await this.redis.client.get(familyKey(familyId));
-    if (currentHash) {
-      await this.redis.client.del(refreshKey(currentHash));
-    }
-    await this.redis.client.del(sessionKey(familyId), familyKey(familyId));
-  }
-
-  async sessionExists(familyId: string): Promise<boolean> {
+  public async sessionExists(familyId: string): Promise<boolean> {
     const value = await this.redis.client.get(sessionKey(familyId));
     return value !== null;
   }
 
-  private async publishRotation(
-    oldHash: string,
-    refreshToken: string,
+  private async storeRefresh(
+    rawRefresh: string,
     record: RefreshRecord,
   ): Promise<void> {
-    const hash = sha256(refreshToken);
-    const ttl = String(this.ttl());
-    if (typeof this.redis.client.eval === 'function') {
-      // The used marker appears only together with the new token and session,
-      // so the loser of GETDEL cannot revoke a half-published family.
-      await this.redis.client.eval(
-        `redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[5])
-         redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[5])
-         redis.call('SET', KEYS[3], ARGV[3], 'EX', ARGV[5])
-         redis.call('SET', KEYS[4], ARGV[4], 'EX', ARGV[5])
-         return 1`,
-        4,
-        refreshKey(hash),
-        familyKey(record.familyId),
-        sessionKey(record.familyId),
-        usedKey(oldHash),
-        JSON.stringify(record),
-        hash,
-        JSON.stringify({ userId: record.userId }),
-        JSON.stringify({ familyId: record.familyId }),
-        ttl,
-      );
-      return;
-    }
-    await this.redis.client.set(
-      usedKey(oldHash),
-      JSON.stringify({ familyId: record.familyId }),
-      'EX',
-      this.ttl(),
-    );
-    await this.storeRefresh(refreshToken, record);
-    await this.storeSession(record.familyId, record.userId);
-  }
-
-  private async storeRefresh(rawRefresh: string, record: RefreshRecord): Promise<void> {
     const hash = sha256(rawRefresh);
-    const ttl = this.ttl();
+    const ttl = this.jwtConfig.refreshTtlSeconds;
     await this.redis.client.set(
       refreshKey(hash),
       JSON.stringify(record),
@@ -161,7 +99,7 @@ export class TokenService {
       sessionKey(familyId),
       JSON.stringify({ userId }),
       'EX',
-      this.ttl(),
+      this.jwtConfig.refreshTtlSeconds,
     );
   }
 
@@ -169,8 +107,12 @@ export class TokenService {
     return this.jwt.signAsync({ sub: userId, sid: familyId });
   }
 
-  private ttl(): number {
-    return this.jwtConfig.refreshTtlSeconds;
+  private revokedTtl(): string {
+    return String(this.jwtConfig.refreshTtlSeconds);
+  }
+
+  private evalScript(script: string, args: string[]): Promise<unknown> {
+    return this.redis.client.eval(script, 0, ...args);
   }
 }
 
@@ -186,10 +128,6 @@ function refreshKey(hash: string): string {
   return `refresh:${hash}`;
 }
 
-function usedKey(hash: string): string {
-  return `refresh-used:${hash}`;
-}
-
 function sessionKey(familyId: string): string {
   return `session:${familyId}`;
 }
@@ -198,13 +136,90 @@ function familyKey(familyId: string): string {
   return `family:${familyId}`;
 }
 
-function readRecord<T extends object>(raw: string | null): T | null {
-  if (!raw) return null;
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== 'object' || parsed === null) return null;
-    return parsed as T;
-  } catch {
-    return null;
+function rotationOutcome(result: unknown): RotationOutcome {
+  if (!Array.isArray(result)) return { kind: 'invalid' };
+  const [status, userId, familyId] = result;
+  if (
+    status === 'ok' &&
+    typeof userId === 'string' &&
+    typeof familyId === 'string'
+  ) {
+    return { kind: 'ok', userId, familyId };
   }
+  if (status === 'reused') return { kind: 'reused' };
+  return { kind: 'invalid' };
 }
+
+// One EVAL: consume the live token and publish its replacement together.
+// A revoked family publishes nothing, so logout cannot lose the race.
+const ROTATE_REFRESH = `
+local function decode(raw)
+  if not raw or raw == false then return nil end
+  local ok, value = pcall(cjson.decode, raw)
+  if not ok or type(value) ~= 'table' then return nil end
+  return value
+end
+
+local oldHash = ARGV[1]
+local newHash = ARGV[2]
+local ttl = tonumber(ARGV[3])
+local raw = redis.call('GET', 'refresh:' .. oldHash)
+local record = decode(raw)
+if not record or type(record['userId']) ~= 'string' or type(record['familyId']) ~= 'string' then
+  local used = decode(redis.call('GET', 'refresh-used:' .. oldHash))
+  if used and type(used['familyId']) == 'string' then
+    return {'reused'}
+  end
+  return {'invalid'}
+end
+
+local familyId = record['familyId']
+local userId = record['userId']
+if redis.call('EXISTS', 'family-revoked:' .. familyId) == 1 then
+  return {'invalid'}
+end
+if redis.call('EXISTS', 'session:' .. familyId) == 0 then
+  return {'invalid'}
+end
+
+redis.call('SET', 'refresh-used:' .. oldHash, cjson.encode({ familyId = familyId }), 'EX', ttl)
+redis.call('DEL', 'refresh:' .. oldHash)
+redis.call('SET', 'refresh:' .. newHash, cjson.encode({ userId = userId, familyId = familyId }), 'EX', ttl)
+redis.call('SET', 'family:' .. familyId, newHash, 'EX', ttl)
+redis.call('SET', 'session:' .. familyId, cjson.encode({ userId = userId }), 'EX', ttl)
+return {'ok', userId, familyId}
+`;
+
+// One EVAL: resolve the family from the live token or its used marker,
+// delete every live token, and leave the family revoked.
+const REVOKE_FAMILY = `
+local function decode(raw)
+  if not raw or raw == false then return nil end
+  local ok, value = pcall(cjson.decode, raw)
+  if not ok or type(value) ~= 'table' then return nil end
+  return value
+end
+
+local hash = ARGV[1]
+local ttl = tonumber(ARGV[2])
+local familyId = nil
+local live = decode(redis.call('GET', 'refresh:' .. hash))
+if live and type(live['familyId']) == 'string' then
+  familyId = live['familyId']
+else
+  local used = decode(redis.call('GET', 'refresh-used:' .. hash))
+  if used and type(used['familyId']) == 'string' then
+    familyId = used['familyId']
+  end
+end
+if not familyId then return 0 end
+
+local current = redis.call('GET', 'family:' .. familyId)
+if current and current ~= false then
+  redis.call('DEL', 'refresh:' .. current)
+end
+redis.call('DEL', 'refresh:' .. hash)
+redis.call('DEL', 'family:' .. familyId, 'session:' .. familyId)
+redis.call('SET', 'family-revoked:' .. familyId, '1', 'EX', ttl)
+return 1
+`;

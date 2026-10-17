@@ -12,20 +12,31 @@ export function configureApp(app: INestApplication): void {
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new TransformResponseInterceptor());
+  enableFrontendCors(app);
+  enableOpenApi(app);
+}
+
+function enableFrontendCors(app: INestApplication): void {
   try {
     const frontendUrl = app.get(AppConfigService).frontendUrl;
     app.enableCors({ origin: frontendUrl, credentials: true });
   } catch {
     // Controller specs boot without app config. The full app always has it.
   }
+}
+
+function enableOpenApi(app: INestApplication): void {
+  const openApi = findOpenApiConfig(app);
+  if (openApi?.enabled) setupOpenApi(app);
+}
+
+function findOpenApiConfig(
+  app: INestApplication,
+): OpenApiConfigService | undefined {
   // Nest's get() throws when the provider is absent, even with strict: false.
-  let openApi: OpenApiConfigService | undefined;
   try {
-    openApi = app.get(OpenApiConfigService);
+    return app.get(OpenApiConfigService);
   } catch {
-    openApi = undefined;
-  }
-  if (openApi?.enabled) {
-    setupOpenApi(app);
+    return undefined;
   }
 }

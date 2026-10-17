@@ -35,69 +35,77 @@ function codeForStatus(status: number): ErrorCode {
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost): void {
+  public catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const body = this.envelope(exception);
-
-    if (body.status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      const stack = exception instanceof Error ? exception.stack : undefined;
-      this.logger.error(
-        `${request.method} ${request.url}`,
-        stack ?? String(exception),
-      );
-    }
-
+    this.logServerError(request, exception, body.status);
     response.status(body.status).json(body);
   }
 
   private envelope(exception: unknown): ErrorEnvelope {
-    if (exception instanceof ZodError) {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        code: 'VALIDATION_ERROR',
-        message: exception.issues.map((issue) => issue.message),
-        data: null,
-      };
-    }
-
-    if (exception instanceof DomainException) {
-      return {
-        status: exception.getStatus(),
-        code: exception.code,
-        message: exception.message,
-        data: null,
-      };
-    }
-
-    if (exception instanceof HttpException) {
-      const status = exception.getStatus();
-      return {
-        status,
-        code: codeForStatus(status),
-        message: this.messageOf(exception),
-        data: null,
-      };
-    }
-
-    return {
-      status: HttpStatus.INTERNAL_SERVER_ERROR,
-      code: 'INTERNAL_ERROR',
-      message: 'Internal server error',
-      data: null,
-    };
+    if (exception instanceof ZodError) return zodEnvelope(exception);
+    if (exception instanceof DomainException) return domainEnvelope(exception);
+    if (exception instanceof HttpException) return httpEnvelope(exception);
+    return internalEnvelope();
   }
 
-  private messageOf(exception: HttpException): string | string[] {
-    const exceptionResponse = exception.getResponse();
-    if (
-      typeof exceptionResponse === 'object' &&
-      exceptionResponse !== null &&
-      'message' in exceptionResponse
-    ) {
-      return (exceptionResponse as { message: string | string[] }).message;
-    }
+  private logServerError(
+    request: Request,
+    exception: unknown,
+    status: number,
+  ): void {
+    if (status < HttpStatus.INTERNAL_SERVER_ERROR) return;
+    const stack = exception instanceof Error ? exception.stack : undefined;
+    this.logger.error(
+      `${request.method} ${request.url}`,
+      stack ?? String(exception),
+    );
+  }
+}
+
+function zodEnvelope(exception: ZodError): ErrorEnvelope {
+  return {
+    status: HttpStatus.BAD_REQUEST,
+    code: 'VALIDATION_ERROR',
+    message: exception.issues.map((issue) => issue.message),
+    data: null,
+  };
+}
+
+function domainEnvelope(exception: DomainException): ErrorEnvelope {
+  return {
+    status: exception.getStatus(),
+    code: exception.code,
+    message: exception.message,
+    data: null,
+  };
+}
+
+function httpEnvelope(exception: HttpException): ErrorEnvelope {
+  const status = exception.getStatus();
+  return {
+    status,
+    code: codeForStatus(status),
+    message: messageOf(exception),
+    data: null,
+  };
+}
+
+function internalEnvelope(): ErrorEnvelope {
+  return {
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    code: 'INTERNAL_ERROR',
+    message: 'Internal server error',
+    data: null,
+  };
+}
+
+function messageOf(exception: HttpException): string | string[] {
+  const body = exception.getResponse();
+  if (typeof body !== 'object' || body === null || !('message' in body)) {
     return exception.message;
   }
+  return (body as { message: string | string[] }).message;
 }

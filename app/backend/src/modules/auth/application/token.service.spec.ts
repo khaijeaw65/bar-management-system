@@ -8,36 +8,24 @@ import { RedisService } from '../../../providers/redis/redis.service.js';
 import { TokenService, type RotateResult } from './token.service.js';
 
 const SECRET = 'x'.repeat(32);
+const REDIS_URL = process.env.REDIS_URL ?? 'redis://127.0.0.1:6379';
 
 function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
-describe('TokenService', () => {
-  const store = new Map<string, string>();
-  const client = {
-    async get(key: string) {
-      return store.get(key) ?? null;
-    },
-    async set(key: string, value: string) {
-      store.set(key, value);
-      return 'OK' as const;
-    },
-    async del(...keys: string[]) {
-      for (const key of keys) store.delete(key);
-      return keys.length;
-    },
-    async getdel(key: string) {
-      const value = store.get(key) ?? null;
-      store.delete(key);
-      return value;
-    },
-  };
+function redisClient(): Redis {
+  return new Redis(REDIS_URL, {
+    maxRetriesPerRequest: 2,
+    connectTimeout: 5_000,
+  });
+}
 
+describe('TokenService', () => {
+  const redis = redisClient();
   let tokens: TokenService;
 
-  beforeEach(async () => {
-    store.clear();
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
         JwtModule.register({
@@ -47,7 +35,7 @@ describe('TokenService', () => {
       ],
       providers: [
         TokenService,
-        { provide: RedisService, useValue: { client } },
+        { provide: RedisService, useValue: { client: redis } },
         {
           provide: JwtConfigService,
           useValue: { refreshTtlSeconds: 604_800, accessSecret: SECRET },
@@ -55,6 +43,11 @@ describe('TokenService', () => {
       ],
     }).compile();
     tokens = moduleRef.get(TokenService);
+    await redis.ping();
+  });
+
+  afterAll(async () => {
+    await redis.quit();
   });
 
   it('rotates a refresh token and revokes the family when the old token is reused', async () => {
@@ -65,12 +58,16 @@ describe('TokenService', () => {
     expect(rotated.status).toBe('ok');
     if (rotated.status !== 'ok') return;
     expect(rotated.refreshToken).not.toBe(first.refreshToken);
-    expect(store.has(`refresh:${sha256(first.refreshToken)}`)).toBe(false);
-    expect(store.has(`refresh:${sha256(rotated.refreshToken)}`)).toBe(true);
+    expect(await redis.exists(`refresh:${sha256(first.refreshToken)}`)).toBe(0);
+    expect(await redis.exists(`refresh:${sha256(rotated.refreshToken)}`)).toBe(
+      1,
+    );
 
     const reused = await tokens.rotate(first.refreshToken);
     expect(reused.status).toBe('reused');
-    expect(store.has(`refresh:${sha256(rotated.refreshToken)}`)).toBe(false);
+    expect(await redis.exists(`refresh:${sha256(rotated.refreshToken)}`)).toBe(
+      0,
+    );
     expect(await tokens.sessionExists(first.familyId)).toBe(false);
 
     const after = await tokens.rotate(rotated.refreshToken);
@@ -88,14 +85,19 @@ describe('TokenService', () => {
 
     const issued = await tokens.createSession('user-1');
     const hash = sha256(issued.refreshToken);
+    const records = [
+      await redis.get(`refresh:${hash}`),
+      await redis.get(`family:${issued.familyId}`),
+      await redis.get(`session:${issued.familyId}`),
+    ];
 
-    expect(store.has(`refresh:${hash}`)).toBe(true);
-    for (const [key, value] of store) {
-      expect(key).not.toContain(issued.refreshToken);
-      expect(value).not.toContain(issued.refreshToken);
-      expect(value).not.toContain(issued.accessToken);
-      expect(value).not.toContain(SECRET);
+    expect(await redis.exists(`refresh:${hash}`)).toBe(1);
+    for (const value of records) {
+      expect(value ?? '').not.toContain(issued.refreshToken);
+      expect(value ?? '').not.toContain(issued.accessToken);
+      expect(value ?? '').not.toContain(SECRET);
     }
+    expect(`refresh:${hash}`).not.toContain(issued.refreshToken);
     expect(messages.join('\n')).not.toContain(issued.refreshToken);
     expect(messages.join('\n')).not.toContain(issued.accessToken);
     expect(messages.join('\n')).not.toContain(SECRET);
@@ -107,10 +109,7 @@ describe('TokenService', () => {
 });
 
 describe('TokenService concurrent rotation (real Redis)', () => {
-  const redis = new Redis(process.env.REDIS_URL ?? 'redis://127.0.0.1:6379', {
-    maxRetriesPerRequest: 2,
-    connectTimeout: 5_000,
-  });
+  const redis = redisClient();
   let tokens: TokenService;
 
   beforeAll(async () => {
@@ -176,6 +175,8 @@ describe('TokenService concurrent rotation (real Redis)', () => {
   });
 });
 
-function isOk(result: RotateResult): result is Extract<RotateResult, { status: 'ok' }> {
+function isOk(
+  result: RotateResult,
+): result is Extract<RotateResult, { status: 'ok' }> {
   return result.status === 'ok';
 }
