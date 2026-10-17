@@ -27,6 +27,7 @@
     "migration:revert": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:revert -d dist/providers/database/data-source.js",
     "seed:staff": "nest build && node --env-file=.env ./dist/cli/seed-staff.js",
     "seed:venue": "nest build && node --env-file=.env ./dist/cli/seed-venue-main.js",
+    "seed:menu": "nest build && node --env-file=.env ./dist/cli/seed-menu.js",
     "openapi:export": "pnpm --filter @bar/contracts build && nest build && node --experimental-strip-types ./scripts/openapi-export.ts",
     "openapi:check": "pnpm openapi:export && git diff --exit-code -- ../../docs/api/openapi.json"
   },

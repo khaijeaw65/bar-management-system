@@ -28,6 +28,7 @@ export function openApiConfig(
     .addTag('health')
     .addTag('auth')
     .addTag('venue')
+    .addTag('menu')
     .build();
 }
 
