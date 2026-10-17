@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { IdentityProvider } from '@bar/contracts';
 import { Repository } from 'typeorm';
-import {
-  type StaffUserRepository,
-  type StaffUserView,
-} from '../../domain/staff-user.repository.js';
+import { type StaffUserRepository } from '../../domain/staff-user.repository.js';
+import { type StaffUserView } from '../../domain/staff-user.types.js';
 import { StaffUser } from './staff-user.entity.js';
 import { StaffUserIdentity } from './staff-user-identity.entity.js';
 

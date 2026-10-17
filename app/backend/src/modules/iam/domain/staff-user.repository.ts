@@ -1,11 +1,5 @@
 import type { IdentityProvider } from '@bar/contracts';
-
-export interface StaffUserView {
-  id: string;
-  displayName: string;
-  isActive: boolean;
-  avatarUrl: string | null;
-}
+import type { StaffUserView } from './staff-user.types.js';
 
 export interface StaffUserRepository {
   findByIdentity(

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { Observable } from 'rxjs';
-import { CurrentUserPayload } from '../decorators/current-user.decorator.js';
+import type { CurrentUserPayload } from '../decorators/current-user.types.js';
 
 /**
  * Seeds the CLS store with the current user's ID on every request.

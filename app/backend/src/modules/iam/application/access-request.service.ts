@@ -1,15 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { IdentityProvider } from '@bar/contracts';
 import { Repository } from 'typeorm';
 import { StaffAccessRequest } from '../infrastructure/persistence/staff-access-request.entity.js';
-
-export type AccessRequestInput = {
-  provider: IdentityProvider;
-  externalId: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
+import type { AccessRequestInput } from './access-request.types.js';
 
 @Injectable()
 export class AccessRequestService {

@@ -115,3 +115,15 @@ Check (auditor and executor): `git grep -n -E "^(export )?(type|interface) [A-Z]
 - Field widened the rule the same day (Approved-by: Field) from "classes" to all source files, so the last four rows (filter, decorator, cookie helpers, database options) are in scope.
 
 **Status after Field decisions: CHANGES REQUIRED — Finding 4 only.** Findings 1–3 resolved.
+
+## Re-check — 2026-10-17 · `ce1f3609` (Finding 4)
+
+- **Result: PASS.** Finding 4 resolved; no open Must fix findings on BRIEF-015.
+- **Move-only check:** every non-import line removed from `app/backend/src` in `84612d1..ce1f360` reappears unchanged in a `*.types.ts` / `dto/` file; only import lists differ. No shape, name or behaviour change.
+- **Rule grep** (`type` / `interface` outside `*.types.ts`, `dto/`, specs): only the port interfaces `LineClient` and `StaffUserRepository` remain — as intended.
+- **Tests:** diffs in `token.service.spec.ts`, `auth.e2e-spec.ts`, `auth-token-concurrency.e2e-spec.ts` are import paths only.
+- **Evidence:** handoff re-ran the gates on `ce1f360`. `ec5baa1` changes only handoff + state (evidence-only). **No `ci` run exists on `ec5baa1`** — see below.
+
+### Merge-state note
+PR #41 was merged at 2026-10-17 17:14 (+07) with head `84612d1`, whose audit status was CHANGES REQUIRED (Finding 4). The Finding 4 fix (`ce1f360`) and its evidence commit (`ec5baa1`) were pushed to the branch after that merge, so **they are not on `main`**. `main` currently carries the merged BRIEF-015 behaviour (C1–C7 fixed, Findings 1–3 resolved) but not the types move required by the rule merged in #42.
+Follow-up: open a new PR from `feat/BRIEF-015-backend-auth-repair` (it now holds only `ce1f360` + `ec5baa1` + this re-check on top of main's merge) → `ci` green on that head → merge. That PR satisfies the §7 condition with this PASS.

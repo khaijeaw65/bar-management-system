@@ -3,11 +3,13 @@ import { z } from 'zod';
 import { LineConfigService } from '../../../../providers/config/line/config.service.js';
 import {
   buildLineAuthorizeUrl,
-  type LineAuthorizeInput,
   type LineClient,
-  type LineProfile,
-  type LineTokenExchange,
 } from '../../domain/line-client.js';
+import type {
+  LineAuthorizeInput,
+  LineProfile,
+  LineTokenExchange,
+} from '../../domain/line-client.types.js';
 
 const TokenResponseSchema = z.object({
   id_token: z.string().min(1),

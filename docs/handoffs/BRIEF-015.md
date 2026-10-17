@@ -6,8 +6,8 @@
 | **Date** | 2026-10-17 |
 | **Brief revision** | 1 |
 | **Branch / PR** | `feat/BRIEF-015-backend-auth-repair` · PR #41 |
-| **Commit** | `8d426b806cba410457dba728126b1fd3e8572077` (audit-fix evidence). Original implementation evidence remains `4d9422a`. |
-| **Status** | Changes requested — Findings 1–2 and the access-request part of Finding 3 fixed; awaiting compact re-audit |
+| **Commit** | `ce1f360cd8df319f90fd1f733859405222676acf` (Finding 4). Prior audit-fix evidence `8d426b8`. Original implementation evidence remains `4d9422a`. |
+| **Status** | Changes requested — Finding 4 fixed; awaiting a compact re-check |
 
 > Created at `Implemented`. Update it if review requests changes. Frozen at merge.
 
@@ -25,7 +25,7 @@ Refresh rotation and revocation each run as one Redis `EVAL`, so a logout cannot
 | AC-6 | ✅ | review: `handleLineCallback` is a step list, guard clauses, one `consumeNonce` |
 | AC-7 | ✅ | review: names, `public`/`private`, `Promise<AuthMe>` on `AuthController.me`, `LineLoginCallbackInput`, reused `LineProfile` |
 | AC-8 | ✅ | `app/backend/oxlint.json` + `pnpm --filter @bar/backend lint` exit 0 |
-| AC-9 | ✅ local / CI pending | gates below, re-run on `8d426b8`; `openapi:export` produced no diff. `ci` on the pushed head follows this handoff |
+| AC-9 | ✅ local / CI pending | gates below, re-run on `ce1f360`; `openapi:export` produced no diff. `ci` on the pushed head follows this handoff |
 
 ## Gate Evidence (G1)
 Run on the work tree that became `4d9422a`. Node v24.14.0. Redis `redis://127.0.0.1:6379`. Postgres `localhost:5432` database `bar`.
@@ -55,7 +55,7 @@ The Nest error lines in the test log are the health and envelope specs throwing 
 
 ## Known Gaps / Follow-ups
 - `SnakeNamingStrategy.joinTableColumnName` still has four parameters because it implements TypeORM's `NamingStrategyInterface`. `max-params` stays off, as the brief decided. Cowork agreed this is exempt.
-- `AuthController.lineCallback` still has four Nest-decorated parameters. Cowork asked Field to exempt constructor injection and Nest handler parameters in `backend.md`. That rule file was not edited here.
+- `AuthController.lineCallback` still has four Nest-decorated parameters. Field exempted constructor injection and Nest handler parameters in `backend.md` (2026-10-17). No code change.
 - `family-revoked:<familyId>` is a new key used only inside `token.service.ts`. Existing key names (`refresh:`, `refresh-used:`, `session:`, `family:`, `oauth:`) are unchanged. No other module reads them.
 - Return-type rule chosen: `typescript/explicit-module-boundary-types`. It requires a return type on exported functions and public methods, and does not require one on private helpers. `typescript/explicit-function-return-type` would also flag those helpers. `oxlint --rules` printed nothing in this environment; `oxlint --print-config` lists all four brief rules as deny, and lint ran with them on.
 - Suggestions S1–S4 from the 2026-10-17 audit were not implemented.
@@ -66,16 +66,22 @@ Cowork audit `d3be26e` was CHANGES REQUIRED. This commit addresses the mechanica
 - Finding 2: role names `redisService`, `jwtService`, `accessRequestService`, `appConfigService`, `authService`, `lineConfigService`, `accessRequestRepository`; `refreshTtlSeconds`, `revokedTtlSeconds`, `parseRotationOutcome`, `parseNonce`.
 - Finding 3: `recordRequest` and `insertRequest` take `AccessRequestInput`. `lineCallback` is the Field decision above.
 
+## Finding 4 — 2026-10-17 · `ce1f360`
+Cowork re-audit on `84612d1` left Finding 4: move types out of behaviour files. This commit does that move only. Same commands as the table above, re-run on this tree before the commit: lint 0, typecheck 0, test 31 passed, test:e2e 22 passed, build 0, OpenAPI diff empty. Node v24.14.0, Redis `127.0.0.1:6379`, Postgres `localhost:5432` database `bar`.
+- Types moved to the files named in the audit. Shapes, names, Lua scripts, redirects, cookies, and HTTP paths are unchanged.
+- Check: `git grep -n -E "^(export )?(type|interface) [A-Z]" -- 'app/backend/src/**/*.ts' ':!*.types.ts' ':!**/dto/**' ':!*.spec.ts'` returns only `LineClient` and `StaffUserRepository`.
+- No `oxlint-disable` comments in `app/backend`.
+
 ## AI Usage
-**High** — Cursor implemented the repair, the lint fixes, the concurrency tests, and the audit renames.
+**High** — Cursor implemented the repair, the lint fixes, the concurrency tests, the audit renames, and the Finding 4 type move.
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-015` (compact re-audit of Findings 1–3)
-- PR: https://github.com/khaijeaw65/bar-management-system/pull/41 · Work SHA: `8d426b806cba410457dba728126b1fd3e8572077` · prior audited SHA: `4d9422a` · self-check: renames and named types only; e2e assertions unchanged; OpenAPI no diff
+- Next command: `audit BRIEF-015` (compact re-check of Finding 4)
+- PR: https://github.com/khaijeaw65/bar-management-system/pull/41 · Work SHA: `ce1f360cd8df319f90fd1f733859405222676acf` · prior audited SHA: `8d426b8` · self-check: type moves and import updates only; e2e assertions unchanged; OpenAPI no diff
 
 ## Notes for Reviewer
 - Start with `token.service.ts`: `ROTATE_REFRESH` and `REVOKE_FAMILY`. A revoked family returns `invalid` before any write. Reuse calls the same revoke script with the presented hash.
 - `handleLineCallback` consumes OAuth state once, including on failure, then uses guard clauses.
 - HTTP paths, cookies, env vars, and `@bar/contracts` are unchanged.
-- Re-audit the names and types in the audit-fix section. Lua behaviour is unchanged from `4d9422a`.
+- Re-check Finding 4 as a move only. Lua behaviour is unchanged from `4d9422a`.

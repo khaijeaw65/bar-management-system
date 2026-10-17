@@ -13,19 +13,19 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthMeSchema, type AuthMe } from '@bar/contracts';
 import type { Request, Response } from 'express';
-import { z } from 'zod';
 import { CurrentUser } from '../../../../common/decorators/current-user.decorator.js';
-import type { CurrentUserPayload } from '../../../../common/decorators/current-user.decorator.js';
+import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
 import { Public } from '../../../../common/decorators/public.decorator.js';
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { AppConfigService } from '../../../../providers/config/app/config.service.js';
 import { JwtConfigService } from '../../../../providers/config/jwt/config.service.js';
 import { AuthService } from '../../application/auth.service.js';
 import { clearSessionCookies, writeSessionCookies } from './auth-cookies.js';
-
-const AuthOkSchema = z.object({ ok: z.literal(true) });
-type AuthOkResponse = z.infer<typeof AuthOkSchema>;
-type RedirectTarget = { url: string; statusCode: number };
+import {
+  AuthOkSchema,
+  type AuthOkResponse,
+  type RedirectTarget,
+} from './dto/auth.dto.js';
 
 @ApiTags('auth')
 @Controller('auth')

@@ -2,14 +2,10 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import type { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import type { CurrentUserPayload } from '../../../../common/decorators/current-user.decorator.js';
+import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
 import { JwtConfigService } from '../../../../providers/config/jwt/config.service.js';
 import { TokenService } from '../../application/token.service.js';
-
-type AccessTokenPayload = {
-  sub?: unknown;
-  sid?: unknown;
-};
+import type { AccessTokenPayload } from './dto/auth.dto.js';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {

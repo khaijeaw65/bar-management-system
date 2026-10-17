@@ -4,10 +4,8 @@ import { Test } from '@nestjs/testing';
 import { Redis } from 'ioredis';
 import { JwtConfigService } from '../src/providers/config/jwt/config.service.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
-import {
-  TokenService,
-  type RotateResult,
-} from '../src/modules/auth/application/token.service.js';
+import { TokenService } from '../src/modules/auth/application/token.service.js';
+import type { RotateResult } from '../src/modules/auth/application/token.types.js';
 
 const SECRET = 'x'.repeat(32);
 

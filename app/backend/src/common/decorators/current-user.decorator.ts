@@ -1,9 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-
-export interface CurrentUserPayload {
-  sub: string;
-  sid: string;
-}
+import type { CurrentUserPayload } from './current-user.types.js';
 
 /**
  * @CurrentUser() — the access-token identity attached by JwtAuthGuard.

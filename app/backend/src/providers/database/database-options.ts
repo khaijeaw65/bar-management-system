@@ -1,27 +1,8 @@
-import type { NamingStrategyInterface } from 'typeorm';
 import { SnakeNamingStrategy } from './snake-naming.strategy.js';
-
-export type DatabaseConnectionInput = {
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-  nodeEnv: 'local' | 'test' | 'production';
-};
-
-export type DatabaseConnectionOptions = {
-  type: 'postgres';
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-  synchronize: false;
-  migrationsRun: false;
-  namingStrategy: NamingStrategyInterface;
-  ssl: false | { rejectUnauthorized: false };
-};
+import type {
+  DatabaseConnectionInput,
+  DatabaseConnectionOptions,
+} from './database-options.types.js';
 
 export function databaseOptions(
   input: DatabaseConnectionInput,
