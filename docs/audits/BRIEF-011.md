@@ -70,3 +70,22 @@ The core is solid: DB-enforced open race, correct schema incl. Q3, events after 
 ## Sonar (local scan)
 - Handoff Sonar section present: yes — not run (optional).
 - Learning mode: n/a (Field brief).
+
+## Re-audit — 2026-10-17 · `839e32c` (Compact)
+
+- **Result: PASS.** Findings 1–5 resolved; no open Must fix.
+- Head `a0cb2be` changes only `docs/handoffs/BRIEF-011.md` and `docs/state/kj/SESSION_STATE.md` (evidence-only). GitHub check `ci` = **success** on `a0cb2be`.
+
+| # | Status | Evidence |
+|---|---|---|
+| 1 | ✅ | `VisitTypeormRepository.closeIfLive` = one `UPDATE … WHERE id = $1 AND state IN ('open','active','idle') RETURNING …`; zero rows → `rejectClose` re-reads: missing → 404, else 409 `INVALID_STATE_TRANSITION`. New e2e "lets one of two concurrent closes win": statuses `[200, 409]`, exactly one `visit.state_changed`. |
+| 2 | ✅ | Gateway no longer sets `cors: { origin: true }`. `RedisIoAdapter` sets `cors.origin = FRONTEND_URL` and `allowRequest` → `allowStaffOrigin`: missing `Origin` allowed, mismatched rejected. Unit spec + e2e "refuses a foreign Origin even with a live token". |
+| 3 | ✅ | `TokenService.authenticateClaims` (claims shape + `session:<sid>`) is the single check; `JwtStrategy.validate` and `authenticateAccessToken` both call it. `AccessTokenPayload` removed; one `AccessClaims` type; `parseAccessClaims` named. |
+| 4 | ✅ | Role names in venue + notifications; `HandshakeNext` / `OriginDecision` in `notifications.types.ts`; `StaffOpenViaSchema` / `StaffOpenVia` added to contracts and used by both visit types files. Rule grep: only port interfaces remain outside types/dto files. |
+| 5 | ✅ | `token.scripts.ts` holds both Lua scripts, one shared `DECODE`, and the key prefixes used by both TS helpers and Lua; `revokeFamily()`, `refreshTtlArgument()`, `evalRotation()` / `rotationResult()` steps. `auth.e2e-spec.ts`, `auth-token-concurrency.e2e-spec.ts`, `token.service.spec.ts` unchanged and passing per handoff. |
+
+- **S2 also done:** event assertions now wait for the first event, then check nothing else arrives within 150 ms.
+- **Remaining suggestions (not blocking):** S1 (`summaryFor` scans all seats), S3 (socket stays connected after logout — before pilot), S4 (attach edge retry). New: `allowStaffOrigin` compares `Origin` to `FRONTEND_URL` as an exact string — a trailing slash in `FRONTEND_URL` would refuse every browser socket (HTTP CORS behaves the same today); normalise with `new URL(frontendUrl).origin` when convenient. Older IAM names (`staffUsers`, `users`, `identities`) predate this brief — pick up in the next IAM touch.
+- **Evidence:** handoff gates on `839e32c` (not re-run by Cowork, same limitation as above) + CI green on `a0cb2be`.
+
+**Merge:** PR #45 meets §7 for Field's own PR once this report is on the branch: audit PASS, S..H evidence-only, `ci` green on the final head.
