@@ -1,3 +1,5 @@
+import { clockSeconds } from '../../../common/time-label.js';
+
 export interface MenuWindowInput {
   daysOfWeek: readonly number[];
   startTime: string;
@@ -96,7 +98,3 @@ function bangkok(now: Date): { isoWeekday: number; seconds: number } {
   };
 }
 
-function clockSeconds(value: string): number {
-  const [hours = '0', minutes = '0', seconds = '0'] = value.split(':');
-  return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds);
-}
