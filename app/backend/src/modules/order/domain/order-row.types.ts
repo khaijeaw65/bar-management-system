@@ -1,0 +1,30 @@
+export interface OrderRow {
+  orderId: string;
+  visitId: string;
+  orderNumber: number;
+  businessDate: string;
+  orderCreatedAt: Date;
+  orderCreatedBy: string | null;
+  ticketId: string;
+  station: string | null;
+  status: string;
+  sentAt: Date | null;
+  ticketCreatedAt: Date;
+  ticketUpdatedAt: Date;
+  ticketUpdatedBy: string | null;
+  seatId: string;
+  seatLabel: string;
+  seatKind: string;
+  itemId: string;
+  variantId: string;
+  itemName: string;
+  variantName: string;
+  quantity: number;
+  unitPrice: string;
+  orderedByName: string | null;
+  notes: string | null;
+  cancelledAt: Date | null;
+  optionId: string | null;
+  optionName: string | null;
+  priceDelta: string | null;
+}

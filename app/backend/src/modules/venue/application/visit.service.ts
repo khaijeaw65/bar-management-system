@@ -16,6 +16,7 @@ import { toTableSummary } from './table-summary.js';
 import type {
   OpenVisitInput,
   OpenVisitResult,
+  OrderClaim,
   VisitOpenerView,
   VisitView,
 } from './visit.types.js';
@@ -39,6 +40,16 @@ export class VisitService {
 
   public async getById(id: string): Promise<VisitView> {
     return this.toView(await this.requireVisit(id));
+  }
+
+  public async claimForOrder(visitId: string): Promise<OrderClaim> {
+    const locked = await this.visitRepository.lockById(visitId);
+    if (!locked) throw new DomainException('NOT_FOUND', 'ไม่พบการเข้าใช้', 404);
+    if (!isLiveVisit(locked.state)) {
+      throw new DomainException('INVALID_STATE_TRANSITION', 'สถานะโต๊ะไม่ถูกต้อง', 409);
+    }
+    const activated = await this.visitRepository.activateIfWaiting(visitId);
+    return { activated: activated !== null, visitId: locked.id, tableSeatId: locked.tableSeatId };
   }
 
   public async close(id: string): Promise<VisitView> {
@@ -127,4 +138,8 @@ export class VisitService {
     if (!staff) return null;
     return { staffId: staff.id, displayName: staff.displayName };
   }
+}
+
+function isLiveVisit(state: VisitRecord['state']): boolean {
+  return state === 'open' || state === 'active' || state === 'idle';
 }

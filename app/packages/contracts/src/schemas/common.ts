@@ -18,11 +18,24 @@ export function apiResponseSchema<T extends z.ZodType>(data: T) {
   });
 }
 
+// Null on every error except ITEM_UNAVAILABLE, which carries per-line reasons.
+export const ApiErrorDataSchema = z.union([
+  z.null(),
+  z.object({
+    details: z.array(
+      z.object({
+        variantId: UuidSchema,
+        reason: z.enum(['sold_out', 'out_of_window']),
+      }),
+    ),
+  }),
+]);
+
 export const ApiErrorSchema = z.object({
   status: z.number().int(),
   code: ErrorCodeSchema,
   message: z.union([z.string(), z.array(z.string())]),
-  data: z.null(),
+  data: ApiErrorDataSchema,
 });
 
 export function listSchema<T extends z.ZodType>(item: T) {

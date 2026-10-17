@@ -5,6 +5,8 @@ export interface VisitRepository {
   findById(id: string): Promise<VisitRecord | null>;
   findLiveBySeat(tableSeatId: string): Promise<VisitRecord | null>;
   closeIfLive(id: string): Promise<VisitRecord | null>;
+  lockById(id: string): Promise<VisitRecord | null>;
+  activateIfWaiting(id: string): Promise<VisitRecord | null>;
 }
 
 export const VISIT_REPOSITORY = Symbol('VISIT_REPOSITORY');
