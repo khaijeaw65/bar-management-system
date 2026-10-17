@@ -355,6 +355,67 @@ See **providers/ Rules → config/<domain>/**. Domains now: `app`, `database`. P
 
 ---
 
+## Clean Code (Field, 2026-10-17)
+
+Goal: a reviewer reads a file once, top to bottom, and understands it without scrolling back.
+oxlint enforces the measurable rules (CI fails); the audit enforces the rest (violation = Must fix).
+
+### Functions
+- **Small:** ≤ 20 lines per function (lint). Aim for less.
+- **One purpose:** if describing it needs "and", split it. A public method that coordinates work reads as a short list of steps; the details live in private helpers.
+- **≤ 3 parameters** for functions and methods (review). More → one named input type. Constructor injection is exempt — many injected dependencies is a sign the class does too much; flag it, don't contort.
+- **Nesting depth ≤ 2** (lint).
+- **Guard clauses first:** handle invalid input, failures and edge cases at the top with an early `return` / `throw`. The main path follows without nesting and without `else` after a `return`.
+  ```typescript
+  // ✗ nested
+  if (user) {
+    if (user.isActive) {
+      return this.createStaffLoginSession(user.id);
+    } else {
+      return this.rejectInactiveStaff(profile);
+    }
+  }
+  return this.handleUnregisteredIdentity(profile);
+
+  // ✓ guard clauses
+  if (!user) return this.handleUnregisteredIdentity(profile);
+  if (!user.isActive) return this.rejectInactiveStaff(profile);
+  return this.createStaffLoginSession(user.id);
+  ```
+- **No boolean flag parameters** that switch behaviour → write two functions.
+- **A condition that makes the reader stop to think** gets a named variable or helper (`const isCancelledByUser = …`) or a one-line WHY comment.
+
+### Naming
+- A name says what the thing is or does. No abbreviations except standard terms (`id`, `url`, `dto`, `jwt`, OAuth `state` / `nonce` / `sub`).
+- Functions: verb + object — `createStaffLoginSession`, `findStaffByIdentity`. Booleans: `is` / `has` / `can`. Classes and types: nouns.
+- Units go in the name: `refreshTtlSeconds`, not `ttl`.
+- Injected dependencies are named by role: `lineClient`, `tokenService` — not `line`, `tokens`.
+
+### Types & class API
+- Every class member declares `public`, `private` or `protected` (lint).
+- Public methods declare their return type (lint).
+- No inline object types in signatures → name them (`LineLoginCallbackInput`). Reuse an existing type before declaring a new one.
+
+### Reading order (stepdown)
+- Public methods first, then private helpers in the order they are called — the file reads like a story from top to bottom.
+- Comments explain WHY, never WHAT. If code needs a WHAT comment, rename or extract instead.
+
+### Relation to ponytail
+- Extracting a private helper inside the same class is not an abstraction — always allowed.
+- Don't create new classes, files or interfaces just to satisfy a size limit.
+
+### Review checklist (auditor runs it; Field reads the result)
+1. Can I understand each public method from its steps alone, without opening the helpers?
+2. Does every name tell me what it is without reading its body?
+3. Does each function do one thing?
+4. Are edge cases handled by guard clauses at the top, with the main path unindented?
+5. Is there any line where I had to stop and work out the logic?
+6. Did lint pass with no rule disabled inline?
+
+Size limits (lines, parameters, nesting) do not apply to `test/**`, `*.spec.ts` and `src/providers/database/migrations/**`.
+
+---
+
 ## DO NOT
 
 - Use `synchronize: true`

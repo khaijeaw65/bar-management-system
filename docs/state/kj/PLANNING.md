@@ -8,7 +8,7 @@
 ## Parked decisions (Field 10 Oct — "park, finish CDs first")
 - **CD-06 R3 + R4 (customer session):** where the nickname is changed, and identifying "my" orders by phone (visit-session token on `order_record`) instead of by name — decides customer session handling. **R5** customer-QR API contract waits on both; customer-QR brief on hold. CD-07 R4 (customer payment API) waits on the same decision. (Field 11 Oct: discuss in a separate session.)
 - DS StatusChip label `accepted` = "กำลังเตรียม" (Field to change in the DS; canvases pass `label` meanwhile).
-- CD-14: success state for a cart that splits into 2 tickets (DR-012).
+- CD-14: success state for a cart that splits into 2 tickets (DR-012) — kitchen-on only after the DR-013 pass (17 Oct); kitchen off = one ticket.
 
 ## CD housekeeping 17 Oct (Cowork, canvases + handoffs — read first)
 Applied already-decided items to canvases + handoffs (handoff revision bumped, R rows marked applied, stickies green). Ship lines given per batch (branch `docs/cd-housekeeping` from origin/main).
@@ -41,20 +41,20 @@ Applied already-decided items to canvases + handoffs (handoff revision bumped, R
 - FRD updated to DR-012/013/014 (§2, §3, §5, §6, §7, §8, §9, §10, §11, §12, §13).
 
 ## Next session (in order)
-1. **Start BRIEF-009 with an executor now** — Week 1 build slipped; checkpoint 25 Oct, gate 8 Nov.
-2. Field: review + merge the `docs/cd-review-decisions` PR (this session's decisions).
+1. **BRIEF-015 auth repair (Draft, 17 Oct)** — carries BRIEF-007 audit C1–C6 + C7 (callback guard, Field review) + Clean Code lint. Triage done: C1 is High (logout during refresh rotation revives the session) → repair **before** BRIEF-009-dependent work builds on auth. Field: assign the auditor (Codex recommended, holds the C1–C6 context) and approve Ready. Note: PR #35 merged while its audit still said CHANGES REQUIRED — the fix goes in the new PR, #35 history stays as is.
+2. **Start BRIEF-009 with an executor** — Week 1 build slipped; checkpoint 25 Oct, gate 8 Nov.
 3. Advisor heads-up: AI feature → owner insight (DR-014).
 4. Field: add `--chart-1` / `--chart-2` to the DS (CD-05 R2); review CD-03 screens (R3) before BRIEF-013.
 5. BRIEF-013: verify EasySlip receiver match (masked number → visible digits + name) with one real slip (CD-03 Q2, decided 17 Oct).
-6. Write BRIEF-012 (orders, DR-012/013/014 + API notes from CD-08 R10, CD-15 R5, CD-02 R5, CD-04 R8).
-7. ~~Canvas redraw pass for DR-014 impact rows~~ done 17 Oct; DR-013 pass + Q stickies done (batch 4). Remaining: CD-11 re-copy (R1 + R5) just before export.
+6. Write BRIEF-012 (orders, DR-012/013/014 + API notes from CD-08 R10, CD-15 R5, CD-02 R5, CD-04 R8). Include: kitchen off = one ticket (DR-013 pass), "แจ้งโอนแล้ว" call-staff reason (CD-07 Q1), manager PIN for void/comp (CD-02 Q1).
+7. Design: CD-11 re-copy (R1 + R5, demo kitchen off) just before the 8 Nov export · CD-02 to add the "แจ้งโอนแล้ว" POS alert variant on its next revision.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
-**Current goal: finish ALL Semester-1 UI design before dev (build restarts 12 Oct; gate 8 Nov = order → pay → close).**
-**Next action:** retrofit batch done 10 Oct (CD-08 rev 3, CD-02 / CD-01 / CD-04 / CD-03 rev 2 — all in review, see table). CD-14 source snapshot taken (`docs/design/source/CD-14/`, handoff §11). Snapshots for the others after Field approves each. Then new CDs to the template: CD-06 (rev 1 in review) → CD-07 (rev 1 in review) → CD-15 (rev 1 canvas done 11 Oct, in review) → CD-12 (rev 1 done 11 Oct, in review) → CD-13 (rev 1 done 11 Oct, in review) → CD-05 (rev 1 done 11 Oct, in review) → CD-11 (rev 1 done 11 Oct, in review) — all Ready CDs now have a rev-1 canvas + handoff. CD-09 = S2. Parked decisions stay parked.
+**Current goal: build the gate slice (order → pay → close, 8 Nov). Semester-1 UI design is done:** CD housekeeping (DR-014 redraw, DR-013 kitchen-off pass, all Field Q decisions 17 Oct) merged as PR #36 (`b835e3d`). Only CD-11 re-copy remains, just before export.
+**Next action:** "Next session" item 1 (BRIEF-015 → auditor + Ready → executor), then BRIEF-009. `backend.md` gained a Clean Code section (Field-approved 17 Oct: small functions, naming, guard clauses, explicit `public`/`private`, stepdown reading order; lint-enforced parts land with BRIEF-015). `SESSION_STATE.md` still shows BRIEF-007 / PR #35 as open (stale — merged); the next executor overwrites it.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
-Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. PR #32 (`docs/ui-retrofit`) merged 17 Oct; current docs branch **`docs/cd-review-decisions`**.
+Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. Merged 17 Oct: PR #32 (`docs/ui-retrofit`), #35 (BRIEF-007), #36 (`docs/cd-housekeeping`). #37 (C6 post-merge audit). Open docs branch: `docs/brief-015-auth-repair`.
 
 ## Retrofit checklist (per canvas, from cd-template.md)
 1. `read` the canvas `project/canvas.json` + boards (Field may have edited — keep his edits). Re-upload Lucide only if adding boards that need it (blob ids are per canvas; existing boards already reference their own blob).
