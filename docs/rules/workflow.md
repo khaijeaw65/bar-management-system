@@ -1,6 +1,6 @@
 # Workflow — Roles, Briefs, Gates, Field Guard
 
-> Rev 16 — 2026-10-17 (+ git hand / ship line: planners and auditors never run Git, Field-approved). Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
+> Rev 17 — 2026-10-17 (+ §7 remote protection = rulesets, Field-approved). Rev 16 — 2026-10-17 (+ git hand / ship line: planners and auditors never run Git, Field-approved). Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
 > This file governs execution. Briefs define outcomes; scoped rules define code conventions. Historical revisions remain in Git.
 
 ## 1. People, Roles, Session Types
@@ -216,7 +216,7 @@ The audit reviews implementation commit S. The audit file itself is committed la
 **Merge authority (Field, 2026-09-24):**
 - **Field's own PRs** (brief Implementer = kj): pre-approved. The agent may merge once the assigned audit is **PASS** with zero Must fix, S..H is evidence-only, and required checks are green on H. No separate `อนุมัติ merge` needed; the agent reports PR, H and merge SHA afterwards.
 - **Metee's PRs:** always need Field's explicit `อนุมัติ merge BRIEF-###` for the exact head H, plus the G3 walkthrough.
-- **Remote protection (confirmed 2026-09-23/24):** `main` requires a PR + 1 approval, CODEOWNERS = Field, admin bypass allowed for Field, required status check `ci`. Before relying on bypass, verify the live settings still match.
+- **Remote protection (rulesets, Field 2026-10-17 — `ops/github/`):** `main-review` = PR + 1 approval, CODEOWNERS review, stale reviews dismissed, last push needs approval, no force-push / delete — bypass: repo admin (Field), pull requests only. `main-ci` = required check `ci`, **no bypass**. Classic branch protection removed. Field's own PRs merge via review bypass; CI still blocks until green. Before relying on bypass, verify the live rules (`gh api repos/khaijeaw65/bar-management-system/rules/branches/main`).
 
 For Metee's PRs, before Field approval present exact PR, brief revision, head H, assigned audit/result, G1/G2 evidence, zero unresolved Must fix findings, and remaining limitations. Field's `อนุมัติ merge BRIEF-###` approves the presented PR/head, not an unspecified future head.
 
