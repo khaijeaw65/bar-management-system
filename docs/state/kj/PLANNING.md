@@ -47,7 +47,7 @@ Applied already-decided items to canvases + handoffs (handoff revision bumped, R
 4. Field: add `--chart-1` / `--chart-2` to the DS (CD-05 R2); review CD-03 screens (R3) before BRIEF-013.
 5. BRIEF-013: verify EasySlip receiver match (masked number → visible digits + name) with one real slip (CD-03 Q2, decided 17 Oct).
 6. Design: CD-11 re-copy (R1 + R5, demo kitchen off) just before the 8 Nov export · CD-02 to add the "แจ้งโอนแล้ว" POS alert variant on its next revision.
-7. Housekeeping: delete merged branch `docs/planning-brief-015-done`; optional GitHub "Automatically delete head branches" + squash merge (Field, settings).
+7. Housekeeping: delete merged branches `docs/workflow-audit-before-pr` (#46) and `feat/BRIEF-011-backend-tables-visits` (#45); optional GitHub "Automatically delete head branches" + squash merge (Field, settings).
 
 ## Follow-ups (not blocking — pick up when the area is touched)
 - **Before a real-bar pilot:** disconnect staff sockets of a `sid` on logout / session revoke (BRIEF-011 S3); IAM brief must land (`@RequirePermissions` is metadata only).
@@ -59,7 +59,7 @@ Applied already-decided items to canvases + handoffs (handoff revision bumped, R
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: build the gate slice (order → pay → close, 8 Nov).** Semester-1 UI design is done (PR #36); only CD-11 re-copy remains, just before export.
-**Next action:** "Next session" item 1 — write BRIEF-012.
+**Next action:** merge PR #47 (this planning update), then "Next session" item 1 — write BRIEF-012. Session paused 17 Oct 19:45 — nothing in flight, no open task branch, checkout clean on `main`.
 **Done 17 Oct:** BRIEF-015 (auth repair, #41 + #43) and **BRIEF-011 (tables + visits + staff socket, #45, audit PASS on `839e32c`)** — DB-enforced open race, conditional close, socket origin = `FRONTEND_URL`, one access-token check for HTTP + socket, Lua scripts in `token.scripts.ts`.
 **Rules changed 17 Oct (all Field-approved):** `backend.md` — Clean Code section (lint-enforced: ≤ 20 lines, depth ≤ 2, explicit `public`/`private`, return types), ≤ 3 params (constructor injection + Nest handler params exempt), types only in `*.types.ts` / port / `dto/` files. `workflow.md` **Rev 18 (#46)** — **audit before PR** (executor pushes the branch, no PR until audit PASS; at PASS one docs commit with the audit, then PR); auditors may read Git + GitHub API; **Cowork may commit on `docs/*` branches** in a clean main checkout (no push — the git hand pushes and opens the PR).
 `SESSION_STATE.md` still shows BRIEF-011 mid-review (stale — merged); the next executor overwrites it.
