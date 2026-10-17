@@ -829,6 +829,7 @@ erDiagram
     bottle_keep {
         uuid id PK
         uuid customer_id FK
+        string guest_label
         uuid inventory_item_id FK
         int quantity_registered
         int remaining_quantity
@@ -886,7 +887,7 @@ erDiagram
 
     customer ||--o{ customer_identity : "identified via"
     customer |o--o{ visit : attends
-    customer ||--o{ bottle_keep : keeps
+    customer |o--o{ bottle_keep : keeps
 
     visit ||--o{ order_record : contains
     visit ||--o{ payment : settles
@@ -1546,7 +1547,8 @@ erDiagram
           </div>
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
-            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> customer_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> customer_id</span><span class="field-type">uuid?</span></div>
+            <div class="field-row"><span class="field-name">guest_label</span><span class="field-type">varchar(100)?</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> inventory_item_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">quantity_registered</span><span class="field-type">smallint</span></div>
             <div class="field-row"><span class="field-name">remaining_quantity</span><span class="field-type">smallint</span></div>
@@ -1556,7 +1558,7 @@ erDiagram
             <div class="field-row"><span class="field-name">location_note</span><span class="field-type">text</span></div>
             <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
           </div>
-          <div class="field-note">Separate from bar inventory — already sold. No precise ml tracking; bars use "2 bottles, half left" style. remaining_note = free text e.g. "ครึ่งขวด". Status: active | finished — simple record, no expiry (DR-014). Blocks customer anonymization while active.</div>
+          <div class="field-note">Separate from bar inventory — already sold. No precise ml tracking; bars use "2 bottles, half left" style. remaining_note = free text e.g. "ครึ่งขวด". Status: active | finished — simple record, no expiry (DR-014). Owner = customer_id (LINE-linked) or guest_label (post-it name); at least one required. Blocks customer anonymization while active (linked rows only).</div>
         </div>
 
         <div class="entity-card">

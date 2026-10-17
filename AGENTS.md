@@ -10,7 +10,7 @@
 A production-grade bar management system for small-to-medium counter bars in Thailand. Senior capstone project, DPU Computer Engineering, targeting April 2027 delivery.
 
 Core flows: QR-based guest ordering → kitchen/bar display → PromptPay payment → session close.
-Differentiators: AI guest intelligence (OpenAI), bottle-keep, real-time WebSocket display, LINE SSO auth.
+Differentiators: AI owner insight (OpenAI — sales / anomaly-fraud / menu, DR-014), bottle-keep, real-time WebSocket display, LINE SSO auth.
 
 ---
 
@@ -32,7 +32,7 @@ docs/                   → rules/, briefs/, state/, handoffs/, decisions/, audi
 - **Backend:** NestJS + TypeORM + PostgreSQL + Redis + BullMQ + Vitest
 - **Auth:** LINE SSO + JWT + refresh rotation
 - **Payment:** PromptPay QR + GB Prime Pay webhook
-- **AI:** OpenAI API (guest preference summary — never behavioral profiling)
+- **AI:** OpenAI API (owner insight: sales / anomaly-fraud / menu — DR-014; guest summary dropped)
 - **Infra:** AWS ECS/ECR + RDS + S3 + ElastiCache + Terraform (`infra/terraform/`) + Vercel (frontend)
 
 ---
