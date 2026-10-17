@@ -1,6 +1,6 @@
 # Workflow — Roles, Briefs, Gates, Field Guard
 
-> Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
+> Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
 > This file governs execution. Briefs define outcomes; scoped rules define code conventions. Historical revisions remain in Git.
 
 ## 1. People, Roles, Session Types
@@ -43,6 +43,7 @@ docs/
 - DR: anyone proposes; only Field decides; Cowork may transcribe Field's explicit decision (§5).
 - Audit: assigned auditor records actual auditor, assignment source, brief revision, reviewed SHA and findings; append re-audits rather than rewriting history.
 - PR: shared progress and completion authority. **Merged PR = Done**, even if the brief approval field still says Ready. Closed without merge is not Done.
+- Docs branches are short-lived: open the PR the same day and merge at each decision batch (approved DR, schema change, reviewed CD set). A docs branch never outlives 3 days — executors read `main`, so decisions left on a side branch are invisible to them.
 
 For product/technical decisions: Approved DR > approved brief > rules > state. This never overrides document ownership, agent roles or protected-file permissions. A newer timestamp alone grants no authority; report unresolved contradictions.
 
