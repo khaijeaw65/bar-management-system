@@ -403,6 +403,13 @@ oxlint enforces the measurable rules (CI fails); the audit enforces the rest (vi
   - `providers/<area>/<subject>.types.ts` — types for provider code (e.g. database options)
   - shared across modules or with the frontend → `@bar/contracts` (brief/DR)
 
+### Where functions live (Field, 2026-10-17)
+- **A file that declares a class holds that class only:** imports, plain constants and the class — no module-level functions or arrow-function consts. Helpers are `private` methods (`private static` when they don't use `this`), placed per the reading order below.
+- **Swagger decorator factories** (`ApiCreatedOrder()`) are functions by nature → `infrastructure/http/<subject>.openapi.ts`, not the controller file. Nest decorators in `common/decorators/` are unchanged.
+- **Function-only files** (no class) are allowed for pure logic: domain rules, mappers, value parsers, config factories, CLI scripts. Never mix a class and module-level functions in one file.
+- **Shared, not copied:** a helper two files need lives once, in a function-only file in the owning layer (or `common/` across modules) — never duplicated per file.
+- Enforced by `scripts/check-class-files.mjs` in `lint` (BRIEF-019); until then, by the audit.
+
 ### Reading order (stepdown)
 - Public methods first, then private helpers in the order they are called — the file reads like a story from top to bottom.
 - Comments explain WHY, never WHAT. If code needs a WHAT comment, rename or extract instead.
@@ -418,6 +425,7 @@ oxlint enforces the measurable rules (CI fails); the audit enforces the rest (vi
 4. Are edge cases handled by guard clauses at the top, with the main path unindented?
 5. Is there any line where I had to stop and work out the logic?
 6. Did lint pass with no rule disabled inline?
+7. Does any file that declares a class also declare a module-level function?
 
 Size limits (lines, parameters, nesting) do not apply to `test/**`, `*.spec.ts` and `src/providers/database/migrations/**`.
 
