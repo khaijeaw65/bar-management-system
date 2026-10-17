@@ -6,11 +6,7 @@ export interface TicketView extends Ticket {
   visitId: string;
 }
 
-export function toOrder(
-  folded: FoldedOrder,
-  names: ReadonlyMap<string, string>,
-  acceptedBy: ReadonlyMap<string, string>,
-): Order {
+export function toOrder(folded: FoldedOrder, names: ReadonlyMap<string, string>): Order {
   const priced = withLineTotals(folded);
   return {
     id: priced.id,
@@ -19,16 +15,12 @@ export function toOrder(
     businessDate: priced.businessDate,
     createdAt: priced.createdAt,
     createdBy: staffRef(priced.createdById, names),
-    tickets: priced.tickets.map((ticket) => toTicket(ticket, names, acceptedBy)),
+    tickets: priced.tickets.map((ticket) => toTicket(ticket, names)),
     total: orderTotal(priced),
   };
 }
 
-export function toTicket(
-  ticket: FoldedTicket,
-  names: ReadonlyMap<string, string>,
-  acceptedBy: ReadonlyMap<string, string>,
-): TicketView {
+export function toTicket(ticket: FoldedTicket, names: ReadonlyMap<string, string>): TicketView {
   return {
     id: ticket.id,
     orderId: ticket.orderId,
@@ -38,18 +30,16 @@ export function toTicket(
     status: ticket.status,
     seat: ticket.seat,
     items: ticket.items,
-    acceptedBy: staffRef(accepterId(ticket, acceptedBy), names),
+    acceptedBy: staffRef(accepterId(ticket), names),
     sentAt: ticket.sentAt,
     createdAt: ticket.createdAt,
     updatedAt: ticket.updatedAt,
   };
 }
 
-function accepterId(ticket: FoldedTicket, acceptedBy: ReadonlyMap<string, string>): string | null {
-  const remembered = acceptedBy.get(ticket.id);
-  if (remembered) return remembered;
-  if (ticket.status === 'accepted') return ticket.updatedById;
-  return null;
+function accepterId(ticket: FoldedTicket): string | null {
+  if (ticket.status !== 'accepted') return null;
+  return ticket.updatedById;
 }
 
 function staffRef(id: string | null, names: ReadonlyMap<string, string>): StaffRef | null {

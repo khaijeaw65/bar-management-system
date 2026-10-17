@@ -68,7 +68,7 @@ export class IdempotencyService {
       if (!existing || existing.hash !== hash) throw reused();
       if (existing.order) return existing.order;
     }
-    throw reused();
+    throw inFlight();
   }
 
   private async read(key: string): Promise<Stored | null> {
@@ -88,6 +88,10 @@ function redisKey(key: string): string {
 
 function reused(): DomainException {
   return new DomainException('IDEMPOTENCY_KEY_REUSED', 'ใช้คีย์นี้กับคำขออื่นแล้ว', 409);
+}
+
+function inFlight(): DomainException {
+  return new DomainException('CONFLICT', 'คำสั่งนี้กำลังดำเนินการ ลองอีกครั้ง', 409);
 }
 
 function delay(ms: number): Promise<void> {

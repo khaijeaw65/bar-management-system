@@ -61,7 +61,7 @@ describe('Tickets (e2e)', () => {
     await post(`/api/tickets/${table.id}/send`).expect(409);
     const ready = await post(`/api/tickets/${table.id}/ready`).expect(200);
     expect(ready.body.data.status).toBe('ready');
-    expect(ready.body.data.acceptedBy).toMatchObject({ displayName: 'เอ' });
+    expect(ready.body.data.acceptedBy).toBeNull();
     const sent = await post(`/api/tickets/${ready.body.data.id}/send`).expect(200);
     expect(sent.body.data.status).toBe('sent');
     expect(sent.body.data.sentAt).toEqual(expect.any(String));

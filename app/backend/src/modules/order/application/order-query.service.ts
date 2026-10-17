@@ -7,7 +7,6 @@ import {
   type OrderRepository,
 } from '../domain/order.repository.js';
 import type { OrderQuery } from '../domain/order.types.js';
-import { AcceptedByStore } from './accepted-by.store.js';
 import { foldOrders } from './fold-orders.js';
 import type { FoldedOrder } from './folded-order.types.js';
 import type { VisitBill } from './order.types.js';
@@ -19,7 +18,6 @@ export class OrderQueryService {
   public constructor(
     @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
     private readonly staff: StaffUserService,
-    private readonly acceptedBy: AcceptedByStore,
   ) {}
 
   public async getById(id: string): Promise<Order> {
@@ -56,9 +54,8 @@ export class OrderQueryService {
 
   private async load(query: OrderQuery): Promise<Order[]> {
     const folded = foldOrders(await this.orders.rows(query));
-    const accepted = await this.remembered(folded);
-    const names = await this.namesFor(folded, accepted);
-    return folded.map((order) => toOrder(order, names, accepted));
+    const names = await this.namesFor(folded);
+    return folded.map((order) => toOrder(order, names));
   }
 
   private async ticketViews(query: OrderQuery): Promise<TicketView[]> {
@@ -68,18 +65,9 @@ export class OrderQueryService {
     );
   }
 
-  private async remembered(orders: readonly FoldedOrder[]): Promise<Map<string, string>> {
-    const ids = orders.flatMap((order) => order.tickets.map((ticket) => ticket.id));
-    return this.acceptedBy.lookup(ids);
-  }
-
-  private async namesFor(
-    orders: readonly FoldedOrder[],
-    accepted: ReadonlyMap<string, string>,
-  ): Promise<Map<string, string>> {
-    const ids = staffIds(orders, accepted);
+  private async namesFor(orders: readonly FoldedOrder[]): Promise<Map<string, string>> {
     const names = new Map<string, string>();
-    for (const id of ids) {
+    for (const id of staffIds(orders)) {
       const staff = await this.staff.findById(id);
       if (staff) names.set(id, staff.displayName);
     }
@@ -87,8 +75,8 @@ export class OrderQueryService {
   }
 }
 
-function staffIds(orders: readonly FoldedOrder[], accepted: ReadonlyMap<string, string>): string[] {
-  const ids = new Set<string>(accepted.values());
+function staffIds(orders: readonly FoldedOrder[]): string[] {
+  const ids = new Set<string>();
   for (const order of orders) {
     if (order.createdById) ids.add(order.createdById);
     for (const ticket of order.tickets) {

@@ -16,7 +16,6 @@ import {
   type OrderRepository,
 } from '../domain/order.repository.js';
 import type { LockedTicket } from '../domain/order.types.js';
-import { AcceptedByStore } from './accepted-by.store.js';
 import { OrderQueryService } from './order-query.service.js';
 import type { TicketView } from './present-order.js';
 import { nextTicketStatus, readyStepApplies, type TicketAction } from './ticket-transition.js';
@@ -30,12 +29,10 @@ export class TicketService {
     private readonly query: OrderQueryService,
     private readonly staff: StaffUserService,
     private readonly notifications: NotificationsService,
-    private readonly acceptedBy: AcceptedByStore,
   ) {}
 
   public async accept(id: string, staffId: string): Promise<Ticket> {
     await this.apply(id, 'accept');
-    await this.acceptedBy.remember(id, staffId);
     return this.finish(id, staffId);
   }
 

@@ -4,7 +4,6 @@ import { IamModule } from '../iam/iam.module.js';
 import { MenuModule } from '../menu/menu.module.js';
 import { VenueModule } from '../venue/venue.module.js';
 import { RedisModule } from '../../providers/redis/redis.module.js';
-import { AcceptedByStore } from './application/accepted-by.store.js';
 import { IdempotencyService } from './application/idempotency.service.js';
 import { OrderQueryService } from './application/order-query.service.js';
 import { OrderService } from './application/order.service.js';
@@ -33,7 +32,6 @@ import { OrderTypeormRepository } from './infrastructure/persistence/order.typeo
     OrderTypeormRepository,
     { provide: ORDER_REPOSITORY, useExisting: OrderTypeormRepository },
     { provide: CLOCK, useClass: SystemClock },
-    AcceptedByStore,
     IdempotencyService,
     OrderQueryService,
     OrderService,
