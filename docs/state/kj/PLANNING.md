@@ -10,7 +10,22 @@
 - DS StatusChip label `accepted` = "กำลังเตรียม" (Field to change in the DS; canvases pass `label` meanwhile).
 - CD-14: success state for a cart that splits into 2 tickets (DR-012).
 
-## Decided 17 Oct (read first)
+## CD housekeeping 17 Oct (Cowork, canvases + handoffs — read first)
+Applied already-decided items to canvases + handoffs (handoff revision bumped, R rows marked applied, stickies green). Ship lines given per batch (branch `docs/cd-housekeeping` from origin/main).
+- **Batch 1:** CD-15 rev 2 (R6 issue strip at 1024 · R7 DR-014 #1 kitchen-off default = 3 columns + board·4 kitchen-on · #3 86 auto-cancel board-states·5 · R3 confirmed) · CD-02 rev 3 (ของหมด void reason · DR-014 #2 idle never closes · #5 counter open without QR open-table·7 · R8 "สั่งแทนลูกค้า" in panel meta row from CD-04 R6; join-confirm was already drawn rev 2).
+- **Batch 2:** CD-08 rev 4 (R8–R11 + R16 wording already drawn → green · R17 kitchen-off default: J1 = รับ → เสิร์ฟ E1–E4, no พร้อมเสิร์ฟ filter; kitchen-on = queue·10, detail·3/·11 · queue·11 86 auto-cancel · push 3 kinds) · CD-03 rev 3 (R6 DR-014 #6 boards `promptpay-slip` 1–4 + `promptpay-slip-errors` 5–8, flow lane; R3 screen review still open). CD-04: no DR-014 row → nothing drawn.
+- **Batch 3:** CD-05 rev 2 (R7 `ai-insight` board) · CD-06 rev 2 (R7 already compliant; overview copy) · CD-07 rev 2 (R6 qr·9/·10 venue mode) · CD-12 rev 2 (R9 station hint per DR-013, "เมนูโปร" switch) · CD-13 rev 2 (R9 3 seeded groups, policies under ขั้นสูง, POS PIN + reset, new `venue` board).
+- **Batch 4 — Field decisions 17 Oct recorded ("Decided 2026-10-17 (Field)") + DR-013 pass:**
+  - DR-013 kitchen off = one ticket per order (+ charge ticket), split + "· บาร์ / · ครัว" only kitchen-on: CD-15 rev 3 (Board `kds` prop, Q1 column kept at 1024 when kitchen off; strip only for kitchen-on 4 columns; VoidModal PIN copy) · CD-08 rev 5 · CD-02 rev 4 (void/comp PIN = manager's own 4-digit POS PIN) · CD-14 rev 5 = checked, no station label anywhere → no redraw, snapshot still valid.
+  - CD-13 rev 3: kitchen switch exists in S1 (default off; on without KDS → READY from app / POS) · venue settings owner only + audit_log + AI anomaly alert · PIN self-set at first POS switch-in after LINE login, Owner/Manager reset clears it, nobody sees others' PINs.
+  - CD-03 rev 4: slip scanned by POS tablet camera (staff-app scan = S2 if asked) · EasySlip receiver: number usually masked → match visible digits + name; unclear → manual confirm · **BRIEF-013: verify with one real slip**.
+  - CD-07 rev 3: "แจ้งโอนแล้ว" (qr·9 → ·11) → sticky POS alert "T3 แจ้งโอนแล้ว ฿…" via call-staff mechanism (qr·12 reference) → staff scan slip at POS. CD-02 to add the alert-reason variant next time it is revised.
+  - CD-05 rev 3: AI card top of ภาพรวมรายได้ under KPI row · named staff alerts = Owner only; Manager view grouped by reason, no names (ai-insight·5). Overview screen frames not redrawn with the card in place (§9 rule).
+  - CD-11: R5 demo = kitchen screen OFF, walk-in drops the ready step (รับ → เสิร์ฟแล้ว) — redraw in the R1 re-copy just before export (still deferred). **DR-009 Amendment 1 #4** added (Gate demo, no ready step).
+  - All Q stickies green. No open Q stickies left from this pass.
+- CD-01 shell owns the DR-014 #8 PIN-switch UI — not in this pass.
+
+## Decided 17 Oct
 - **Git workflow (workflow rev 15–17):** docs branches short-lived (PR same day, ≤ 3 days) · **Cowork / Codex never run Git** — they end with a *ship line*; the **git hand** (Claude Code; Cursor once `gh` works in its sandbox) commits exactly those files, pushes, opens/updates the PR · executors in their own worktree · Field only reviews/merges PRs, runs no git commands.
 - **GitHub:** classic protection removed → rulesets `main-review` (admin bypass, PR only) + `main-ci` (`ci` required, no bypass). Found: old protection had an empty checks list → `ci` was never enforced. 7 merged branches deleted.
 - DR-014 follow-ups done: CLAUDE.md / AGENTS.md → AI owner insight · 37 tables / 10 domains · `bottle_keep.customer_id` optional + `guest_label` + CHECK (validated PG16).
@@ -30,9 +45,9 @@
 2. Field: review + merge the `docs/cd-review-decisions` PR (this session's decisions).
 3. Advisor heads-up: AI feature → owner insight (DR-014).
 4. Field: add `--chart-1` / `--chart-2` to the DS (CD-05 R2); review CD-03 screens (R3) before BRIEF-013.
-5. Before BRIEF-013: confirm EasySlip response includes the receiver account.
+5. BRIEF-013: verify EasySlip receiver match (masked number → visible digits + name) with one real slip (CD-03 Q2, decided 17 Oct).
 6. Write BRIEF-012 (orders, DR-012/013/014 + API notes from CD-08 R10, CD-15 R5, CD-02 R5, CD-04 R8).
-7. Canvas redraw pass for DR-013/014 impact rows (CD-02/03/05/06/07/08/12/13/15) — after the gate unless needed for briefs.
+7. ~~Canvas redraw pass for DR-014 impact rows~~ done 17 Oct; DR-013 pass + Q stickies done (batch 4). Remaining: CD-11 re-copy (R1 + R5) just before export.
 
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
