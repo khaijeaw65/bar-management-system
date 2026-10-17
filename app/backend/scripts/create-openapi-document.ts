@@ -5,9 +5,13 @@ import { AuthController } from '../dist/modules/auth/infrastructure/http/auth.co
 import { AuthService } from '../dist/modules/auth/application/auth.service.js';
 import { HealthController } from '../dist/modules/health/health.controller.js';
 import { HealthService } from '../dist/modules/health/health.service.js';
+import { MenuCatalogService } from '../dist/modules/menu/application/menu-catalog.service.js';
+import { MenuController } from '../dist/modules/menu/infrastructure/http/menu.controller.js';
 import { TableSeatService } from '../dist/modules/venue/application/table-seat.service.js';
+import { VenueSettingsService } from '../dist/modules/venue/application/venue-settings.service.js';
 import { VisitService } from '../dist/modules/venue/application/visit.service.js';
 import { TablesController } from '../dist/modules/venue/infrastructure/http/tables.controller.js';
+import { VenueController } from '../dist/modules/venue/infrastructure/http/venue.controller.js';
 import { VisitsController } from '../dist/modules/venue/infrastructure/http/visits.controller.js';
 import { AppConfigService } from '../dist/providers/config/app/config.service.js';
 import { JwtConfigService } from '../dist/providers/config/jwt/config.service.js';
@@ -20,6 +24,8 @@ const documentedControllers = [
   AuthController,
   TablesController,
   VisitsController,
+  VenueController,
+  MenuController,
 ];
 
 export async function createOpenApiDocument(): Promise<OpenAPIObject> {
@@ -33,6 +39,8 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: AuthService, useValue: {} },
       { provide: TableSeatService, useValue: {} },
       { provide: VisitService, useValue: {} },
+      { provide: VenueSettingsService, useValue: {} },
+      { provide: MenuCatalogService, useValue: {} },
       {
         provide: AppConfigService,
         useValue: { nodeEnv: 'test', frontendUrl: 'http://localhost:3000' },

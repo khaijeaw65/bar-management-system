@@ -4,6 +4,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ClsUserInterceptor } from './common/interceptors/cls-user.interceptor.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { MenuModule } from './modules/menu/menu.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { VenueModule } from './modules/venue/venue.module.js';
 import { AppConfigModule } from './providers/config/app/config.module.js';
@@ -23,6 +24,7 @@ import { RedisModule } from './providers/redis/redis.module.js';
     AuthModule,
     NotificationsModule,
     VenueModule,
+    MenuModule,
     HealthModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: ClsUserInterceptor }],

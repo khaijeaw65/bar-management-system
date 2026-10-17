@@ -99,13 +99,18 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | GET | `/api/auth/me` | current staff + effective permissions | BRIEF-007 |
 | POST | `/api/auth/mobile/token` | Expo: exchange one-time code (PKCE) → tokens | mobile auth (DR-005) |
 
+### Venue
+| Method | Path | Purpose | Permission |
+|---|---|---|---|
+| GET | `/api/venue` | name, slug, kitchen display, business-day cut-off, counter QR — no payment fields | `venue:read` |
+
 ### Menu
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
 | GET | `/api/menu/categories` | active categories, sorted | `menu:read` |
 | GET | `/api/menu/items` | list for POS/staff (`?categoryId`, `?available`) | `menu:read` |
 | GET | `/api/menu/items/:id` | detail incl. variants + modifier groups | `menu:read` |
-| POST | `/api/menu/items/:id/mark-unavailable` · `/mark-available` | 86 / un-86 | `menu:toggle_availability` |
+| POST | `/api/menu/items/:id/mark-unavailable` · `/mark-available` | 86 / un-86 — BRIEF-017 | `menu:toggle_availability` |
 | POST/PATCH | `/api/menu/items` · `/api/menu/items/:id` | create / edit (CD-04) | `menu:write` |
 | GET | `/api/public/menu` | customer QR menu (available only) | visit session |
 

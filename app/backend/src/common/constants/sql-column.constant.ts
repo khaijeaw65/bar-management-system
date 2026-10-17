@@ -14,5 +14,6 @@ export const COL = {
   JSONB: 'jsonb' as const,
   TIMESTAMP: 'timestamp with time zone' as const,
   DATE: 'date' as const,
+  TIME: 'time' as const,
   ENUM: 'enum' as const,
 } as const;

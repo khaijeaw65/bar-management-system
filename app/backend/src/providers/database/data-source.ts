@@ -1,4 +1,6 @@
 import { DataSource } from 'typeorm';
+import { menuEntities } from '../../modules/menu/infrastructure/persistence/menu.entities.js';
+import { Venue } from '../../modules/venue/infrastructure/persistence/venue.entity.js';
 import { appConfiguration } from '../config/app/configuration.js';
 import { databaseConfiguration } from '../config/database/configuration.js';
 import { databaseOptions } from './database-options.js';
@@ -16,5 +18,6 @@ export const AppDataSource = new DataSource({
     database: database.database,
     nodeEnv: app.nodeEnv,
   }),
+  entities: [Venue, ...menuEntities],
   migrations,
 });

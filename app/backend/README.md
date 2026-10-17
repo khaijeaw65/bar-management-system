@@ -32,3 +32,12 @@ pnpm --filter @bar/backend seed:staff -- --line-user-id <LINE sub> --name "<disp
 Running it again for the same LINE user id prints `already registered`.
 
 `JWT_ACCESS_SECRET` must be at least 32 characters. `REDIS_URL`, `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET`, `LINE_CALLBACK_URL`, and `FRONTEND_URL` are required before the API will boot. Use the placeholders in `.env.example` for local development and replace the LINE values with the channel from the LINE console.
+
+## Seed order
+
+After migrations, run these in order. Each command is safe to run again: it upserts by a natural key and does not insert a duplicate.
+
+1. `pnpm --filter @bar/backend seed:staff -- --line-user-id <LINE sub> --name "<display name>"`
+2. `pnpm --filter @bar/backend seed:venue` — the venue (`slug` `main`, kitchen display off, business-day cut-off 06:00) and the floor seats
+3. `pnpm --filter @bar/backend seed:menu` — the sample menu
+
