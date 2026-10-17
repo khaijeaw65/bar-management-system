@@ -64,3 +64,17 @@ CHANGES REQUIRED. The contract layer itself is solid and well tested, and the sc
 - Handoff Sonar section present: yes — "not run" (optional for this brief) ✅
 - Exclusions: none added ✅
 - Learning mode: n/a (kj brief)
+
+## Re-audit — 2026-10-17 · `6dda0fb` (Compact)
+**Recommendation: PASS** — zero open Must fix.
+
+| Finding | Result | Evidence |
+|---|---|---|
+| 1 `@nestjs/testing` in prod boot | ✅ fixed | `createOpenApiDocument` moved to `scripts/create-openapi-document.ts` (imported only by `scripts/openapi-export.ts`). Independent check on a clean checkout of `6dda0fb`: `nest build` → `grep -rl "@nestjs/testing" dist --include=*.js` → none. |
+| 2 CI timeout | ✅ fixed | `no-arbitrary-values.test.ts` → `30_000` (approved deviation). `ci` on `6dda0fb`: success — lint/typecheck/test, backend e2e and **OpenAPI spec matches contracts** all ran and passed (AC-6 now exercised in CI, AC-9 met). |
+| 3 Handoff deviations | ✅ fixed | (a)–(d) listed as Field-approved. |
+| 4 KJ state split | ✅ fixed | `docs/state/kj/PLANNING.md` byte-identical to the Cowork-written file; SESSION_STATE points to it. Audit file byte-identical too (packaging only). |
+
+- Independent: `pnpm openapi:export` on `6dda0fb` (Node 22) → exit 0, `docs/api/openapi.json` unchanged (AC-5 stable).
+- `e8704b0..6dda0fb` = audit/state docs (`cf3ebb7`) + the approved fix commit (`6dda0fb`); the fix is re-audited above. After this file is committed, the head change must be evidence-only (this audit file) with `ci` green on it before merge (§7).
+- Suggestions 5–7 remain open as notes for later briefs (non-blocking).
