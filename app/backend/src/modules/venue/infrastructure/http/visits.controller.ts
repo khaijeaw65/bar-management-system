@@ -41,7 +41,7 @@ import { toVisitBody } from './visit.mapper.js';
 @ApiTags('venue')
 @Controller('visits')
 export class VisitsController {
-  public constructor(private readonly visits: VisitService) {}
+  public constructor(private readonly visitService: VisitService) {}
 
   @Post()
   @RequirePermissions('visits:open')
@@ -56,7 +56,7 @@ export class VisitsController {
     @CurrentUser() user: CurrentUserPayload,
     @Res({ passthrough: true }) response: Response,
   ): Promise<OpenVisitResponse> {
-    const result = await this.visits.open(openInput(body, user.sub));
+    const result = await this.visitService.open(openInput(body, user.sub));
     response.status(result.attached ? HttpStatus.OK : HttpStatus.CREATED);
     return { visit: toVisitBody(result.visit), attached: result.attached };
   }
@@ -71,7 +71,7 @@ export class VisitsController {
   @ApiEnvelopedOk(VisitSchema)
   public async getOne(@Param('id') id: string): Promise<Visit> {
     const visitId = requireUuid(id, 'ไม่พบการเข้าใช้');
-    return toVisitBody(await this.visits.getById(visitId));
+    return toVisitBody(await this.visitService.getById(visitId));
   }
 
   @Post(':id/close')
@@ -85,7 +85,7 @@ export class VisitsController {
   @ApiEnvelopedOk(VisitSchema)
   public async close(@Param('id') id: string): Promise<Visit> {
     const visitId = requireUuid(id, 'ไม่พบการเข้าใช้');
-    return toVisitBody(await this.visits.close(visitId));
+    return toVisitBody(await this.visitService.close(visitId));
   }
 }
 

@@ -21,10 +21,24 @@ export function configureApp(app: INestApplication): void {
 
 function attachSocketAdapter(app: INestApplication): void {
   const redis = findRedis(app);
-  if (!redis) return;
+  const frontendUrl = findFrontendUrl(app);
+  if (!redis || !frontendUrl) return;
   app.useWebSocketAdapter(
-    new RedisIoAdapter(app, redis.client, redis.createSubscriber()),
+    new RedisIoAdapter(
+      app,
+      redis.client,
+      redis.createSubscriber(),
+      frontendUrl,
+    ),
   );
+}
+
+function findFrontendUrl(app: INestApplication): string | undefined {
+  try {
+    return app.get(AppConfigService).frontendUrl;
+  } catch {
+    return undefined;
+  }
 }
 
 function findRedis(app: INestApplication): RedisService | undefined {

@@ -4,7 +4,7 @@ export interface VisitRepository {
   insert(input: NewVisit): Promise<InsertVisitResult>;
   findById(id: string): Promise<VisitRecord | null>;
   findLiveBySeat(tableSeatId: string): Promise<VisitRecord | null>;
-  saveClosed(id: string, closedAt: Date): Promise<VisitRecord>;
+  closeIfLive(id: string): Promise<VisitRecord | null>;
 }
 
 export const VISIT_REPOSITORY = Symbol('VISIT_REPOSITORY');

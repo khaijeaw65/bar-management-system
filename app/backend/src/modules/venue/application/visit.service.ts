@@ -1,10 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  VISIT_OPENED,
-  VISIT_STATE_CHANGED,
-  type TableSummary,
-  type VisitState,
-} from '@bar/contracts';
+import { VISIT_OPENED, VISIT_STATE_CHANGED, type TableSummary } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
@@ -28,10 +23,11 @@ import type {
 @Injectable()
 export class VisitService {
   public constructor(
-    @Inject(VISIT_REPOSITORY) private readonly visits: VisitRepository,
-    @Inject(TABLE_SEAT_REPOSITORY) private readonly seats: TableSeatRepository,
-    private readonly staffUsers: StaffUserService,
-    private readonly notifications: NotificationsService,
+    @Inject(VISIT_REPOSITORY) private readonly visitRepository: VisitRepository,
+    @Inject(TABLE_SEAT_REPOSITORY)
+    private readonly tableSeatRepository: TableSeatRepository,
+    private readonly staffUserService: StaffUserService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   public async open(input: OpenVisitInput): Promise<OpenVisitResult> {
@@ -46,22 +42,19 @@ export class VisitService {
   }
 
   public async close(id: string): Promise<VisitView> {
-    const current = await this.requireVisit(id);
-    assertClosable(current);
-    const closed = await this.visits.saveClosed(id, new Date());
-    const view = await this.toView(closed);
-    this.emitClosed(view);
-    return view;
+    const closed = await this.visitRepository.closeIfLive(id);
+    if (closed) return this.finishClose(closed);
+    return this.rejectClose(id);
   }
 
   private async insertOrAttach(input: OpenVisitInput): Promise<OpenVisitResult> {
-    const inserted = await this.visits.insert(input);
+    const inserted = await this.visitRepository.insert(input);
     if (inserted.kind === 'taken') return this.attachedVisit(input.tableSeatId);
     return { visit: await this.toView(inserted.visit), attached: false };
   }
 
   private async attachedVisit(tableSeatId: string): Promise<OpenVisitResult> {
-    const live = await this.visits.findLiveBySeat(tableSeatId);
+    const live = await this.visitRepository.findLiveBySeat(tableSeatId);
     if (!live) throw new DomainException('CONFLICT', 'สถานะโต๊ะไม่ถูกต้อง', 409);
     return { visit: await this.toView(live), attached: true };
   }
@@ -70,11 +63,27 @@ export class VisitService {
     if (result.attached) return;
     const summary = await this.summaryFor(result.visit.tableSeatId);
     if (!summary) return;
-    this.notifications.emitToPos(VISIT_OPENED, summary);
+    this.notificationsService.emitToPos(VISIT_OPENED, summary);
+  }
+
+  private async finishClose(closed: VisitRecord): Promise<VisitView> {
+    const view = await this.toView(closed);
+    this.emitClosed(view);
+    return view;
+  }
+
+  private async rejectClose(id: string): Promise<never> {
+    const current = await this.visitRepository.findById(id);
+    if (!current) throw new DomainException('NOT_FOUND', 'ไม่พบการเข้าใช้', 404);
+    throw new DomainException(
+      'INVALID_STATE_TRANSITION',
+      'สถานะโต๊ะไม่ถูกต้อง',
+      409,
+    );
   }
 
   private emitClosed(visit: VisitView): void {
-    this.notifications.emitToPos(VISIT_STATE_CHANGED, {
+    this.notificationsService.emitToPos(VISIT_STATE_CHANGED, {
       visitId: visit.id,
       tableSeatId: visit.tableSeatId,
       state: visit.state,
@@ -82,25 +91,25 @@ export class VisitService {
   }
 
   private async summaryFor(tableSeatId: string): Promise<TableSummary | null> {
-    const seats = await this.seats.listActive();
+    const seats = await this.tableSeatRepository.listActive();
     const seat = seats.find((item) => item.id === tableSeatId);
     if (!seat) return null;
     return toTableSummary(seat);
   }
 
   private async requireActiveSeat(id: string): Promise<void> {
-    const seat = await this.seats.findActiveById(id);
+    const seat = await this.tableSeatRepository.findActiveById(id);
     if (!seat) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
   }
 
   private async requireVisit(id: string): Promise<VisitRecord> {
-    const visit = await this.visits.findById(id);
+    const visit = await this.visitRepository.findById(id);
     if (!visit) throw new DomainException('NOT_FOUND', 'ไม่พบการเข้าใช้', 404);
     return visit;
   }
 
   private async toView(visit: VisitRecord): Promise<VisitView> {
-    const seat = await this.seats.findById(visit.tableSeatId);
+    const seat = await this.tableSeatRepository.findById(visit.tableSeatId);
     if (!seat) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
     return {
       ...visit,
@@ -110,23 +119,12 @@ export class VisitService {
     };
   }
 
-  private async openerOf(staffId: string | null): Promise<VisitOpenerView | null> {
+  private async openerOf(
+    staffId: string | null,
+  ): Promise<VisitOpenerView | null> {
     if (!staffId) return null;
-    const staff = await this.staffUsers.findById(staffId);
+    const staff = await this.staffUserService.findById(staffId);
     if (!staff) return null;
     return { staffId: staff.id, displayName: staff.displayName };
   }
-}
-
-function assertClosable(visit: VisitRecord): void {
-  if (!isTerminal(visit.state)) return;
-  throw new DomainException(
-    'INVALID_STATE_TRANSITION',
-    'สถานะโต๊ะไม่ถูกต้อง',
-    409,
-  );
-}
-
-function isTerminal(state: VisitState): boolean {
-  return state === 'closed' || state === 'abandoned';
 }

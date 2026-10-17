@@ -48,7 +48,7 @@ describe('VisitService', () => {
     insert: vi.fn(),
     findById: vi.fn(),
     findLiveBySeat: vi.fn(),
-    saveClosed: vi.fn(),
+    closeIfLive: vi.fn(),
   };
   const seats = {
     listActive: vi.fn(),
@@ -77,35 +77,43 @@ describe('VisitService', () => {
     });
   });
 
-  it('closes open, active, and idle visits and emits state_changed', async () => {
-    for (const state of ['open', 'active', 'idle'] as const) {
-      const closed = visit({ state: 'closed', closedAt: new Date() });
-      visits.findById.mockResolvedValue(visit({ state }));
-      visits.saveClosed.mockResolvedValue(closed);
+  it('emits state_changed only after a live visit is closed', async () => {
+    const closed = visit({ state: 'closed', closedAt: new Date() });
+    visits.closeIfLive.mockResolvedValue(closed);
 
-      const result = await service.close(closed.id);
+    const result = await service.close(closed.id);
 
-      expect(result.state).toBe('closed');
-      expect(notifications.emitToPos).toHaveBeenCalledWith(VISIT_STATE_CHANGED, {
-        visitId: closed.id,
-        tableSeatId: SEAT.id,
-        state: 'closed',
-      });
-    }
+    expect(result.state).toBe('closed');
+    expect(visits.closeIfLive).toHaveBeenCalledWith(closed.id);
+    expect(notifications.emitToPos).toHaveBeenCalledWith(VISIT_STATE_CHANGED, {
+      visitId: closed.id,
+      tableSeatId: SEAT.id,
+      state: 'closed',
+    });
   });
 
   it.each(['closed', 'abandoned'] as const)(
-    'rejects a %s visit without writing',
+    'rejects a %s visit without emitting',
     async (state) => {
+      visits.closeIfLive.mockResolvedValue(null);
       visits.findById.mockResolvedValue(visit({ state }));
 
       await expect(service.close(visit().id)).rejects.toMatchObject({
         code: 'INVALID_STATE_TRANSITION',
       });
-      expect(visits.saveClosed).not.toHaveBeenCalled();
       expect(notifications.emitToPos).not.toHaveBeenCalled();
     },
   );
+
+  it('returns not found when the close matches no visit', async () => {
+    visits.closeIfLive.mockResolvedValue(null);
+    visits.findById.mockResolvedValue(null);
+
+    await expect(service.close(visit().id)).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
+    expect(notifications.emitToPos).not.toHaveBeenCalled();
+  });
 
   it('opens a free seat and emits visit.opened once', async () => {
     const created = visit();

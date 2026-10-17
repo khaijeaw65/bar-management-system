@@ -1,10 +1,10 @@
-import type { VisitOpenSource, VisitState } from '@bar/contracts';
+import type { StaffOpenVia, VisitOpenSource, VisitState } from '@bar/contracts';
 
 export interface NewVisit {
   tableSeatId: string;
   guestLabel: string | null;
   staffId: string;
-  via: 'pos' | 'app';
+  via: StaffOpenVia;
 }
 
 export interface VisitRecord {

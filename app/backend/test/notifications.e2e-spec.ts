@@ -52,6 +52,17 @@ describe('Notifications gateway (e2e)', () => {
     await expect(connect(port, { token: session.accessToken })).rejects.toThrow();
   });
 
+  it('refuses a foreign Origin even with a live token', async () => {
+    const staffId = await insertStaff(dataSource, 'Owner');
+    const session = await staffSession(app, staffId);
+    await expect(
+      connect(httpPort(app), {
+        token: session.accessToken,
+        origin: 'https://evil.example',
+      }),
+    ).rejects.toThrow();
+  });
+
   it('accepts the access token from auth.token and from the cookie', async () => {
     const staffId = await insertStaff(dataSource, 'Owner');
     const session = await staffSession(app, staffId);
@@ -66,17 +77,19 @@ describe('Notifications gateway (e2e)', () => {
 
 function connect(
   port: number,
-  credential: { token?: string; cookie?: string } = {},
+  credential: { token?: string; cookie?: string; origin?: string } = {},
 ): Promise<Socket> {
   return new Promise((resolve, reject) => {
+    const headers: Record<string, string> = {
+      origin: credential.origin ?? 'http://localhost:3000',
+    };
+    if (credential.cookie) headers.cookie = `access_token=${credential.cookie}`;
     const socket = io(`http://127.0.0.1:${port}/staff`, {
       transports: ['websocket'],
       reconnection: false,
       timeout: 4_000,
       auth: credential.token ? { token: credential.token } : {},
-      extraHeaders: credential.cookie
-        ? { cookie: `access_token=${credential.cookie}` }
-        : {},
+      extraHeaders: headers,
     });
     socket.once('connect', () => resolve(socket));
     socket.once('connect_error', (error) => {

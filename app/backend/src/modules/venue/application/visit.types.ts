@@ -1,10 +1,10 @@
-import type { TableSeatKind } from '@bar/contracts';
+import type { StaffOpenVia, TableSeatKind } from '@bar/contracts';
 import type { VisitRecord } from '../domain/visit.types.js';
 
 export interface OpenVisitInput {
   tableSeatId: string;
   guestLabel: string | null;
-  via: 'pos' | 'app';
+  via: StaffOpenVia;
   staffId: string;
 }
 

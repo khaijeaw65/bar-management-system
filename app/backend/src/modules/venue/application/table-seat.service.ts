@@ -12,19 +12,19 @@ import { toTableSummary } from './table-summary.js';
 export class TableSeatService {
   public constructor(
     @Inject(TABLE_SEAT_REPOSITORY)
-    private readonly seats: TableSeatRepository,
+    private readonly tableSeatRepository: TableSeatRepository,
   ) {}
 
   public async list(): Promise<TableSummary[]> {
-    const seats = await this.seats.listActive();
-    return seats.map(toTableSummary);
+    const active = await this.tableSeatRepository.listActive();
+    return active.map(toTableSummary);
   }
 
   public async regenerateQr(id: string): Promise<string> {
-    const seat = await this.seats.findActiveById(id);
+    const seat = await this.tableSeatRepository.findActiveById(id);
     if (!seat) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
     const qrToken = newQrToken();
-    await this.seats.replaceQrToken(seat.id, qrToken);
+    await this.tableSeatRepository.replaceQrToken(seat.id, qrToken);
     return qrToken;
   }
 }

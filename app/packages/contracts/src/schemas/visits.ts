@@ -59,10 +59,17 @@ export const VisitSchema = z.object({
 export type Visit = z.infer<typeof VisitSchema>;
 
 // Staff open only. `qr` is set by the later customer QR route, not this body.
+export const StaffOpenViaSchema = z.enum(
+  ['pos', 'app'],
+  'ช่องทางเปิดโต๊ะไม่ถูกต้อง',
+);
+
+export type StaffOpenVia = z.infer<typeof StaffOpenViaSchema>;
+
 export const OpenVisitRequestSchema = z.object({
   tableSeatId: UuidSchema,
   guestLabel: z.string().max(100, 'ชื่อแขกยาวเกินไป').nullish(),
-  via: z.enum(['pos', 'app'], 'ช่องทางเปิดโต๊ะไม่ถูกต้อง').optional(),
+  via: StaffOpenViaSchema.optional(),
 });
 
 export type OpenVisitRequest = z.infer<typeof OpenVisitRequestSchema>;

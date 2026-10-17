@@ -4,6 +4,13 @@ import { JwtService } from '@nestjs/jwt';
 import type { CurrentUserPayload } from '../../../common/decorators/current-user.types.js';
 import { JwtConfigService } from '../../../providers/config/jwt/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
+import {
+  REVOKE_FAMILY,
+  ROTATE_REFRESH,
+  familyKey,
+  refreshKey,
+  sessionKey,
+} from './token.scripts.js';
 import type {
   AccessClaims,
   IssuedSession,
@@ -32,33 +39,15 @@ export class TokenService {
 
   public async rotate(rawRefresh: string): Promise<RotateResult> {
     const refreshToken = newRefreshToken();
-    const outcome = parseRotationOutcome(
-      await this.evalScript(ROTATE_REFRESH, [
-        sha256(rawRefresh),
-        sha256(refreshToken),
-        String(this.jwtConfig.refreshTtlSeconds),
-      ]),
-    );
-    if (outcome.kind === 'reused') {
-      await this.evalScript(REVOKE_FAMILY, [
-        sha256(rawRefresh),
-        this.revokedTtlSeconds(),
-      ]);
-      return { status: 'reused' };
-    }
-    if (outcome.kind !== 'ok') return { status: 'invalid' };
-    const accessToken = await this.signAccess(outcome.userId, outcome.familyId);
-    return { status: 'ok', accessToken, refreshToken };
+    const rawOutcome = await this.evalRotation(rawRefresh, refreshToken);
+    return this.rotationResult(rawRefresh, refreshToken, rawOutcome);
   }
 
   public async revokeByRefreshToken(
     rawRefresh: string | undefined,
   ): Promise<void> {
     if (!rawRefresh) return;
-    await this.evalScript(REVOKE_FAMILY, [
-      sha256(rawRefresh),
-      this.revokedTtlSeconds(),
-    ]);
+    await this.revokeFamily(rawRefresh);
   }
 
   public async sessionExists(familyId: string): Promise<boolean> {
@@ -66,14 +55,22 @@ export class TokenService {
     return value !== null;
   }
 
-  public async authenticateAccessToken(
-    token: string,
+  public async authenticateClaims(
+    payload: AccessClaims,
   ): Promise<CurrentUserPayload | null> {
-    const claims = await this.readAccessClaims(token);
+    const claims = parseAccessClaims(payload);
     if (!claims) return null;
     const active = await this.sessionExists(claims.sid);
     if (!active) return null;
     return claims;
+  }
+
+  public async authenticateAccessToken(
+    token: string,
+  ): Promise<CurrentUserPayload | null> {
+    const payload = await this.readVerifiedPayload(token);
+    if (!payload) return null;
+    return this.authenticateClaims(payload);
   }
 
   private async storeRefresh(
@@ -109,7 +106,50 @@ export class TokenService {
     return this.jwtService.signAsync({ sub: userId, sid: familyId });
   }
 
-  private revokedTtlSeconds(): string {
+  private evalRotation(
+    rawRefresh: string,
+    refreshToken: string,
+  ): Promise<unknown> {
+    return this.evalScript(ROTATE_REFRESH, [
+      sha256(rawRefresh),
+      sha256(refreshToken),
+      this.refreshTtlArgument(),
+    ]);
+  }
+
+  private async rotationResult(
+    rawRefresh: string,
+    refreshToken: string,
+    rawOutcome: unknown,
+  ): Promise<RotateResult> {
+    const outcome = parseRotationOutcome(rawOutcome);
+    if (outcome.kind === 'reused') return this.reused(rawRefresh);
+    if (outcome.kind !== 'ok') return { status: 'invalid' };
+    return this.rotated(outcome.userId, outcome.familyId, refreshToken);
+  }
+
+  private async reused(rawRefresh: string): Promise<RotateResult> {
+    await this.revokeFamily(rawRefresh);
+    return { status: 'reused' };
+  }
+
+  private async rotated(
+    userId: string,
+    familyId: string,
+    refreshToken: string,
+  ): Promise<RotateResult> {
+    const accessToken = await this.signAccess(userId, familyId);
+    return { status: 'ok', accessToken, refreshToken };
+  }
+
+  private revokeFamily(rawRefresh: string): Promise<unknown> {
+    return this.evalScript(REVOKE_FAMILY, [
+      sha256(rawRefresh),
+      this.refreshTtlArgument(),
+    ]);
+  }
+
+  private refreshTtlArgument(): string {
     return String(this.jwtConfig.refreshTtlSeconds);
   }
 
@@ -117,12 +157,9 @@ export class TokenService {
     return this.redisService.client.eval(script, 0, ...args);
   }
 
-  private async readAccessClaims(
-    token: string,
-  ): Promise<CurrentUserPayload | null> {
+  private async readVerifiedPayload(token: string): Promise<AccessClaims | null> {
     try {
-      const payload: AccessClaims = await this.jwtService.verifyAsync(token);
-      return accessClaims(payload);
+      return await this.jwtService.verifyAsync<AccessClaims>(token);
     } catch {
       return null;
     }
@@ -133,7 +170,7 @@ function newRefreshToken(): string {
   return randomBytes(32).toString('base64url');
 }
 
-function accessClaims(payload: AccessClaims): CurrentUserPayload | null {
+function parseAccessClaims(payload: AccessClaims): CurrentUserPayload | null {
   if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string') {
     return null;
   }
@@ -144,102 +181,21 @@ function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function refreshKey(hash: string): string {
-  return `refresh:${hash}`;
-}
-
-function sessionKey(familyId: string): string {
-  return `session:${familyId}`;
-}
-
-function familyKey(familyId: string): string {
-  return `family:${familyId}`;
-}
-
 function parseRotationOutcome(result: unknown): RotationOutcome {
   if (!Array.isArray(result)) return { kind: 'invalid' };
+  return outcomeFrom(result);
+}
+
+function outcomeFrom(result: unknown[]): RotationOutcome {
   const [status, userId, familyId] = result;
-  if (
-    status === 'ok' &&
-    typeof userId === 'string' &&
-    typeof familyId === 'string'
-  ) {
-    return { kind: 'ok', userId, familyId };
+  if (status !== 'ok') return reusedOrInvalid(status);
+  if (typeof userId !== 'string' || typeof familyId !== 'string') {
+    return { kind: 'invalid' };
   }
+  return { kind: 'ok', userId, familyId };
+}
+
+function reusedOrInvalid(status: unknown): RotationOutcome {
   if (status === 'reused') return { kind: 'reused' };
   return { kind: 'invalid' };
 }
-
-// One EVAL: consume the live token and publish its replacement together.
-// A revoked family publishes nothing, so logout cannot lose the race.
-const ROTATE_REFRESH = `
-local function decode(raw)
-  if not raw or raw == false then return nil end
-  local ok, value = pcall(cjson.decode, raw)
-  if not ok or type(value) ~= 'table' then return nil end
-  return value
-end
-
-local oldHash = ARGV[1]
-local newHash = ARGV[2]
-local ttl = tonumber(ARGV[3])
-local raw = redis.call('GET', 'refresh:' .. oldHash)
-local record = decode(raw)
-if not record or type(record['userId']) ~= 'string' or type(record['familyId']) ~= 'string' then
-  local used = decode(redis.call('GET', 'refresh-used:' .. oldHash))
-  if used and type(used['familyId']) == 'string' then
-    return {'reused'}
-  end
-  return {'invalid'}
-end
-
-local familyId = record['familyId']
-local userId = record['userId']
-if redis.call('EXISTS', 'family-revoked:' .. familyId) == 1 then
-  return {'invalid'}
-end
-if redis.call('EXISTS', 'session:' .. familyId) == 0 then
-  return {'invalid'}
-end
-
-redis.call('SET', 'refresh-used:' .. oldHash, cjson.encode({ familyId = familyId }), 'EX', ttl)
-redis.call('DEL', 'refresh:' .. oldHash)
-redis.call('SET', 'refresh:' .. newHash, cjson.encode({ userId = userId, familyId = familyId }), 'EX', ttl)
-redis.call('SET', 'family:' .. familyId, newHash, 'EX', ttl)
-redis.call('SET', 'session:' .. familyId, cjson.encode({ userId = userId }), 'EX', ttl)
-return {'ok', userId, familyId}
-`;
-
-// One EVAL: resolve the family from the live token or its used marker,
-// delete every live token, and leave the family revoked.
-const REVOKE_FAMILY = `
-local function decode(raw)
-  if not raw or raw == false then return nil end
-  local ok, value = pcall(cjson.decode, raw)
-  if not ok or type(value) ~= 'table' then return nil end
-  return value
-end
-
-local hash = ARGV[1]
-local ttl = tonumber(ARGV[2])
-local familyId = nil
-local live = decode(redis.call('GET', 'refresh:' .. hash))
-if live and type(live['familyId']) == 'string' then
-  familyId = live['familyId']
-else
-  local used = decode(redis.call('GET', 'refresh-used:' .. hash))
-  if used and type(used['familyId']) == 'string' then
-    familyId = used['familyId']
-  end
-end
-if not familyId then return 0 end
-
-local current = redis.call('GET', 'family:' .. familyId)
-if current and current ~= false then
-  redis.call('DEL', 'refresh:' .. current)
-end
-redis.call('DEL', 'refresh:' .. hash)
-redis.call('DEL', 'family:' .. familyId, 'session:' .. familyId)
-redis.call('SET', 'family-revoked:' .. familyId, '1', 'EX', ttl)
-return 1
-`;

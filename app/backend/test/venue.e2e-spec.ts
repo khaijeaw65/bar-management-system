@@ -149,7 +149,7 @@ describe('Venue (e2e)', () => {
       [seat.id],
     );
     expect(Number(rows[0]?.count)).toBe(1);
-    expect(events).toHaveLength(1);
+    await expectOneEvent(events);
   });
 
   it('closes a visit, clears the seat, and rejects a second close', async () => {
@@ -189,6 +189,25 @@ describe('Venue (e2e)', () => {
 
     const reopened = await openSeat(seat.id).expect(201);
     expect(reopened.body.data.visit.id).not.toBe(visitId);
+  });
+
+  it('lets one of two concurrent closes win', async () => {
+    const socket = await connect();
+    const events: unknown[] = [];
+    socket.on('visit.state_changed', (payload) => events.push(payload));
+    const seat = await seatByLabel('T2');
+    const opened = await openSeat(seat.id).expect(201);
+    const visitId = opened.body.data.visit.id as string;
+
+    const [first, second] = await Promise.all([
+      request(app.getHttpServer()).post(`/api/visits/${visitId}/close`).set(auth()),
+      request(app.getHttpServer()).post(`/api/visits/${visitId}/close`).set(auth()),
+    ]);
+    const statuses = [first.status, second.status].sort();
+    expect(statuses).toEqual([200, 409]);
+    const failed = [first, second].find((item) => item.status === 409);
+    expect(failed?.body.code).toBe('INVALID_STATE_TRANSITION');
+    await expectOneEvent(events);
   });
 
   it('replaces the QR token and forgets the old one', async () => {
@@ -289,6 +308,7 @@ function connectStaff(port: number, token: string): Promise<Socket> {
       reconnection: false,
       timeout: 4_000,
       auth: { token },
+      extraHeaders: { origin: 'http://localhost:3000' },
     });
     socket.once('connect', () => resolve(socket));
     socket.once('connect_error', (error) => {
@@ -296,6 +316,20 @@ function connectStaff(port: number, token: string): Promise<Socket> {
       reject(error);
     });
   });
+}
+
+async function expectOneEvent(events: unknown[]): Promise<void> {
+  const started = Date.now();
+  while (events.length === 0 && Date.now() - started < 2_000) {
+    await delay(20);
+  }
+  expect(events).toHaveLength(1);
+  await delay(150);
+  expect(events).toHaveLength(1);
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function once(socket: Socket, event: string): Promise<unknown> {

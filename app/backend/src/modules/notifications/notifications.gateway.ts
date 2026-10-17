@@ -7,19 +7,15 @@ import {
 import type { Namespace, Socket } from 'socket.io';
 import { TokenService } from '../auth/application/token.service.js';
 import { tokenFromHandshake } from './handshake-token.js';
+import type { HandshakeNext } from './notifications.types.js';
 
-type HandshakeNext = (error?: Error) => void;
-
-@WebSocketGateway({
-  namespace: '/staff',
-  cors: { origin: true, credentials: true },
-})
+@WebSocketGateway({ namespace: '/staff' })
 @Injectable()
 export class NotificationsGateway implements OnGatewayInit {
   @WebSocketServer()
   public server!: Namespace;
 
-  public constructor(private readonly tokens: TokenService) {}
+  public constructor(private readonly tokenService: TokenService) {}
 
   public afterInit(server: Namespace): void {
     server.use((socket, next) => {
@@ -51,7 +47,7 @@ export class NotificationsGateway implements OnGatewayInit {
   private async joinWhenActive(socket: Socket): Promise<boolean> {
     const token = tokenFromHandshake(socket);
     if (!token) return false;
-    const user = await this.tokens.authenticateAccessToken(token);
+    const user = await this.tokenService.authenticateAccessToken(token);
     if (!user) return false;
     await socket.join('pos');
     return true;

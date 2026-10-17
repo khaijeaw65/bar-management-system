@@ -24,29 +24,29 @@ const ACTIVE_SEATS = `
 export class TableSeatTypeormRepository implements TableSeatRepository {
   public constructor(
     @InjectRepository(TableSeat)
-    private readonly seats: Repository<TableSeat>,
+    private readonly tableSeatOrmRepository: Repository<TableSeat>,
   ) {}
 
   public async listActive(): Promise<SeatWithLiveVisit[]> {
-    const rows: SeatVisitRow[] = await this.seats.query(ACTIVE_SEATS);
+    const rows: SeatVisitRow[] = await this.tableSeatOrmRepository.query(ACTIVE_SEATS);
     return rows.map(toSeat);
   }
 
   public async findById(id: string): Promise<SeatIdentity | null> {
-    const seat = await this.seats.findOne({ where: { id } });
+    const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
     return seat ? toIdentity(seat) : null;
   }
 
   public async findActiveById(id: string): Promise<SeatIdentity | null> {
-    const seat = await this.seats.findOne({ where: { id, isActive: true } });
+    const seat = await this.tableSeatOrmRepository.findOne({ where: { id, isActive: true } });
     return seat ? toIdentity(seat) : null;
   }
 
   public async replaceQrToken(id: string, qrToken: string): Promise<void> {
-    const seat = await this.seats.findOne({ where: { id } });
+    const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
     if (!seat) return;
     seat.qrToken = qrToken;
-    await this.seats.save(seat);
+    await this.tableSeatOrmRepository.save(seat);
   }
 }
 

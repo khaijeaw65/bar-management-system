@@ -16,7 +16,7 @@ import { requireUuid, staffAccess } from './http-input.js';
 @ApiTags('venue')
 @Controller('tables')
 export class TablesController {
-  public constructor(private readonly seats: TableSeatService) {}
+  public constructor(private readonly tableSeatService: TableSeatService) {}
 
   @Get()
   @RequirePermissions('tables:read')
@@ -26,7 +26,7 @@ export class TablesController {
   })
   @ApiEnvelopedOk(TableListSchema)
   public async list(): Promise<TableList> {
-    return { items: await this.seats.list() };
+    return { items: await this.tableSeatService.list() };
   }
 
   @Post(':id/qr/regenerate')
@@ -41,7 +41,7 @@ export class TablesController {
   public async regenerate(
     @Param('id') id: string,
   ): Promise<RegenerateQrResponse> {
-    const qrToken = await this.seats.regenerateQr(requireUuid(id, 'ไม่พบโต๊ะ'));
+    const qrToken = await this.tableSeatService.regenerateQr(requireUuid(id, 'ไม่พบโต๊ะ'));
     return { qrToken };
   }
 }
