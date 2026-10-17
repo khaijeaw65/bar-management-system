@@ -87,7 +87,7 @@ Key differentiators: AI-powered owner insight (sales / anomaly-fraud / menu — 
 
 ---
 
-## Database (ERD — 10 domains, 37 tables)
+## Database (ERD — 10 domains, 38 tables)
 
 Domains: Venue & Tables · Guest & Identity · Staff IAM · Menu · Inventory · Order · Payment · Bottle Keep · Audit Log · Shift & AI Insight
 

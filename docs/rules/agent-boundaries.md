@@ -34,7 +34,7 @@ infra/**                     ← Terraform, docker-compose.yml, all infra files 
 .github/**                   ← workflows, CODEOWNERS, PR template
 ```
 
-### Schema (ERD locked — 37 tables, 10 domains)
+### Schema (ERD locked — 38 tables, 10 domains)
 ```
 docs/schema.sql              ← Field-approved edits by Cowork / Codex allowed (see below); brief-unlockable
 docs/erd.html                ← Field-approved edits by Cowork / Codex allowed (see below); not brief-unlockable
@@ -89,7 +89,7 @@ A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.
 
 ## Why This Exists
 
-- `docs/schema.sql` is the ERD for 37 tables across 10 domains — silently changing it breaks downstream TypeORM entities, migrations, and the visual ERD.
+- `docs/schema.sql` is the ERD for 38 tables across 10 domains — silently changing it breaks downstream TypeORM entities, migrations, and the visual ERD.
 - Root configs affect every workspace package — a wrong edit breaks the entire monorepo build.
 - Agent rule files must stay human-controlled: every change needs Field's explicit OK on the exact text, so no agent can change its own constraints unilaterally.
 - Infra/CI/enforcement files require deliberate review; an accidental change can break pipelines or remove the review requirement itself.
