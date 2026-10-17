@@ -41,7 +41,7 @@ Applied already-decided items to canvases + handoffs (handoff revision bumped, R
 - FRD updated to DR-012/013/014 (§2, §3, §5, §6, §7, §8, §9, §10, §11, §12, §13).
 
 ## Next session (in order)
-1. **BRIEF-007 post-merge review — finding C6.** Claude Code found it after PR #35 merged; the audit copy with the "Post-merge review — 2026-10-17" section was only in Claude Code's scratchpad. Land it: PR `docs/brief-007-postmerge-audit` (updates `docs/audits/BRIEF-007.md` only). Then Field triages C6: touches auth / token / ACL → fix brief **before** BRIEF-009 builds on auth; hardening only → queue behind the gate.
+1. **BRIEF-015 auth repair (Draft, 17 Oct)** — carries BRIEF-007 audit C1–C6 + C7 (callback guard, Field review) + Clean Code lint. Triage done: C1 is High (logout during refresh rotation revives the session) → repair **before** BRIEF-009-dependent work builds on auth. Field: assign the auditor (Codex recommended, holds the C1–C6 context) and approve Ready. Note: PR #35 merged while its audit still said CHANGES REQUIRED — the fix goes in the new PR, #35 history stays as is.
 2. **Start BRIEF-009 with an executor** — Week 1 build slipped; checkpoint 25 Oct, gate 8 Nov.
 3. Advisor heads-up: AI feature → owner insight (DR-014).
 4. Field: add `--chart-1` / `--chart-2` to the DS (CD-05 R2); review CD-03 screens (R3) before BRIEF-013.
@@ -52,9 +52,9 @@ Applied already-decided items to canvases + handoffs (handoff revision bumped, R
 ## Resume (start here)
 **Field = full reviewer mode: 0% hand-coding; agents execute every kj brief, Field reviews/approves/merges.**
 **Current goal: build the gate slice (order → pay → close, 8 Nov). Semester-1 UI design is done:** CD housekeeping (DR-014 redraw, DR-013 kitchen-off pass, all Field Q decisions 17 Oct) merged as PR #36 (`b835e3d`). Only CD-11 re-copy remains, just before export.
-**Next action:** "Next session" item 1 (C6 triage), then BRIEF-009. `SESSION_STATE.md` still shows BRIEF-007 / PR #35 as open (stale — merged); the next executor overwrites it.
+**Next action:** "Next session" item 1 (BRIEF-015 → auditor + Ready → executor), then BRIEF-009. `backend.md` gained a Clean Code section (Field-approved 17 Oct: small functions, naming, guard clauses, explicit `public`/`private`, stepdown reading order; lint-enforced parts land with BRIEF-015). `SESSION_STATE.md` still shows BRIEF-007 / PR #35 as open (stale — merged); the next executor overwrites it.
 Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/board-convention.md` (how boards look) · **`docs/design/CD-14-handoff.md` = reference example (rev 3, passed pilot)** · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW.
-Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. Merged 17 Oct: PR #32 (`docs/ui-retrofit`), #35 (BRIEF-007), #36 (`docs/cd-housekeeping`). Open docs branch: `docs/brief-007-postmerge-audit` (C6), if Claude Code has pushed it.
+Session start: `git status` (read-only). Cowork runs no Git — end with a ship line for the git hand. Merged 17 Oct: PR #32 (`docs/ui-retrofit`), #35 (BRIEF-007), #36 (`docs/cd-housekeeping`). #37 (C6 post-merge audit). Open docs branch: `docs/brief-015-auth-repair`.
 
 ## Retrofit checklist (per canvas, from cd-template.md)
 1. `read` the canvas `project/canvas.json` + boards (Field may have edited — keep his edits). Re-upload Lucide only if adding boards that need it (blob ids are per canvas; existing boards already reference their own blob).
