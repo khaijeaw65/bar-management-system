@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-18 |
 | **Implementer** | kj — Field codes ~20–30 % (Field's choice for this brief, 2026-10-18; overrides the 0 % default for this brief only), executor agent (Cursor) the rest |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -137,9 +137,10 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions
 - [x] No unresolved decision blocking the main outcome (DR-005 Approved)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-18, in session)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-18 | Initial Draft (Cowork) — Field chose DR-005 real mobile login over a dev token endpoint; Field codes 20–30 % on this brief |
+| 1 | 2026-10-18 | Ready — Rev 1 approved by Field in session ("approve both") |
