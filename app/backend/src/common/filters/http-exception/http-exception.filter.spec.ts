@@ -5,7 +5,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { DomainException } from '../domain-exception.js';
+import { DomainException } from '../../domain-exception.js';
 import { HttpExceptionFilter } from './http-exception.filter.js';
 
 function host() {
