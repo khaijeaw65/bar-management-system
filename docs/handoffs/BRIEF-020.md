@@ -5,11 +5,11 @@
 | **Implementer** | kj |
 | **Date** | 2026-10-18 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-020-backend-structure-cleanup` (PR opens after audit PASS) |
-| **Commit** | `bcf1359f8c0d06e04fb0064e6fc8bc7ff68f6477` (the commit the evidence below was run on) |
-| **Status** | Implemented — awaiting audit |
+| **Branch** | `feat/BRIEF-020-backend-structure-cleanup` · PR opens after this PASS commit |
+| **Commit** | `bcf1359f8c0d06e04fb0064e6fc8bc7ff68f6477` (audited work). Implemented handoff was `b89ac8b`. |
+| **Status** | Audit PASS — merged PR determines Done |
 
-> Created at Implemented. Gate evidence was run on the work tree that became `bcf1359`. Node v24.14.0, pnpm 10.0.0. Postgres `localhost:5432`, Redis `127.0.0.1:6379`.
+> Gate evidence below was run on the work tree that became `bcf1359`. This handoff is the later PASS docs commit. Node v24.14.0, pnpm 10.0.0. Postgres `localhost:5432`, Redis `127.0.0.1:6379`.
 
 ## Summary
 One clock lives in `common/`. The HTTP exception filter and response interceptor each have their own folder. `order.types.ts` exports types only. Order timestamps call `Date.toISOString()` directly. Access requests go through a repository port. No API, envelope, time-boundary, money, or permission behaviour change.
@@ -46,14 +46,16 @@ One row per gate command from the brief. Exact command, run on the commit above.
 - None. `common/clock.ts` keeps the interface and `CLOCK` symbol in one file. The class-file lint did not reject it (it flags module-level functions and arrow consts in class files only), so it was not split.
 
 ## Known Gaps / Follow-ups
-- `docs/rules/backend.md` src tree still lists the flat filter and interceptor paths and does not show `common/http/`, `money.ts`, `time-label.ts`, `clock.ts`, or the ≥ 3-file folder rule. Brief Open items: Field-approved docs branch after this merges.
+- `docs/rules/backend.md` src tree still lists the flat filter and interceptor paths and does not show `common/http/`, `money.ts`, `time-label.ts`, `clock.ts`, `system-clock.ts`, or the ≥ 3-file folder rule. Brief Open items: Field-approved docs branch after this merges.
+- Audit suggestions (not this PR): rename `recordPending` when the IAM brief adds approve/reject, and move the status rule back into `AccessRequestService` with a unit test. Import order in `order.module.ts` stays as committed.
 
 ## AI Usage
 **High** — Cursor implemented the five refactors, added the blank-name e2e, and wrote this handoff.
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-020`
+- Audit: PASS on `bcf1359f8c0d06e04fb0064e6fc8bc7ff68f6477`. Must fix: 0. Suggestions 1–3 are follow-ups, not this PR.
+- Next: open the PR from this PASS commit. Merge when `ci` is green on that head. Field's own PR is pre-approved.
 - Work SHA: `bcf1359f8c0d06e04fb0064e6fc8bc7ff68f6477` · self-check source/contract comparison: no endpoint, envelope, schema, or OpenAPI change. `requestedLines` still trims blank `orderedByName` and `notes` to null via `blankToNull`. The access-request adapter still inserts `pending` and updates only `displayName` and `avatarUrl` with `save()`.
 
 ## Notes for Reviewer

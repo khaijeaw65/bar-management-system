@@ -1,22 +1,22 @@
 # State — KJ
-Updated: 2026-10-18 12:50 · Agent: Cursor
+Updated: 2026-10-18 13:09 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-020 Implemented on `feat/BRIEF-020-backend-structure-cleanup`. Next: `audit BRIEF-020` (Cowork). Work SHA `bcf1359`. No PR until PASS.
+BRIEF-020 audit PASS on `feat/BRIEF-020-backend-structure-cleanup`. PR opens from this head. Merge when `ci` is green (Field's own PR, pre-approved).
 
 ## Active
-- Brief: BRIEF-020 backend structure cleanup · Stage: Implemented (Rev 1)
-- Branch: `feat/BRIEF-020-backend-structure-cleanup` · Work SHA: `bcf1359` · PR: after audit PASS
-- Checks: G1 on `bcf1359` — lint / typecheck / openapi:check exit 0 · unit 62 · e2e 53
+- Brief: BRIEF-020 backend structure cleanup · Stage: Audit PASS (Rev 1)
+- Branch: `feat/BRIEF-020-backend-structure-cleanup` · Work SHA: `bcf1359` · PR: opens after this commit
+- Checks: G1 on `bcf1359` — lint / typecheck / openapi:check exit 0 · unit 62 · e2e 53 · audit PASS, Must fix 0
 - Done 18 Oct: BRIEF-019 (#52) · Done 17 Oct: BRIEF-009 (#34), BRIEF-007 (#35), BRIEF-015 (#41 + #43), BRIEF-011 (#45), workflow Rev 18 (#46), Rev 19 (#48), BRIEF-016 (#49), BRIEF-012 (#50)
 
 ## Next steps
-1. Cowork: `audit BRIEF-020` on work SHA `bcf1359`
-2. After PASS: open the PR · merge when `ci` is green (Field's own PR, pre-approved)
-3. After merge: Field-approved `docs/rules/backend.md` src-tree update (docs branch) — BRIEF-020 Open items
-4. Cowork seeds BRIEF-013 — inputs in Carry over
-5. BRIEF-017 Rev 2 on local `feat/BRIEF-017-void-comp-issues` — rebase after BRIEF-013, then Ready
+1. Open the PR from this head · merge when `ci` is green · Field's own PR, pre-approved
+2. After merge: Field-approved `docs/rules/backend.md` src-tree update (docs branch) — BRIEF-020 Open items
+3. Cowork seeds BRIEF-013 — inputs in Carry over
+4. BRIEF-017 Rev 2 on local `feat/BRIEF-017-void-comp-issues` — rebase after BRIEF-013, then Ready
+5. Cowork: CD-02 R5 → BRIEF-018, CD-15 R5 split 017/018, `/tickets` names in CD-08/15
 
 ## Blockers / Coordination
 - none · Shared files: none · Review queue: none
@@ -31,7 +31,7 @@ BRIEF-020 Implemented on `feat/BRIEF-020-backend-structure-cleanup`. Next: `audi
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `e9e8c88`
 
 ## Queue
-1. BRIEF-020 backend structure cleanup (Implemented, audit next)
+1. BRIEF-020 backend structure cleanup (Audit PASS, PR next)
 2. BRIEF-013 payment + webhook
 3. BRIEF-017 issue flow + sold-out (86) + menu cache
 4. IAM brief (full policy editor)
