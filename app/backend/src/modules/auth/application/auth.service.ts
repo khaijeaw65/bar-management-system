@@ -45,7 +45,7 @@ export class AuthService {
 
   public async startLineLogin(input: LineLoginStart): Promise<string> {
     const codeChallenge = mobileCodeChallenge(input);
-    const state = randomBytes(32).toString('base64url');
+    const state = this.lineState(codeChallenge !== null);
     const nonce = randomBytes(32).toString('base64url');
     await this.storeOauthState(state, this.oauthRecord(nonce, codeChallenge));
     return this.lineClient.authorizeUrl({ state, nonce });
@@ -218,30 +218,19 @@ export class AuthService {
   private async takeOauthState(state: string | undefined): Promise<OauthState | null> {
     if (!state) return null;
     const raw = await this.redisService.client.getdel(this.oauthKey(state));
-    const stored = this.parseOauthState(raw);
-    if (stored) return this.rememberMobileClient(state, stored);
-    return this.replayedMobileState(state);
+    return this.parseOauthState(raw) ?? this.missingMobileState(state);
   }
 
-  // The oauth record is already gone. Remember the client only to choose the error redirect.
-  private async rememberMobileClient(
-    state: string,
-    stored: OauthState,
-  ): Promise<OauthState> {
-    if (stored.client !== 'mobile') return stored;
-    await this.redisService.client.set(
-      this.mobileOauthKey(state),
-      'mobile',
-      'EX',
-      OAUTH_TTL_SECONDS,
-    );
-    return stored;
-  }
-
-  private async replayedMobileState(state: string): Promise<OauthState | null> {
-    const marker = await this.redisService.client.get(this.mobileOauthKey(state));
-    if (marker !== 'mobile') return null;
+  // No Redis record can succeed. The m. prefix only picks the app's error URL.
+  private missingMobileState(state: string): OauthState | null {
+    if (!state.startsWith('m.')) return null;
     return { nonce: '', client: 'mobile', codeChallenge: '' };
+  }
+
+  private lineState(mobile: boolean): string {
+    const token = randomBytes(32).toString('base64url');
+    if (!mobile) return token;
+    return `m.${token}`;
   }
 
   private async storeOauthState(state: string, record: OauthState): Promise<void> {
@@ -326,10 +315,6 @@ export class AuthService {
 
   private oauthKey(state: string): string {
     return `oauth:${state}`;
-  }
-
-  private mobileOauthKey(state: string): string {
-    return `oauth-mobile:${state}`;
   }
 
   private mauthKey(code: string): string {

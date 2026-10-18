@@ -184,6 +184,7 @@ describe('Mobile auth (e2e)', () => {
 
   it('stores a mobile challenge and rejects a mobile login without one', async () => {
     const started = await startMobile();
+    expect(started.state).toMatch(/^m\.[A-Za-z0-9_-]{43}$/);
     expect(new URL(started.location).origin).toBe('https://access.line.me');
     expect(started.location).not.toContain('evil.example');
     const stored = await redis.client.get(`oauth:${started.state}`);
@@ -223,6 +224,7 @@ describe('Mobile auth (e2e)', () => {
       .query({ code_challenge: started.challenge, code_challenge_method: 'S256' })
       .expect(302);
     const webState = new URL(String(web.headers.location)).searchParams.get('state');
+    expect(webState).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(JSON.parse(String(await redis.client.get(`oauth:${webState}`)))).toEqual({
       nonce: expect.any(String),
     });
@@ -263,6 +265,7 @@ describe('Mobile auth (e2e)', () => {
     const replay = await callback(started.state).expect(302);
     expect(replay.headers.location).toBe('barapp://auth?error=login_failed');
     expect(await redis.client.keys('session:*')).toEqual([]);
+    expect(await redis.client.keys('oauth-mobile:*')).toEqual([]);
 
     const unknown = await callback('missing-state').expect(302);
     expect(unknown.headers.location).toBe(`${FRONTEND}/login?error=login_failed`);
@@ -289,6 +292,18 @@ describe('Mobile auth (e2e)', () => {
       `SELECT id FROM staff_access_request WHERE external_id = 'U-inactive'`,
     );
     expect(rows).toEqual([]);
+    expect(await redis.client.keys('oauth-mobile:*')).toEqual([]);
+  });
+
+  it('sends login_failed when an m. state has expired', async () => {
+    const started = await startMobile();
+    await redis.client.pexpire(`oauth:${started.state}`, 30);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const expired = await callback(started.state).expect(302);
+    expect(expired.headers.location).toBe('barapp://auth?error=login_failed');
+    expect(await redis.client.keys('session:*')).toEqual([]);
+    expect(await redis.client.keys('mauth:*')).toEqual([]);
+    expect(await redis.client.keys('oauth-mobile:*')).toEqual([]);
   });
 
   it('exchanges a matching verifier for a bearer session', async () => {
