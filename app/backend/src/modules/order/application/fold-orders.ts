@@ -37,7 +37,7 @@ function orderOf(orders: Map<string, FoldedOrder>, row: OrderRow): FoldedOrder {
     visitId: row.visitId,
     orderNumber: row.orderNumber,
     businessDate: row.businessDate,
-    createdAt: iso(row.orderCreatedAt),
+    createdAt: row.orderCreatedAt.toISOString(),
     createdById: row.orderCreatedBy,
     tickets: [],
   };
@@ -69,9 +69,9 @@ function newTicket(order: FoldedOrder, row: OrderRow): FoldedTicket {
     seat: { id: row.seatId, label: row.seatLabel, kind: kindOf(row.seatKind) },
     items: [],
     updatedById: row.ticketUpdatedBy,
-    sentAt: row.sentAt ? iso(row.sentAt) : null,
-    createdAt: iso(row.ticketCreatedAt),
-    updatedAt: iso(row.ticketUpdatedAt),
+    sentAt: row.sentAt ? row.sentAt.toISOString() : null,
+    createdAt: row.ticketCreatedAt.toISOString(),
+    updatedAt: row.ticketUpdatedAt.toISOString(),
   };
 }
 
@@ -96,7 +96,7 @@ function newLine(row: OrderRow): OrderLine {
     lineTotal: '0.00',
     orderedByName: row.orderedByName,
     notes: row.notes,
-    cancelledAt: row.cancelledAt ? iso(row.cancelledAt) : null,
+    cancelledAt: row.cancelledAt ? row.cancelledAt.toISOString() : null,
   };
 }
 
@@ -121,10 +121,6 @@ function lineTotal(item: OrderLine): string {
 
 function toLineCents(item: OrderLine): number {
   return lineCents(item.unitPrice, item.modifiers.map((modifier) => modifier.priceDelta), item.quantity);
-}
-
-function iso(value: Date): string {
-  return value.toISOString();
 }
 
 function stationOf(value: string | null): KitchenStation | null {
