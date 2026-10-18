@@ -14,21 +14,21 @@ src/
 │   └── configure-app.ts              ← global prefix `api`, filter, interceptor, shutdown hooks — used by main.ts AND tests
 │
 ├── common/                           ← cross-cutting kernel (no business logic)
-│   ├── base/
-│   │   └── base.entity.ts
-│   ├── constants/
-│   │   └── sql-column.constant.ts
-│   ├── decorators/
-│   │   ├── current-user.decorator.ts
-│   │   ├── public.decorator.ts               (planned — auth brief)
-│   │   └── require-permissions.decorator.ts  ← `@RequirePermissions(...)`
-│   ├── filters/
-│   │   └── http-exception.filter.ts  ← error envelope (see API Response)
-│   ├── guards/
-│   │   └── permissions.guard.ts
-│   └── interceptors/
-│       ├── cls-user.interceptor.ts
-│       └── transform-response.interceptor.ts ← success envelope (see API Response)
+│   │                                   unit with ≥ 3 files (impl + types + spec) → own folder; otherwise flat
+│   ├── base/base.entity.ts
+│   ├── constants/sql-column.constant.ts
+│   ├── decorators/                   ← current-user (+ .types), public, require-permissions
+│   ├── filters/http-exception/       ← error envelope: .filter + .types + .spec (see API Response)
+│   ├── guards/                       ← jwt-auth, permissions
+│   ├── interceptors/
+│   │   ├── cls-user.interceptor.ts
+│   │   └── transform-response/       ← success envelope: .interceptor + .types + .spec
+│   ├── http/http-input.ts            ← requireUuid, staffAccess, blankToNull
+│   ├── openapi/                      ← Zod → OpenAPI helper, envelope decorators
+│   ├── persistence/row-values.ts     ← raw-row readers
+│   ├── clock.ts + system-clock.ts    ← `CLOCK` port + `SystemClock`; each module registers `useClass`
+│   ├── money.ts · time-label.ts      ← NUMERIC(10,2) format · TIME labels / clockSeconds
+│   └── domain-exception.ts
 │
 ├── providers/                        ← infra wiring only — no domain logic, no controllers
 │   ├── config/                       ← one folder per config domain, same 3 files each
@@ -74,7 +74,7 @@ src/
 | Folder | Owns | Never contains |
 |---|---|---|
 | `bootstrap/` | App-level setup shared by `main.ts` and tests | Business logic |
-| `common/` | Decorators, guards, filters, interceptors, base entity, constants | Business logic, domain imports |
+| `common/` | Decorators, guards, filters, interceptors, base entity, constants, clock, technical helpers (HTTP input, money format, time, row readers) | Business logic, domain imports |
 | `providers/` | Config (per domain), database (TypeORM, migrations), vendor adapters | Domain logic, controllers, services with business rules |
 | `modules/` | All domain features (hexagonal) + infra-only modules (`health`, `auth`, `notifications`) | Direct infra imports across modules |
 
