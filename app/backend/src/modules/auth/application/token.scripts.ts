@@ -13,12 +13,29 @@ end`;
 
 // One EVAL: consume the live token and publish its replacement together.
 // A revoked family publishes nothing, so logout cannot lose the race.
+// Mobile records carry refreshTtlSeconds; web records omit it and use ARGV.
+const ENCODE = `
+local function encodeRefresh(userId, familyId, storedTtl)
+  if storedTtl then
+    return cjson.encode({ userId = userId, familyId = familyId, refreshTtlSeconds = storedTtl })
+  end
+  return cjson.encode({ userId = userId, familyId = familyId })
+end
+
+local function encodeUsed(familyId, storedTtl)
+  if storedTtl then
+    return cjson.encode({ familyId = familyId, refreshTtlSeconds = storedTtl })
+  end
+  return cjson.encode({ familyId = familyId })
+end`;
+
 export const ROTATE_REFRESH = `
 ${DECODE}
+${ENCODE}
 
 local oldHash = ARGV[1]
 local newHash = ARGV[2]
-local ttl = tonumber(ARGV[3])
+local fallbackTtl = tonumber(ARGV[3])
 local raw = redis.call('GET', '${REFRESH_PREFIX}' .. oldHash)
 local record = decode(raw)
 if not record or type(record['userId']) ~= 'string' or type(record['familyId']) ~= 'string' then
@@ -38,9 +55,11 @@ if redis.call('EXISTS', '${SESSION_PREFIX}' .. familyId) == 0 then
   return {'invalid'}
 end
 
-redis.call('SET', '${REFRESH_USED_PREFIX}' .. oldHash, cjson.encode({ familyId = familyId }), 'EX', ttl)
+local storedTtl = tonumber(record['refreshTtlSeconds'])
+local ttl = storedTtl or fallbackTtl
+redis.call('SET', '${REFRESH_USED_PREFIX}' .. oldHash, encodeUsed(familyId, storedTtl), 'EX', ttl)
 redis.call('DEL', '${REFRESH_PREFIX}' .. oldHash)
-redis.call('SET', '${REFRESH_PREFIX}' .. newHash, cjson.encode({ userId = userId, familyId = familyId }), 'EX', ttl)
+redis.call('SET', '${REFRESH_PREFIX}' .. newHash, encodeRefresh(userId, familyId, storedTtl), 'EX', ttl)
 redis.call('SET', '${FAMILY_PREFIX}' .. familyId, newHash, 'EX', ttl)
 redis.call('SET', '${SESSION_PREFIX}' .. familyId, cjson.encode({ userId = userId }), 'EX', ttl)
 return {'ok', userId, familyId}
@@ -54,16 +73,20 @@ ${DECODE}
 local hash = ARGV[1]
 local ttl = tonumber(ARGV[2])
 local familyId = nil
+local storedTtl = nil
 local live = decode(redis.call('GET', '${REFRESH_PREFIX}' .. hash))
 if live and type(live['familyId']) == 'string' then
   familyId = live['familyId']
+  storedTtl = tonumber(live['refreshTtlSeconds'])
 else
   local used = decode(redis.call('GET', '${REFRESH_USED_PREFIX}' .. hash))
   if used and type(used['familyId']) == 'string' then
     familyId = used['familyId']
+    storedTtl = tonumber(used['refreshTtlSeconds'])
   end
 end
 if not familyId then return 0 end
+if storedTtl then ttl = storedTtl end
 
 local current = redis.call('GET', '${FAMILY_PREFIX}' .. familyId)
 if current and current ~= false then

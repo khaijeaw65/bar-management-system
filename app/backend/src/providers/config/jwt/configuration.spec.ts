@@ -11,6 +11,7 @@ describe('jwtConfiguration', () => {
     vi.stubEnv('JWT_ACCESS_SECRET', '');
     vi.stubEnv('JWT_ACCESS_TTL', '');
     vi.stubEnv('REFRESH_TTL_DAYS', '');
+    vi.stubEnv('MOBILE_REFRESH_TTL_DAYS', '');
 
     expect(() => jwtConfiguration()).toThrow(/JWT_ACCESS_SECRET/);
   });
@@ -19,6 +20,7 @@ describe('jwtConfiguration', () => {
     vi.stubEnv('JWT_ACCESS_SECRET', 'x'.repeat(31));
     vi.stubEnv('JWT_ACCESS_TTL', '');
     vi.stubEnv('REFRESH_TTL_DAYS', '');
+    vi.stubEnv('MOBILE_REFRESH_TTL_DAYS', '');
 
     expect(() => jwtConfiguration()).toThrow(/JWT_ACCESS_SECRET/);
   });
@@ -27,6 +29,7 @@ describe('jwtConfiguration', () => {
     vi.stubEnv('JWT_ACCESS_SECRET', SECRET);
     vi.stubEnv('JWT_ACCESS_TTL', '');
     vi.stubEnv('REFRESH_TTL_DAYS', '');
+    vi.stubEnv('MOBILE_REFRESH_TTL_DAYS', '');
 
     expect(jwtConfiguration()).toMatchObject({
       accessSecret: SECRET,
@@ -34,6 +37,8 @@ describe('jwtConfiguration', () => {
       accessTtlSeconds: 900,
       refreshTtlDays: 7,
       refreshTtlSeconds: 604_800,
+      mobileRefreshTtlDays: 30,
+      mobileRefreshTtlSeconds: 2_592_000,
     });
   });
 });

@@ -33,6 +33,18 @@ Running it again for the same LINE user id prints `already registered`.
 
 `JWT_ACCESS_SECRET` must be at least 32 characters. `REDIS_URL`, `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET`, `LINE_CALLBACK_URL`, and `FRONTEND_URL` are required before the API will boot. Use the placeholders in `.env.example` for local development and replace the LINE values with the channel from the LINE console.
 
+## Phone & webhooks via tunnel
+
+A phone on another network, LINE's login redirect, and later the payment webhook all reach this API through one stable HTTPS URL. Nothing in Compose or `package.json` starts the tunnel.
+
+1. Create a free ngrok account and one static domain. The domain stays the same across restarts, so LINE and the phone do not need a new URL each time.
+2. Start the API on port 3001, then run `ngrok http --url=<static-domain> 3001`.
+3. Set `LINE_CALLBACK_URL=https://<static-domain>/api/auth/line/callback` in `.env`. Add that same URL in the LINE Developers console → LINE Login channel → Callback URL. Keep the localhost callback for web login on this machine.
+4. The Expo app (BRIEF-022) uses `EXPO_PUBLIC_API_URL=https://<static-domain>/api`.
+5. The payment webhook (BRIEF-013) will use `https://<static-domain>/api/...` on this same tunnel. Nothing else is set up here.
+
+`MOBILE_REFRESH_TTL_DAYS` (default 30) is the sliding lifetime of an Expo staff session. Web sessions stay on `REFRESH_TTL_DAYS`.
+
 ## Seed order
 
 After migrations, run these in order. Each command is safe to run again: it upserts by a natural key and does not insert a duplicate.

@@ -16,3 +16,31 @@ export type LineLoginCallbackInput = {
   state?: string;
   error?: string;
 };
+
+export type LineLoginStart = {
+  client?: string;
+  codeChallenge?: string;
+  codeChallengeMethod?: string;
+};
+
+export type OauthState = {
+  nonce: string;
+  client?: 'mobile';
+  codeChallenge?: string;
+};
+
+export type MobileCodeRecord = {
+  userId: string;
+  codeChallenge: string;
+};
+
+export type IssuedMobileTokens = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export type MobileTokenResult =
+  | ({ kind: 'ok' } & IssuedMobileTokens)
+  | { kind: 'unauthorized' };
+
+export type MobileAuthError = 'login_failed' | 'not_registered';

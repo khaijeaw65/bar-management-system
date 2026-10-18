@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -10,19 +11,36 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthMeSchema, type AuthMe } from '@bar/contracts';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  AuthMeSchema,
+  MobileRefreshRequestSchema,
+  MobileTokenRequestSchema,
+  MobileTokenResponseSchema,
+  type AuthMe,
+  type MobileTokenResponse,
+} from '@bar/contracts';
 import type { Request, Response } from 'express';
 import { CurrentUser } from '../../../../common/decorators/current-user.decorator.js';
 import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
 import { Public } from '../../../../common/decorators/public.decorator.js';
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
+import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { AppConfigService } from '../../../../providers/config/app/config.service.js';
 import { JwtConfigService } from '../../../../providers/config/jwt/config.service.js';
 import { AuthService } from '../../application/auth.service.js';
+import type { MobileTokenResult } from '../../application/auth.types.js';
 import { clearSessionCookies, writeSessionCookies } from './auth-cookies.js';
 import {
   AuthOkSchema,
+  LogoutRequestSchema,
   type AuthOkResponse,
   type RedirectTarget,
 } from './dto/auth.dto.js';
@@ -40,12 +58,27 @@ export class AuthController {
   @Public()
   @Redirect()
   @ApiOperation({ summary: 'Start LINE login' })
+  @ApiQuery({ name: 'client', required: false })
+  @ApiQuery({ name: 'code_challenge', required: false })
+  @ApiQuery({ name: 'code_challenge_method', required: false })
   @ApiResponse({
     status: 302,
     description: 'Redirect to the LINE authorize URL',
   })
-  public async lineLogin(): Promise<RedirectTarget> {
-    return { url: await this.authService.startLineLogin(), statusCode: 302 };
+  @ApiBadRequestResponse({
+    description: 'client=mobile without a valid S256 code_challenge',
+  })
+  public async lineLogin(
+    @Query('client') client?: string,
+    @Query('code_challenge') codeChallenge?: string,
+    @Query('code_challenge_method') codeChallengeMethod?: string,
+  ): Promise<RedirectTarget> {
+    const url = await this.authService.startLineLogin({
+      client,
+      codeChallenge,
+      codeChallengeMethod,
+    });
+    return { url, statusCode: 302 };
   }
 
   @Get('line/callback')
@@ -58,7 +91,7 @@ export class AuthController {
   @ApiResponse({
     status: 302,
     description:
-      'Redirect to the frontend home, or to a login error URL. No JSON envelope.',
+      'Redirect to the frontend, a frontend login error, or barapp://auth for mobile. No JSON envelope.',
   })
   public async lineCallback(
     @Query('code') code: string | undefined,
@@ -75,6 +108,28 @@ export class AuthController {
       this.writeCookies(res, result.accessToken, result.refreshToken);
     }
     return { url: result.location, statusCode: 302 };
+  }
+
+  @Post('mobile/token')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Exchange a mobile login code for a bearer token pair' })
+  @ApiBody({ schema: zodToOpenApi(MobileTokenRequestSchema) })
+  @ApiEnvelopedOk(MobileTokenResponseSchema)
+  public mobileToken(@Body() body: unknown): Promise<MobileTokenResponse> {
+    const parsed = MobileTokenRequestSchema.parse(body);
+    return this.mobileTokens(this.authService.exchangeMobileCode(parsed));
+  }
+
+  @Post('mobile/refresh')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Rotate a mobile refresh token' })
+  @ApiBody({ schema: zodToOpenApi(MobileRefreshRequestSchema) })
+  @ApiEnvelopedOk(MobileTokenResponseSchema)
+  public mobileRefresh(@Body() body: unknown): Promise<MobileTokenResponse> {
+    const parsed = MobileRefreshRequestSchema.parse(body);
+    return this.mobileTokens(this.authService.refreshMobile(parsed.refreshToken));
   }
 
   @Post('refresh')
@@ -104,11 +159,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Revoke this session and clear cookies' })
   @ApiEnvelopedOk(AuthOkSchema)
+  @ApiBody({ schema: zodToOpenApi(LogoutRequestSchema), required: false })
   public async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
+    @Body() body: unknown,
   ): Promise<AuthOkResponse> {
-    await this.authService.logout(req.cookies?.refresh_token);
+    await this.authService.logout(this.logoutRefreshToken(req, body));
     clearSessionCookies(res, this.appConfig.nodeEnv);
     return { ok: true };
   }
@@ -122,6 +179,32 @@ export class AuthController {
   @ApiEnvelopedOk(AuthMeSchema)
   public me(@CurrentUser() user: CurrentUserPayload): Promise<AuthMe> {
     return this.authService.getCurrentStaffUser(user.sub);
+  }
+
+  private mobileTokens(
+    pending: Promise<MobileTokenResult>,
+  ): Promise<MobileTokenResponse> {
+    return pending.then((result) => this.issuedMobileToken(result));
+  }
+
+  private issuedMobileToken(result: MobileTokenResult): MobileTokenResponse {
+    if (result.kind !== 'ok') throw new UnauthorizedException();
+    return {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      expiresIn: this.jwtConfig.accessTtlSeconds,
+    };
+  }
+
+  private logoutRefreshToken(req: Request, body: unknown): string | undefined {
+    const cookie = req.cookies?.refresh_token;
+    if (typeof cookie === 'string' && cookie.length > 0) return cookie;
+    return this.bodyRefreshToken(body);
+  }
+
+  private bodyRefreshToken(body: unknown): string | undefined {
+    if (body === undefined || body === null) return undefined;
+    return LogoutRequestSchema.parse(body).refreshToken;
   }
 
   private writeCookies(
