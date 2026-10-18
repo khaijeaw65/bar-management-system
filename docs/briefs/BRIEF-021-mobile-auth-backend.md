@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-18 |
-| **Implementer** | kj — Field codes ~20–30 % (Field's choice for this brief, 2026-10-18; overrides the 0 % default for this brief only), executor agent (Cursor) the rest |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-18 |
+| **Implementer** | kj — executor agent (Cursor) writes all code (Rev 2: the Rev 1 "Field codes 20–30 %" split is dropped, Field 2026-10-18) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | **BRIEF-007 + BRIEF-015 merged** (LINE login, token rotation, `session:<sid>`, Bearer extractor — on `main`) · BRIEF-020 merged (#54, current module layout) |
 | **References** | **DR-005** (flow, rules, Amendment 1 session check, Amendment 2 mobile 30-day sliding TTL) · DR-008 / DR-009 (mobile = same API, auth is the one exception) · `docs/design/CD-08-handoff.md` (login states, `NOT_REGISTERED`, R13) · `docs/rules/backend.md` (Auth) · RFC 7636 (PKCE S256) |
 | **Audit depth** | Full (auth) |
@@ -28,6 +28,7 @@ The Expo staff app can sign in with LINE and get a Bearer token pair in the resp
   - success → **no cookies, no session yet**; create a one-time code (32 random bytes, base64url) → Redis `mauth:<code>` = `{ userId, codeChallenge }`, TTL 60 s → `302 barapp://auth?code=<code>`.
   - failure → `302 barapp://auth?error=login_failed` · not registered / inactive → `302 barapp://auth?error=not_registered` (the access request is still recorded, as on web).
   - The redirect target is the constant `barapp://auth` — never read from a query parameter (DR-005, no open redirect).
+  - **State format (Rev 2, D1 = B):** a mobile login's `state` is `m.` + 32 random bytes (base64url); web stays 32 random bytes with no prefix. When the Redis state record is missing (expired, replayed or unknown), a state starting with `m.` → `302 barapp://auth?error=login_failed`; any other state → today's web `/login?error=login_failed`. The prefix only picks which constant **error** target to use; success always needs the Redis record + PKCE. No other Redis key for this (the Rev 1 `oauth-mobile:<state>` marker is removed).
 - **`POST /api/auth/mobile/token`** — `@Public()`. Body `{ code, codeVerifier }`. `GETDEL mauth:<code>` (single use even on failure) → check `base64url(sha256(codeVerifier)) === codeChallenge` → `createSession` for a **mobile family** → `{ accessToken, refreshToken, expiresIn }`. Any failure → 401, nothing issued.
 - **`POST /api/auth/mobile/refresh`** — `@Public()`. Body `{ refreshToken }` → rotated pair, same shape. Same rotation script + reuse detection as web (reuse → family revoked → 401).
 - **Mobile session TTL (DR-005 Am. 2)** — mobile families use `MOBILE_REFRESH_TTL_DAYS` (default 30), sliding: every rotation resets refresh, family and `session:<sid>` TTL to the mobile value. The TTL travels with the family record so rotation picks the right one; web families stay on `REFRESH_TTL_DAYS` (7).
@@ -68,7 +69,7 @@ The Expo staff app can sign in with LINE and get a Bearer token pair in the resp
 ## 4. Acceptance Criteria
 - **AC-1** — Given `client=mobile` and a valid S256 challenge, when `/auth/line/login` is called, then it redirects to LINE and the stored state record holds `client: 'mobile'` and the challenge; given `client=mobile` without a valid challenge, then 400 and no state is stored.
 - **AC-2** — Given a mobile state and a registered active staff identity, when the callback runs, then it redirects to `barapp://auth?code=…`, sets **no** cookies, creates **no** session, and `mauth:<code>` exists with TTL ≤ 60 s.
-- **AC-3** — Given a mobile state, when LINE returns an error / the state is unknown or replayed, then `barapp://auth?error=login_failed`; given an unregistered or inactive identity, then `barapp://auth?error=not_registered` and the access request is recorded exactly as on web.
+- **AC-3** — Given a mobile login, when LINE returns an error, or the `m.` state is replayed **or expired** (no Redis record), then `barapp://auth?error=login_failed`; given a state without the `m.` prefix and no record, then the web `/login?error=login_failed` (web regression); given an unregistered or inactive identity, then `barapp://auth?error=not_registered` and the access request is recorded exactly as on web. No `oauth-mobile:*` key exists after any login.
 - **AC-4** — Given a valid code and the matching verifier, when `POST /auth/mobile/token`, then it returns `{ accessToken, refreshToken, expiresIn }`, and `GET /auth/me` with `Authorization: Bearer <accessToken>` returns that staff user.
 - **AC-5** — Given a wrong verifier, an expired code, or a code already used (including after one failed attempt), when `POST /auth/mobile/token`, then 401 and no session is created.
 - **AC-6** — Given a mobile refresh token, when `POST /auth/mobile/refresh`, then a new pair is returned and refresh, family and `session:<sid>` TTLs are reset to `MOBILE_REFRESH_TTL_DAYS`; when the **old** token is reused, then 401 and the whole family is revoked (Bearer on the newest access token → 401).
@@ -77,7 +78,7 @@ The Expo staff app can sign in with LINE and get a Bearer token pair in the resp
 - **AC-9** — The redirect target cannot be changed by any request input (test: extra `redirect_uri` / `redirect` query params are ignored).
 - **AC-10** — No token, code or verifier appears in logs (test asserts on captured logger output, same pattern as the existing "logs nothing sensitive" case).
 - **AC-11** — `docs/api/openapi.json` contains the new/changed endpoints; `openapi:check` passes.
-- **AC-12** — `app/backend/README.md` tunnel section lets Metee reach his own backend from his phone: **Field's manual evidence** — one LINE login on an Android phone over the tunnel ending at `barapp://auth?code=…` (screenshot or screen recording in the handoff).
+- **AC-12** — **Field's manual API evidence (desktop, real LINE channel, localhost):** `login?client=mobile` → LINE → callback → one-time code → `POST /auth/mobile/token` 200 → `GET /auth/me` (Bearer) 200 → `POST /auth/mobile/refresh` 200 → `POST /auth/logout { refreshToken }` 200 → `GET /auth/me` 401. Redacted output in the handoff. The phone + tunnel login is **BRIEF-022 AC-9** (Metee), not this brief.
 
 ## 5. Test Gate
 | AC | Test type | Location (expected) |
@@ -88,7 +89,7 @@ The Expo staff app can sign in with LINE and get a Bearer token pair in the resp
 | AC-6 (TTL), AC-7 | unit + e2e | `token.service.spec.ts` · `test/auth.e2e-spec.ts` unchanged + passing |
 | AC-10 | e2e | `test/auth-mobile.e2e-spec.ts` |
 | AC-11 | command | `openapi:check` |
-| AC-12 | manual | handoff screenshot / recording (Field) |
+| AC-12 | manual | handoff — Field's redacted desktop curl output (done 2026-10-18) |
 
 Gate commands (all must pass):
 ```bash
@@ -112,13 +113,12 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - PKCE compare with `timingSafeEqual` on equal-length buffers; `node:crypto` only (no new package).
 - Tokens only in response bodies for mobile; never in a URL, never logged.
 - Hexagonal layout from BRIEF-020; Zod DTOs from contracts; config through `providers/config/jwt` (`MOBILE_REFRESH_TTL_DAYS` validated like `REFRESH_TTL_DAYS`).
-- **Field's 20–30 %** — suggested split: Field writes the PKCE verify + the token-exchange service method + AC-5/AC-6 tests (the security-critical core); the agent does controller/DTO/contracts/OpenAPI/README/e2e scaffolding. Record the actual split in the handoff.
 
 ## 7. Decision Points (Field Guard)
 - **Pre-decided (exact only):**
   - Flow, endpoints, redirect `barapp://auth`, 60 s code, PKCE S256, Bearer extractor, 30-day sliding mobile TTL — **DR-005 + Amendments 1–2 (Approved)**.
   - Endpoint paths exactly as §3 · body field names `code`, `codeVerifier`, `refreshToken` · response `{ accessToken, refreshToken, expiresIn }`.
-  - Redis keys `mauth:<code>` (60 s) · OAuth state record gains `client`, `codeChallenge`.
+  - Redis keys `mauth:<code>` (60 s) · OAuth state record gains `client`, `codeChallenge` · mobile `state` value prefixed `m.` (Rev 2) · no other new Redis keys.
   - Env `MOBILE_REFRESH_TTL_DAYS` (default 30) in `app/backend/.env.example`.
   - Contracts: `MobileTokenRequestSchema`, `MobileRefreshRequestSchema`, `MobileTokenResponseSchema` in `app/packages/contracts/src/schemas/auth.ts`.
   - Tunnel = ngrok free static domain, **documented only** in `app/backend/README.md` — no package, no compose service.
@@ -144,3 +144,4 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 |---|---|---|
 | 1 | 2026-10-18 | Initial Draft (Cowork) — Field chose DR-005 real mobile login over a dev token endpoint; Field codes 20–30 % on this brief |
 | 1 | 2026-10-18 | Ready — Rev 1 approved by Field in session ("approve both") |
+| 2 | 2026-10-18 | Field-approved after audit: (1) AC-12 = Field's desktop API test, phone + tunnel moves to BRIEF-022 AC-9; (2) D1 = B — mobile state prefix `m.` returns expired/replayed mobile logins to the app, `oauth-mobile:` marker removed, AC-3 rewritten; (3) S2 — 20–30 % Field coding split dropped |
