@@ -23,13 +23,12 @@ import type { Response } from 'express';
 import { CurrentUser } from '../../../../common/decorators/current-user.decorator.js';
 import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
 import { RequirePermissions } from '../../../../common/decorators/require-permissions.decorator.js';
-import { requireUuid, staffAccess } from '../../../../common/http/http-input.js';
+import { blankToNull, requireUuid, staffAccess } from '../../../../common/http/http-input.js';
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { OrderQueryService } from '../../../order/application/order-query.service.js';
 import type { OpenVisitInput } from '../../application/visit.types.js';
 import { VisitService } from '../../application/visit.service.js';
-import { blankToNull } from './http-input.js';
 import { toVisitBody } from './visit.mapper.js';
 import { ApiOpenVisit } from './visits.openapi.js';
 
