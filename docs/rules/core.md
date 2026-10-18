@@ -68,4 +68,5 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 - Local: Docker Compose for Postgres + Redis (see `infra/docker-compose.yml`)
 - `pnpm dev` → Turborepo runs backend + frontend in parallel
 - Migrations: `migration:generate` → review → `migration:run` (never `synchronize: true`)
+- Migrations are additive by default (add column/table over drop/rename) and each has a working `down`: `migration:run` → `migration:revert` → `migration:run` before handoff. Never edit a migration already on `main` — write a new one.
 - Feature flags: not used — scope control is in FRD, not flags

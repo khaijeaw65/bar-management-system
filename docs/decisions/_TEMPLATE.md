@@ -17,6 +17,9 @@
 ## Recommendation
 <A or B, and why — one short paragraph. Required.>
 
+## If Approved — Locks
+<What this freezes and where it applies (modules, files, contracts), written as the one-line bullet for CLAUDE.md → Architecture (LOCKED). `none` if nothing is locked.>
+
 ---
 
 ## Decision — Field only

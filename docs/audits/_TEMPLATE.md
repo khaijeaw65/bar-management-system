@@ -26,6 +26,7 @@
 | `save()` not `update()` on audited entities | | |
 | ESM `.js` imports · contracts as source of truth | | |
 | Agent boundaries respected | | |
+| Run proof on the audited SHA — migrations run, `/api/health` 200, UI exercised (not just a 200) | | |
 
 ## Test Quality
 <Do the tests actually assert the ACs? Anything mocked away that should be real? Missing edge cases?>
@@ -37,6 +38,8 @@
 
 ## Recommendation to Field
 <one paragraph>
+
+**Next command:** <CHANGES REQUIRED → `execute BRIEF-###` — fix Must fix #… · PASS → `execute BRIEF-###` (PASS commit + PR) · BLOCKED → the DR or Field decision needed>
 
 > Compact audits: retain reviewer/assignment/commit metadata and Evidence Coverage; shorten the body to AC table + Findings + Recommendation.
 > Re-audit after changes: append `## Re-audit — <date> · <sha>` below; don't rewrite the original.

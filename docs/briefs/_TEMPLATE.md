@@ -30,6 +30,7 @@
 - **WS events:** `<event.name>` → payload
 - **Contracts changes:** <enum/type additions, or none>
 - **Permissions:** <policy action required by `PermissionsGuard`>
+- **Business rules:** <each non-obvious rule → its source (FRD §, DR, Field decision), or none>
 - **OpenAPI:** every endpoint above appears in `docs/api/openapi.json` (regenerated with `openapi:export`, committed in this PR) — standard AC for backend briefs
 - **Conventions:** `docs/api/README.md`
 
@@ -50,6 +51,15 @@ pnpm --filter <pkg> typecheck
 pnpm --filter <pkg> test
 pnpm --filter <pkg> test:e2e   # if the brief has e2e ACs
 ```
+Run proof (backend/frontend/mobile changes; docs/tooling-only → `n/a`):
+```bash
+docker compose -f infra/docker-compose.yml up -d postgres redis
+pnpm --filter @bar/backend migration:run
+pnpm --filter @bar/backend start:dev   # separate shell, started on the work SHA
+curl -fsS localhost:3001/api/health
+```
+UI change: <screen + action to exercise in the browser / Expo app, or n/a>
+
 A required script that doesn't exist yet = **BLOCKED** — report it, never skip silently.
 
 ### Local Sonar scan
@@ -71,7 +81,8 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 
 ## Ready Checklist
 - [ ] Named implementer and auditor; scope/ACs/contracts/references complete
-- [ ] Exact gates and evidence; dependencies have completion conditions
+- [ ] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
+- [ ] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
 - [ ] No unresolved decision blocking the main outcome
 - [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
 

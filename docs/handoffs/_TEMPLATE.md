@@ -28,6 +28,9 @@ One row per gate command from the brief. Exact command, run on the commit above.
 | `pnpm --filter @bar/<pkg> typecheck` | 0 · — | pass · **BLOCKED — script missing** |
 | `pnpm --filter @bar/<pkg> test` | 0 | <n> passed · 0 failed · <n> skipped |
 | `pnpm --filter @bar/<pkg> test:e2e` | 0 · — | <n> passed · 0 failed · <n> skipped · not in brief · BLOCKED |
+| run proof: stack up → `migration:run` → `start:dev` → `curl -fsS localhost:3001/api/health` | 0 · — | health 200 on the commit above · n/a (docs/tooling only) · BLOCKED |
+
+UI exercised: <screen + action → result, or n/a>
 
 ## Sonar (local scan)
 - Scanned commit: <sha> · Quality Gate: <passed / failed / not available yet>
