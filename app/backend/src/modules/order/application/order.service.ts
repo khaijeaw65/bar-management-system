@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { ORDER_CREATED, VISIT_STATE_CHANGED, type Order } from '@bar/contracts';
 import { MenuCatalogService } from '../../menu/application/menu-catalog.service.js';
-import { CLOCK, type Clock } from '../domain/clock.js';
+import { CLOCK, type Clock } from '../../../common/clock.js';
 import {
   ORDER_REPOSITORY,
   type OrderRepository,
