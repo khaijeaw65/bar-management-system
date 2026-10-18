@@ -39,7 +39,11 @@ describe('TokenService', () => {
         { provide: RedisService, useValue: { client: redis } },
         {
           provide: JwtConfigService,
-          useValue: { refreshTtlSeconds: 604_800, accessSecret: SECRET },
+          useValue: {
+            refreshTtlSeconds: 604_800,
+            mobileRefreshTtlSeconds: 2_592_000,
+            accessSecret: SECRET,
+          },
         },
       ],
     }).compile();
@@ -107,6 +111,36 @@ describe('TokenService', () => {
     warn.mockRestore();
     error.mockRestore();
   });
+
+  it('keeps a web family on the web TTL without a mobile field', async () => {
+    const issued = await tokens.createSession('user-web');
+    const raw = await redis.get(`refresh:${sha256(issued.refreshToken)}`);
+    expect(raw).toBeTruthy();
+    if (!raw) return;
+    expect(JSON.parse(raw)).toEqual({
+      userId: 'user-web',
+      familyId: issued.familyId,
+    });
+    const ttl = await redis.ttl(`session:${issued.familyId}`);
+    expect(ttl).toBeGreaterThan(604_800 - 5);
+    expect(ttl).toBeLessThanOrEqual(604_800);
+  });
+
+  it('resets a mobile family to the mobile TTL and revokes it on reuse', async () => {
+    const issued = await tokens.createMobileSession('user-mobile');
+    await expectMobileTtl(redis, issued.refreshToken, issued.familyId);
+
+    const rotated = await tokens.rotate(issued.refreshToken);
+    expect(rotated.status).toBe('ok');
+    if (rotated.status !== 'ok') return;
+    await expectMobileTtl(redis, rotated.refreshToken, issued.familyId);
+
+    const reused = await tokens.rotate(issued.refreshToken);
+    expect(reused.status).toBe('reused');
+    expect(await tokens.sessionExists(issued.familyId)).toBe(false);
+    const newest = await tokens.rotate(rotated.refreshToken);
+    expect(newest.status).toBe('invalid');
+  });
 });
 
 describe('TokenService concurrent rotation (real Redis)', () => {
@@ -126,7 +160,11 @@ describe('TokenService concurrent rotation (real Redis)', () => {
         { provide: RedisService, useValue: { client: redis } },
         {
           provide: JwtConfigService,
-          useValue: { refreshTtlSeconds: 60, accessSecret: SECRET },
+          useValue: {
+            refreshTtlSeconds: 60,
+            mobileRefreshTtlSeconds: 2_592_000,
+            accessSecret: SECRET,
+          },
         },
       ],
     }).compile();
@@ -175,6 +213,26 @@ describe('TokenService concurrent rotation (real Redis)', () => {
     ]);
   });
 });
+
+const MOBILE_TTL_SECONDS = 2_592_000;
+
+async function expectMobileTtl(
+  redis: Redis,
+  refreshToken: string,
+  familyId: string,
+): Promise<void> {
+  const refreshTtl = await redis.ttl(`refresh:${sha256(refreshToken)}`);
+  const familyTtl = await redis.ttl(`family:${familyId}`);
+  const sessionTtl = await redis.ttl(`session:${familyId}`);
+  for (const ttl of [refreshTtl, familyTtl, sessionTtl]) {
+    expect(ttl).toBeGreaterThan(MOBILE_TTL_SECONDS - 5);
+    expect(ttl).toBeLessThanOrEqual(MOBILE_TTL_SECONDS);
+  }
+  const raw = await redis.get(`refresh:${sha256(refreshToken)}`);
+  expect(JSON.parse(raw ?? '{}')).toMatchObject({
+    refreshTtlSeconds: MOBILE_TTL_SECONDS,
+  });
+}
 
 function isOk(
   result: RotateResult,

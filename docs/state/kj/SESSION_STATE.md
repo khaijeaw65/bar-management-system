@@ -1,22 +1,21 @@
 # State — KJ
-Updated: 2026-10-18 13:09 · Agent: Cursor
+Updated: 2026-10-18 19:18 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-020 audit PASS on `feat/BRIEF-020-backend-structure-cleanup`. PR opens from this head. Merge when `ci` is green (Field's own PR, pre-approved).
+BRIEF-021 audit PASS on `feat/BRIEF-021-mobile-auth-backend`. PR opens from this head. Merge when `ci` is green (Field's own PR, pre-approved).
 
 ## Active
-- Brief: BRIEF-020 backend structure cleanup · Stage: Audit PASS (Rev 1)
-- Branch: `feat/BRIEF-020-backend-structure-cleanup` · Work SHA: `bcf1359` · PR: opens after this commit
-- Checks: G1 on `bcf1359` — lint / typecheck / openapi:check exit 0 · unit 62 · e2e 53 · audit PASS, Must fix 0
-- Done 18 Oct: BRIEF-019 (#52) · Done 17 Oct: BRIEF-009 (#34), BRIEF-007 (#35), BRIEF-015 (#41 + #43), BRIEF-011 (#45), workflow Rev 18 (#46), Rev 19 (#48), BRIEF-016 (#49), BRIEF-012 (#50)
+- Brief: BRIEF-021 mobile LINE login · Stage: Audit PASS (Rev 2)
+- Branch: `feat/BRIEF-021-mobile-auth-backend` · Work SHA: `7bcad32` · PR: opens after this commit
+- Checks: G1 on `7bcad32` — lint / typecheck / openapi:check exit 0 · contracts 20 · unit 66 · e2e 62
+- Done 18 Oct: BRIEF-020 (#54), BRIEF-019 (#52)
 
 ## Next steps
-1. Open the PR from this head · merge when `ci` is green · Field's own PR, pre-approved
-2. After merge: Field-approved `docs/rules/backend.md` src-tree update (docs branch) — BRIEF-020 Open items
-3. Cowork seeds BRIEF-013 — inputs in Carry over
-4. BRIEF-017 Rev 2 on local `feat/BRIEF-017-void-comp-issues` — rebase after BRIEF-013, then Ready
-5. Cowork: CD-02 R5 → BRIEF-018, CD-15 R5 split 017/018, `/tickets` names in CD-08/15
+1. Open the PR from this head · merge when CI is green
+2. Cowork seeds BRIEF-022 for Metee (phone login is AC-9 there)
+3. After BRIEF-020's docs note: Field-approved `docs/rules/backend.md` src-tree update
+4. Cowork seeds BRIEF-013 · BRIEF-017 Rev 2 rebases after it
 
 ## Blockers / Coordination
 - none · Shared files: none · Review queue: none
@@ -31,9 +30,9 @@ BRIEF-020 audit PASS on `feat/BRIEF-020-backend-structure-cleanup`. PR opens fro
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `e9e8c88`
 
 ## Queue
-1. BRIEF-020 backend structure cleanup (Audit PASS, PR next)
-2. BRIEF-013 payment + webhook
-3. BRIEF-017 issue flow + sold-out (86) + menu cache
-4. IAM brief (full policy editor)
-5. BRIEF-018 void/comp + PIN approval
-6. Web screen briefs after CDs
+1. BRIEF-021 mobile auth (Audit PASS, PR next)
+2. BRIEF-022 mobile LINE login (Metee, unblocked after 021 merges)
+3. BRIEF-013 payment + webhook
+4. BRIEF-017 issue flow + sold-out + menu cache
+5. IAM brief (full policy editor)
+6. BRIEF-018 void/comp + PIN approval

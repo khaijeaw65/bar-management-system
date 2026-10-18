@@ -7,6 +7,7 @@ const JwtEnvSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32),
   JWT_ACCESS_TTL: z.string().regex(/^\d+[smhd]$/),
   REFRESH_TTL_DAYS: z.coerce.number().int().positive(),
+  MOBILE_REFRESH_TTL_DAYS: z.coerce.number().int().positive(),
 });
 
 function blankToUndefined(value: unknown): unknown {
@@ -28,6 +29,8 @@ function parseJwtEnv(source: Record<string, unknown>) {
     JWT_ACCESS_SECRET: source.JWT_ACCESS_SECRET,
     JWT_ACCESS_TTL: blankToUndefined(source.JWT_ACCESS_TTL) ?? '15m',
     REFRESH_TTL_DAYS: blankToUndefined(source.REFRESH_TTL_DAYS) ?? 7,
+    MOBILE_REFRESH_TTL_DAYS:
+      blankToUndefined(source.MOBILE_REFRESH_TTL_DAYS) ?? 30,
   });
   if (!result.success) {
     throw new Error(
@@ -45,6 +48,8 @@ export const jwtConfiguration = registerAs('jwt', () => {
     accessTtlSeconds: durationSeconds(env.JWT_ACCESS_TTL),
     refreshTtlDays: env.REFRESH_TTL_DAYS,
     refreshTtlSeconds: env.REFRESH_TTL_DAYS * 24 * 60 * 60,
+    mobileRefreshTtlDays: env.MOBILE_REFRESH_TTL_DAYS,
+    mobileRefreshTtlSeconds: env.MOBILE_REFRESH_TTL_DAYS * 24 * 60 * 60,
   };
 });
 

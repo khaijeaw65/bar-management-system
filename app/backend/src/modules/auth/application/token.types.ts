@@ -6,6 +6,8 @@ export interface AccessClaims {
 export interface RefreshRecord {
   userId: string;
   familyId: string;
+  // Present only on mobile families. Web records omit it and stay { userId, familyId }.
+  refreshTtlSeconds?: number;
 }
 
 export type IssuedSession = {

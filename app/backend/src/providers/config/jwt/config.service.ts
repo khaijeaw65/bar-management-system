@@ -24,4 +24,12 @@ export class JwtConfigService {
   public get refreshTtlSeconds(): number {
     return this.configService.getOrThrow('jwt.refreshTtlSeconds');
   }
+
+  public get mobileRefreshTtlDays(): number {
+    return this.configService.getOrThrow('jwt.mobileRefreshTtlDays');
+  }
+
+  public get mobileRefreshTtlSeconds(): number {
+    return this.configService.getOrThrow('jwt.mobileRefreshTtlSeconds');
+  }
 }

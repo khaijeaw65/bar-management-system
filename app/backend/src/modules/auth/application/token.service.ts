@@ -28,13 +28,12 @@ export class TokenService {
   ) {}
 
   public async createSession(userId: string): Promise<IssuedSession> {
-    const familyId = randomUUID();
-    const refreshToken = this.newRefreshToken();
-    const record = { userId, familyId };
-    await this.storeRefresh(refreshToken, record);
-    await this.storeSession(familyId, userId);
-    const accessToken = await this.signAccess(userId, familyId);
-    return { accessToken, refreshToken, familyId };
+    return this.issueSession({ userId, familyId: randomUUID() });
+  }
+
+  public async createMobileSession(userId: string): Promise<IssuedSession> {
+    const refreshTtlSeconds = this.jwtConfig.mobileRefreshTtlSeconds;
+    return this.issueSession({ userId, familyId: randomUUID(), refreshTtlSeconds });
   }
 
   public async rotate(rawRefresh: string): Promise<RotateResult> {
@@ -73,12 +72,25 @@ export class TokenService {
     return this.authenticateClaims(payload);
   }
 
+  private async issueSession(record: RefreshRecord): Promise<IssuedSession> {
+    const refreshToken = this.newRefreshToken();
+    const refreshTtlSeconds = this.refreshLifetime(record);
+    await this.storeRefresh(refreshToken, record, refreshTtlSeconds);
+    await this.storeSession(record.familyId, record.userId, refreshTtlSeconds);
+    const accessToken = await this.signAccess(record.userId, record.familyId);
+    return { accessToken, refreshToken, familyId: record.familyId };
+  }
+
+  private refreshLifetime(record: RefreshRecord): number {
+    return record.refreshTtlSeconds ?? this.jwtConfig.refreshTtlSeconds;
+  }
+
   private async storeRefresh(
     rawRefresh: string,
     record: RefreshRecord,
+    refreshTtlSeconds: number,
   ): Promise<void> {
     const hash = this.sha256(rawRefresh);
-    const refreshTtlSeconds = this.jwtConfig.refreshTtlSeconds;
     await this.redisService.client.set(
       refreshKey(hash),
       JSON.stringify(record),
@@ -93,12 +105,16 @@ export class TokenService {
     );
   }
 
-  private async storeSession(familyId: string, userId: string): Promise<void> {
+  private async storeSession(
+    familyId: string,
+    userId: string,
+    refreshTtlSeconds: number,
+  ): Promise<void> {
     await this.redisService.client.set(
       sessionKey(familyId),
       JSON.stringify({ userId }),
       'EX',
-      this.jwtConfig.refreshTtlSeconds,
+      refreshTtlSeconds,
     );
   }
 
