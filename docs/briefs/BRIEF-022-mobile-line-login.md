@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-18 |
 | **Implementer** | metee (learning mode — writes ≥ 70 % himself; agent ≤ 20 %, workflow §8) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -128,9 +128,10 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions (BRIEF-010 merged; BRIEF-021 merged before AC-9)
 - [x] No unresolved decision blocking the main outcome (DR-005 Approved)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-18, in session)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-18 | Initial Draft (Cowork) — Metee's week-2 brief after BRIEF-010 |
+| 1 | 2026-10-18 | Ready — Rev 1 approved by Field in session ("approve both") |
