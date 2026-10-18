@@ -1,6 +1,6 @@
 # Workflow — Roles, Briefs, Gates, Field Guard
 
-> Rev 19 — 2026-10-17 (+ brief = branch from birth: Cowork seeds the task branch, one PR per brief, commit/push table, no bookkeeping-only commits or PRs, shared checkout, state is the only planning file, Field-approved). Rev 18 — 2026-10-17 (+ audit before PR: the PR opens only after audit PASS; Cowork may commit on docs branches; auditors read Git freely, Field-approved). Rev 17 — 2026-10-17 (+ §7 remote protection = rulesets, Field-approved). Rev 16 — 2026-10-17 (+ git hand / ship line: planners and auditors never run Git, Field-approved). Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
+> Rev 20 — 2026-10-18 (+ run proof in G1, brief diff-size limit, no manual tasks for Field, audit ends with the next command, env-key check at session start, Field-approved). Rev 19 — 2026-10-17 (+ brief = branch from birth: Cowork seeds the task branch, one PR per brief, commit/push table, no bookkeeping-only commits or PRs, shared checkout, state is the only planning file, Field-approved). Rev 18 — 2026-10-17 (+ audit before PR: the PR opens only after audit PASS; Cowork may commit on docs branches; auditors read Git freely, Field-approved). Rev 17 — 2026-10-17 (+ §7 remote protection = rulesets, Field-approved). Rev 16 — 2026-10-17 (+ git hand / ship line: planners and auditors never run Git, Field-approved). Rev 15 — 2026-10-17 (+ short-lived docs branches, Field-approved). Rev 14 — 2026-09-24 (+ Cowork audit follow-ups: merge authority, PR tooling, state notes). Field explicitly confirmed the agent-loop draft: execute/resume, assigned auditor, tracked personal state, source-grounded checks and approved merge completion.
 > This file governs execution. Briefs define outcomes; scoped rules define code conventions. Historical revisions remain in Git.
 
 ## 1. People, Roles, Session Types
@@ -47,7 +47,7 @@ docs/
 
 For product/technical decisions: Approved DR > approved brief > rules > state. This never overrides document ownership, agent roles or protected-file permissions. A newer timestamp alone grants no authority; report unresolved contradictions.
 
-Brief IDs use one project-wide `BRIEF-###` sequence allocated by Field. One testable outcome may span apps only with one implementer responsible for all parts; otherwise split and link dependencies. Target size: at most three working days. See §10 for retired IDs. UI briefs are design inputs, not executable briefs.
+Brief IDs use one project-wide `BRIEF-###` sequence allocated by Field. One testable outcome may span apps only with one implementer responsible for all parts; otherwise split and link dependencies. Target size: at most three working days **and** a diff the auditor can review in one sitting (~500 net-new lines; lockfile and `docs/api/openapi.json` excluded) — larger → split. With agents writing the code, review effort follows diff size, not working days. See §10 for retired IDs. UI briefs are design inputs, not executable briefs.
 
 State is a branch snapshot, not a live lock. KJ reads Metee's latest state from his pushed task branch (`git show origin/<branch>:docs/state/methee/SESSION_STATE.md`) without switching checkout. No CLAIMS file or additional project-wide session log. See `docs/state/README.md` for migration and concurrent-work rules.
 
@@ -64,7 +64,7 @@ Audit BLOCKED → Field decision / missing evidence → resume the affected step
 Before Ready, Field/Cowork checks:
 - Named implementer and **Assigned auditor: Cowork or Codex**; Codex assignment needs Field's explicit instruction.
 - Goal, in/out scope, affected apps, references and approved contracts.
-- Testable ACs, exact gate commands and required evidence.
+- Testable ACs, exact gate commands (incl. run proof, §6) and required evidence; size within the §2 target.
 - Dependencies with completion conditions; no unresolved decision blocking the main outcome.
 - Exact Pre-decided items and protected-path unlocks where required.
 
@@ -113,7 +113,7 @@ Changes after an audit/approval require the head/evidence checks in §7.
 
 `onboard kj` / `onboard methee` stores `{ "developer": "kj" }` or `{ "developer": "methee" }` in the gitignored root `.agent-local.json`. This contains no tokens or progress. Select the owner from explicit session input first, then this local setting. If missing/invalid/conflicting, ask once; never infer identity from Git author configuration, tool account or the most recently edited state. Explicit onboarding may replace the identity setting; it does not transfer a brief.
 
-Read AGENTS/CLAUDE, workflow, own state, exact brief revision and linked DRs. Check Git status, current branch, worktree and latest commit. Reconcile stale state from actual Git/PR evidence. Stop affected mutations on unexplained branch/ownership mismatch or unrelated dirty work; never stash/reset/commit another person's changes. Inspect blockers and dependency PRs, not just state text.
+Read AGENTS/CLAUDE, workflow, own state, exact brief revision and linked DRs. Check Git status, current branch, worktree and latest commit. List keys in each `.env.example` (root, `app/backend`, `app/frontend`) missing from the matching local file (`.env`; `.env.local` for the frontend) and report them as setup gaps — names only, never values. Reconcile stale state from actual Git/PR evidence. Stop affected mutations on unexplained branch/ownership mismatch or unrelated dirty work; never stash/reset/commit another person's changes. Inspect blockers and dependency PRs, not just state text.
 
 ### Commands (chat commands, not installed shell commands)
 
@@ -130,6 +130,8 @@ Read AGENTS/CLAUDE, workflow, own state, exact brief revision and linked DRs. Ch
 Execute is idempotent: continue WIP, fix in-scope Must fix findings, report waiting review, or report Done for an already merged PR. Never create duplicate branches/PRs. A missing/duplicate ID or implementer mismatch must be clarified; legacy IDs resolve only through §10.
 
 At Implemented, provide the branch, work SHA, handoff, assigned auditor and `audit BRIEF-###` as the next action. At PASS, provide the PR. Dispatch across tools only if an available integration actually supports it and the task authorizes it; otherwise provide the handoff command. Do not claim an external auditor has started when it has not.
+
+An audit ends with the exact next command for the implementer's executor (Field for his own briefs, Metee for his): CHANGES REQUIRED → `execute BRIEF-###` (fix Must fix #…); PASS → `execute BRIEF-###` (PASS commit + PR); BLOCKED → the DR or decision needed.
 
 ### Ship line
 
@@ -148,6 +150,10 @@ Routine scoped reads, edits, tests, approved dependency installation, Git inspec
 Critical actions require explicit authority: new Field Guard decisions; main merges/admin bypass (except Field's own PRs meeting the §7 pre-approval); releases/deploys; force-push or published-history rewrite; discarding work; deleting unmerged/shared refs or dirty worktrees; production/shared-data mutation; destructive migrations/volume deletion; paid infrastructure; access/permission changes. An exact existing approval remains valid until its scope/target changes.
 
 Prepare reviewable evidence before requesting approval. Stop only the blocked path. Git operations do not need a DR; new product/architecture decisions do. Sandbox/OS/network prompts are separate from project authorization: obey tool permission mechanisms, request narrow reusable rules where supported, and never disable all approvals or bypass a rejection.
+
+### No manual tasks for Field
+
+When work is needed (run a migration, restart the stack, fix a file), hand it to an executor as a chat command or a ship line — never as shell steps for Field to run. Docs an agent owns, it edits itself. Field-only work: decisions and approvals, personal credentials/2FA, account signups and paid services, GitHub settings and rulesets, release tags, and real-world tasks.
 
 ## 5. Field Guard — Decisions Go Through Field
 
@@ -195,7 +201,7 @@ Naming, private helpers, refactors inside the brief's own files, test structure,
 
 ## 6. Quality Gates, Grounding and Audit
 
-- **G1:** exact commands in the Ready brief, normally lint/typecheck/tests for affected packages. Explicitly justified package-specific/manual evidence is allowed.
+- **G1:** exact commands in the Ready brief, normally lint/typecheck/tests for affected packages. Explicitly justified package-specific/manual evidence is allowed. **Plus the run proof** for backend/frontend/mobile changes (brief §5): on the work SHA, `migration:run` succeeds, the backend starts and `/api/health` returns 200, and a UI change is exercised on the screen — a 200 from the server is not proof the screen works. Start fresh on the work SHA; a server left running from earlier is not evidence. Docs/tooling-only briefs: `n/a`.
 - **G2:** applicable required CI checks on the current PR head, including the brief's integration/e2e coverage. Verify current workflows and scripts; historical setup notes are not evidence that CI exists or passes.
 - **G3:** assigned audit PASS, all ACs supported, no unresolved Must fix/unapproved deviation, handoff/state present, and Field review. Metee's walkthrough remains required.
 
