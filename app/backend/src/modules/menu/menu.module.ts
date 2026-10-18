@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CLOCK } from '../../common/clock.js';
+import { SystemClock } from '../../common/system-clock.js';
 import { MenuCatalogService } from './application/menu-catalog.service.js';
-import { SystemClock } from './application/system-clock.js';
-import { CLOCK } from './domain/clock.js';
 import { MENU_CATALOG_REPOSITORY } from './domain/menu-catalog.repository.js';
 import { MenuController } from './infrastructure/http/menu.controller.js';
 import { menuEntities } from './infrastructure/persistence/menu.entities.js';

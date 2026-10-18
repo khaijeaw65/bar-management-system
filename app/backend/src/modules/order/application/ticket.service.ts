@@ -10,7 +10,7 @@ import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
-import { CLOCK, type Clock } from '../domain/clock.js';
+import { CLOCK, type Clock } from '../../../common/clock.js';
 import {
   ORDER_REPOSITORY,
   type OrderRepository,

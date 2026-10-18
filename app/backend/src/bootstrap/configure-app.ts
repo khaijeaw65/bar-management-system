@@ -1,7 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
-import { HttpExceptionFilter } from '../common/filters/http-exception.filter.js';
-import { TransformResponseInterceptor } from '../common/interceptors/transform-response.interceptor.js';
+import { HttpExceptionFilter } from '../common/filters/http-exception/http-exception.filter.js';
+import { TransformResponseInterceptor } from '../common/interceptors/transform-response/transform-response.interceptor.js';
 import { setupOpenApi } from '../common/openapi/setup-openapi.js';
 import { RedisIoAdapter } from '../modules/notifications/redis-io.adapter.js';
 import { AppConfigService } from '../providers/config/app/config.service.js';

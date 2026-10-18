@@ -14,10 +14,9 @@ import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { IdempotencyService } from '../../application/idempotency.service.js';
 import { requestHash } from '../../application/request-hash.js';
-import { requestedLines } from '../../application/order.types.js';
 import { OrderQueryService } from '../../application/order-query.service.js';
 import { OrderService } from '../../application/order.service.js';
-import { idempotencyKey } from './http-input.js';
+import { idempotencyKey, requestedLines } from './http-input.js';
 import { ApiCreatedOrder } from './orders.openapi.js';
 
 @Controller()

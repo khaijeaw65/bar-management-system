@@ -9,7 +9,7 @@ import {
 import type { ErrorCode } from '@bar/contracts';
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { DomainException } from '../domain-exception.js';
+import { DomainException } from '../../domain-exception.js';
 import type { ErrorEnvelope } from './http-exception.types.js';
 
 const CODE_BY_STATUS: Record<number, ErrorCode> = {

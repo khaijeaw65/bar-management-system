@@ -78,6 +78,24 @@ describe('Orders (e2e)', () => {
     expect(order.tickets.find((ticket) => ticket.station === 'food')?.items[0]?.name).toBe('ถั่วทอดสมุนไพร');
   });
 
+  it('stores blank orderedByName and notes as null', async () => {
+    const visitId = await openSeat('T3');
+    const line = await one('ช้างดราฟต์');
+    const response = await request(app.getHttpServer())
+      .post(`/api/visits/${visitId}/orders`)
+      .set(auth())
+      .send({ items: [{ ...line, orderedByName: '   ', notes: '   ' }] })
+      .expect(201);
+    const order = response.body.data as Order;
+    const item = order.tickets.flatMap((ticket) => ticket.items).find((row) => row.variantId === line.variantId);
+    expect(item).toMatchObject({ orderedByName: null, notes: null });
+    const stored: Array<{ ordered_by_name: string | null; notes: string | null }> = await dataSource.query(
+      `SELECT ordered_by_name, notes FROM order_item WHERE id = $1`,
+      [item?.id],
+    );
+    expect(stored).toEqual([{ ordered_by_name: null, notes: null }]);
+  });
+
   it('activates an open visit once and rejects a closed visit', async () => {
     const visitId = await openSeat('T2');
     const first = await place(visitId, await sampleLines());

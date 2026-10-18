@@ -7,7 +7,7 @@ import type {
 } from '@bar/contracts';
 import { hhmm } from '../../../common/time-label.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import { CLOCK, type Clock } from '../domain/clock.js';
+import { CLOCK, type Clock } from '../../../common/clock.js';
 import {
   MENU_CATALOG_REPOSITORY,
   type MenuCatalogRepository,

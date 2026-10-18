@@ -1,6 +1,6 @@
 import { HttpException } from '@nestjs/common';
 import type { ErrorCode } from '@bar/contracts';
-import type { ErrorData } from './filters/http-exception.types.js';
+import type { ErrorData } from './filters/http-exception/http-exception.types.js';
 
 export class DomainException extends HttpException {
   public readonly code: ErrorCode;
