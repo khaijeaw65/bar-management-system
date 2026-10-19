@@ -10,6 +10,11 @@ export const ORDER_ROWS_SQL = `
     t.station,
     t.status,
     t.sent_at,
+    t.issue_reason,
+    t.issue_item_id,
+    t.issue_note,
+    t.issue_reported_by,
+    t.issue_escalated_at,
     t.created_at AS ticket_created_at,
     t.updated_at AS ticket_updated_at,
     t.updated_by AS ticket_updated_by,
@@ -71,11 +76,19 @@ export const ORDER_TOTALS_SQL = `
 `;
 
 export const LOCK_TICKET_SQL = `
-  SELECT t.id, t.order_id, t.status, t.sent_at, o.visit_id, s.kind AS seat_kind
+  SELECT t.id, t.order_id, t.status, t.sent_at,
+         t.issue_reason, t.issue_item_id, t.issue_note, t.issue_reported_by, t.issue_escalated_at,
+         o.visit_id, s.kind AS seat_kind
   FROM order_ticket t
   JOIN order_record o ON o.id = t.order_id
   JOIN visit v ON v.id = o.visit_id
   JOIN table_seat s ON s.id = v.table_seat_id
   WHERE t.id = $1
   FOR UPDATE OF t
+`;
+
+export const LINE_ON_TICKET_SQL = `
+  SELECT cancelled_at
+  FROM order_item
+  WHERE ticket_id = $1 AND id = $2
 `;

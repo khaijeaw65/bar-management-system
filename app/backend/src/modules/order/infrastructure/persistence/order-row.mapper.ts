@@ -10,6 +10,7 @@ export function toOrderRow(raw: Record<string, unknown>): OrderRow {
   return {
     ...orderPart(raw),
     ...ticketPart(raw),
+    ...issuePart(raw),
     ...itemPart(raw),
   };
 }
@@ -37,6 +38,16 @@ function ticketPart(raw: Record<string, unknown>) {
     seatId: readText(raw.seat_id),
     seatLabel: readText(raw.seat_label),
     seatKind: readText(raw.seat_kind),
+  };
+}
+
+function issuePart(raw: Record<string, unknown>) {
+  return {
+    issueReason: readOptionalText(raw.issue_reason),
+    issueItemId: readOptionalText(raw.issue_item_id),
+    issueNote: readOptionalText(raw.issue_note),
+    issueReportedById: readOptionalText(raw.issue_reported_by),
+    issueEscalatedAt: readOptionalDate(raw.issue_escalated_at),
   };
 }
 

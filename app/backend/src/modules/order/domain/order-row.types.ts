@@ -9,6 +9,11 @@ export interface OrderRow {
   station: string | null;
   status: string;
   sentAt: Date | null;
+  issueReason: string | null;
+  issueItemId: string | null;
+  issueNote: string | null;
+  issueReportedById: string | null;
+  issueEscalatedAt: Date | null;
   ticketCreatedAt: Date;
   ticketUpdatedAt: Date;
   ticketUpdatedBy: string | null;

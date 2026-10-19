@@ -11,7 +11,7 @@ import { foldOrders } from './fold-orders.js';
 import type { FoldedOrder } from './folded-order.types.js';
 import type { VisitBill } from './order.types.js';
 import { toOrder, withoutVisit, type TicketView } from './present-order.js';
-import { queueStatuses } from './ticket-query.js';
+import { listFilter } from './ticket-query.js';
 
 @Injectable()
 export class OrderQueryService {
@@ -32,10 +32,12 @@ export class OrderQueryService {
   }
 
   public async tickets(query: TicketListQuery): Promise<Ticket[]> {
+    const filter = listFilter(query);
     const views = await this.ticketViews({
       visitId: query.visitId,
-      statuses: queueStatuses(query.status),
+      statuses: filter.statuses,
       excludeCharge: true,
+      escalatedOnly: filter.escalatedOnly,
     });
     return views.map(withoutVisit);
   }
@@ -84,6 +86,7 @@ export class OrderQueryService {
       if (order.createdById) ids.add(order.createdById);
       for (const ticket of order.tickets) {
         if (ticket.updatedById) ids.add(ticket.updatedById);
+        if (ticket.issueReportedById) ids.add(ticket.issueReportedById);
       }
     }
     return [...ids];

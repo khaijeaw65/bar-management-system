@@ -9,6 +9,7 @@ export function orderWhere(query: OrderQuery, values: unknown[]): string {
     parts.push(`t.status::text = ANY($${bind(values, query.statuses)}::text[])`);
   }
   if (query.excludeCharge) parts.push('t.station IS NOT NULL');
+  if (query.escalatedOnly) parts.push('t.issue_escalated_at IS NOT NULL');
   return `WHERE ${parts.join(' AND ')}`;
 }
 

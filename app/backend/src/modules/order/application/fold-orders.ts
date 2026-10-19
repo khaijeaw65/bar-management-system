@@ -1,4 +1,4 @@
-import type { KitchenStation, OrderLine, OrderStatus, TableSeatKind } from '@bar/contracts';
+import type { KitchenStation, OrderLine, OrderStatus, TableSeatKind, TicketIssueReason } from '@bar/contracts';
 import type { OrderRow } from '../domain/order-row.types.js';
 import { money } from '../../../common/money.js';
 import type { FoldedOrder, FoldedTicket } from './folded-order.types.js';
@@ -68,11 +68,28 @@ function newTicket(order: FoldedOrder, row: OrderRow): FoldedTicket {
     status: statusOf(row.status),
     seat: { id: row.seatId, label: row.seatLabel, kind: kindOf(row.seatKind) },
     items: [],
+    ...issueOf(row),
     updatedById: row.ticketUpdatedBy,
     sentAt: row.sentAt ? row.sentAt.toISOString() : null,
     createdAt: row.ticketCreatedAt.toISOString(),
     updatedAt: row.ticketUpdatedAt.toISOString(),
   };
+}
+
+function issueOf(row: OrderRow) {
+  return {
+    issueReason: reasonOf(row.issueReason),
+    issueItemId: row.issueItemId,
+    issueNote: row.issueNote,
+    issueReportedById: row.issueReportedById,
+    issueEscalatedAt: row.issueEscalatedAt ? row.issueEscalatedAt.toISOString() : null,
+  };
+}
+
+function reasonOf(value: string | null): TicketIssueReason | null {
+  if (value === null) return null;
+  if (value === 'out_of_stock' || value === 'equipment' || value === 'other') return value;
+  throw new Error('order row has an unknown issue reason');
 }
 
 function itemOf(items: Map<string, OrderLine>, ticket: FoldedTicket, row: OrderRow): OrderLine {

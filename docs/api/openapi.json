@@ -2095,6 +2095,62 @@
                                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                                 "type": "string"
                               },
+                              "issue": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "escalatedAt": {
+                                    "format": "date-time",
+                                    "nullable": true,
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "itemId": {
+                                    "format": "uuid",
+                                    "nullable": true,
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string"
+                                  },
+                                  "note": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "reason": {
+                                    "enum": [
+                                      "out_of_stock",
+                                      "equipment",
+                                      "other"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "reportedBy": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  }
+                                },
+                                "required": [
+                                  "reason",
+                                  "itemId",
+                                  "note",
+                                  "reportedBy",
+                                  "escalatedAt"
+                                ],
+                                "type": "object"
+                              },
                               "items": {
                                 "items": {
                                   "additionalProperties": false,
@@ -2263,6 +2319,7 @@
                               "status",
                               "seat",
                               "items",
+                              "issue",
                               "acceptedBy",
                               "sentAt",
                               "createdAt",
@@ -3463,6 +3520,17 @@
         "parameters": [
           {
             "in": "query",
+            "name": "escalated",
+            "required": false,
+            "schema": {
+              "enum": [
+                "true"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "visitId",
             "required": false,
             "schema": {
@@ -3528,6 +3596,62 @@
                                 "format": "uuid",
                                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                                 "type": "string"
+                              },
+                              "issue": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "escalatedAt": {
+                                    "format": "date-time",
+                                    "nullable": true,
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "itemId": {
+                                    "format": "uuid",
+                                    "nullable": true,
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string"
+                                  },
+                                  "note": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "reason": {
+                                    "enum": [
+                                      "out_of_stock",
+                                      "equipment",
+                                      "other"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "reportedBy": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  }
+                                },
+                                "required": [
+                                  "reason",
+                                  "itemId",
+                                  "note",
+                                  "reportedBy",
+                                  "escalatedAt"
+                                ],
+                                "type": "object"
                               },
                               "items": {
                                 "items": {
@@ -3697,6 +3821,7 @@
                               "status",
                               "seat",
                               "items",
+                              "issue",
                               "acceptedBy",
                               "sentAt",
                               "createdAt",
@@ -3854,6 +3979,62 @@
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string"
                         },
+                        "issue": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "escalatedAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "itemId": {
+                              "format": "uuid",
+                              "nullable": true,
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "note": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "reason": {
+                              "enum": [
+                                "out_of_stock",
+                                "equipment",
+                                "other"
+                              ],
+                              "type": "string"
+                            },
+                            "reportedBy": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "reason",
+                            "itemId",
+                            "note",
+                            "reportedBy",
+                            "escalatedAt"
+                          ],
+                          "type": "object"
+                        },
                         "items": {
                           "items": {
                             "additionalProperties": false,
@@ -4022,6 +4203,7 @@
                         "status",
                         "seat",
                         "items",
+                        "issue",
                         "acceptedBy",
                         "sentAt",
                         "createdAt",
@@ -4110,10 +4292,10 @@
         ]
       }
     },
-    "/api/tickets/{id}/ready": {
+    "/api/tickets/{id}/flag-issue": {
       "post": {
         "description": "Permission: orders:update_status. Access token from the access_token cookie, or Authorization: Bearer.",
-        "operationId": "TicketsController_ready",
+        "operationId": "TicketsController_flagIssue",
         "parameters": [
           {
             "in": "path",
@@ -4126,6 +4308,39 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "itemId": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  },
+                  "note": {
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "reason": {
+                    "enum": [
+                      "out_of_stock",
+                      "equipment",
+                      "other"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -4170,6 +4385,62 @@
                           "format": "uuid",
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string"
+                        },
+                        "issue": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "escalatedAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "itemId": {
+                              "format": "uuid",
+                              "nullable": true,
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "note": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "reason": {
+                              "enum": [
+                                "out_of_stock",
+                                "equipment",
+                                "other"
+                              ],
+                              "type": "string"
+                            },
+                            "reportedBy": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "reason",
+                            "itemId",
+                            "note",
+                            "reportedBy",
+                            "escalatedAt"
+                          ],
+                          "type": "object"
                         },
                         "items": {
                           "items": {
@@ -4339,6 +4610,381 @@
                         "status",
                         "seat",
                         "items",
+                        "issue",
+                        "acceptedBy",
+                        "sentAt",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "pending, accepted, or ready to issue",
+        "tags": [
+          "Tickets"
+        ]
+      }
+    },
+    "/api/tickets/{id}/ready": {
+      "post": {
+        "description": "Permission: orders:update_status. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "TicketsController_ready",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "acceptedBy": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "displayName": {
+                              "type": "string"
+                            },
+                            "staffId": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "staffId",
+                            "displayName"
+                          ],
+                          "type": "object"
+                        },
+                        "createdAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "issue": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "escalatedAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "itemId": {
+                              "format": "uuid",
+                              "nullable": true,
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "note": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "reason": {
+                              "enum": [
+                                "out_of_stock",
+                                "equipment",
+                                "other"
+                              ],
+                              "type": "string"
+                            },
+                            "reportedBy": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "reason",
+                            "itemId",
+                            "note",
+                            "reportedBy",
+                            "escalatedAt"
+                          ],
+                          "type": "object"
+                        },
+                        "items": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "cancelledAt": {
+                                "format": "date-time",
+                                "nullable": true,
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "type": "string"
+                              },
+                              "id": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              },
+                              "lineTotal": {
+                                "pattern": "^\\d+\\.\\d{2}$",
+                                "type": "string"
+                              },
+                              "modifiers": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "optionId": {
+                                      "format": "uuid",
+                                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                      "type": "string"
+                                    },
+                                    "priceDelta": {
+                                      "pattern": "^\\d+\\.\\d{2}$",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "optionId",
+                                    "name",
+                                    "priceDelta"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "notes": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "orderedByName": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "quantity": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "unitPrice": {
+                                "pattern": "^\\d+\\.\\d{2}$",
+                                "type": "string"
+                              },
+                              "variantId": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              },
+                              "variantName": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "variantId",
+                              "name",
+                              "variantName",
+                              "quantity",
+                              "unitPrice",
+                              "modifiers",
+                              "lineTotal",
+                              "orderedByName",
+                              "notes",
+                              "cancelledAt"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "orderId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "orderNumber": {
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "seat": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "id": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "kind": {
+                              "enum": [
+                                "table",
+                                "counter"
+                              ],
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "label",
+                            "kind"
+                          ],
+                          "type": "object"
+                        },
+                        "sentAt": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "station": {
+                          "enum": [
+                            "bar",
+                            "food"
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "pending",
+                            "accepted",
+                            "ready",
+                            "sent",
+                            "issue",
+                            "cancelled"
+                          ],
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "orderId",
+                        "orderNumber",
+                        "station",
+                        "status",
+                        "seat",
+                        "items",
+                        "issue",
                         "acceptedBy",
                         "sentAt",
                         "createdAt",
@@ -4427,10 +5073,10 @@
         ]
       }
     },
-    "/api/tickets/{id}/send": {
+    "/api/tickets/{id}/resolve": {
       "post": {
         "description": "Permission: orders:update_status. Access token from the access_token cookie, or Authorization: Bearer.",
-        "operationId": "TicketsController_send",
+        "operationId": "TicketsController_resolve",
         "parameters": [
           {
             "in": "path",
@@ -4443,6 +5089,33 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "resolution": {
+                    "enum": [
+                      "substitute",
+                      "escalate"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "resolution"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -4487,6 +5160,62 @@
                           "format": "uuid",
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string"
+                        },
+                        "issue": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "escalatedAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "itemId": {
+                              "format": "uuid",
+                              "nullable": true,
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "note": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "reason": {
+                              "enum": [
+                                "out_of_stock",
+                                "equipment",
+                                "other"
+                              ],
+                              "type": "string"
+                            },
+                            "reportedBy": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "reason",
+                            "itemId",
+                            "note",
+                            "reportedBy",
+                            "escalatedAt"
+                          ],
+                          "type": "object"
                         },
                         "items": {
                           "items": {
@@ -4656,6 +5385,381 @@
                         "status",
                         "seat",
                         "items",
+                        "issue",
+                        "acceptedBy",
+                        "sentAt",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "substitute returns the ticket to accepted; escalate sends it to the POS once",
+        "tags": [
+          "Tickets"
+        ]
+      }
+    },
+    "/api/tickets/{id}/send": {
+      "post": {
+        "description": "Permission: orders:update_status. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "TicketsController_send",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "acceptedBy": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "displayName": {
+                              "type": "string"
+                            },
+                            "staffId": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "staffId",
+                            "displayName"
+                          ],
+                          "type": "object"
+                        },
+                        "createdAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "issue": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "escalatedAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "itemId": {
+                              "format": "uuid",
+                              "nullable": true,
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "note": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "reason": {
+                              "enum": [
+                                "out_of_stock",
+                                "equipment",
+                                "other"
+                              ],
+                              "type": "string"
+                            },
+                            "reportedBy": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "reason",
+                            "itemId",
+                            "note",
+                            "reportedBy",
+                            "escalatedAt"
+                          ],
+                          "type": "object"
+                        },
+                        "items": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "cancelledAt": {
+                                "format": "date-time",
+                                "nullable": true,
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "type": "string"
+                              },
+                              "id": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              },
+                              "lineTotal": {
+                                "pattern": "^\\d+\\.\\d{2}$",
+                                "type": "string"
+                              },
+                              "modifiers": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "optionId": {
+                                      "format": "uuid",
+                                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                      "type": "string"
+                                    },
+                                    "priceDelta": {
+                                      "pattern": "^\\d+\\.\\d{2}$",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "optionId",
+                                    "name",
+                                    "priceDelta"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "notes": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "orderedByName": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "quantity": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "unitPrice": {
+                                "pattern": "^\\d+\\.\\d{2}$",
+                                "type": "string"
+                              },
+                              "variantId": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              },
+                              "variantName": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "variantId",
+                              "name",
+                              "variantName",
+                              "quantity",
+                              "unitPrice",
+                              "modifiers",
+                              "lineTotal",
+                              "orderedByName",
+                              "notes",
+                              "cancelledAt"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "orderId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "orderNumber": {
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "seat": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "id": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "kind": {
+                              "enum": [
+                                "table",
+                                "counter"
+                              ],
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "label",
+                            "kind"
+                          ],
+                          "type": "object"
+                        },
+                        "sentAt": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "station": {
+                          "enum": [
+                            "bar",
+                            "food"
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "pending",
+                            "accepted",
+                            "ready",
+                            "sent",
+                            "issue",
+                            "cancelled"
+                          ],
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "orderId",
+                        "orderNumber",
+                        "station",
+                        "status",
+                        "seat",
+                        "items",
+                        "issue",
                         "acceptedBy",
                         "sentAt",
                         "createdAt",
@@ -5717,6 +6821,62 @@
                                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                                       "type": "string"
                                     },
+                                    "issue": {
+                                      "additionalProperties": false,
+                                      "nullable": true,
+                                      "properties": {
+                                        "escalatedAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                          "type": "string"
+                                        },
+                                        "itemId": {
+                                          "format": "uuid",
+                                          "nullable": true,
+                                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                          "type": "string"
+                                        },
+                                        "note": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "reason": {
+                                          "enum": [
+                                            "out_of_stock",
+                                            "equipment",
+                                            "other"
+                                          ],
+                                          "type": "string"
+                                        },
+                                        "reportedBy": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        }
+                                      },
+                                      "required": [
+                                        "reason",
+                                        "itemId",
+                                        "note",
+                                        "reportedBy",
+                                        "escalatedAt"
+                                      ],
+                                      "type": "object"
+                                    },
                                     "items": {
                                       "items": {
                                         "additionalProperties": false,
@@ -5885,6 +7045,7 @@
                                     "status",
                                     "seat",
                                     "items",
+                                    "issue",
                                     "acceptedBy",
                                     "sentAt",
                                     "createdAt",
@@ -6576,6 +7737,62 @@
                                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                                 "type": "string"
                               },
+                              "issue": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "escalatedAt": {
+                                    "format": "date-time",
+                                    "nullable": true,
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "itemId": {
+                                    "format": "uuid",
+                                    "nullable": true,
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string"
+                                  },
+                                  "note": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "reason": {
+                                    "enum": [
+                                      "out_of_stock",
+                                      "equipment",
+                                      "other"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "reportedBy": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  }
+                                },
+                                "required": [
+                                  "reason",
+                                  "itemId",
+                                  "note",
+                                  "reportedBy",
+                                  "escalatedAt"
+                                ],
+                                "type": "object"
+                              },
                               "items": {
                                 "items": {
                                   "additionalProperties": false,
@@ -6744,6 +7961,7 @@
                               "status",
                               "seat",
                               "items",
+                              "issue",
                               "acceptedBy",
                               "sentAt",
                               "createdAt",

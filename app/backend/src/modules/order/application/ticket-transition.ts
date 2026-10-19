@@ -38,3 +38,24 @@ function onlyFrom(status: OrderStatus, from: OrderStatus, to: OrderStatus): Orde
   if (status !== from) throw BAD_STATE;
   return to;
 }
+
+export type IssueAction = 'flag' | 'substitute' | 'escalate';
+
+const ALREADY_ESCALATED = new DomainException(
+  'INVALID_STATE_TRANSITION',
+  'ใบงานนี้ส่งให้ POS แล้ว',
+  409,
+);
+
+export function issueStatus(action: IssueAction, status: OrderStatus, escalated: boolean): OrderStatus {
+  if (action === 'flag') return flaggedStatus(status);
+  if (status !== 'issue') throw BAD_STATE;
+  if (action === 'substitute') return 'accepted';
+  if (escalated) throw ALREADY_ESCALATED;
+  return 'issue';
+}
+
+function flaggedStatus(status: OrderStatus): OrderStatus {
+  if (status === 'pending' || status === 'accepted' || status === 'ready') return 'issue';
+  throw BAD_STATE;
+}

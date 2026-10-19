@@ -1,4 +1,4 @@
-import type { OrderStatus } from '@bar/contracts';
+import type { OrderStatus, TicketListQuery } from '@bar/contracts';
 import { OrderStatusSchema } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 
@@ -11,4 +11,15 @@ export function queueStatuses(value: string | undefined): OrderStatus[] {
     throw new DomainException('VALIDATION_ERROR', 'สถานะไม่ถูกต้อง', 400);
   }
   return parsed.flatMap((item) => (item.success ? [item.data] : []));
+}
+
+export function listFilter(query: TicketListQuery): { statuses: OrderStatus[]; escalatedOnly: boolean } {
+  const escalatedOnly = query.escalated === 'true';
+  const statuses = escalatedOnly ? escalatedStatuses(query.status) : queueStatuses(query.status);
+  return { statuses, escalatedOnly };
+}
+
+function escalatedStatuses(value: string | undefined): OrderStatus[] {
+  if (!value) return ['issue'];
+  return queueStatuses(value);
 }
