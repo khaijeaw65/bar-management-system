@@ -5,11 +5,11 @@
 | **Implementer** | kj |
 | **Date** | 2026-10-19 |
 | **Brief revision** | 3 |
-| **Branch** | `feat/BRIEF-013-payments-core` (PR opens after audit PASS) |
-| **Commit** | `f06f28a54beccd7417682c2e675da39d8ee2bd6d` (the commit the evidence below was run on) |
-| **Status** | Implemented — awaiting audit |
+| **Branch / PR** | `feat/BRIEF-013-payments-core` · PR opens after this PASS commit |
+| **Commit** | `f06f28a54beccd7417682c2e675da39d8ee2bd6d` (audited work). Implemented handoff was `b793ac9`. |
+| **Status** | Audit PASS — merged PR determines Done |
 
-> Created at `Implemented` (one docs commit). Updated once in the PASS commit. Frozen at merge.
+> Gate evidence below was run on `f06f28a`, before the Implemented docs commit. This handoff is the later PASS docs commit. Node v24.14.0.
 
 ## Summary
 Staff can collect a visit's whole remaining bill as one merged PromptPay QR or as cash. A pending QR locks close, expires by a BullMQ delayed job, and can be cancelled or confirmed manually. Settling the bill does not close the visit.
@@ -69,8 +69,8 @@ UI exercised: n/a
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-013`
-- Work SHA: `f06f28a54beccd7417682c2e675da39d8ee2bd6d` · self-check: four endpoints, bill fields, four error codes, and `jobId = paymentId` compared against BRIEF-013 Rev 3 §2–§3
+- Audit: PASS on `f06f28a54beccd7417682c2e675da39d8ee2bd6d`. Must fix: 0. Suggestions S1–S5 are not blocking.
+- Next: open the PR from this PASS commit. Merge when `ci` is green on that head. Field's own PR is pre-approved.
 
 ## Notes for Reviewer
 - Status changes only in `PaymentService`, via `save()` under a row lock. Visit close locks the visit, then `PaymentGuard.assertNoPaymentInFlight`, then `closeIfLive`. Events and the queue run after the transaction commits.
