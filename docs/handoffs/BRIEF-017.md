@@ -5,9 +5,9 @@
 | **Implementer** | kj |
 | **Date** | 2026-10-20 |
 | **Brief revision** | 3 |
-| **Branch** | `feat/BRIEF-017-void-comp-issues` (PR opens after audit PASS) |
+| **Branch** | `feat/BRIEF-017-void-comp-issues` (PR opens after this PASS commit) |
 | **Commit** | `2dcc8f6e042d30bc570040ff732c702b60d742b3` |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS — merged PR determines Done |
 
 > Gates and the run proof were run on `2dcc8f6`. Node v24.14.0. Postgres `bar` on localhost:5432, Redis `redis://127.0.0.1:6379`. Branch includes `main` through BRIEF-024 (PR #66, `998e6c0`).
 
@@ -58,7 +58,8 @@ UI exercised: n/a
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-017`
+- Audit: PASS · 0 Must fix · 3 Suggestions (not blocking)
+- Next: merge when `ci` is green on the PR head (Field's PR, pre-approved)
 - Work SHA: `2dcc8f6e042d30bc570040ff732c702b60d742b3`
 
 ## Notes for Reviewer

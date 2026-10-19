@@ -1,25 +1,25 @@
 # State — KJ
-Updated: 2026-10-20 00:55 · Agent: Cursor
+Updated: 2026-10-20 01:00 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-017 Rev 3 **Implemented**, awaiting Cowork audit. Branch `feat/BRIEF-017-void-comp-issues`. Work SHA `2dcc8f6`. Next: `audit BRIEF-017`.
+BRIEF-017 Rev 3 audit **PASS** (0 Must fix). Work SHA `2dcc8f6`. Next: PR, then merge when `ci` is green.
 
 ## Active
-- Brief: BRIEF-017 ticket issue flow · Stage: Implemented · Branch: `feat/BRIEF-017-void-comp-issues` (on `main` @ `998e6c0`, #66)
-- Handoff: `docs/handoffs/BRIEF-017.md` · no PR until audit PASS
+- Brief: BRIEF-017 ticket issue flow · Stage: Audit PASS · Branch: `feat/BRIEF-017-void-comp-issues` (on `main` @ `998e6c0`, #66)
+- Handoff: `docs/handoffs/BRIEF-017.md` · audit: `docs/audits/BRIEF-017.md`
 - Done 19–20 Oct: BRIEF-024 (#66) · BRIEF-013 (#64) · Rev 21 seed-PR rule (#65)
 - Draft: BRIEF-023 split equal (Q1 open) on `feat/BRIEF-023-payment-split-equal` — merge `main` first
 
 ## Next steps
-1. Cowork: `audit BRIEF-017`
+1. Open the PR, then merge when `ci` is green (Field's PR, pre-approved)
 2. Cowork: seed BRIEF-027 sold-out (86) auto-void — Rev 2 §2/§3/AC-3–5 + Q3; new Q: 86 → payment-in-flight check without a new module cycle (PaymentModule imports OrderModule)
 3. **Field, real-world check:** PATCH real PromptPay ID (BRIEF-024), create a QR (BRIEF-013), scan with a banking app — name + amount, no transfer (BRIEF-013 AC-12 manual half)
 4. **Decide by 25 Oct:** phone new-order (CD-14) for the 8 Nov demo — 3rd Metee brief before the 2–8 Nov freeze, or demo = web POS order + phone login/queue
 5. Tunnel (ngrok static domain + https LINE callback) — before BRIEF-026 webhook
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-017 awaiting Cowork
+- Shared files: none · Review queue: none (PASS, 3 Suggestions parked)
 - Setup: `app/frontend/.env.local` missing (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_API_MOCKING`)
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
@@ -35,6 +35,6 @@ BRIEF-017 Rev 3 **Implemented**, awaiting Cowork audit. Branch `feat/BRIEF-017-v
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `0406c18` (was `e9e8c88` before the 20 Oct rebase) · add AC: void after a completed payment (`paid > total`, BRIEF-013 S5)
 
 ## Queue
-1. BRIEF-017 ticket issue flow (Implemented, awaiting audit)
+1. BRIEF-017 ticket issue flow (audit PASS)
 2. BRIEF-027 sold-out (86) auto-void (to seed) · BRIEF-023 split equal (Q1 open)
 3. IAM brief (full policy editor) · BRIEF-018 void/comp + PIN · BRIEF-025 slip · BRIEF-026 gateway
