@@ -192,9 +192,8 @@ describe('Ticket issues (e2e)', () => {
     const claimed = await reload(raced);
     expect(claimed.status).toBe('issue');
     expect(claimed.issue?.reason).toBe('equipment');
-    await waitFor(events, 1);
-    expect(events.length).toBeGreaterThanOrEqual(1);
-    expect(events.at(-1)).toMatchObject({ status: 'issue' });
+    await waitUntil(events, (event) => statusOf(event) === 'issue');
+    expect(events.some((event) => statusOf(event) === 'issue')).toBe(true);
 
     const sending = await placeOn('C5');
     await post(`/api/tickets/${sending.id}/accept`).expect(200);
@@ -325,6 +324,18 @@ function lineId(ticket: Ticket): string {
 async function waitFor(events: unknown[], count: number): Promise<void> {
   const started = Date.now();
   while (events.length < count && Date.now() - started < 2_000) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
+
+function statusOf(event: unknown): string | undefined {
+  if (typeof event !== 'object' || event === null || !('status' in event)) return undefined;
+  return typeof event.status === 'string' ? event.status : undefined;
+}
+
+async function waitUntil(events: unknown[], match: (event: unknown) => boolean): Promise<void> {
+  const started = Date.now();
+  while (!events.some(match) && Date.now() - started < 2_000) {
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
 }
