@@ -63,3 +63,17 @@ PASS. The issue flow matches Rev 3 exactly: transitions live in a pure function,
 - Handoff Sonar section present for the scanned commit = S (or later scan): n/a — optional for this brief, not run (BRIEF-006 setup)
 - Remaining issues have reasons; no unapproved "won't fix"/exclusions: n/a
 - Learning mode respected (Metee fixed his own issues): n/a (KJ brief)
+
+## Re-audit — 2026-10-20 · `a078290`
+- **Scope of change:** `7b8af1e` (PASS commit) = evidence only — this audit unchanged, handoff, state ✅. `a078290` = test-only, `test/ticket-issue.e2e-spec.ts` (flag × accept race): `events.at(-1)` → wait for *any* `status: 'issue'` event. No `src/` or contracts change.
+- **Is the fix right?** Yes. Each transition emits after its own commit, then re-reads + looks up staff. When `accept` commits first and `flag` waits on the row lock, `accept`'s emit can still arrive *after* `flag`'s. "Last event = final state" was never guaranteed; the test now asserts the DB final state (`claimed.status === 'issue'`) plus that the `issue` event was sent — the correct contract.
+- **What it reveals (new finding):**
+
+| # | Must fix / Suggestion | Severity | Evidence · Current → Updated |
+|---|---|---|---|
+| 4 | Suggestion (Field decision — contract change) | Med | `TicketStatusChangedPayloadSchema` — **Current:** `{ ticketId, orderId, visitId, status, updatedBy }`, no ordering field; a POS / phone that applies events in arrival order can show `accepted` while the ticket is `issue` (exactly the race `a078290` hit). Pre-existing since BRIEF-012, not introduced here. **Updated:** add `updatedAt` (ticket row timestamp) to ticket event payloads; clients drop an event older than what they hold, or refetch on receipt. Worth deciding before the 8 Nov phone → POS live demo; fits BRIEF-027 or Metee's next mobile brief. |
+
+- **Tests:** inspected, not re-run (same limitation as above); GitHub `ci` on the PR head remains the independent gate.
+- **Recommendation:** **PASS stands** for head `a078290` — 0 Must fix; Suggestions 1–4 are follow-ups.
+- **Next command:** `execute BRIEF-017` — commit this re-audit section unchanged (evidence-only), push, open / update the PR → merge when `ci` is green on that head.
+- **Field decision (2026-10-20, in session):** Suggestion 4 **approved** — add `updatedAt` to ticket event payloads (`ticket.status_changed`, `ticket.issue_escalated`) so clients drop out-of-order events. Carried into **BRIEF-027** scope (Cowork seeds it); not changed in this PR. Recorded by Cowork on Field's explicit instruction.
