@@ -6,6 +6,7 @@ export interface PaymentRepository {
   save(payment: PaymentRecord): Promise<PaymentRecord>;
   findById(id: string): Promise<PaymentRecord | null>;
   findPendingByVisit(visitId: string): Promise<PaymentRecord | null>;
+  hasPending(): Promise<boolean>;
   listByVisit(visitId: string): Promise<PaymentRecord[]>;
   coveredOrderIds(visitId: string): Promise<string[]>;
   pendingVisitIds(visitIds: readonly string[]): Promise<string[]>;

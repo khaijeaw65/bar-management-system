@@ -7,6 +7,17 @@ const COUNTER_COUNT = 8;
 const TABLE_COUNT = 6;
 const VENUE_SLUG = 'main';
 const VENUE_NAME = 'The Loft Bar';
+const NEW_VENUE = {
+  name: VENUE_NAME,
+  slug: VENUE_SLUG,
+  kitchenDisplayEnabled: false,
+  businessDayCutoff: '06:00:00',
+  counterQrEnabled: false,
+  paymentMode: 'own_promptpay' as const,
+  promptpayId: null,
+  promptpayIdType: null,
+  shiftCloseEnabled: false,
+};
 
 export const VENUE_SEATS: SeedSeat[] = [
   ...numberedSeats('C', 'counter', COUNTER_COUNT),
@@ -14,7 +25,7 @@ export const VENUE_SEATS: SeedSeat[] = [
 ];
 
 export async function seedVenue(dataSource: DataSource): Promise<void> {
-  await upsertVenue(dataSource);
+  await insertVenueOnce(dataSource);
   for (const seat of VENUE_SEATS) {
     await insertSeat(dataSource, seat);
   }
@@ -32,29 +43,11 @@ function numberedSeats(
   }));
 }
 
-async function upsertVenue(dataSource: DataSource): Promise<void> {
+async function insertVenueOnce(dataSource: DataSource): Promise<void> {
   const venues = dataSource.getRepository(Venue);
   const existing = await venues.findOne({ where: { slug: VENUE_SLUG } });
-  if (existing) {
-    existing.name = VENUE_NAME;
-    existing.kitchenDisplayEnabled = false;
-    existing.businessDayCutoff = '06:00:00';
-    await venues.save(existing);
-    return;
-  }
-  await venues.save(
-    venues.create({
-      name: VENUE_NAME,
-      slug: VENUE_SLUG,
-      kitchenDisplayEnabled: false,
-      businessDayCutoff: '06:00:00',
-      counterQrEnabled: false,
-      paymentMode: 'own_promptpay',
-      promptpayId: null,
-      promptpayIdType: null,
-      shiftCloseEnabled: false,
-    }),
-  );
+  if (existing) return;
+  await venues.save(venues.create(NEW_VENUE));
 }
 
 async function insertSeat(dataSource: DataSource, seat: SeedSeat): Promise<void> {
