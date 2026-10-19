@@ -521,7 +521,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     <div>
       <h1 class="intro-title">Entity<br><span>Relationship Diagram</span></h1>
       <div class="intro-meta">
-        <span><strong>10 domains</strong> · 37 tables</span>
+        <span><strong>10 domains</strong> · 38 tables</span>
         <span><strong>Stack:</strong> NestJS + PostgreSQL + TypeORM</span>
         <span><strong>Updated:</strong> Sep 2026</span>
       </div>
@@ -543,7 +543,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-menu)"></div> Menu <span class="legend-count">7</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-inv)"></div> Inventory <span class="legend-count">3</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-order)"></div> Orders <span class="legend-count">3</span></div>
-    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-pay)"></div> Payment <span class="legend-count">2</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-pay)"></div> Payment <span class="legend-count">3</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-bottle)"></div> Bottle Keep <span class="legend-count">2</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-inv)"></div> Shift &amp; AI Insight <span class="legend-count">2</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-audit)"></div> Audit Log <span class="legend-count">1</span></div>
@@ -820,11 +820,21 @@ erDiagram
         string slip_trans_ref UK
         decimal slip_amount
         timestamp paid_at
+        uuid attempt_id
+        int part_no
+        int part_count
+        string status_reason
+        text status_note
+        timestamp expires_at
         timestamp created_at
     }
     payment_order {
         uuid payment_id FK
         uuid order_id FK
+    }
+    payment_charge_item {
+        uuid payment_id FK
+        uuid order_item_id FK
     }
     bottle_keep {
         uuid id PK
@@ -931,6 +941,8 @@ erDiagram
 
     payment ||--o{ payment_order : covers
     order_record ||--o{ payment_order : "settled by"
+    payment ||--o{ payment_charge_item : carries
+    order_item ||--o{ payment_charge_item : "charged on"
 
     bottle_keep ||--o{ bottle_keep_pour : tracks
 </pre>
@@ -1511,9 +1523,15 @@ erDiagram
             <div class="field-row"><span class="field-name"><span class="badge badge-uk">UK</span> slip_trans_ref</span><span class="field-type">varchar(100)</span></div>
             <div class="field-row"><span class="field-name">slip_amount</span><span class="field-type">numeric(12,2)</span></div>
             <div class="field-row"><span class="field-name">paid_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">attempt_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">part_no</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">part_count</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">status_reason</span><span class="field-type">varchar(30)</span></div>
+            <div class="field-row"><span class="field-name">status_note</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name">expires_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">gateway_tx_id UNIQUE = idempotency key — GB Prime Pay may retry webhooks, check before settling. method: promptpay | cash. status: pending | completed | failed | refunded | cancelled. confirmed_via: webhook | manual | cash | slip_verify (DR-014). slip_trans_ref UNIQUE = reused-slip guard. One visit can have multiple payments (separate bills).</div>
+          <div class="field-note">attempt_id groups the parts of one checkout (merge = 1 part; split = part_no of part_count). status_reason: staff_cancel | expired | webhook_missing | direct_transfer | other (CD-03 F1; note required for other). expires_at = pending QR lifetime, 15 min. gateway_tx_id UNIQUE = idempotency key — the gateway may retry webhooks, check before settling. method: promptpay | cash. status: pending | completed | failed | refunded | cancelled. confirmed_via: webhook | manual | cash | slip_verify (DR-014). slip_trans_ref UNIQUE = reused-slip guard. One visit can have multiple payments (separate bills).</div>
         </div>
 
         <div class="entity-card">
@@ -1526,6 +1544,18 @@ erDiagram
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> order_id</span><span class="field-type">uuid</span></div>
           </div>
           <div class="field-note">PK: (payment_id, order_id). Declares which orders are covered by a payment. New orders placed after a QR is generated are NOT in this set — they become a separate bill. Query unbilled orders via: orders WHERE NOT EXISTS completed payment_order link.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">payment_charge_item</span>
+            <span class="entity-tag tag-junction">junction</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> payment_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> order_item_id</span><span class="field-type">uuid</span></div>
+          </div>
+          <div class="field-note">PK: (payment_id, order_item_id). Which split part carries a charge line (corkage, fine) — charges are added to their assigned part, never split equally (CD-03 Q2, BRIEF-013 Q2).</div>
         </div>
 
       </div>

@@ -1,6 +1,6 @@
 -- ============================================================
 -- Bar Management System — Initial Schema
--- Generated: 2026-09-13  |  Updated: 2026-10-12  |  10 domains, 37 tables
+-- Generated: 2026-09-13  |  Updated: 2026-10-17  |  10 domains, 38 tables
 -- ============================================================
 
 -- ── Extensions ───────────────────────────────────────────────
@@ -432,6 +432,12 @@ CREATE TABLE payment (
   slip_trans_ref  VARCHAR(100) UNIQUE,   -- bank reference from the verified slip — rejects reused slips (DR-014 #6)
   slip_amount     NUMERIC(12,2),         -- amount the bank reports for that slip
   paid_at         TIMESTAMPTZ,
+  attempt_id      UUID NOT NULL,         -- groups the parts of one checkout; merge = 1 part (BRIEF-013 Q2)
+  part_no         SMALLINT NOT NULL DEFAULT 1,
+  part_count      SMALLINT NOT NULL DEFAULT 1,
+  status_reason   VARCHAR(30),           -- staff_cancel | expired | webhook_missing | direct_transfer | other (CD-03 F1)
+  status_note     TEXT,                  -- required when status_reason = 'other' (CD-03 F3)
+  expires_at      TIMESTAMPTZ,           -- pending QR lifetime, 15 min (CD-03 Q1)
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by      UUID REFERENCES staff_user(id),
@@ -443,6 +449,13 @@ CREATE TABLE payment_order (
   payment_id  UUID NOT NULL REFERENCES payment(id),
   order_id    UUID NOT NULL REFERENCES order_record(id),
   PRIMARY KEY (payment_id, order_id)
+);
+
+-- Which split part carries a charge line (CD-03 Q2, BRIEF-013 Q2)
+CREATE TABLE payment_charge_item (
+  payment_id     UUID NOT NULL REFERENCES payment(id),
+  order_item_id  UUID NOT NULL REFERENCES order_item(id),
+  PRIMARY KEY (payment_id, order_item_id)
 );
 
 -- ============================================================
@@ -548,6 +561,7 @@ CREATE INDEX idx_payment_visit       ON payment(visit_id);
 CREATE INDEX idx_payment_status      ON payment(status);
 CREATE INDEX idx_payment_order_pay   ON payment_order(payment_id);
 CREATE INDEX idx_payment_order_ord   ON payment_order(order_id);
+CREATE INDEX idx_payment_visit_status ON payment(visit_id, status);   -- BRIEF-013 Q2
 
 -- IAM lookups
 CREATE INDEX idx_membership_user     ON user_group_membership(user_id);
