@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { ErrorCodeSchema } from './errors.js';
 
 export const UuidSchema = z.uuid();
 
@@ -17,26 +16,6 @@ export function apiResponseSchema<T extends z.ZodType>(data: T) {
     data,
   });
 }
-
-// Null on every error except ITEM_UNAVAILABLE, which carries per-line reasons.
-export const ApiErrorDataSchema = z.union([
-  z.null(),
-  z.object({
-    details: z.array(
-      z.object({
-        variantId: UuidSchema,
-        reason: z.enum(['sold_out', 'out_of_window']),
-      }),
-    ),
-  }),
-]);
-
-export const ApiErrorSchema = z.object({
-  status: z.number().int(),
-  code: ErrorCodeSchema,
-  message: z.union([z.string(), z.array(z.string())]),
-  data: ApiErrorDataSchema,
-});
 
 export function listSchema<T extends z.ZodType>(item: T) {
   return z.object({

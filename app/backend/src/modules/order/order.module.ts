@@ -6,7 +6,7 @@ import { VenueModule } from '../venue/venue.module.js';
 import { CLOCK } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { RedisModule } from '../../providers/redis/redis.module.js';
-import { IdempotencyService } from './application/idempotency.service.js';
+import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
 import { OrderQueryService } from './application/order-query.service.js';
 import { OrderService } from './application/order.service.js';
 import { TicketService } from './application/ticket.service.js';

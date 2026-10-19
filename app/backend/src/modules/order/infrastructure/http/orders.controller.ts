@@ -12,8 +12,8 @@ import { RequirePermissions } from '../../../../common/decorators/require-permis
 import { requireUuid, staffAccess } from '../../../../common/http/http-input.js';
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
-import { IdempotencyService } from '../../application/idempotency.service.js';
-import { requestHash } from '../../application/request-hash.js';
+import { IdempotencyService } from '../../../../common/idempotency/idempotency.service.js';
+import { requestHash } from '../../../../common/idempotency/request-hash.js';
 import { OrderQueryService } from '../../application/order-query.service.js';
 import { OrderService } from '../../application/order.service.js';
 import { idempotencyKey, requestedLines } from './http-input.js';
@@ -63,8 +63,8 @@ export class OrdersController {
     const parsed = PlaceOrderRequestSchema.parse(body);
     const key = idempotencyKey(header);
     const hash = requestHash({ visitId, items: parsed.items });
-    const gate = await this.idempotency.begin(key, hash);
-    if (gate.kind === 'replay') return this.created(response, gate.order);
+    const gate = await this.idempotency.begin<Order>({ scope: 'order', key, hash });
+    if (gate.kind === 'replay') return this.created(response, gate.body);
     return this.placeNew(visitId, parsed, key, hash, response);
   }
 
@@ -77,10 +77,10 @@ export class OrdersController {
   ): Promise<Order> {
     try {
       const order = await this.orders.place({ visitId, items: requestedLines(parsed) });
-      await this.idempotency.finish(key, hash, order);
+      await this.idempotency.finish({ scope: 'order', key, hash, body: order });
       return this.created(response, order);
     } catch (error) {
-      await this.idempotency.cancel(key);
+      await this.idempotency.cancel('order', key);
       throw error;
     }
   }

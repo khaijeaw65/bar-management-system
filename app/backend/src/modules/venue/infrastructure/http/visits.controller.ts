@@ -26,6 +26,8 @@ import { RequirePermissions } from '../../../../common/decorators/require-permis
 import { blankToNull, requireUuid, staffAccess } from '../../../../common/http/http-input.js';
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
+import { BillService } from '../../../payment/application/bill.service.js';
+import { PaymentService } from '../../../payment/application/payment.service.js';
 import { OrderQueryService } from '../../../order/application/order-query.service.js';
 import type { OpenVisitInput } from '../../application/visit.types.js';
 import { VisitService } from '../../application/visit.service.js';
@@ -38,6 +40,8 @@ export class VisitsController {
   public constructor(
     private readonly visitService: VisitService,
     private readonly orders: OrderQueryService,
+    private readonly bills: BillService,
+    private readonly payments: PaymentService,
   ) {}
 
   @Post()
@@ -61,22 +65,31 @@ export class VisitsController {
   @Get(':id')
   @RequirePermissions('visits:read')
   @ApiOperation({
-    summary: 'Visit header and its orders',
+    summary: 'Visit header, orders, bill, and payments',
     description: staffAccess('visits:read'),
   })
   @ApiParam({ name: 'id', schema: zodToOpenApi(UuidSchema) })
   @ApiEnvelopedOk(VisitDetailSchema)
   public async getOne(@Param('id') id: string): Promise<VisitDetail> {
-    const visitId = requireUuid(id, 'ไม่พบการเข้าใช้');
+    return this.detail(requireUuid(id, 'ไม่พบการเข้าใช้'));
+  }
+
+  private async detail(visitId: string): Promise<VisitDetail> {
     const visit = toVisitBody(await this.visitService.getById(visitId));
-    return { ...visit, orders: await this.orders.forVisit(visitId) };
+    const snapshot = await this.bills.forVisit(visitId);
+    return {
+      ...visit,
+      orders: await this.orders.forVisit(visitId),
+      bill: snapshot.bill,
+      payments: await this.payments.attemptsFor(visitId),
+    };
   }
 
   @Post(':id/close')
   @HttpCode(HttpStatus.OK)
   @RequirePermissions('visits:close')
   @ApiOperation({
-    summary: 'Close an open, active, or idle visit',
+    summary: 'Close an open, active, or idle visit. 409 PAYMENT_IN_FLIGHT while a payment is pending',
     description: staffAccess('visits:close'),
   })
   @ApiParam({ name: 'id', schema: zodToOpenApi(UuidSchema) })

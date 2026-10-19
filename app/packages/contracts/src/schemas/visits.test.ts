@@ -24,6 +24,7 @@ describe('visit contracts', () => {
           total: '0.00',
           itemCount: 0,
           staffCalled: false,
+          paymentPending: false,
         },
       }).label,
     ).toBe('C1');

@@ -8,6 +8,7 @@ const EMPTY_BILL = {
   total: '0.00',
   itemCount: 0,
   staffCalled: false,
+  paymentPending: false,
 } as const;
 
 export function toTableSummary(seat: SeatWithLiveVisit): TableSummary {
