@@ -1,4 +1,4 @@
-import type { ErrorCode } from '@bar/contracts';
+import type { ErrorCode, PaymentAttempt } from '@bar/contracts';
 
 export type ErrorData =
   | null
@@ -7,7 +7,8 @@ export type ErrorData =
         variantId: string;
         reason: 'sold_out' | 'out_of_window';
       }>;
-    };
+    }
+  | { details: PaymentAttempt };
 
 export interface ErrorEnvelope {
   status: number;

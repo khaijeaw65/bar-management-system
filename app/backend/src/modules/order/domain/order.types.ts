@@ -56,3 +56,8 @@ export interface BillRow {
   total: string;
   itemCount: number;
 }
+
+export interface OrderTotal {
+  orderId: string;
+  total: string;
+}

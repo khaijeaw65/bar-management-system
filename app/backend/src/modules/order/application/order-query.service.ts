@@ -6,7 +6,7 @@ import {
   ORDER_REPOSITORY,
   type OrderRepository,
 } from '../domain/order.repository.js';
-import type { OrderQuery } from '../domain/order.types.js';
+import type { OrderQuery, OrderTotal } from '../domain/order.types.js';
 import { foldOrders } from './fold-orders.js';
 import type { FoldedOrder } from './folded-order.types.js';
 import type { VisitBill } from './order.types.js';
@@ -38,6 +38,10 @@ export class OrderQueryService {
       excludeCharge: true,
     });
     return views.map(withoutVisit);
+  }
+
+  public async orderTotals(visitId: string): Promise<OrderTotal[]> {
+    return this.orders.orderTotals(visitId);
   }
 
   public async billsFor(visitIds: readonly string[]): Promise<Map<string, VisitBill>> {

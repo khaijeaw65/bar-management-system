@@ -24,6 +24,9 @@ export class VenueTypeormRepository implements VenueRepository {
       kitchenDisplayEnabled: venue.kitchenDisplayEnabled,
       businessDayCutoff: venue.businessDayCutoff,
       counterQrEnabled: venue.counterQrEnabled,
+      paymentMode: venue.paymentMode,
+      promptpayId: venue.promptpayId,
+      promptpayIdType: venue.promptpayIdType,
     };
   }
 }

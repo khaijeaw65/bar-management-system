@@ -6,6 +6,7 @@ import {
   VisitStateSchema,
 } from './enums.js';
 import { OrderSchema } from './orders.js';
+import { BillSchema, PaymentAttemptSchema } from './payments.js';
 
 // Card on GET /tables. total, itemCount, and staffCalled stay empty until
 // BRIEF-012, BRIEF-013, and the customer QR brief fill them.
@@ -17,6 +18,7 @@ export const CurrentVisitSchema = z.object({
   total: MoneySchema,
   itemCount: z.number().int().nonnegative(),
   staffCalled: z.boolean(),
+  paymentPending: z.boolean(),
 });
 
 export type CurrentVisit = z.infer<typeof CurrentVisitSchema>;
@@ -61,6 +63,8 @@ export type Visit = z.infer<typeof VisitSchema>;
 
 export const VisitDetailSchema = VisitSchema.extend({
   orders: z.array(OrderSchema),
+  bill: BillSchema,
+  payments: z.array(PaymentAttemptSchema),
 });
 
 export type VisitDetail = z.infer<typeof VisitDetailSchema>;

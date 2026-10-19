@@ -10,6 +10,7 @@ import type {
   NewOrder,
   NewTicket,
   OrderQuery,
+  OrderTotal,
   PricedLine,
   TicketBucket,
 } from '../../domain/order.types.js';
@@ -20,7 +21,7 @@ import { OrderRecord } from './order.entity.js';
 import { OrderTicket } from './order-ticket.entity.js';
 import { toOrderRow } from './order-row.mapper.js';
 import { orderWhere, rowList } from './order-query.js';
-import { BILL_SQL, LOCK_TICKET_SQL, ORDER_ROWS_SQL } from './order.sql.js';
+import { BILL_SQL, LOCK_TICKET_SQL, ORDER_ROWS_SQL, ORDER_TOTALS_SQL } from './order.sql.js';
 
 @Injectable()
 export class OrderTypeormRepository implements OrderRepository {
@@ -78,6 +79,11 @@ export class OrderTypeormRepository implements OrderRepository {
     if (visitIds.length === 0) return [];
     const result: unknown = await this.manager.query(BILL_SQL, [visitIds]);
     return rowList(result).map((row) => this.toBill(row));
+  }
+
+  public async orderTotals(visitId: string): Promise<OrderTotal[]> {
+    const result: unknown = await this.manager.query(ORDER_TOTALS_SQL, [visitId]);
+    return rowList(result).map((row) => this.toOrderTotal(row));
   }
 
   private get manager(): EntityManager {
@@ -178,6 +184,10 @@ export class OrderTypeormRepository implements OrderRepository {
       total: this.required(row.total),
       itemCount: Number(row.item_count),
     };
+  }
+
+  private toOrderTotal(row: Record<string, unknown>): OrderTotal {
+    return { orderId: this.required(row.order_id), total: this.required(row.total) };
   }
 }
 

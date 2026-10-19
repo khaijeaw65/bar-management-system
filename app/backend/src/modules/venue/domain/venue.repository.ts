@@ -1,9 +1,20 @@
+import type { PromptpayIdType, VenuePaymentMode } from '@bar/contracts';
+
 export interface VenueRecord {
   name: string;
   slug: string;
   kitchenDisplayEnabled: boolean;
   businessDayCutoff: string | Date;
   counterQrEnabled: boolean;
+  paymentMode: VenuePaymentMode;
+  promptpayId: string | null;
+  promptpayIdType: PromptpayIdType | null;
+}
+
+export interface VenuePaymentAccount {
+  paymentMode: VenuePaymentMode;
+  promptpayId: string | null;
+  promptpayIdType: PromptpayIdType | null;
 }
 
 export interface VenueRepository {

@@ -4,6 +4,7 @@ import { hhmm } from '../../../common/time-label.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import {
   VENUE_REPOSITORY,
+  type VenuePaymentAccount,
   type VenueRepository,
 } from '../domain/venue.repository.js';
 
@@ -23,6 +24,16 @@ export class VenueSettingsService {
       kitchenDisplayEnabled: venue.kitchenDisplayEnabled,
       businessDayCutoff: hhmm(venue.businessDayCutoff),
       counterQrEnabled: venue.counterQrEnabled,
+    };
+  }
+
+  public async paymentAccount(): Promise<VenuePaymentAccount> {
+    const venue = await this.venues.findTheVenue();
+    if (!venue) throw new DomainException('NOT_FOUND', 'ไม่พบร้าน', 404);
+    return {
+      paymentMode: venue.paymentMode,
+      promptpayId: venue.promptpayId,
+      promptpayIdType: venue.promptpayIdType,
     };
   }
 }

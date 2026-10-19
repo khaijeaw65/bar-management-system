@@ -1,3 +1,4 @@
+import { TransactionHost } from '@nestjs-cls/transactional';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
@@ -5,6 +6,7 @@ import type { TableSeatRepository } from '../domain/table-seat.repository.js';
 import type { SeatIdentity, SeatWithLiveVisit } from '../domain/table-seat.types.js';
 import type { VisitRepository } from '../domain/visit.repository.js';
 import type { VisitRecord } from '../domain/visit.types.js';
+import { PaymentGuard } from '../../payment/application/payment-guard.js';
 import { VisitService } from './visit.service.js';
 import { VISIT_OPENED, VISIT_STATE_CHANGED } from '@bar/contracts';
 
@@ -44,11 +46,20 @@ function seatWith(current: VisitRecord | null): SeatWithLiveVisit {
 }
 
 describe('VisitService', () => {
+  beforeAll(() => {
+    new TransactionHost({
+      wrapWithTransaction: async (_options: unknown, fn: () => Promise<unknown>) => fn(),
+      getFallbackInstance: () => ({}),
+    } as never);
+  });
+
   const visits = {
     insert: vi.fn(),
     findById: vi.fn(),
     findLiveBySeat: vi.fn(),
     closeIfLive: vi.fn(),
+    lockById: vi.fn(),
+    activateIfWaiting: vi.fn(),
   };
   const seats = {
     listActive: vi.fn(),
@@ -58,11 +69,13 @@ describe('VisitService', () => {
   };
   const staff = { findById: vi.fn() };
   const notifications = { emitToPos: vi.fn() };
+  const paymentGuard = { assertNoPaymentInFlight: vi.fn() };
   const service = new VisitService(
     visits as unknown as VisitRepository,
     seats as unknown as TableSeatRepository,
     staff as unknown as StaffUserService,
     notifications as unknown as NotificationsService,
+    paymentGuard as unknown as PaymentGuard,
   );
 
   beforeEach(() => {
@@ -79,6 +92,7 @@ describe('VisitService', () => {
 
   it('emits state_changed only after a live visit is closed', async () => {
     const closed = visit({ state: 'closed', closedAt: new Date() });
+    visits.lockById.mockResolvedValue(visit());
     visits.closeIfLive.mockResolvedValue(closed);
 
     const result = await service.close(closed.id);
@@ -95,7 +109,7 @@ describe('VisitService', () => {
   it.each(['closed', 'abandoned'] as const)(
     'rejects a %s visit without emitting',
     async (state) => {
-      visits.closeIfLive.mockResolvedValue(null);
+      visits.lockById.mockResolvedValue(visit({ state }));
       visits.findById.mockResolvedValue(visit({ state }));
 
       await expect(service.close(visit().id)).rejects.toMatchObject({
@@ -106,7 +120,7 @@ describe('VisitService', () => {
   );
 
   it('returns not found when the close matches no visit', async () => {
-    visits.closeIfLive.mockResolvedValue(null);
+    visits.lockById.mockResolvedValue(null);
     visits.findById.mockResolvedValue(null);
 
     await expect(service.close(visit().id)).rejects.toMatchObject({

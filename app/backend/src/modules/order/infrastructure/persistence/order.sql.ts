@@ -55,6 +55,21 @@ export const BILL_SQL = `
   GROUP BY o.visit_id
 `;
 
+export const ORDER_TOTALS_SQL = `
+  SELECT o.id AS order_id,
+         COALESCE(SUM(i.quantity * (i.unit_price_snapshot + COALESCE(mods.delta, 0))), 0)::text AS total
+  FROM order_record o
+  JOIN order_ticket t ON t.order_id = o.id
+  JOIN order_item i ON i.ticket_id = t.id
+  LEFT JOIN (
+    SELECT order_item_id, SUM(price_delta_snapshot) AS delta
+    FROM order_item_modifier
+    GROUP BY order_item_id
+  ) mods ON mods.order_item_id = i.id
+  WHERE i.cancelled_at IS NULL AND o.visit_id = $1
+  GROUP BY o.id
+`;
+
 export const LOCK_TICKET_SQL = `
   SELECT t.id, t.order_id, t.status, t.sent_at, o.visit_id, s.kind AS seat_kind
   FROM order_ticket t

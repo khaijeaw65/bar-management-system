@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Transactional } from '@nestjs-cls/transactional';
 import { VISIT_OPENED, VISIT_STATE_CHANGED, type TableSummary } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
@@ -12,6 +13,7 @@ import {
   type VisitRepository,
 } from '../domain/visit.repository.js';
 import type { VisitRecord } from '../domain/visit.types.js';
+import { PaymentGuard } from '../../payment/application/payment-guard.js';
 import { toTableSummary } from './table-summary.js';
 import type {
   OpenVisitInput,
@@ -29,6 +31,7 @@ export class VisitService {
     private readonly tableSeatRepository: TableSeatRepository,
     private readonly staffUserService: StaffUserService,
     private readonly notificationsService: NotificationsService,
+    private readonly paymentGuard: PaymentGuard,
   ) {}
 
   public async open(input: OpenVisitInput): Promise<OpenVisitResult> {
@@ -52,10 +55,26 @@ export class VisitService {
     return { activated: activated !== null, visitId: locked.id, tableSeatId: locked.tableSeatId };
   }
 
+  public async lockLive(visitId: string): Promise<void> {
+    const locked = await this.visitRepository.lockById(visitId);
+    if (!locked) throw new DomainException('NOT_FOUND', 'ไม่พบการเข้าใช้', 404);
+    if (!this.isLiveVisit(locked.state)) {
+      throw new DomainException('INVALID_STATE_TRANSITION', 'สถานะโต๊ะไม่ถูกต้อง', 409);
+    }
+  }
+
   public async close(id: string): Promise<VisitView> {
-    const closed = await this.visitRepository.closeIfLive(id);
+    const closed = await this.closeWhenClear(id);
     if (closed) return this.finishClose(closed);
     return this.rejectClose(id);
+  }
+
+  @Transactional()
+  private async closeWhenClear(id: string): Promise<VisitRecord | null> {
+    const locked = await this.visitRepository.lockById(id);
+    if (!locked || !this.isLiveVisit(locked.state)) return null;
+    await this.paymentGuard.assertNoPaymentInFlight(id);
+    return this.visitRepository.closeIfLive(id);
   }
 
   private async insertOrAttach(input: OpenVisitInput): Promise<OpenVisitResult> {
