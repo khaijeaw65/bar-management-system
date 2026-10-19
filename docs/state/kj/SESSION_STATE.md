@@ -1,24 +1,24 @@
 # State — KJ
-Updated: 2026-10-19 22:00 · Agent: Cowork (Claude)
+Updated: 2026-10-19 22:35 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-013 Rev 3 **Ready** (Field, 19 Oct). Next: `execute BRIEF-013` (Cursor) on `feat/BRIEF-013-payments-core`.
+BRIEF-013 Rev 3 **Audit PASS** (Cowork, `f06f28a`, 0 Must fix). Next: PR, then merge when `ci` is green.
 
 ## Active
-- Brief: BRIEF-013 payments core (merge checkout) · Stage: Ready Rev 3 · Branch: `feat/BRIEF-013-payments-core` (rebased on main #60)
-- Seeded 19 Oct: BRIEF-023 split equal (`feat/BRIEF-023-payment-split-equal`, Q1 open) · BRIEF-024 PromptPay ID settings (`feat/BRIEF-024-promptpay-id-settings`, Q1–Q3 open)
+- Brief: BRIEF-013 payments core · Stage: Audit PASS · Branch: `feat/BRIEF-013-payments-core` · audited `f06f28a`
+- Seeded 19 Oct: BRIEF-023 (`feat/BRIEF-023-payment-split-equal`, Q1 open) · BRIEF-024 (`feat/BRIEF-024-promptpay-id-settings`, Q1–Q3 open) — both pushed
 - Done 18 Oct: BRIEF-022 (#57) · BRIEF-021 (#56) · BRIEF-020 (#54) · BRIEF-019 (#52)
 
 ## Next steps
-1. `execute BRIEF-013` → Implemented → `audit BRIEF-013` (Cowork)
+1. Open the PR from the PASS commit. Merge when `ci` is green (Field's PR is pre-approved)
 2. Field: BRIEF-024 Q1–Q3 → Ready (needed before the 8 Nov demo — real QR scan check)
 3. **Decide by 25 Oct:** phone new-order (CD-14) for the 8 Nov demo — 3rd Metee brief before the 2–8 Nov freeze, or demo = web POS order + phone login/queue
 4. Tunnel (ngrok static domain + https LINE callback) — before BRIEF-026 webhook
 
 ## Blockers / Coordination
-- Seed branches are local only — push from the Mac (cloud session has no push access)
-- Shared files: none · Review queue: none
+- Shared files: none · Review queue: BRIEF-013 PR — merge waits on `ci`
+- Setup: `app/frontend/.env.local` missing (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_API_MOCKING`)
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; 2–8 Nov no new features) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -30,7 +30,7 @@ BRIEF-013 Rev 3 **Ready** (Field, 19 Oct). Next: `execute BRIEF-013` (Cursor) on
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `e9e8c88`
 
 ## Queue
-1. BRIEF-013 payments core (Ready Rev 3)
+1. BRIEF-013 payments core (Audit PASS — PR)
 2. BRIEF-024 PromptPay ID settings
 3. BRIEF-017 issue flow + sold-out (86) + menu cache (Rev 2 rebases after 013)
 4. BRIEF-023 split equal

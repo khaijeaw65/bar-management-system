@@ -117,10 +117,10 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 ### Tables & visits
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
-| GET | `/api/tables` | floor: seats (`kind`: table \| counter) + current visit summary (state, total, since) | `tables:read` |
+| GET | `/api/tables` | floor: seats (`kind`: table \| counter) + current visit summary (state, total, `paymentPending`) | `tables:read` |
 | POST | `/api/tables/:id/qr/regenerate` | new signed QR token, old one invalid (FRD §3); reprint = same token, client-only | `tables:manage` |
 | POST | `/api/visits` | open visit `{ tableSeatId }` — first write wins, second attaches (FRD §3) | `visits:open` |
-| GET | `/api/visits/:id` | visit detail: orders, items, totals, payments | `visits:read` |
+| GET | `/api/visits/:id` | visit detail: orders, `bill` (`total`, `paid`, `remaining`, `locked`), `payments[]` grouped by attempt | `visits:read` |
 | POST | `/api/visits/:id/close` | close (409 if payment in flight) | `visits:close` |
 | GET | `/api/public/qr/:token` | resolve table QR → table + visit session | public, rate-limited |
 | POST | `/api/public/visits/:id/call-staff` | customer bell | visit session |
@@ -139,11 +139,11 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 ### Payments
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
-| POST | `/api/visits/:visitId/payments` | create attempt: `{ method, mode: merge \| split_equal, parts? }` → locks amount, PromptPay QR payload | `payments:create` |
-| GET | `/api/payments/:id` | status (polling fallback to WS) | `payments:read` |
-| POST | `/api/payments/:id/mark-paid` | manual / cash confirm (+ reason) | `payments:mark_paid` |
-| POST | `/api/payments/:id/cancel` | cancel attempt (unlocks bill) | `payments:create` |
-| POST | `/api/webhooks/payments/:provider` | gateway confirm (idempotent on `gateway_tx_id`; late webhook after manual = ignored + logged) | signature |
+| POST | `/api/visits/:visitId/payments` | create one merged attempt `{ method: promptpay \| cash, mode: merge }` + optional `Idempotency-Key`. Locks the current remaining amount. `split_equal` → BRIEF-023 | `payments:create` |
+| GET | `/api/payments/:id` | one payment (poll fallback to `payment.status_changed`) | `payments:read` |
+| POST | `/api/payments/:id/cancel` | pending → cancelled, `statusReason: staff_cancel` | `payments:create` |
+| POST | `/api/payments/:id/mark-paid` | `{ via: manual \| cash, reason?, note? }`. `manual` requires `webhook_missing` \| `direct_transfer` \| `other`; `other` requires `note`. `cash` needs no reason | `payments:mark_paid` |
+| POST | `/api/webhooks/payments/:provider` | gateway confirm — BRIEF-026. Slip scan — BRIEF-025 | signature |
 
 ### Later in Phase 1 (catalogued when their CD/brief starts)
 Notifications feed (`/api/notifications`, DR-003) · guest profile + AI summary · bottle keep · restock requests · dashboard · IAM admin.

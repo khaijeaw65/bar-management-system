@@ -1,4 +1,4 @@
-import type { BillRow, LockedTicket, NewOrder, OrderQuery } from './order.types.js';
+import type { BillRow, LockedTicket, NewOrder, OrderQuery, OrderTotal } from './order.types.js';
 import type { OrderRow } from './order-row.types.js';
 
 export interface OrderRepository {
@@ -8,6 +8,7 @@ export interface OrderRepository {
   saveStatus(id: string, status: LockedTicket['status'], sentAt: Date | null): Promise<void>;
   rows(query: OrderQuery): Promise<OrderRow[]>;
   bills(visitIds: readonly string[]): Promise<BillRow[]>;
+  orderTotals(visitId: string): Promise<OrderTotal[]>;
 }
 
 export const ORDER_REPOSITORY = Symbol('ORDER_REPOSITORY');

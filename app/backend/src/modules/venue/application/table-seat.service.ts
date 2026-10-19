@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { TableSummary } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
+import { BillService } from '../../payment/application/bill.service.js';
 import { OrderQueryService } from '../../order/application/order-query.service.js';
 import {
   TABLE_SEAT_REPOSITORY,
@@ -18,12 +19,15 @@ export class TableSeatService {
     @Inject(TABLE_SEAT_REPOSITORY)
     private readonly tableSeatRepository: TableSeatRepository,
     private readonly orders: OrderQueryService,
+    private readonly bills: BillService,
   ) {}
 
   public async list(): Promise<TableSummary[]> {
     const active = await this.tableSeatRepository.listActive();
-    const bills = await this.orders.billsFor(this.liveVisitIds(active));
-    return active.map((seat) => this.applyBill(toTableSummary(seat), bills));
+    const ids = this.liveVisitIds(active);
+    const bills = await this.orders.billsFor(ids);
+    const pending = await this.bills.pendingVisitIds(ids);
+    return active.map((seat) => this.applyBill(toTableSummary(seat), bills, pending));
   }
 
   public async regenerateQr(id: string): Promise<string> {
@@ -38,14 +42,22 @@ export class TableSeatService {
     return seats.flatMap((seat) => (seat.currentVisit ? [seat.currentVisit.id] : []));
   }
 
-  private applyBill(summary: TableSummary, bills: ReadonlyMap<string, VisitBill>): TableSummary {
+  private applyBill(
+    summary: TableSummary,
+    bills: ReadonlyMap<string, VisitBill>,
+    pending: ReadonlySet<string>,
+  ): TableSummary {
     const visit = summary.currentVisit;
     if (!visit) return summary;
     const bill = bills.get(visit.id);
-    if (!bill) return summary;
     return {
       ...summary,
-      currentVisit: { ...visit, total: money(bill.total), itemCount: bill.itemCount },
+      currentVisit: {
+        ...visit,
+        total: bill ? money(bill.total) : visit.total,
+        itemCount: bill ? bill.itemCount : visit.itemCount,
+        paymentPending: pending.has(visit.id),
+      },
     };
   }
 }

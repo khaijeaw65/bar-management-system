@@ -83,9 +83,7 @@ export class VisitTypeormRepository implements VisitRepository {
   }
 
   public async closeIfLive(id: string): Promise<VisitRecord | null> {
-    const result: unknown = await this.visitOrmRepository.query(CLOSE_IF_LIVE, [
-      id,
-    ]);
+    const result: unknown = await this.txHost.tx.query(CLOSE_IF_LIVE, [id]);
     const row = this.firstUpdatedRow(result);
     return row ? this.toClosedRecord(row) : null;
   }

@@ -7,12 +7,15 @@ import { HealthController } from '../dist/modules/health/health.controller.js';
 import { HealthService } from '../dist/modules/health/health.service.js';
 import { MenuCatalogService } from '../dist/modules/menu/application/menu-catalog.service.js';
 import { MenuController } from '../dist/modules/menu/infrastructure/http/menu.controller.js';
-import { IdempotencyService } from '../dist/modules/order/application/idempotency.service.js';
+import { IdempotencyService } from '../dist/common/idempotency/idempotency.service.js';
 import { OrderQueryService } from '../dist/modules/order/application/order-query.service.js';
 import { OrderService } from '../dist/modules/order/application/order.service.js';
 import { TicketService } from '../dist/modules/order/application/ticket.service.js';
 import { OrdersController } from '../dist/modules/order/infrastructure/http/orders.controller.js';
 import { TicketsController } from '../dist/modules/order/infrastructure/http/tickets.controller.js';
+import { BillService } from '../dist/modules/payment/application/bill.service.js';
+import { PaymentService } from '../dist/modules/payment/application/payment.service.js';
+import { PaymentsController } from '../dist/modules/payment/infrastructure/http/payments.controller.js';
 import { TableSeatService } from '../dist/modules/venue/application/table-seat.service.js';
 import { VenueSettingsService } from '../dist/modules/venue/application/venue-settings.service.js';
 import { VisitService } from '../dist/modules/venue/application/visit.service.js';
@@ -34,6 +37,7 @@ const documentedControllers = [
   MenuController,
   OrdersController,
   TicketsController,
+  PaymentsController,
 ];
 
 export async function createOpenApiDocument(): Promise<OpenAPIObject> {
@@ -53,6 +57,8 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: OrderQueryService, useValue: {} },
       { provide: TicketService, useValue: {} },
       { provide: IdempotencyService, useValue: {} },
+      { provide: BillService, useValue: {} },
+      { provide: PaymentService, useValue: {} },
       {
         provide: AppConfigService,
         useValue: { nodeEnv: 'test', frontendUrl: 'http://localhost:3000' },

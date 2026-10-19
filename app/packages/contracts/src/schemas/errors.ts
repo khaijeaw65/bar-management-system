@@ -12,6 +12,10 @@ export const ErrorCodeSchema = z.enum([
   'IDEMPOTENCY_KEY_REUSED',
   'INVALID_STATE_TRANSITION',
   'ITEM_UNAVAILABLE',
+  'PAYMENT_IN_FLIGHT',
+  'NOTHING_TO_PAY',
+  'PAYMENT_MODE_UNAVAILABLE',
+  'PROMPTPAY_NOT_SET',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
