@@ -27,7 +27,7 @@ Key differentiators: AI-powered owner insight (sales / anomaly-fraud / menu — 
 ├── app/
 │   ├── backend/            → NestJS modular monolith (ESM, Vitest, TypeORM)
 │   ├── frontend/           → Next.js 16 web app (HeroUI v3, Tailwind v4)
-│   ├── mobile/             → Expo React Native — staff surface (planned, not created yet)
+│   ├── mobile/             → Expo React Native — staff surface (@bar/mobile)
 │   └── packages/contracts/ → @bar/contracts — shared enums & types
 ├── docs/
 │   ├── rules/              → all agent rules (source of truth) incl. workflow.md
