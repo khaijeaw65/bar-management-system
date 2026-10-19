@@ -29,6 +29,7 @@ export interface StoredPromptPay {
 export interface VenueRepository {
   findTheVenue(): Promise<VenueRecord | null>;
   lockTheVenue(): Promise<LockedVenue | null>;
+  lockTheVenueShared(): Promise<LockedVenue | null>;
   savePromptPay(id: string, stored: StoredPromptPay): Promise<void>;
 }
 

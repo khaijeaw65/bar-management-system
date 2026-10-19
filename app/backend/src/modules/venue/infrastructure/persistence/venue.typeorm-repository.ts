@@ -11,6 +11,7 @@ import type {
 import { Venue } from './venue.entity.js';
 
 const LOCK_VENUE = `SELECT id FROM venue ORDER BY created_at ASC LIMIT 1 FOR UPDATE`;
+const LOCK_VENUE_SHARE = `SELECT id FROM venue ORDER BY created_at ASC LIMIT 1 FOR SHARE`;
 
 @Injectable()
 export class VenueTypeormRepository implements VenueRepository {
@@ -25,13 +26,12 @@ export class VenueTypeormRepository implements VenueRepository {
     return this.toRecord(venue);
   }
 
-  public async lockTheVenue(): Promise<LockedVenue | null> {
-    const locked: unknown = await this.manager.query(LOCK_VENUE);
-    const id = this.firstId(locked);
-    if (!id) return null;
-    const venue = await this.venues.findOneBy({ id });
-    if (!venue) return null;
-    return this.toLocked(venue);
+  public lockTheVenue(): Promise<LockedVenue | null> {
+    return this.lockBy(LOCK_VENUE);
+  }
+
+  public lockTheVenueShared(): Promise<LockedVenue | null> {
+    return this.lockBy(LOCK_VENUE_SHARE);
   }
 
   public async savePromptPay(id: string, stored: StoredPromptPay): Promise<void> {
@@ -40,6 +40,15 @@ export class VenueTypeormRepository implements VenueRepository {
     venue.promptpayId = stored.promptpayId;
     venue.promptpayIdType = stored.promptpayIdType;
     await this.venues.save(venue);
+  }
+
+  private async lockBy(sql: string): Promise<LockedVenue | null> {
+    const locked: unknown = await this.manager.query(sql);
+    const id = this.firstId(locked);
+    if (!id) return null;
+    const venue = await this.venues.findOneBy({ id });
+    if (!venue) return null;
+    return this.toLocked(venue);
   }
 
   private toRecord(venue: Venue): VenueRecord {

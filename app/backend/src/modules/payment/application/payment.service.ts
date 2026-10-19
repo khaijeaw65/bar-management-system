@@ -86,7 +86,7 @@ export class PaymentService {
     await this.rejectPending(input.visitId);
     const snapshot = await this.bills.forVisit(input.visitId);
     this.rejectEmpty(snapshot);
-    const account = await this.venues.paymentAccount();
+    const account = await this.venues.lockedPaymentAccount();
     this.rejectMode(account, input.method);
     const saved = await this.payments.insert(this.draft(input, snapshot, account), snapshot.uncoveredOrderIds);
     return toPayment(saved);

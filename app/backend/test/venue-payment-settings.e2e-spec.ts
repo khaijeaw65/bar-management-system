@@ -145,6 +145,41 @@ describe('Venue payment settings (e2e)', () => {
     expect(await auditRows()).toHaveLength(2);
   });
 
+  describe('race', () => {
+    it('never leaves a pending QR on the old id after the change succeeds', async () => {
+      const seats = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'C1', 'C2'];
+      for (const label of seats) {
+        await dataSource.query(
+          `UPDATE venue SET promptpay_id = $1, promptpay_id_type = 'mobile'`,
+          [MOBILE],
+        );
+        const visitId = await openSeat(label);
+        await placeBeer(visitId);
+        const [changed, created] = await Promise.all([
+          patch(OTHER_MOBILE, 'mobile'),
+          request(app.getHttpServer())
+            .post(`/api/visits/${visitId}/payments`)
+            .set(auth())
+            .send({ method: 'promptpay', mode: 'merge' }),
+        ]);
+        expect(created.status).toBe(201);
+        const qr = created.body.data.parts[0].qrPayload as string;
+        if (changed.status === 409) {
+          expect(changed.body.code).toBe('PAYMENT_IN_FLIGHT');
+          expect(qr).toContain('0066812345678');
+        } else {
+          expect(changed.status).toBe(200);
+          expect(qr).toContain('0066899999999');
+        }
+        expect(changed.status === 200 && qr.includes('0066812345678')).toBe(false);
+        await request(app.getHttpServer())
+          .post(`/api/payments/${created.body.data.parts[0].id}/cancel`)
+          .set(auth())
+          .expect(200);
+      }
+    });
+  });
+
   it('puts the new id into the next PromptPay QR', async () => {
     await patch(MOBILE_DASHED, 'mobile').expect(200);
     const visitId = await openSeat('T1');

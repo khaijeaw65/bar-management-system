@@ -35,8 +35,9 @@ export class VenueSettingsService {
     };
   }
 
-  public async paymentAccount(): Promise<VenuePaymentAccount> {
-    const venue = await this.requireVenue();
+  public async lockedPaymentAccount(): Promise<VenuePaymentAccount> {
+    const venue = await this.venues.lockTheVenueShared();
+    if (!venue) throw new DomainException('NOT_FOUND', 'ไม่พบร้าน', 404);
     return {
       paymentMode: venue.paymentMode,
       promptpayId: venue.promptpayId,
