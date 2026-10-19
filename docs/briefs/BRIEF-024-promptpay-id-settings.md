@@ -7,7 +7,7 @@
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts |
-| **Revision** | 2 |
+| **Revision** | 3 |
 | **Depends on** | **BRIEF-016 merged ✅ PR #49** (`venue` row, `VenueSettingsService`) · **BRIEF-013 merged (PR #64)** — payment table + module for AC-4 (Q3). Start: merge `main` into this branch (workflow Rev 21). |
 | **References** | FRD §7 (own PromptPay mode) · `docs/schema.sql` (`venue.promptpay_id`, `promptpay_id_type`, `payment_mode`; §9 `audit_log`, `audit_action`) · `docs/rules/backend.md` (audit_log append-only, not a BaseEntity) · BRIEF-016 Q2 (ID never in `GET /venue`) + audit S2 · BRIEF-013 Q5 · CD-12 / CD-13 (back-office, later screen) |
 | **Audit depth** | Full (payment destination — changing it redirects money) |
@@ -27,7 +27,8 @@ The owner can set and change the venue's PromptPay ID (the account every QR pays
   - Validation: `mobile` = 10 digits starting `0`; `national_id` = 13 digits with a valid check digit; `ewallet` = 15 digits. Input may contain spaces or dashes; stored digits only.
   - One transaction: venue row locked → any `pending` payment in the venue → 409 `PAYMENT_IN_FLIGHT` (open QRs carry the old ID) → `save()` → `AuditLogService.record` with entity `venue`, action `UPDATE`, `changed_fields = { promptpay_id: { from: <masked>, to: <masked> }, promptpay_id_type: { from, to } }`.
   - Same value as stored → 200, no audit row.
-- `PaymentGuard` gains `assertNoPaymentInFlightForVenue()` (venue-wide pending check) — the only change to the payment module.
+- `PaymentGuard` gains `assertNoPaymentInFlightForVenue()` (venue-wide pending check).
+- **Rev 3 (audit Must fix #1):** `PaymentService.insertAttempt` reads the venue payment account under `SELECT … FROM venue … FOR SHARE` (e.g. `VenueSettingsService.lockedPaymentAccount()`), after locking the visit. A PATCH (venue `FOR UPDATE`) and a payment create then serialize: PATCH either sees the new pending payment (409) or the create reads the new ID. These two are the only changes to the payment module.
 - `seed:venue` (BRIEF-016 audit S2): settings set on insert only; a re-run never overwrites edited settings. No PromptPay env key.
 - Contracts (`VenuePaymentSettingsSchema`, `UpdateVenuePaymentSettingsSchema`), OpenAPI, `docs/api/README.md` Venue table.
 
@@ -53,7 +54,7 @@ The owner can set and change the venue's PromptPay ID (the account every QR pays
 - **AC-1** — PATCH with a valid mobile number (`081-234-5678`) → stored `0812345678`; GET shows `XXX-XXX-5678`; `GET /venue` still has no payment fields.
 - **AC-2** — Invalid format / bad national-ID check digit / type mismatch → 400 `VALIDATION_ERROR`.
 - **AC-3** — Each real change writes exactly one `audit_log` row (entity `venue`, action `UPDATE`, masked from/to, `changed_by` = staff); same value → no row; the full ID appears in no `audit_log` row and no captured log line.
-- **AC-4** — With a pending payment on any visit → 409 `PAYMENT_IN_FLIGHT`, ID unchanged, no audit row; after the payment settles → PATCH succeeds.
+- **AC-4** — With a pending payment on any visit → 409 `PAYMENT_IN_FLIGHT`, ID unchanged, no audit row; after the payment settles → PATCH succeeds. Concurrent `PATCH` + `promptpay` create (`Promise.all`, repeated) → either PATCH 409 and the QR carries the old ID, or PATCH 200 and the QR carries the new ID — never PATCH 200 with an old-ID pending QR.
 - **AC-5** — `seed:venue` re-run keeps an edited ID and edited settings.
 - **AC-6** — A BRIEF-013 `promptpay` payment created after a PATCH carries the new ID in its EMVCo payload (e2e).
 - **AC-7** — Gates + run proof pass; OpenAPI + `openapi:check`; README updated.
@@ -61,7 +62,7 @@ The owner can set and change the venue's PromptPay ID (the account every QR pays
 ## 5. Test Gate
 | AC | Test type | Location (expected) |
 |---|---|---|
-| AC-1, AC-3, AC-4, AC-6 | e2e | `test/venue-payment-settings.e2e-spec.ts` (real Postgres + Redis) |
+| AC-1, AC-3, AC-4, AC-6 | e2e | `test/venue-payment-settings.e2e-spec.ts` (real Postgres + Redis) · AC-4 concurrency → `describe('race')` |
 | AC-2 | unit | `src/modules/venue/application/promptpay-id.spec.ts` (validation + mask) |
 | AC-5 | e2e | `test/venue-payment-settings.e2e-spec.ts` → `describe('seed')` |
 
@@ -93,6 +94,7 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - Thai `message`, English `code`; `save()` on the audited entity; changes only through `VenueSettingsService`.
 - `audit_log`: insert only — no UPDATE / DELETE anywhere, no `BaseEntity`.
 - The full PromptPay ID never in logs, errors, `audit_log`, or any response.
+- Lock order: payment create = visit → venue (`FOR SHARE`); PATCH = venue (`FOR UPDATE`) only. No other path locks venue then visit.
 
 ## 7. Decision Points (Field Guard)
 - **Q1 — Audit trail. ✅ Decided (Field, 2026-10-19): A** — `audit_log` row with masked values. Found while writing Rev 2: `audit_log` is in `schema.sql` but not migrated, and `AuditSubscriber` only stamps `created_by` / `updated_by`. So this brief adds the table (exactly `schema.sql` §9) and a small insert-only writer; the full-ID-in-subscriber risk from Rev 1 does not exist.
@@ -118,3 +120,4 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 |---|---|---|
 | 1 | 2026-10-19 | Initial Draft (Cowork) — from Field's BRIEF-013 Q5 decision "add PromptPay ID management" |
 | 2 | 2026-10-19 | Field in session: Q1 A, Q2 A, Q3 A — recorded by Cowork on Field's explicit instruction. Q1 scope: `audit_log` table is not migrated yet → migration + insert-only writer added; AC-6 (new ID reaches the QR) added; Workflow Rev 20 template sections. **Ready — Field approved Rev 2 in session ("approve BRIEF-024 Rev 2", 2026-10-19), recorded by Cowork on Field's explicit instruction** |
+| 3 | 2026-10-19 | Audit Must fix #1 (PATCH vs payment-create race): scope adds `PaymentService.insertAttempt` venue `FOR SHARE` read; AC-4 adds the concurrent case; lock-order constraint. **Field approved in session ("approve fix", 2026-10-19), recorded by Cowork on Field's explicit instruction.** Status stays Ready |
