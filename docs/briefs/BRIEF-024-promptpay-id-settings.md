@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | kj (executor agent — Cursor) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -111,10 +111,10 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
 - [x] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
 - [x] No unresolved decision blocking the main outcome (Q1–Q3 decided)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-19 | Initial Draft (Cowork) — from Field's BRIEF-013 Q5 decision "add PromptPay ID management" |
-| 2 | 2026-10-19 | Field in session: Q1 A, Q2 A, Q3 A — recorded by Cowork on Field's explicit instruction. Q1 scope: `audit_log` table is not migrated yet → migration + insert-only writer added; AC-6 (new ID reaches the QR) added; Workflow Rev 20 template sections |
+| 2 | 2026-10-19 | Field in session: Q1 A, Q2 A, Q3 A — recorded by Cowork on Field's explicit instruction. Q1 scope: `audit_log` table is not migrated yet → migration + insert-only writer added; AC-6 (new ID reaches the QR) added; Workflow Rev 20 template sections. **Ready — Field approved Rev 2 in session ("approve BRIEF-024 Rev 2", 2026-10-19), recorded by Cowork on Field's explicit instruction** |
