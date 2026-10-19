@@ -1,17 +1,17 @@
 # State — KJ
-Updated: 2026-10-19 22:10 · Agent: Cowork (Claude)
+Updated: 2026-10-19 22:00 · Agent: Cowork (Claude)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-013 Draft Rev 3 — all decisions in (Q1–Q7). Waiting on Field's explicit Ready approval, then `execute BRIEF-013`.
+BRIEF-013 Rev 3 **Ready** (Field, 19 Oct). Next: `execute BRIEF-013` (Cursor) on `feat/BRIEF-013-payments-core`.
 
 ## Active
-- Brief: BRIEF-013 payments core (merge checkout) · Stage: Draft Rev 3 · Branch: `feat/BRIEF-013-payments-core` (rebased on main #60)
+- Brief: BRIEF-013 payments core (merge checkout) · Stage: Ready Rev 3 · Branch: `feat/BRIEF-013-payments-core` (rebased on main #60)
 - Seeded 19 Oct: BRIEF-023 split equal (`feat/BRIEF-023-payment-split-equal`, Q1 open) · BRIEF-024 PromptPay ID settings (`feat/BRIEF-024-promptpay-id-settings`, Q1–Q3 open)
 - Done 18 Oct: BRIEF-022 (#57) · BRIEF-021 (#56) · BRIEF-020 (#54) · BRIEF-019 (#52)
 
 ## Next steps
-1. Field: approve BRIEF-013 Rev 3 → Ready → `execute BRIEF-013`
+1. `execute BRIEF-013` → Implemented → `audit BRIEF-013` (Cowork)
 2. Field: BRIEF-024 Q1–Q3 → Ready (needed before the 8 Nov demo — real QR scan check)
 3. **Decide by 25 Oct:** phone new-order (CD-14) for the 8 Nov demo — 3rd Metee brief before the 2–8 Nov freeze, or demo = web POS order + phone login/queue
 4. Tunnel (ngrok static domain + https LINE callback) — before BRIEF-026 webhook
@@ -30,7 +30,7 @@ BRIEF-013 Draft Rev 3 — all decisions in (Q1–Q7). Waiting on Field's explici
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `e9e8c88`
 
 ## Queue
-1. BRIEF-013 payments core (Draft Rev 3 → Ready)
+1. BRIEF-013 payments core (Ready Rev 3)
 2. BRIEF-024 PromptPay ID settings
 3. BRIEF-017 issue flow + sold-out (86) + menu cache (Rev 2 rebases after 013)
 4. BRIEF-023 split equal

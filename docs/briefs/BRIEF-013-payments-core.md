@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready |
 | **Implementer** | kj (executor agent — Cursor) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -159,11 +159,11 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
 - [x] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
 - [x] No unresolved decision blocking the main outcome (Q1–Q7 decided)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-17 | Initial Draft (Cowork) — gate-scope payments from FRD §7, DR-014 #6, CD-03 (Q1–Q3, F1–F4, R4–R6); slip and gateway split out; Q1–Q5 open |
 | 2 | 2026-10-17 | Field in session: Q1 A, Q2 A (exact schema diff), Q3 A; Q4, Q5 on hold — recorded by Cowork on Field's explicit instruction |
-| 3 | 2026-10-19 | Rebased on main (#60). Field in session: Q4 B (BullMQ delayed job, exact versions Pre-decided), Q5 PromptPay ID management → BRIEF-024, Q6 split equal → BRIEF-023, Q7 IDs 023–026 — recorded by Cowork on Field's explicit instruction. Workflow Rev 20 template: business rules, run proof, size check. Seed env + BRIEF-016 S2 moved to BRIEF-024; banking-app scan moved to the gate demo |
+| 3 | 2026-10-19 | Rebased on main (#60). Field in session: Q4 B (BullMQ delayed job, exact versions Pre-decided), Q5 PromptPay ID management → BRIEF-024, Q6 split equal → BRIEF-023, Q7 IDs 023–026 — recorded by Cowork on Field's explicit instruction. Workflow Rev 20 template: business rules, run proof, size check. Seed env + BRIEF-016 S2 moved to BRIEF-024; banking-app scan moved to the gate demo. **Ready — Field approved Rev 3 in session ("approve BRIEF-013 Rev 3", 2026-10-19), recorded by Cowork on Field's explicit instruction** |
