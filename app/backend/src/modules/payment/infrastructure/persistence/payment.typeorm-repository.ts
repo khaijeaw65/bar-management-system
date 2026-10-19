@@ -54,6 +54,11 @@ export class PaymentTypeormRepository implements PaymentRepository {
     return entity ? this.toRecord(entity) : null;
   }
 
+  public async hasPending(): Promise<boolean> {
+    const count = await this.payments.count({ where: { status: 'pending' } });
+    return count > 0;
+  }
+
   public async listByVisit(visitId: string): Promise<PaymentRecord[]> {
     const rows = await this.payments.find({ where: { visitId }, order: { createdAt: 'ASC', partNo: 'ASC' } });
     return rows.map((row) => this.toRecord(row));

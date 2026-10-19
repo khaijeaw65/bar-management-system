@@ -103,6 +103,8 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
 | GET | `/api/venue` | name, slug, kitchen display, business-day cut-off, counter QR — no payment fields | `venue:read` |
+| GET | `/api/venue/payment-settings` | payment mode + masked PromptPay ID (`XXX-XXX-` + last 4). Full ID is never returned | `venue:read_payment` |
+| PATCH | `/api/venue/payment-settings` | set PromptPay ID `{ promptpayId, promptpayIdType }`. 409 `PAYMENT_IN_FLIGHT` while any QR is pending | `venue:update_payment` |
 
 ### Menu
 | Method | Path | Purpose | Permission |

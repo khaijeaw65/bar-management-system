@@ -120,6 +120,10 @@ class MemoryPayments implements PaymentRepository {
     return null;
   }
 
+  public async hasPending(): Promise<boolean> {
+    return false;
+  }
+
   public async listByVisit(): Promise<PaymentRecord[]> {
     return [];
   }

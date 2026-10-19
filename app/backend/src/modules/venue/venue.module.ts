@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuditLogService } from '../../common/audit/audit-log.service.js';
 import { IamModule } from '../iam/iam.module.js';
 import { OrderModule } from '../order/order.module.js';
 import { PaymentModule } from '../payment/payment.module.js';
@@ -37,6 +38,7 @@ import { VisitTypeormRepository } from './infrastructure/persistence/visit.typeo
     TableSeatService,
     VisitService,
     VenueSettingsService,
+    AuditLogService,
   ],
   exports: [VisitService, VenueSettingsService],
 })

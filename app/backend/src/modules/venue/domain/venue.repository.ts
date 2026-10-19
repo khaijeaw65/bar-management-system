@@ -17,8 +17,19 @@ export interface VenuePaymentAccount {
   promptpayIdType: PromptpayIdType | null;
 }
 
+export interface LockedVenue extends VenuePaymentAccount {
+  id: string;
+}
+
+export interface StoredPromptPay {
+  promptpayId: string;
+  promptpayIdType: PromptpayIdType;
+}
+
 export interface VenueRepository {
   findTheVenue(): Promise<VenueRecord | null>;
+  lockTheVenue(): Promise<LockedVenue | null>;
+  savePromptPay(id: string, stored: StoredPromptPay): Promise<void>;
 }
 
 export const VENUE_REPOSITORY = Symbol('VENUE_REPOSITORY');

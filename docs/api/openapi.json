@@ -4872,6 +4872,295 @@
         ]
       }
     },
+    "/api/venue/payment-settings": {
+      "get": {
+        "description": "Permission: venue:read_payment. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "VenueController_getPaymentSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "paymentMode": {
+                          "enum": [
+                            "own_promptpay",
+                            "gateway"
+                          ],
+                          "type": "string"
+                        },
+                        "promptpayIdMasked": {
+                          "nullable": true,
+                          "pattern": "^XXX-XXX-\\d{4}$",
+                          "type": "string"
+                        },
+                        "promptpayIdType": {
+                          "enum": [
+                            "mobile",
+                            "national_id",
+                            "ewallet"
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "paymentMode",
+                        "promptpayIdType",
+                        "promptpayIdMasked"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Masked PromptPay destination",
+        "tags": [
+          "venue"
+        ]
+      },
+      "patch": {
+        "description": "Permission: venue:update_payment. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "VenueController_updatePaymentSettings",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "promptpayId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "promptpayIdType": {
+                    "enum": [
+                      "mobile",
+                      "national_id",
+                      "ewallet"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "promptpayId",
+                  "promptpayIdType"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "paymentMode": {
+                          "enum": [
+                            "own_promptpay",
+                            "gateway"
+                          ],
+                          "type": "string"
+                        },
+                        "promptpayIdMasked": {
+                          "nullable": true,
+                          "pattern": "^XXX-XXX-\\d{4}$",
+                          "type": "string"
+                        },
+                        "promptpayIdType": {
+                          "enum": [
+                            "mobile",
+                            "national_id",
+                            "ewallet"
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "paymentMode",
+                        "promptpayIdType",
+                        "promptpayIdMasked"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Set the venue PromptPay ID",
+        "tags": [
+          "venue"
+        ]
+      }
+    },
     "/api/visits": {
       "post": {
         "description": "Permission: visits:open. Access token from the access_token cookie, or Authorization: Bearer.",

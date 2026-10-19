@@ -19,4 +19,9 @@ export class PaymentGuard {
       details: toAttempt([toPayment(pending)]),
     });
   }
+
+  public async assertNoPaymentInFlightForVenue(): Promise<void> {
+    if (!(await this.payments.hasPending())) return;
+    throw new DomainException('PAYMENT_IN_FLIGHT', 'มีการชำระเงินที่ยังไม่จบ', 409);
+  }
 }
