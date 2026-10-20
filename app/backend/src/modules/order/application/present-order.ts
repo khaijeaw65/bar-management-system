@@ -30,6 +30,7 @@ export function toTicket(ticket: FoldedTicket, names: ReadonlyMap<string, string
     status: ticket.status,
     seat: ticket.seat,
     items: ticket.items,
+    issue: presentIssue(ticket, names),
     acceptedBy: staffRef(accepterId(ticket), names),
     sentAt: ticket.sentAt,
     createdAt: ticket.createdAt,
@@ -40,6 +41,19 @@ export function toTicket(ticket: FoldedTicket, names: ReadonlyMap<string, string
 export function withoutVisit(ticket: TicketView): Ticket {
   const { visitId: _visitId, ...body } = ticket;
   return body;
+}
+
+function presentIssue(ticket: FoldedTicket, names: ReadonlyMap<string, string>): Ticket['issue'] {
+  if (!ticket.issueReason || !ticket.issueReportedById) return null;
+  const reportedBy = staffRef(ticket.issueReportedById, names);
+  if (!reportedBy) return null;
+  return {
+    reason: ticket.issueReason,
+    itemId: ticket.issueItemId,
+    note: ticket.issueNote,
+    reportedBy,
+    escalatedAt: ticket.issueEscalatedAt,
+  };
 }
 
 function accepterId(ticket: FoldedTicket): string | null {

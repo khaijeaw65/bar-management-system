@@ -1,6 +1,8 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import {
+  FlagIssueRequestSchema,
+  ResolveIssueRequestSchema,
   TicketListQuerySchema,
   TicketListSchema,
   TicketSchema,
@@ -32,6 +34,7 @@ export class TicketsController {
   })
   @ApiQuery({ name: 'status', required: false, schema: { type: 'string' } })
   @ApiQuery({ name: 'visitId', required: false, schema: zodToOpenApi(UuidSchema) })
+  @ApiQuery({ name: 'escalated', required: false, schema: { type: 'string', enum: ['true'] } })
   @ApiEnvelopedOk(TicketListSchema)
   public list(@Query() query: unknown): Promise<TicketList> {
     return this.query.tickets(TicketListQuerySchema.parse(query)).then((items) => ({ items }));
@@ -71,5 +74,33 @@ export class TicketsController {
   @ApiEnvelopedOk(TicketSchema)
   public send(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload): Promise<Ticket> {
     return this.tickets.send(requireUuid(id, 'ไม่พบใบงาน'), user.sub);
+  }
+
+  @Post(':id/flag-issue')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermissions('orders:update_status')
+  @ApiOperation({
+    summary: 'pending, accepted, or ready to issue',
+    description: staffAccess('orders:update_status'),
+  })
+  @ApiParam({ name: 'id', schema: zodToOpenApi(UuidSchema) })
+  @ApiBody({ schema: zodToOpenApi(FlagIssueRequestSchema) })
+  @ApiEnvelopedOk(TicketSchema)
+  public flagIssue(@Param('id') id: string, @Body() body: unknown, @CurrentUser() user: CurrentUserPayload): Promise<Ticket> {
+    return this.tickets.flagIssue(requireUuid(id, 'ไม่พบใบงาน'), user.sub, FlagIssueRequestSchema.parse(body));
+  }
+
+  @Post(':id/resolve')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermissions('orders:update_status')
+  @ApiOperation({
+    summary: 'substitute returns the ticket to accepted; escalate sends it to the POS once',
+    description: staffAccess('orders:update_status'),
+  })
+  @ApiParam({ name: 'id', schema: zodToOpenApi(UuidSchema) })
+  @ApiBody({ schema: zodToOpenApi(ResolveIssueRequestSchema) })
+  @ApiEnvelopedOk(TicketSchema)
+  public resolve(@Param('id') id: string, @Body() body: unknown, @CurrentUser() user: CurrentUserPayload): Promise<Ticket> {
+    return this.tickets.resolveIssue(requireUuid(id, 'ไม่พบใบงาน'), user.sub, ResolveIssueRequestSchema.parse(body));
   }
 }

@@ -13,15 +13,21 @@ import type {
   OrderTotal,
   PricedLine,
   TicketBucket,
+  TicketIssueWrite,
+  TicketLineState,
 } from '../../domain/order.types.js';
 import type { OrderRow } from '../../domain/order-row.types.js';
 import { OrderItem } from './order-item.entity.js';
 import { OrderItemModifier } from './order-item-modifier.entity.js';
 import { OrderRecord } from './order.entity.js';
 import { OrderTicket } from './order-ticket.entity.js';
+import {
+  readOptionalDate,
+  readOptionalText,
+} from '../../../../common/persistence/row-values.js';
 import { toOrderRow } from './order-row.mapper.js';
 import { orderWhere, rowList } from './order-query.js';
-import { BILL_SQL, LOCK_TICKET_SQL, ORDER_ROWS_SQL, ORDER_TOTALS_SQL } from './order.sql.js';
+import { BILL_SQL, LINE_ON_TICKET_SQL, LOCK_TICKET_SQL, ORDER_ROWS_SQL, ORDER_TOTALS_SQL } from './order.sql.js';
 
 @Injectable()
 export class OrderTypeormRepository implements OrderRepository {
@@ -63,6 +69,21 @@ export class OrderTypeormRepository implements OrderRepository {
     ticket.status = status;
     ticket.sentAt = sentAt;
     await tickets.save(ticket);
+  }
+
+  public async saveIssue(id: string, issue: TicketIssueWrite): Promise<void> {
+    const tickets = this.manager.getRepository(OrderTicket);
+    const ticket = await tickets.findOne({ where: { id } });
+    if (!ticket) return;
+    this.applyIssue(ticket, issue);
+    await tickets.save(ticket);
+  }
+
+  public async lineOnTicket(ticketId: string, itemId: string): Promise<TicketLineState> {
+    const result: unknown = await this.manager.query(LINE_ON_TICKET_SQL, [ticketId, itemId]);
+    const row = rowList(result)[0];
+    if (!row) return 'missing';
+    return row.cancelled_at ? 'cancelled' : 'active';
   }
 
   public async rows(query: OrderQuery): Promise<OrderRow[]> {
@@ -150,6 +171,15 @@ export class OrderTypeormRepository implements OrderRepository {
     }));
   }
 
+  private applyIssue(ticket: OrderTicket, issue: TicketIssueWrite): void {
+    ticket.status = issue.status;
+    ticket.issueReason = issue.reason;
+    ticket.issueItemId = issue.itemId;
+    ticket.issueNote = issue.note;
+    ticket.issueReportedBy = issue.reportedBy;
+    ticket.issueEscalatedAt = issue.escalatedAt;
+  }
+
   private stationColumn(bucket: TicketBucket): 'bar' | 'food' | null {
     if (bucket === 'bar' || bucket === 'food') return bucket;
     return null;
@@ -163,6 +193,11 @@ export class OrderTypeormRepository implements OrderRepository {
       status: this.statusOf(this.required(row.status)),
       sentAt: row.sent_at instanceof Date ? row.sent_at : null,
       seatKind: this.required(row.seat_kind) === 'counter' ? 'counter' : 'table',
+      issueReason: readOptionalText(row.issue_reason),
+      issueItemId: readOptionalText(row.issue_item_id),
+      issueNote: readOptionalText(row.issue_note),
+      issueReportedBy: readOptionalText(row.issue_reported_by),
+      issueEscalatedAt: readOptionalDate(row.issue_escalated_at),
     };
   }
 

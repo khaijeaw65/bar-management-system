@@ -41,7 +41,23 @@ export interface LockedTicket {
   status: OrderStatus;
   sentAt: Date | null;
   seatKind: TableSeatKind;
+  issueReason: string | null;
+  issueItemId: string | null;
+  issueNote: string | null;
+  issueReportedBy: string | null;
+  issueEscalatedAt: Date | null;
 }
+
+export interface TicketIssueWrite {
+  status: OrderStatus;
+  reason: string | null;
+  itemId: string | null;
+  note: string | null;
+  reportedBy: string | null;
+  escalatedAt: Date | null;
+}
+
+export type TicketLineState = 'active' | 'cancelled' | 'missing';
 
 export interface OrderQuery {
   orderId?: string;
@@ -49,6 +65,7 @@ export interface OrderQuery {
   ticketId?: string;
   statuses?: OrderStatus[];
   excludeCharge: boolean;
+  escalatedOnly?: boolean;
 }
 
 export interface BillRow {

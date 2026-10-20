@@ -66,7 +66,7 @@ Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_
 
 ### Realtime (socket.io)
 - Namespaces: `/staff` (auth = same access token), `/customer` (visit session).
-- Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `notification.created`. `order.created` and `ticket.status_changed` go to room `staff`. `visit.*` stays on room `pos`.
+- Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `notification.created`. `order.created`, `ticket.status_changed`, and `ticket.issue_escalated` go to room `staff`. `visit.*` stays on room `pos`.
 - Payload = the **same contracts schema** as the REST resource (or a documented slice). Events notify; clients refetch via React Query when unsure (no event-sourced client state).
 - Event schemas live in `contracts/src/events/<domain>.ts`.
 
@@ -112,7 +112,7 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | GET | `/api/menu/categories` | active categories, sorted | `menu:read` |
 | GET | `/api/menu/items` | list for POS/staff (`?categoryId`, `?available`) | `menu:read` |
 | GET | `/api/menu/items/:id` | detail incl. variants + modifier groups | `menu:read` |
-| POST | `/api/menu/items/:id/mark-unavailable` · `/mark-available` | 86 / un-86 — BRIEF-017 | `menu:toggle_availability` |
+| POST | `/api/menu/items/:id/mark-unavailable` · `/mark-available` | 86 / un-86 — BRIEF-027 | `menu:toggle_availability` |
 | POST/PATCH | `/api/menu/items` · `/api/menu/items/:id` | create / edit (CD-04) | `menu:write` |
 | GET | `/api/public/menu` | customer QR menu (available only) | visit session |
 
@@ -132,10 +132,11 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 |---|---|---|---|
 | POST | `/api/visits/:visitId/orders` | place order (items, variants, modifiers, `orderedByName`, notes). Optional `Idempotency-Key`. | `orders:create` |
 | GET | `/api/orders/:id` | one order and all of its tickets, including the charge ticket | `orders:read` |
-| GET | `/api/tickets` | station queue (`?status`, `?visitId`). Default `pending,accepted,ready`. Charge tickets excluded. | `orders:read` |
+| GET | `/api/tickets` | station queue (`?status`, `?visitId`, `?escalated=true`). Default `pending,accepted,ready`. `escalated=true` returns only `issue` tickets already sent to the POS. Charge tickets excluded. | `orders:read` |
 | POST | `/api/tickets/:id/accept` · `/ready` · `/send` | ticket transitions (DR-013). `ready` only when the kitchen screen is on and the seat is a table. | `orders:update_status` |
-| POST | `/api/tickets/:id/flag-issue` · `/resolve` | issue flow — BRIEF-017 | `orders:update_status` |
-| POST | `/api/order-items/:id/cancel` | cancel item (stays visible, struck through) — BRIEF-017 | `orders:void` |
+| POST | `/api/tickets/:id/flag-issue` | `{ reason: out_of_stock \| equipment \| other, itemId?, note? }` from `pending`, `accepted`, or `ready` → `issue`. `other` requires `note`. `itemId` must be an active line of this ticket. Emits `ticket.status_changed`. | `orders:update_status` |
+| POST | `/api/tickets/:id/resolve` | `{ resolution: substitute \| escalate, note? }`. `escalate` keeps `issue` and emits `ticket.issue_escalated` once. `substitute` returns to `accepted` and clears the issue. | `orders:update_status` |
+| POST | `/api/order-items/:id/cancel` | cancel item (stays visible, struck through) — BRIEF-018 | `orders:void` |
 | POST | `/api/public/visits/:id/orders` | customer QR order | visit session |
 
 ### Payments

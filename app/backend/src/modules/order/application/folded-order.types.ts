@@ -1,4 +1,4 @@
-import type { KitchenStation, OrderStatus, TableSeatKind } from '@bar/contracts';
+import type { KitchenStation, OrderStatus, TableSeatKind, TicketIssueReason } from '@bar/contracts';
 import type { OrderLine } from '@bar/contracts';
 
 export interface FoldedTicket {
@@ -10,6 +10,11 @@ export interface FoldedTicket {
   status: OrderStatus;
   seat: { id: string; label: string; kind: TableSeatKind };
   items: OrderLine[];
+  issueReason: TicketIssueReason | null;
+  issueItemId: string | null;
+  issueNote: string | null;
+  issueReportedById: string | null;
+  issueEscalatedAt: string | null;
   updatedById: string | null;
   sentAt: string | null;
   createdAt: string;

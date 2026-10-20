@@ -1,6 +1,6 @@
 import { ErrorCodeSchema } from './errors.js';
 import { OrderStatusSchema } from './enums.js';
-import { PlaceOrderRequestSchema, TicketSchema } from './orders.js';
+import { FlagIssueRequestSchema, PlaceOrderRequestSchema, TicketSchema } from './orders.js';
 
 const id = '11111111-1111-4111-8111-111111111111';
 
@@ -49,11 +49,20 @@ describe('order contracts', () => {
           cancelledAt: null,
         },
       ],
+      issue: null,
       acceptedBy: null,
       sentAt: '2026-10-17T12:00:00.000Z',
       createdAt: '2026-10-17T12:00:00.000Z',
       updatedAt: '2026-10-17T12:00:00.000Z',
     });
     expect(ticket.station).toBeNull();
+    expect(ticket.issue).toBeNull();
+  });
+
+  it('requires a note when the issue reason is other', () => {
+    expect(FlagIssueRequestSchema.safeParse({ reason: 'other' }).success).toBe(false);
+    expect(FlagIssueRequestSchema.safeParse({ reason: 'other', note: '  ' }).success).toBe(false);
+    expect(FlagIssueRequestSchema.safeParse({ reason: 'equipment' }).success).toBe(true);
+    expect(FlagIssueRequestSchema.safeParse({ reason: 'other', note: 'เครื่องเสีย' }).success).toBe(true);
   });
 });

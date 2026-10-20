@@ -34,6 +34,23 @@ export const OrderLineSchema = z.object({
 
 export type OrderLine = z.infer<typeof OrderLineSchema>;
 
+export const TicketIssueReasonSchema = z.enum(
+  ['out_of_stock', 'equipment', 'other'],
+  'เหตุผลไม่ถูกต้อง',
+);
+
+export type TicketIssueReason = z.infer<typeof TicketIssueReasonSchema>;
+
+export const TicketIssueSchema = z.object({
+  reason: TicketIssueReasonSchema,
+  itemId: UuidSchema.nullable(),
+  note: z.string().nullable(),
+  reportedBy: StaffRefSchema,
+  escalatedAt: IsoDateTimeSchema.nullable(),
+});
+
+export type TicketIssue = z.infer<typeof TicketIssueSchema>;
+
 export const TicketSchema = z.object({
   id: UuidSchema,
   orderId: UuidSchema,
@@ -46,6 +63,7 @@ export const TicketSchema = z.object({
     kind: TableSeatKindSchema,
   }),
   items: z.array(OrderLineSchema),
+  issue: TicketIssueSchema.nullable(),
   acceptedBy: StaffRefSchema.nullable(),
   sentAt: IsoDateTimeSchema.nullable(),
   createdAt: IsoDateTimeSchema,
@@ -96,9 +114,31 @@ export type PlaceOrderRequest = z.infer<typeof PlaceOrderRequestSchema>;
 export const TicketListQuerySchema = z.object({
   status: z.string().optional(),
   visitId: UuidSchema.optional(),
+  escalated: z.literal('true', 'ใช้ได้เฉพาะ escalated=true').optional(),
 });
 
 export type TicketListQuery = z.infer<typeof TicketListQuerySchema>;
+
+export const FlagIssueRequestSchema = z
+  .object({
+    reason: TicketIssueReasonSchema,
+    itemId: UuidSchema.optional(),
+    note: z.string().max(500, 'โน้ตยาวเกินไป').optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.reason === 'other' && !value.note?.trim()) {
+      ctx.addIssue({ code: 'custom', message: 'ต้องระบุหมายเหตุ', path: ['note'] });
+    }
+  });
+
+export type FlagIssueRequest = z.infer<typeof FlagIssueRequestSchema>;
+
+export const ResolveIssueRequestSchema = z.object({
+  resolution: z.enum(['substitute', 'escalate'], 'วิธีแก้ไม่ถูกต้อง'),
+  note: z.string().max(500, 'โน้ตยาวเกินไป').optional(),
+});
+
+export type ResolveIssueRequest = z.infer<typeof ResolveIssueRequestSchema>;
 
 export const UnavailableLineSchema = z.object({
   variantId: UuidSchema,
