@@ -18,11 +18,11 @@ interface RailItem {
   key: string;
   label: string;
   icon: LucideIcon;
-  href?: "/pos/menu";
+  href?: "/pos/menu" | "/pos/tables";
 }
 
 const items: RailItem[] = [
-  { key: "tables", label: "โต๊ะ", icon: Grid2x2 },
+  { key: "tables", label: "โต๊ะ", icon: Grid2x2, href: "/pos/tables" },
   { key: "orders", label: "ออเดอร์", icon: ReceiptText },
   { key: "pay", label: "ชำระเงิน", icon: Banknote },
   { key: "menu", label: "เมนู", icon: BookOpen, href: "/pos/menu" },
