@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
+import { ClsService } from 'nestjs-cls';
 import {
   MENU_AVAILABILITY_CHANGED,
   TICKET_STATUS_CHANGED,
@@ -32,6 +33,7 @@ export class SoldOutService {
     private readonly tickets: TicketService,
     private readonly staff: StaffUserService,
     private readonly notifications: NotificationsService,
+    private readonly cls: ClsService,
   ) {}
 
   public async markUnavailable(itemId: string, staffId: string): Promise<MarkAvailabilityResult> {
@@ -90,18 +92,25 @@ export class SoldOutService {
     const notVoided: NotVoidedTicket[] = [];
     const cancelled: TicketView[] = [];
     const now = this.clock.now();
-    for (const group of this.groups(lines)) {
-      const ticketId = group[0]?.ticketId;
-      if (!ticketId) continue;
-      const locked = await this.orders.lockTicket(ticketId);
-      if (!locked || locked.status !== 'pending') {
-        notVoided.push(this.held(group, 'in_progress'));
-        continue;
+    // System cancel: cancelled_by stays null, and the subscriber must not stamp the staff who tapped 86.
+    const actor = this.cls.get('userId');
+    this.cls.set('userId', undefined);
+    try {
+      for (const group of this.groups(lines)) {
+        const ticketId = group[0]?.ticketId;
+        if (!ticketId) continue;
+        const locked = await this.orders.lockTicket(ticketId);
+        if (!locked || locked.status !== 'pending') {
+          notVoided.push(this.held(group, 'in_progress'));
+          continue;
+        }
+        await this.orders.cancelLines(group.map((line) => line.itemId), now, SOLD_OUT_REASON);
+        const emptied = await this.tickets.cancelWhenEmpty(ticketId);
+        if (emptied) cancelled.push(emptied);
+        autoVoided.push(this.voided(group, emptied ? 'cancelled' : 'pending'));
       }
-      await this.orders.cancelLines(group.map((line) => line.itemId), now, SOLD_OUT_REASON);
-      const emptied = await this.tickets.cancelWhenEmpty(ticketId);
-      if (emptied) cancelled.push(emptied);
-      autoVoided.push(this.voided(group, emptied ? 'cancelled' : 'pending'));
+    } finally {
+      if (typeof actor === 'string') this.cls.set('userId', actor);
     }
     return { autoVoided, notVoided, cancelled };
   }
