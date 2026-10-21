@@ -62,6 +62,7 @@ Light theme: defined in CD-00 (warm paper) — semantic values in `tokens-v2.css
 | `--line-hairline` / `--line` / `--line-strong` | `rgba(240,230,208,.07/.12/.22)` | ✓ | Dividers / borders / control borders |
 | `--accent` / `-hover` / `-press` | `amber-400` / `amber-300` / `amber-500` | ✓ | Primary CTA, checked controls |
 | `--accent-soft` / `--accent-soft-strong` | `rgba(212,135,42,.14/.24)` | ✓ | Accent tints, active nav |
+| `--line-brand` / `--line-brand-fg` | `#06C755` / `#FFFFFF` (both themes) | ✓ | LINE Login button only (CD-01 §8, BRIEF-028) — never a UI accent |
 | `--focus-ring` | `amber-300` | ✓ | Focus-visible outline (must be used by every control) |
 | `--success` / `--warning` / `--danger` / `--info` | `leaf-400` / `honey-400` / `brick-400` / `slate-400` | ✓ | Toast tones, deltas |
 | `--success-bg` / `--warning-bg` / `--info-bg` *(new)* | `leaf-700` / `honey-700` / `slate-700` | ✓ | Chip / alert backgrounds for feedback tones |
