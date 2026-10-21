@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-030-pos-session-panel-close` (PR opens after this PASS commit) |
 | **Commit** | `11569c23bad8393fa9e01fc76859e6cf1a0425cb` |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS — merged PR determines Done |
 
 > Gate evidence below was run on the work tree that became `11569c2`, before this docs commit. Node v24.14.0, pnpm 10.0.0.
 
@@ -73,7 +73,8 @@ An existing `next dev` on port 3000 was stopped so Playwright could boot (Next 1
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next: `audit BRIEF-030`
+- Audit: PASS · 0 Must fix · 3 Suggestions (not blocking; finding 1 folds into BRIEF-033)
+- Next: merge when `ci` is green on the PR head (Field's PR, pre-approved)
 - Work SHA: `11569c23bad8393fa9e01fc76859e6cf1a0425cb`
 
 ## Notes for Reviewer
