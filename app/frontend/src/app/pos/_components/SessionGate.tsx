@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { LoadError } from "@/components/ui/LoadError";
 import { useMe } from "@/hooks/useMe";
 import { markSessionCleared, onSessionExpired } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
@@ -38,11 +39,8 @@ export function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
   if (!me.data && me.error instanceof ApiError && me.error.authPhase === "first-load") return null;
   if (!me.data && me.isError) {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 p-6">
-        <p>โหลดข้อมูลไม่สำเร็จ</p>
-        <button type="button" className="text-text-accent" onClick={() => void me.refetch()}>
-          ลองอีกครั้ง
-        </button>
+      <div className="p-6">
+        <LoadError onRetry={() => void me.refetch()} />
       </div>
     );
   }

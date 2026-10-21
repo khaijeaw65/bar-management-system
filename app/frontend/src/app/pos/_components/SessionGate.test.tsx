@@ -80,6 +80,15 @@ test("logout still reaches login when the network is down", async () => {
   await vi.waitFor(() => expect(replace).toHaveBeenCalledWith("/login"));
 });
 
+test("a non-auth failure offers a retry", async () => {
+  replace.mockReset();
+  server.use(http.get("*/api/auth/me", () => HttpResponse.error()));
+  renderGate(client());
+  expect(await screen.findByRole("alert")).toHaveTextContent("โหลดข้อมูลไม่สำเร็จ");
+  expect(screen.getByRole("button", { name: "ลองอีกครั้ง" })).toBeInTheDocument();
+  expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+});
+
 test("logout posts then goes to login", async () => {
   replace.mockReset();
   let loggedOut = false;

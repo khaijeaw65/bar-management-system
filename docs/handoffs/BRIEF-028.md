@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-028-web-login-real-api` (PR opens after audit PASS) |
 | **Commit** | `3d6b2b954b20b550a055ba3c77a80a10d52cd827` |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Implemented — signed-in run proof appended, awaiting re-check |
 
 > Gate evidence below was run on the work tree that became `3d6b2b9`, before this docs commit. Node v24.14.0, pnpm 10.0.0.
 
@@ -37,9 +37,13 @@ Run on the work tree that became `3d6b2b9`. Node v24.14.0.
 | `pnpm --filter @bar/frontend test` | 0 | 30 passed · 0 failed |
 | `pnpm --filter @bar/frontend test:e2e` | 0 | 3 passed · 0 failed |
 | `pnpm --filter @bar/frontend build` | 0 | pass (`/login`, `/pos/menu`) |
-| run proof | 0 with a port limit | Postgres + Redis already up. `migration:run` exit 0, no migrations pending. `localhost:3001` is another project's container (`tlirv-eup-web`, health 404). Backend started with `PORT=3011`. `curl localhost:3011/api/health` → **200** `{"status":"ok","db":"up"}`. Frontend `next dev` on **3010** with `NEXT_PUBLIC_API_URL=http://localhost:3011/api` because 3000 is `tlirv-portal-web`. |
+| run proof | 0 | Same work SHA. Postgres + Redis already up. `migration:run` exit 0, no migrations pending. Ports 3000 and 3001 were free. Backend `start:dev` on **3001**. `curl localhost:3001/api/health` → **200** `{"status":"ok","db":"up"}`. Frontend `next dev` on **3000**, `NEXT_PUBLIC_API_MOCKING` unset, `NEXT_PUBLIC_API_URL=http://localhost:3001/api`. |
 
-UI exercised: `/login` shows the LINE button (green, pending label covered by e2e). `/login?error=login_failed` alert dismisses. `/login?error=not_registered` shows the card and the back link, no POS shell. Signed-in `/pos/menu` with Field's name was **not** exercised: LINE login is Field's credential, and CORS allows only `FRONTEND_URL` (`localhost:3000`), so the 3010 dev server cannot call 3011. First-load redirect is covered by `SessionGate.test.tsx` and the menu e2e (MSW, same origin).
+UI exercised on that pair: `/login` shows the LINE button. `/login?error=login_failed` shows the dismissible alert. `/login?error=not_registered` shows the card and the back link, no POS shell. A logged-out `/pos/menu` lands on `/login` with no session-expired modal.
+
+The local database had no staff and no menu. Field's first LINE login was stored as an access request and returned `not_registered`. The executor then ran `seed:staff` for that LINE identity (display name **Field**), `seed:venue`, and `seed:menu` (11 items). Field signed in again. `/pos/menu` showed **Field** in the top bar (initial F) and the seeded catalog: category names, **เริ่ม ฿260.00** on โอลด์แฟชั่น, **นอกเวลาโปร** on the two promotions, **หมด** on ยำหมูยอ.
+
+Field deleted the `access_token` cookie and reloaded. `/pos/menu` stayed up with Field's name and no session-expired modal. Redis shows that reload rotated Field's current refresh family (two `refresh-used` markers about 13 s apart, then a new live refresh key). An older Field session from the earlier sign-in was not the cookie the browser sent.
 
 ## Sonar (local scan)
 - Not run. Optional on Field's brief.
@@ -53,7 +57,6 @@ UI exercised: `/login` shows the LINE button (green, pending label covered by e2
 - Diff is about 860 net lines versus the ~450–550 estimate. Lockfile is 3 lines. No split: the brief's screens and the client are one outcome.
 
 ## Known Gaps / Follow-ups
-- Field, when 3000/3001 are free: sign in once at `localhost:3000/login`, then open `/pos/menu` and confirm the seeded menu plus the name in the top bar.
 - Prod cookie domain stays the AWS-week carry-over (brief §7).
 - "เพิ่มเมนูแรก" is not on the empty menu state — menu editing is CD-12.
 
@@ -62,7 +65,7 @@ UI exercised: `/login` shows the LINE button (green, pending label covered by e2
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-028`
+- Next command: `audit BRIEF-028` (re-check Finding 1; work SHA unchanged)
 - Work SHA: `3d6b2b954b20b550a055ba3c77a80a10d52cd827` · client matches DR-007 (one axios instance, shared refresh) and the brief's `ApiError(status, code, message, data)`. Menu schemas are `MenuItemListSchema` / `MenuCategoryListSchema`. No contracts or schema change.
 
 ## Notes for Reviewer

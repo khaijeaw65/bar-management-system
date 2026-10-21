@@ -23,15 +23,19 @@ test("renders the seven items in order", () => {
   expect(Array.from(nav.children).map((item) => item.textContent)).toEqual(labels);
 });
 
-test("marks เมนู active and disables the other items", () => {
+test("marks เมนู active and links โต๊ะ to the floor", () => {
   render(<PosRail />);
   const menu = screen.getByRole("link", { name: "เมนู" });
   expect(menu).toHaveAttribute("href", "/pos/menu");
   expect(menu).toHaveAttribute("aria-current", "page");
-  expect(screen.getAllByRole("link")).toHaveLength(1);
+
+  const tables = screen.getByRole("link", { name: "โต๊ะ" });
+  expect(tables).toHaveAttribute("href", "/pos/tables");
+  expect(tables).not.toHaveAttribute("aria-current");
+  expect(screen.getAllByRole("link")).toHaveLength(2);
 
   const soon = screen.getAllByTitle("เร็ว ๆ นี้");
-  expect(soon.map((item) => item.textContent)).toEqual(labels.filter((label) => label !== "เมนู"));
+  expect(soon.map((item) => item.textContent)).toEqual(labels.filter((label) => label !== "เมนู" && label !== "โต๊ะ"));
   for (const item of soon) {
     expect(item).toHaveAttribute("aria-disabled", "true");
     expect(item.tagName).toBe("SPAN");

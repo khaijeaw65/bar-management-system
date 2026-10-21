@@ -1,5 +1,6 @@
 "use client";
 
+import { Toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState, type ReactNode } from "react";
@@ -41,6 +42,7 @@ export function Providers({ children }: Readonly<{ children: ReactNode }>) {
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         {ready ? children : null}
+        <Toast.Provider placement="top end" />
       </QueryClientProvider>
     </ThemeProvider>
   );
