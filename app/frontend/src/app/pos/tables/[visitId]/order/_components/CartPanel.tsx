@@ -8,6 +8,9 @@ import { usePlaceOrder } from "../_hooks/usePlaceOrder";
 
 function alertCopy(state: CartState): { title: string; body: string } | null {
   const blocked = state.lines.filter((line) => line.unavailable).length;
+  if (state.notice === "network" && blocked > 0) {
+    return { title: "ส่งออเดอร์ไม่สำเร็จ", body: "มีรายการหมดระหว่างรอ — ส่งตะกร้านี้ซ้ำไม่ได้ ทิ้งตะกร้าแล้วสั่งใหม่" };
+  }
   if (blocked > 0) return { title: `มีรายการที่สั่งไม่ได้ ${blocked} รายการ`, body: "ลบออกก่อนจึงจะส่งได้" };
   if (state.closed) return { title: "โต๊ะนี้ถูกปิดแล้ว", body: "ออเดอร์ไม่ถูกส่ง — กลับไปที่โต๊ะแล้วเลือกใหม่" };
   if (state.forbidden) {
@@ -22,6 +25,7 @@ function CartFooter({
   total,
   pending,
   sendDisabled,
+  blocked,
   notice,
   onSend,
   onLeave,
@@ -29,6 +33,7 @@ function CartFooter({
   total: string;
   pending: boolean;
   sendDisabled: boolean;
+  blocked: boolean;
   notice: CartState["notice"];
   onSend: () => void;
   onLeave: () => void;
@@ -44,15 +49,15 @@ function CartFooter({
           กลับไปที่โต๊ะ
         </Button>
       ) : null}
+      {notice === "network" && !blocked ? (
+        <Button size="lg" fullWidth isPending={pending} onPress={onSend}>
+          ส่งอีกครั้ง
+        </Button>
+      ) : null}
       {notice === "network" ? (
-        <>
-          <Button size="lg" fullWidth isPending={pending} onPress={onSend}>
-            ส่งอีกครั้ง
-          </Button>
-          <Button size="lg" fullWidth variant="secondary" onPress={onLeave}>
-            ทิ้งตะกร้า
-          </Button>
-        </>
+        <Button size="lg" fullWidth variant="secondary" onPress={onLeave}>
+          ทิ้งตะกร้า
+        </Button>
       ) : null}
       {notice === null ? (
         <Button size="lg" fullWidth isPending={pending} isDisabled={sendDisabled} onPress={onSend}>
@@ -115,6 +120,7 @@ export function CartPanel({
         total={preview.total}
         pending={place.pending}
         sendDisabled={blocked || state.pending || state.closed || state.forbidden || preview.count === 0}
+        blocked={blocked}
         notice={state.notice}
         onSend={place.send}
         onLeave={onLeave}

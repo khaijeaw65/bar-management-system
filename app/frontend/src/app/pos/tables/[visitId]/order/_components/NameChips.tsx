@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, FieldError, Input, Label, Popover, Tag, TagGroup, TextField } from "@heroui/react";
+import { useId } from "react";
 
 export function NameChips({
   names,
@@ -22,12 +23,14 @@ export function NameChips({
   onAdd: () => void;
 }>) {
   const tooLong = draft.trim().length > 30;
+  const labelId = useId();
 
   return (
     <div className="flex flex-col gap-2">
-      <Label>สั่งโดย</Label>
+      <Label id={labelId}>สั่งโดย</Label>
       <div className="flex flex-wrap items-center gap-2">
         <TagGroup
+          aria-labelledby={labelId}
           selectionMode="single"
           selectedKeys={who ? [who] : []}
           onSelectionChange={(keys) => {

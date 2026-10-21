@@ -2,7 +2,7 @@
 
 import { Button, FieldError, Label, Modal, Radio, RadioGroup, TextArea, TextField } from "@heroui/react";
 import type { MenuItem } from "@bar/contracts";
-import { useReducer } from "react";
+import { useId, useReducer } from "react";
 import { formatTHB } from "@/lib/utils/format";
 import { scaleMoney } from "@/lib/utils/money";
 import type { NewLine } from "../cart";
@@ -21,18 +21,17 @@ function VariantPicker({
   variantId: string;
   onChange: (variantId: string) => void;
 }>) {
+  const labelId = useId();
   return (
-    <RadioGroup value={variantId} onChange={onChange}>
-      <Label>ตัวเลือก</Label>
+    <RadioGroup aria-labelledby={labelId} value={variantId} onChange={onChange}>
+      <Label id={labelId}>ตัวเลือก</Label>
       {item.variants.map((entry) => (
         <Radio key={entry.id} value={entry.id} aria-label={`${entry.name} ${formatTHB(entry.price)}`} isDisabled={!entry.isAvailable}>
           <Radio.Content aria-label={`${entry.name} ${formatTHB(entry.price)}`}>
             <Radio.Control>
               <Radio.Indicator />
             </Radio.Control>
-            <Label>
-              {entry.name} {formatTHB(entry.price)}
-            </Label>
+            <Label>{entry.name} {formatTHB(entry.price)}</Label>
           </Radio.Content>
         </Radio>
       ))}

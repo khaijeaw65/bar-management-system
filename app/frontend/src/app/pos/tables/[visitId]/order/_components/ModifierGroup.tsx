@@ -2,6 +2,7 @@
 
 import { Checkbox, Chip, Label, Radio, RadioGroup } from "@heroui/react";
 import type { MenuModifierGroup } from "@bar/contracts";
+import { useId } from "react";
 import { formatTHB } from "@/lib/utils/format";
 import { toSatang } from "@/lib/utils/money";
 import { groupCount, groupMinimum, selectRadio, toggleOption } from "../catalog";
@@ -19,6 +20,7 @@ export function ModifierGroup({
   optionIds: string[];
   onChange: (optionIds: string[]) => void;
 }>) {
+  const labelId = useId();
   const count = groupCount(group, optionIds);
   const atMax = group.maxSelect > 0 && count >= group.maxSelect;
   const unsatisfied = count < groupMinimum(group);
@@ -27,16 +29,13 @@ export function ModifierGroup({
   return (
     <fieldset className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <Label>{group.name}</Label>
+        <Label id={labelId}>{group.name}</Label>
         <Chip size="sm" variant="soft" color={unsatisfied && group.isRequired ? "danger" : "default"}>
           {group.isRequired ? "ต้องเลือก" : "ไม่บังคับ"}
         </Chip>
       </div>
       {single ? (
-        <RadioGroup
-          value={group.options.find((option) => optionIds.includes(option.id))?.id ?? ""}
-          onChange={(value) => onChange(selectRadio(group, value, optionIds))}
-        >
+        <RadioGroup aria-labelledby={labelId} value={group.options.find((option) => optionIds.includes(option.id))?.id ?? ""} onChange={(value) => onChange(selectRadio(group, value, optionIds))}>
           {group.options.map((option) => (
             <Radio
               key={option.id}

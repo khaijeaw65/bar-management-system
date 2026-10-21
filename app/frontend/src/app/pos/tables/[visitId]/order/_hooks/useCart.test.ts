@@ -1,5 +1,6 @@
-import type { UnavailableReason } from "@bar/contracts";
+import type { MenuItem, UnavailableReason } from "@bar/contracts";
 import { expect, test } from "vitest";
+import { menuItems } from "@/mocks/handlers";
 import { cartReducer, createCart, previewOf, sendFailure, type NewLine } from "../cart";
 import { ApiError } from "@/lib/api/errors";
 
@@ -60,6 +61,19 @@ test("a network failure freezes the cart and a reused key stays", () => {
   const closed = cartReducer(cartReducer(createCart(), { type: "closed" }), { type: "add", line: line() });
   expect(closed.lines).toHaveLength(0);
   expect(closed.closed).toBe(true);
+});
+
+test("a menu sync flags a frozen cart and leaves the key in place", () => {
+  let state = cartReducer(createCart(), { type: "add", line: line() });
+  const key = state.idempotencyKey;
+  const id = state.lines[0]?.id ?? "";
+  state = cartReducer(state, { type: "network" });
+  const soldOut: MenuItem = { ...menuItems[0], availableNow: false, unavailableReason: "sold_out" };
+  state = cartReducer(state, { type: "sync", items: [soldOut] });
+  expect(state.notice).toBe("network");
+  expect(state.idempotencyKey).toBe(key);
+  expect(state.lines[0]?.unavailable).toBe("sold_out");
+  expect(cartReducer(state, { type: "remove", id }).lines).toHaveLength(1);
 });
 
 test("maps send failures onto cart actions", () => {

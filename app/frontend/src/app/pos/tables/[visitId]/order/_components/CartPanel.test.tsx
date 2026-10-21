@@ -9,6 +9,8 @@ import { afterEach, expect, test, vi } from "vitest";
 import { apiEnvelope } from "@/mocks/handlers";
 import { server } from "@/mocks/node";
 import { resetStaffSocket } from "@/lib/socket/socket";
+import { cartReducer, createCart, type NewLine } from "../cart";
+import { CartPanel } from "./CartPanel";
 import { OrderScreen } from "./OrderScreen";
 
 const push = vi.hoisted(() => vi.fn());
@@ -128,6 +130,40 @@ test("a network failure can discard the frozen cart", async () => {
   await user.click(screen.getByRole("button", { name: "ส่งออเดอร์" }));
   await user.click(await screen.findByRole("button", { name: "ทิ้งตะกร้า" }));
   expect(push).toHaveBeenCalledWith(`/pos/tables?visit=${visitId}`);
+});
+
+test("a frozen cart with an unavailable line can only be discarded", async () => {
+  const user = userEvent.setup();
+  const onLeave = vi.fn();
+  const added: NewLine = {
+    itemId: "11111111-1111-4111-8111-111111111111",
+    itemName: "สิงห์",
+    variantId: "11111111-1111-4111-8111-111111111111",
+    variantName: "ปกติ",
+    modifierOptionIds: [],
+    modifierLabel: "",
+    orderedByName: null,
+    notes: null,
+    quantity: 1,
+    unitPrice: "120.00",
+  };
+  const frozen = cartReducer(cartReducer(createCart(), { type: "add", line: added }), { type: "network" });
+  const state = cartReducer(frozen, {
+    type: "unavailable",
+    details: [{ variantId: added.variantId, reason: "sold_out" }],
+  });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  render(
+    <QueryClientProvider client={client}>
+      <CartPanel visitId={visitId} state={state} dispatch={vi.fn()} onSent={vi.fn()} onLeave={onLeave} />
+    </QueryClientProvider>,
+  );
+  expect(screen.getByText("ส่งออเดอร์ไม่สำเร็จ")).toBeInTheDocument();
+  expect(screen.getByText("มีรายการหมดระหว่างรอ — ส่งตะกร้านี้ซ้ำไม่ได้ ทิ้งตะกร้าแล้วสั่งใหม่")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "ส่งอีกครั้ง" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "ส่งออเดอร์" })).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "ทิ้งตะกร้า" }));
+  expect(onLeave).toHaveBeenCalledOnce();
 });
 
 test("a reused key locks the cart and sends nothing further", async () => {

@@ -46,6 +46,23 @@ const item: MenuItem = {
   ],
 };
 
+test("names the variant group, a required radio group, and the name chips", () => {
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  const variant = item.variants[0];
+  const group = variant?.modifierGroups[0];
+  if (!variant || !group) throw new Error("fixture missing a modifier group");
+  const radioItem: MenuItem = {
+    ...item,
+    variants: [{ ...variant, modifierGroups: [{ ...group, maxSelect: 1 }] }],
+  };
+  render(<ItemSheet item={radioItem} names={["นิด"]} onClose={vi.fn()} onRemember={vi.fn()} onAdd={vi.fn()} />);
+  const messages = warn.mock.calls.map((call) => call.map(String).join(" ")).join("\n");
+  warn.mockRestore();
+  expect(messages).not.toContain("aria-label or aria-labelledby");
+  expect(screen.getByRole("radiogroup", { name: "ตัวเลือก" })).toBeInTheDocument();
+  expect(screen.getByRole("radiogroup", { name: "ท็อปปิ้ง" })).toBeInTheDocument();
+});
+
 test("keeps add disabled until a required group is met and stops at maxSelect", async () => {
   const user = userEvent.setup();
   const onAdd = vi.fn();
