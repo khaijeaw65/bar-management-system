@@ -89,6 +89,11 @@ describe('Tickets (e2e)', () => {
     expect(winner?.body.data.acceptedBy.displayName).toBe('เอ');
     await waitFor(events, 1);
     expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      ticketId: ticket.id,
+      status: 'accepted',
+      updatedAt: winner?.body.data.updatedAt,
+    });
   });
 
   function auth(): { Authorization: string } {

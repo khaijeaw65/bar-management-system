@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { apiResponseSchema, MoneySchema, UuidSchema } from './common.js';
-import { ItemTypeSchema, KitchenStationSchema } from './enums.js';
+import { ItemTypeSchema, KitchenStationSchema, OrderStatusSchema } from './enums.js';
 
 export const UnavailableReasonSchema = z.enum(['sold_out', 'out_of_window']);
 export type UnavailableReason = z.infer<typeof UnavailableReasonSchema>;
@@ -99,6 +99,31 @@ export const MenuCategoryListResponseSchema = apiResponseSchema(
 export type MenuCategoryListResponse = z.infer<
   typeof MenuCategoryListResponseSchema
 >;
+
+export const AvailabilityTicketSchema = z.object({
+  ticketId: UuidSchema,
+  orderNumber: z.number().int().positive(),
+  seatLabel: z.string(),
+  itemCount: z.number().int().positive(),
+  ticketStatus: OrderStatusSchema,
+});
+export type AvailabilityTicket = z.infer<typeof AvailabilityTicketSchema>;
+
+export const NotVoidedTicketSchema = z.object({
+  ticketId: UuidSchema,
+  orderNumber: z.number().int().positive(),
+  seatLabel: z.string(),
+  itemCount: z.number().int().positive(),
+  reason: z.enum(['in_progress', 'payment_pending']),
+});
+export type NotVoidedTicket = z.infer<typeof NotVoidedTicketSchema>;
+
+export const MarkAvailabilityResultSchema = z.object({
+  item: MenuItemSchema,
+  autoVoided: z.array(AvailabilityTicketSchema),
+  notVoided: z.array(NotVoidedTicketSchema),
+});
+export type MarkAvailabilityResult = z.infer<typeof MarkAvailabilityResultSchema>;
 
 export const MenuItemResponseSchema = apiResponseSchema(MenuItemSchema);
 export type MenuItemResponse = z.infer<typeof MenuItemResponseSchema>;

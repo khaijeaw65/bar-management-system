@@ -78,3 +78,13 @@ export interface OrderTotal {
   orderId: string;
   total: string;
 }
+
+export interface PendingItemLine {
+  itemId: string;
+  quantity: number;
+  ticketId: string;
+  ticketStatus: OrderStatus;
+  visitId: string;
+  orderNumber: number;
+  seatLabel: string;
+}

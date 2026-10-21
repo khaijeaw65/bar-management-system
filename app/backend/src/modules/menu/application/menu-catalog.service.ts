@@ -74,16 +74,37 @@ export class MenuCatalogService {
     return this.toItem(record, this.clock.now());
   }
 
+  public async setAvailability(
+    itemId: string,
+    available: boolean,
+  ): Promise<{ changed: boolean; item: MenuItem }> {
+    const locked = await this.catalog.lockItem(itemId);
+    if (!locked) throw new DomainException('NOT_FOUND', 'ไม่พบเมนู', 404);
+    if (locked.isAvailable === available) {
+      return { changed: false, item: this.toItem(locked, this.clock.now()) };
+    }
+    await this.catalog.saveAvailability(itemId, available);
+    return {
+      changed: true,
+      item: this.toItem({ ...locked, isAvailable: available }, this.clock.now()),
+    };
+  }
+
   /**
    * Always reads the database. Order prices must not come from a cache.
    * An id that is not a variant is listed in `missing` and does not throw.
+   * `lock: 'share'` holds the menu rows until the caller's transaction ends.
    */
   public async getOrderable(
     variantIds: readonly string[],
     now: Date,
+    options?: { lock?: 'share' },
   ): Promise<OrderableLookup> {
     const ordered = [...new Set(variantIds)];
-    const records = await this.catalog.findVariants(ordered);
+    const flags = options?.lock === 'share' ? await this.catalog.shareItems(ordered) : null;
+    const records = (await this.catalog.findVariants(ordered)).map((record) =>
+      this.withFlag(record, flags),
+    );
     const byVariant = new Map<
       string,
       { record: MenuItemRecord; variant: MenuVariantRecord }
@@ -104,6 +125,16 @@ export class MenuCatalogService {
       found.push(this.toOrderable(hit.record, hit.variant, now));
     }
     return { found, missing };
+  }
+
+  private withFlag(
+    record: MenuItemRecord,
+    flags: ReadonlyMap<string, boolean> | null,
+  ): MenuItemRecord {
+    if (!flags) return record;
+    const flag = flags.get(record.id);
+    if (flag === undefined) return record;
+    return { ...record, isAvailable: flag };
   }
 
   private toListedItem(record: MenuItemRecord, now: Date): MenuItem | null {
