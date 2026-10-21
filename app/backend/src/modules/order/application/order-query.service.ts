@@ -87,6 +87,9 @@ export class OrderQueryService {
       for (const ticket of order.tickets) {
         if (ticket.updatedById) ids.add(ticket.updatedById);
         if (ticket.issueReportedById) ids.add(ticket.issueReportedById);
+        for (const item of ticket.items) {
+          if (item.cancelledById) ids.add(item.cancelledById);
+        }
       }
     }
     return [...ids];

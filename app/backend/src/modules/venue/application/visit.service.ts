@@ -63,6 +63,13 @@ export class VisitService {
     }
   }
 
+  /** Same row lock as `lockLive`, but a missing or closed visit is skipped. */
+  public async lockIfLive(visitId: string): Promise<boolean> {
+    const locked = await this.visitRepository.lockById(visitId);
+    if (!locked) return false;
+    return this.isLiveVisit(locked.state);
+  }
+
   public async close(id: string): Promise<VisitView> {
     const closed = await this.closeWhenClear(id);
     if (closed) return this.finishClose(closed);

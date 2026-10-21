@@ -1,3 +1,4 @@
+import { TicketIssueEscalatedPayloadSchema, TicketStatusChangedPayloadSchema } from '../events/order.js';
 import { ErrorCodeSchema } from './errors.js';
 import { OrderStatusSchema } from './enums.js';
 import { FlagIssueRequestSchema, PlaceOrderRequestSchema, TicketSchema } from './orders.js';
@@ -47,6 +48,7 @@ describe('order contracts', () => {
           orderedByName: null,
           notes: null,
           cancelledAt: null,
+          cancellation: null,
         },
       ],
       issue: null,
@@ -64,5 +66,31 @@ describe('order contracts', () => {
     expect(FlagIssueRequestSchema.safeParse({ reason: 'other', note: '  ' }).success).toBe(false);
     expect(FlagIssueRequestSchema.safeParse({ reason: 'equipment' }).success).toBe(true);
     expect(FlagIssueRequestSchema.safeParse({ reason: 'other', note: 'เครื่องเสีย' }).success).toBe(true);
+  });
+
+  it('requires updatedAt on ticket events so a client can drop an older one', () => {
+    const body = {
+      ticketId: id,
+      orderId: id,
+      visitId: id,
+      status: 'accepted',
+      updatedBy: { staffId: id, displayName: 'เอ' },
+    };
+    expect(TicketStatusChangedPayloadSchema.safeParse(body).success).toBe(false);
+    expect(
+      TicketStatusChangedPayloadSchema.safeParse({ ...body, updatedAt: '2026-10-21T10:00:00.000Z' }).success,
+    ).toBe(true);
+    expect(
+      TicketIssueEscalatedPayloadSchema.safeParse({
+        ticketId: id,
+        orderId: id,
+        visitId: id,
+        orderNumber: 1,
+        seatLabel: 'T1',
+        reason: 'out_of_stock',
+        escalatedAt: '2026-10-21T10:00:00.000Z',
+        escalatedBy: { staffId: id, displayName: 'เอ' },
+      }).success,
+    ).toBe(false);
   });
 });

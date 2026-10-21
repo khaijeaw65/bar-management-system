@@ -29,6 +29,8 @@ export interface OrderRow {
   orderedByName: string | null;
   notes: string | null;
   cancelledAt: Date | null;
+  cancelledBy: string | null;
+  cancelReason: string | null;
   optionId: string | null;
   optionName: string | null;
   priceDelta: string | null;

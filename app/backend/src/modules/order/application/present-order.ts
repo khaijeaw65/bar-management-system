@@ -1,6 +1,6 @@
-import type { Order, StaffRef, Ticket } from '@bar/contracts';
+import type { Order, OrderLine, StaffRef, Ticket } from '@bar/contracts';
 import { orderTotal, withLineTotals } from './fold-orders.js';
-import type { FoldedOrder, FoldedTicket } from './folded-order.types.js';
+import type { FoldedLine, FoldedOrder, FoldedTicket } from './folded-order.types.js';
 
 export interface TicketView extends Ticket {
   visitId: string;
@@ -29,7 +29,7 @@ export function toTicket(ticket: FoldedTicket, names: ReadonlyMap<string, string
     station: ticket.station,
     status: ticket.status,
     seat: ticket.seat,
-    items: ticket.items,
+    items: ticket.items.map((line) => presentLine(line, names)),
     issue: presentIssue(ticket, names),
     acceptedBy: staffRef(accepterId(ticket), names),
     sentAt: ticket.sentAt,
@@ -41,6 +41,12 @@ export function toTicket(ticket: FoldedTicket, names: ReadonlyMap<string, string
 export function withoutVisit(ticket: TicketView): Ticket {
   const { visitId: _visitId, ...body } = ticket;
   return body;
+}
+
+function presentLine(line: FoldedLine, names: ReadonlyMap<string, string>): OrderLine {
+  const { cancelledById, cancellation, ...body } = line;
+  if (!cancellation) return { ...body, cancellation: null };
+  return { ...body, cancellation: { ...cancellation, by: staffRef(cancelledById, names) } };
 }
 
 function presentIssue(ticket: FoldedTicket, names: ReadonlyMap<string, string>): Ticket['issue'] {

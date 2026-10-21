@@ -112,7 +112,7 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | GET | `/api/menu/categories` | active categories, sorted | `menu:read` |
 | GET | `/api/menu/items` | list for POS/staff (`?categoryId`, `?available`) | `menu:read` |
 | GET | `/api/menu/items/:id` | detail incl. variants + modifier groups | `menu:read` |
-| POST | `/api/menu/items/:id/mark-unavailable` · `/mark-available` | 86 / un-86 — BRIEF-027 | `menu:toggle_availability` |
+| POST | `/api/menu/items/:id/mark-unavailable` · `/mark-available` | 86 / un-86. Unavailable auto-voids that item's lines on `pending` tickets (`ของหมด`, system), skips a visit with a pending payment and any ticket already started, and cancels a ticket left with no active line. Already in that state is a no-op. Available only flips the flag. | `menu:toggle_availability` |
 | POST/PATCH | `/api/menu/items` · `/api/menu/items/:id` | create / edit (CD-04) | `menu:write` |
 | GET | `/api/public/menu` | customer QR menu (available only) | visit session |
 

@@ -1,7 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { ORDER_CREATED, VISIT_STATE_CHANGED, type Order } from '@bar/contracts';
-import { MenuCatalogService } from '../../menu/application/menu-catalog.service.js';
+import {
+  MenuCatalogService,
+  type OrderableLookup,
+} from '../../menu/application/menu-catalog.service.js';
 import { CLOCK, type Clock } from '../../../common/clock.js';
 import {
   ORDER_REPOSITORY,
@@ -37,27 +40,32 @@ export class OrderService {
 
   @Transactional()
   private async insert(input: PlaceOrderInput): Promise<PlacedOrder> {
+    const now = this.clock.now();
+    // Menu rows before the visit, matching an 86 (menu → visit → ticket) so the two cannot deadlock.
+    const lookup = await this.menu.getOrderable(
+      input.items.map((item) => item.variantId),
+      now,
+      { lock: 'share' },
+    );
     const claim = await this.visits.claimForOrder(input.visitId);
-    const draft = await this.draft(input);
+    const draft = await this.draft(input, lookup, now);
     const orderId = await this.orders.insert({ ...draft, visitId: input.visitId });
     return { ...claim, orderId };
   }
 
-  private async draft(input: PlaceOrderInput): Promise<Omit<NewOrder, 'visitId'>> {
+  private async draft(
+    input: PlaceOrderInput,
+    lookup: OrderableLookup,
+    now: Date,
+  ): Promise<Omit<NewOrder, 'visitId'>> {
     const settings = await this.venues.get();
-    const now = this.clock.now();
     const date = businessDate(now, settings.businessDayCutoff);
     return {
       orderNumber: await this.orders.nextNumber(date),
       businessDate: date,
-      tickets: this.groupTickets(await this.priced(input, now), settings.kitchenDisplayEnabled),
+      tickets: this.groupTickets(priceLines(input.items, lookup), settings.kitchenDisplayEnabled),
       placedAt: now,
     };
-  }
-
-  private async priced(input: PlaceOrderInput, now: Date): Promise<PricedLine[]> {
-    const lookup = await this.menu.getOrderable(input.items.map((item) => item.variantId), now);
-    return priceLines(input.items, lookup);
   }
 
   private publish(outcome: PlacedOrder, order: Order): void {

@@ -52,11 +52,15 @@ function record(overrides: Partial<MenuItemRecord> = {}): MenuItemRecord {
 
 describe('MenuCatalogService.getOrderable', () => {
   const findVariants = vi.fn<MenuCatalogRepository['findVariants']>();
+  const shareItems = vi.fn<MenuCatalogRepository['shareItems']>(async () => new Map());
   const catalog: MenuCatalogRepository = {
     listCategories: async () => [],
     listItems: async () => [],
     findItem: async () => null,
     findVariants,
+    shareItems,
+    lockItem: async () => null,
+    saveAvailability: async () => undefined,
   };
   const service = new MenuCatalogService(catalog, { now: () => NOON });
 
@@ -117,6 +121,16 @@ describe('MenuCatalogService.getOrderable', () => {
       availableNow: false,
       unavailableReason: 'sold_out',
     });
+  });
+
+  it('uses the locked availability flag, read before the variant lookup', async () => {
+    shareItems.mockResolvedValue(new Map([[ITEM, false]]));
+    findVariants.mockResolvedValue([record({ isAvailable: true })]);
+    const lookup = await service.getOrderable([VARIANT], NOON, { lock: 'share' });
+    expect(lookup.found[0]).toMatchObject({ availableNow: false, unavailableReason: 'sold_out' });
+    const lockedAt = shareItems.mock.invocationCallOrder[0] ?? 0;
+    const readAt = findVariants.mock.invocationCallOrder.at(-1) ?? 0;
+    expect(lockedAt).toBeLessThan(readAt);
   });
 
   it('does not throw when every id is missing', async () => {

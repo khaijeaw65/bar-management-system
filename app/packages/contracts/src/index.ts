@@ -1,3 +1,4 @@
+export * from './events/menu.js';
 export * from './events/order.js';
 export * from './events/payment.js';
 export * from './events/visit.js';
