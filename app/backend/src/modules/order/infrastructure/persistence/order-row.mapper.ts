@@ -62,6 +62,8 @@ function itemPart(raw: Record<string, unknown>) {
     orderedByName: readOptionalText(raw.ordered_by_name),
     notes: readOptionalText(raw.notes),
     cancelledAt: readOptionalDate(raw.cancelled_at),
+    cancelledBy: readOptionalText(raw.cancelled_by),
+    cancelReason: readOptionalText(raw.cancel_reason),
     optionId: readOptionalText(raw.option_id),
     optionName: readOptionalText(raw.option_name),
     priceDelta: readOptionalText(raw.price_delta),

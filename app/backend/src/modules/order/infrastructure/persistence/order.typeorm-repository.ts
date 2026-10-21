@@ -11,6 +11,7 @@ import type {
   NewTicket,
   OrderQuery,
   OrderTotal,
+  PendingItemLine,
   PricedLine,
   TicketBucket,
   TicketIssueWrite,
@@ -27,7 +28,16 @@ import {
 } from '../../../../common/persistence/row-values.js';
 import { toOrderRow } from './order-row.mapper.js';
 import { orderWhere, rowList } from './order-query.js';
-import { BILL_SQL, LINE_ON_TICKET_SQL, LOCK_TICKET_SQL, ORDER_ROWS_SQL, ORDER_TOTALS_SQL } from './order.sql.js';
+import {
+  ACTIVE_LINE_COUNT_SQL,
+  BILL_SQL,
+  LINE_ON_TICKET_SQL,
+  LOCK_TICKET_SQL,
+  ORDER_ROWS_SQL,
+  ORDER_TOTALS_SQL,
+  PENDING_ITEM_LINES_SQL,
+  PENDING_PAYMENT_SQL,
+} from './order.sql.js';
 
 @Injectable()
 export class OrderTypeormRepository implements OrderRepository {
@@ -105,6 +115,33 @@ export class OrderTypeormRepository implements OrderRepository {
   public async orderTotals(visitId: string): Promise<OrderTotal[]> {
     const result: unknown = await this.manager.query(ORDER_TOTALS_SQL, [visitId]);
     return rowList(result).map((row) => this.toOrderTotal(row));
+  }
+
+  public async pendingLinesForItem(menuItemId: string): Promise<PendingItemLine[]> {
+    const result: unknown = await this.manager.query(PENDING_ITEM_LINES_SQL, [menuItemId]);
+    return rowList(result).map((row) => this.toPendingLine(row));
+  }
+
+  public async hasPendingPayment(visitId: string): Promise<boolean> {
+    const result: unknown = await this.manager.query(PENDING_PAYMENT_SQL, [visitId]);
+    return rowList(result).length > 0;
+  }
+
+  public async cancelLines(ids: readonly string[], at: Date, reason: string): Promise<void> {
+    const items = this.manager.getRepository(OrderItem);
+    for (const id of ids) {
+      const item = await items.findOne({ where: { id } });
+      if (!item || item.cancelledAt) continue;
+      item.cancelledAt = at;
+      item.cancelledBy = null;
+      item.cancelReason = reason;
+      await items.save(item);
+    }
+  }
+
+  public async countActiveLines(ticketId: string): Promise<number> {
+    const result: unknown = await this.manager.query(ACTIVE_LINE_COUNT_SQL, [ticketId]);
+    return Number(rowList(result)[0]?.count ?? 0);
   }
 
   private get manager(): EntityManager {
@@ -223,6 +260,18 @@ export class OrderTypeormRepository implements OrderRepository {
 
   private toOrderTotal(row: Record<string, unknown>): OrderTotal {
     return { orderId: this.required(row.order_id), total: this.required(row.total) };
+  }
+
+  private toPendingLine(row: Record<string, unknown>): PendingItemLine {
+    return {
+      itemId: this.required(row.item_id),
+      quantity: Number(row.quantity),
+      ticketId: this.required(row.ticket_id),
+      ticketStatus: this.statusOf(this.required(row.ticket_status)),
+      visitId: this.required(row.visit_id),
+      orderNumber: Number(row.order_number),
+      seatLabel: this.required(row.seat_label),
+    };
   }
 }
 

@@ -18,6 +18,15 @@ export const OrderItemModifierSchema = z.object({
 
 export type OrderItemModifier = z.infer<typeof OrderItemModifierSchema>;
 
+export const LineCancellationSchema = z.object({
+  at: IsoDateTimeSchema,
+  reason: z.string().nullable(),
+  by: StaffRefSchema.nullable(),
+  system: z.boolean(),
+});
+
+export type LineCancellation = z.infer<typeof LineCancellationSchema>;
+
 export const OrderLineSchema = z.object({
   id: UuidSchema,
   variantId: UuidSchema,
@@ -30,6 +39,7 @@ export const OrderLineSchema = z.object({
   orderedByName: z.string().nullable(),
   notes: z.string().nullable(),
   cancelledAt: IsoDateTimeSchema.nullable(),
+  cancellation: LineCancellationSchema.nullable(),
 });
 
 export type OrderLine = z.infer<typeof OrderLineSchema>;

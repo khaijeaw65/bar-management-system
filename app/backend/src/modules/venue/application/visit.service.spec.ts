@@ -119,6 +119,15 @@ describe('VisitService', () => {
     },
   );
 
+  it('reports whether the locked visit is live and does not throw when it is not', async () => {
+    visits.lockById.mockResolvedValue(visit());
+    await expect(service.lockIfLive(visit().id)).resolves.toBe(true);
+    visits.lockById.mockResolvedValue(visit({ state: 'closed' }));
+    await expect(service.lockIfLive(visit().id)).resolves.toBe(false);
+    visits.lockById.mockResolvedValue(null);
+    await expect(service.lockIfLive(visit().id)).resolves.toBe(false);
+  });
+
   it('returns not found when the close matches no visit', async () => {
     visits.lockById.mockResolvedValue(null);
     visits.findById.mockResolvedValue(null);

@@ -10,7 +10,9 @@ import { MenuController } from '../dist/modules/menu/infrastructure/http/menu.co
 import { IdempotencyService } from '../dist/common/idempotency/idempotency.service.js';
 import { OrderQueryService } from '../dist/modules/order/application/order-query.service.js';
 import { OrderService } from '../dist/modules/order/application/order.service.js';
+import { SoldOutService } from '../dist/modules/order/application/sold-out.service.js';
 import { TicketService } from '../dist/modules/order/application/ticket.service.js';
+import { MenuAvailabilityController } from '../dist/modules/order/infrastructure/http/menu-availability.controller.js';
 import { OrdersController } from '../dist/modules/order/infrastructure/http/orders.controller.js';
 import { TicketsController } from '../dist/modules/order/infrastructure/http/tickets.controller.js';
 import { BillService } from '../dist/modules/payment/application/bill.service.js';
@@ -37,6 +39,7 @@ const documentedControllers = [
   MenuController,
   OrdersController,
   TicketsController,
+  MenuAvailabilityController,
   PaymentsController,
 ];
 
@@ -56,6 +59,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: OrderService, useValue: {} },
       { provide: OrderQueryService, useValue: {} },
       { provide: TicketService, useValue: {} },
+      { provide: SoldOutService, useValue: {} },
       { provide: IdempotencyService, useValue: {} },
       { provide: BillService, useValue: {} },
       { provide: PaymentService, useValue: {} },

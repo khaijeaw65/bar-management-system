@@ -64,7 +64,11 @@ describe('Ticket issues (e2e)', () => {
     });
     await waitFor(events, 1);
     expect(events).toHaveLength(1);
-    expect(events[0]).toMatchObject({ ticketId: pending.id, status: 'issue' });
+    expect(events[0]).toMatchObject({
+      ticketId: pending.id,
+      status: 'issue',
+      updatedAt: flagged.updatedAt,
+    });
 
     const accepted = await placeOn('T2');
     await post(`/api/tickets/${accepted.id}/accept`).expect(200);
@@ -140,6 +144,8 @@ describe('Ticket issues (e2e)', () => {
       orderNumber: ticket.orderNumber,
       seatLabel: 'T4',
       reason: 'out_of_stock',
+      escalatedAt: escalated.issue?.escalatedAt,
+      updatedAt: escalated.updatedAt,
       escalatedBy: { displayName: 'เอ' },
     });
 

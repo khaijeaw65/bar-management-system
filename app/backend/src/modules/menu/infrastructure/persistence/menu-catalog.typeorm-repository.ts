@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import type { MenuCatalogRepository } from '../../domain/menu-catalog.repository.js';
@@ -27,6 +29,22 @@ interface ModifierRow {
   priceDelta: string | null;
   isAvailable: boolean | null;
 }
+
+const SHARE_ITEMS = `
+  SELECT mi.id, mi.is_available AS available
+  FROM menu_item mi
+  JOIN menu_item_variant v ON v.menu_item_id = mi.id
+  WHERE v.id = ANY($1::uuid[])
+  ORDER BY mi.id
+  FOR SHARE OF mi
+`;
+
+const LOCK_ITEM = `
+  SELECT is_available AS available
+  FROM menu_item
+  WHERE id = $1
+  FOR UPDATE
+`;
 
 const MODIFIERS = `
   SELECT l.menu_item_variant_id AS "variantId",
@@ -59,6 +77,7 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
     private readonly variants: Repository<MenuItemVariant>,
     @InjectRepository(MenuVariantModifierGroup)
     private readonly links: Repository<MenuVariantModifierGroup>,
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
 
   public async listCategories(): Promise<MenuCategoryRecord[]> {
@@ -103,6 +122,36 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
     const active = new Map([[item.categoryId, category?.isActive ?? false]]);
     const [record] = await this.assemble([item], active);
     return record ?? null;
+  }
+
+  public async shareItems(variantIds: readonly string[]): Promise<ReadonlyMap<string, boolean>> {
+    if (variantIds.length === 0) return new Map();
+    const result: unknown = await this.txHost.tx.query(SHARE_ITEMS, [[...variantIds]]);
+    const flags = new Map<string, boolean>();
+    for (const row of this.rows(result)) {
+      const id = row.id;
+      if (typeof id !== 'string') continue;
+      flags.set(id, this.asBoolean(row.available));
+    }
+    return flags;
+  }
+
+  public async lockItem(id: string): Promise<MenuItemRecord | null> {
+    const result: unknown = await this.txHost.tx.query(LOCK_ITEM, [id]);
+    const row = this.rows(result)[0];
+    if (!row) return null;
+    const record = await this.findItem(id);
+    if (!record) return null;
+    record.isAvailable = this.asBoolean(row.available);
+    return record;
+  }
+
+  public async saveAvailability(id: string, available: boolean): Promise<void> {
+    const items = this.txHost.tx.getRepository(MenuItem);
+    const item = await items.findOne({ where: { id } });
+    if (!item) return;
+    item.isAvailable = available;
+    await items.save(item);
   }
 
   public async findVariants(ids: readonly string[]): Promise<MenuItemRecord[]> {
@@ -221,6 +270,19 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
 
   private byPriceThenName(left: MenuVariantRecord, right: MenuVariantRecord): number {
     return Number(left.price) - Number(right.price) || left.name.localeCompare(right.name, 'th');
+  }
+
+  private asBoolean(value: unknown): boolean {
+    return value === true || value === 't' || value === 'true';
+  }
+
+  private rows(result: unknown): Record<string, unknown>[] {
+    if (!Array.isArray(result)) return [];
+    const nested: unknown = result[0];
+    if (Array.isArray(nested) && result.length === 2 && typeof result[1] === 'number') {
+      return nested as Record<string, unknown>[];
+    }
+    return result as Record<string, unknown>[];
   }
 
   private groupsByVariant(rows: ModifierRow[]): Map<string, MenuGroupRecord[]> {

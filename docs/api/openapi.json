@@ -1991,6 +1991,856 @@
         ]
       }
     },
+    "/api/menu/items/{id}/mark-available": {
+      "post": {
+        "description": "Permission: menu:toggle_availability. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "MenuAvailabilityController_markAvailable",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "autoVoided": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "itemCount": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "orderNumber": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "seatLabel": {
+                                "type": "string"
+                              },
+                              "ticketId": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              },
+                              "ticketStatus": {
+                                "enum": [
+                                  "pending",
+                                  "accepted",
+                                  "ready",
+                                  "sent",
+                                  "issue",
+                                  "cancelled"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ticketId",
+                              "orderNumber",
+                              "seatLabel",
+                              "itemCount",
+                              "ticketStatus"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "item": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "availableNow": {
+                              "type": "boolean"
+                            },
+                            "basePrice": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "categoryId": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "description": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "id": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "imageUrl": {
+                              "enum": [
+                                null
+                              ],
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "isPromo": {
+                              "type": "boolean"
+                            },
+                            "itemType": {
+                              "enum": [
+                                "simple",
+                                "recipe",
+                                "charge"
+                              ],
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "sortOrder": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "station": {
+                              "enum": [
+                                "bar",
+                                "food"
+                              ],
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "unavailableReason": {
+                              "enum": [
+                                "sold_out",
+                                "out_of_window"
+                              ],
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "variants": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string"
+                                  },
+                                  "isAvailable": {
+                                    "type": "boolean"
+                                  },
+                                  "modifierGroups": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "id": {
+                                          "format": "uuid",
+                                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                          "type": "string"
+                                        },
+                                        "isRequired": {
+                                          "type": "boolean"
+                                        },
+                                        "maxSelect": {
+                                          "maximum": 9007199254740991,
+                                          "minimum": -9007199254740991,
+                                          "type": "integer"
+                                        },
+                                        "minSelect": {
+                                          "maximum": 9007199254740991,
+                                          "minimum": -9007199254740991,
+                                          "type": "integer"
+                                        },
+                                        "name": {
+                                          "type": "string"
+                                        },
+                                        "options": {
+                                          "items": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "id": {
+                                                "format": "uuid",
+                                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                                "type": "string"
+                                              },
+                                              "isAvailable": {
+                                                "type": "boolean"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "priceDelta": {
+                                                "pattern": "^\\d+\\.\\d{2}$",
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "priceDelta",
+                                              "isAvailable"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          "type": "array"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name",
+                                        "isRequired",
+                                        "minSelect",
+                                        "maxSelect",
+                                        "options"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "pattern": "^\\d+\\.\\d{2}$",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "price",
+                                  "isAvailable",
+                                  "modifierGroups"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "windows": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "daysOfWeek": {
+                                    "items": {
+                                      "maximum": 7,
+                                      "minimum": 1,
+                                      "type": "integer"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "endTime": {
+                                    "pattern": "^\\d{2}:\\d{2}$",
+                                    "type": "string"
+                                  },
+                                  "startTime": {
+                                    "pattern": "^\\d{2}:\\d{2}$",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "daysOfWeek",
+                                  "startTime",
+                                  "endTime"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "categoryId",
+                            "name",
+                            "description",
+                            "imageUrl",
+                            "itemType",
+                            "station",
+                            "isPromo",
+                            "basePrice",
+                            "sortOrder",
+                            "availableNow",
+                            "unavailableReason",
+                            "windows",
+                            "variants"
+                          ],
+                          "type": "object"
+                        },
+                        "notVoided": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "itemCount": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "orderNumber": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "reason": {
+                                "enum": [
+                                  "in_progress",
+                                  "payment_pending"
+                                ],
+                                "type": "string"
+                              },
+                              "seatLabel": {
+                                "type": "string"
+                              },
+                              "ticketId": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ticketId",
+                              "orderNumber",
+                              "seatLabel",
+                              "itemCount",
+                              "reason"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "item",
+                        "autoVoided",
+                        "notVoided"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Mark an item available again. Voided lines stay voided.",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
+    "/api/menu/items/{id}/mark-unavailable": {
+      "post": {
+        "description": "Permission: menu:toggle_availability. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "MenuAvailabilityController_markUnavailable",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "autoVoided": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "itemCount": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "orderNumber": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "seatLabel": {
+                                "type": "string"
+                              },
+                              "ticketId": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              },
+                              "ticketStatus": {
+                                "enum": [
+                                  "pending",
+                                  "accepted",
+                                  "ready",
+                                  "sent",
+                                  "issue",
+                                  "cancelled"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ticketId",
+                              "orderNumber",
+                              "seatLabel",
+                              "itemCount",
+                              "ticketStatus"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "item": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "availableNow": {
+                              "type": "boolean"
+                            },
+                            "basePrice": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "categoryId": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "description": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "id": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "imageUrl": {
+                              "enum": [
+                                null
+                              ],
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "isPromo": {
+                              "type": "boolean"
+                            },
+                            "itemType": {
+                              "enum": [
+                                "simple",
+                                "recipe",
+                                "charge"
+                              ],
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "sortOrder": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "station": {
+                              "enum": [
+                                "bar",
+                                "food"
+                              ],
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "unavailableReason": {
+                              "enum": [
+                                "sold_out",
+                                "out_of_window"
+                              ],
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "variants": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string"
+                                  },
+                                  "isAvailable": {
+                                    "type": "boolean"
+                                  },
+                                  "modifierGroups": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "id": {
+                                          "format": "uuid",
+                                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                          "type": "string"
+                                        },
+                                        "isRequired": {
+                                          "type": "boolean"
+                                        },
+                                        "maxSelect": {
+                                          "maximum": 9007199254740991,
+                                          "minimum": -9007199254740991,
+                                          "type": "integer"
+                                        },
+                                        "minSelect": {
+                                          "maximum": 9007199254740991,
+                                          "minimum": -9007199254740991,
+                                          "type": "integer"
+                                        },
+                                        "name": {
+                                          "type": "string"
+                                        },
+                                        "options": {
+                                          "items": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "id": {
+                                                "format": "uuid",
+                                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                                "type": "string"
+                                              },
+                                              "isAvailable": {
+                                                "type": "boolean"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "priceDelta": {
+                                                "pattern": "^\\d+\\.\\d{2}$",
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "priceDelta",
+                                              "isAvailable"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          "type": "array"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name",
+                                        "isRequired",
+                                        "minSelect",
+                                        "maxSelect",
+                                        "options"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "pattern": "^\\d+\\.\\d{2}$",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "price",
+                                  "isAvailable",
+                                  "modifierGroups"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "windows": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "daysOfWeek": {
+                                    "items": {
+                                      "maximum": 7,
+                                      "minimum": 1,
+                                      "type": "integer"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "endTime": {
+                                    "pattern": "^\\d{2}:\\d{2}$",
+                                    "type": "string"
+                                  },
+                                  "startTime": {
+                                    "pattern": "^\\d{2}:\\d{2}$",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "daysOfWeek",
+                                  "startTime",
+                                  "endTime"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "categoryId",
+                            "name",
+                            "description",
+                            "imageUrl",
+                            "itemType",
+                            "station",
+                            "isPromo",
+                            "basePrice",
+                            "sortOrder",
+                            "availableNow",
+                            "unavailableReason",
+                            "windows",
+                            "variants"
+                          ],
+                          "type": "object"
+                        },
+                        "notVoided": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "itemCount": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "orderNumber": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "reason": {
+                                "enum": [
+                                  "in_progress",
+                                  "payment_pending"
+                                ],
+                                "type": "string"
+                              },
+                              "seatLabel": {
+                                "type": "string"
+                              },
+                              "ticketId": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ticketId",
+                              "orderNumber",
+                              "seatLabel",
+                              "itemCount",
+                              "reason"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "item",
+                        "autoVoided",
+                        "notVoided"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Mark an item sold out and auto-void its lines on pending tickets",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
     "/api/orders/{id}": {
       "get": {
         "description": "Permission: orders:read. Access token from the access_token cookie, or Authorization: Bearer.",
@@ -2155,6 +3005,50 @@
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
+                                    "cancellation": {
+                                      "additionalProperties": false,
+                                      "nullable": true,
+                                      "properties": {
+                                        "at": {
+                                          "format": "date-time",
+                                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                          "type": "string"
+                                        },
+                                        "by": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "reason": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "system": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "at",
+                                        "reason",
+                                        "by",
+                                        "system"
+                                      ],
+                                      "type": "object"
+                                    },
                                     "cancelledAt": {
                                       "format": "date-time",
                                       "nullable": true,
@@ -2237,7 +3131,8 @@
                                     "lineTotal",
                                     "orderedByName",
                                     "notes",
-                                    "cancelledAt"
+                                    "cancelledAt",
+                                    "cancellation"
                                   ],
                                   "type": "object"
                                 },
@@ -3657,6 +4552,50 @@
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
+                                    "cancellation": {
+                                      "additionalProperties": false,
+                                      "nullable": true,
+                                      "properties": {
+                                        "at": {
+                                          "format": "date-time",
+                                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                          "type": "string"
+                                        },
+                                        "by": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "reason": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "system": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "at",
+                                        "reason",
+                                        "by",
+                                        "system"
+                                      ],
+                                      "type": "object"
+                                    },
                                     "cancelledAt": {
                                       "format": "date-time",
                                       "nullable": true,
@@ -3739,7 +4678,8 @@
                                     "lineTotal",
                                     "orderedByName",
                                     "notes",
-                                    "cancelledAt"
+                                    "cancelledAt",
+                                    "cancellation"
                                   ],
                                   "type": "object"
                                 },
@@ -4039,6 +4979,50 @@
                           "items": {
                             "additionalProperties": false,
                             "properties": {
+                              "cancellation": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "system": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "reason",
+                                  "by",
+                                  "system"
+                                ],
+                                "type": "object"
+                              },
                               "cancelledAt": {
                                 "format": "date-time",
                                 "nullable": true,
@@ -4121,7 +5105,8 @@
                               "lineTotal",
                               "orderedByName",
                               "notes",
-                              "cancelledAt"
+                              "cancelledAt",
+                              "cancellation"
                             ],
                             "type": "object"
                           },
@@ -4446,6 +5431,50 @@
                           "items": {
                             "additionalProperties": false,
                             "properties": {
+                              "cancellation": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "system": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "reason",
+                                  "by",
+                                  "system"
+                                ],
+                                "type": "object"
+                              },
                               "cancelledAt": {
                                 "format": "date-time",
                                 "nullable": true,
@@ -4528,7 +5557,8 @@
                               "lineTotal",
                               "orderedByName",
                               "notes",
-                              "cancelledAt"
+                              "cancelledAt",
+                              "cancellation"
                             ],
                             "type": "object"
                           },
@@ -4820,6 +5850,50 @@
                           "items": {
                             "additionalProperties": false,
                             "properties": {
+                              "cancellation": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "system": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "reason",
+                                  "by",
+                                  "system"
+                                ],
+                                "type": "object"
+                              },
                               "cancelledAt": {
                                 "format": "date-time",
                                 "nullable": true,
@@ -4902,7 +5976,8 @@
                               "lineTotal",
                               "orderedByName",
                               "notes",
-                              "cancelledAt"
+                              "cancelledAt",
+                              "cancellation"
                             ],
                             "type": "object"
                           },
@@ -5221,6 +6296,50 @@
                           "items": {
                             "additionalProperties": false,
                             "properties": {
+                              "cancellation": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "system": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "reason",
+                                  "by",
+                                  "system"
+                                ],
+                                "type": "object"
+                              },
                               "cancelledAt": {
                                 "format": "date-time",
                                 "nullable": true,
@@ -5303,7 +6422,8 @@
                               "lineTotal",
                               "orderedByName",
                               "notes",
-                              "cancelledAt"
+                              "cancelledAt",
+                              "cancellation"
                             ],
                             "type": "object"
                           },
@@ -5595,6 +6715,50 @@
                           "items": {
                             "additionalProperties": false,
                             "properties": {
+                              "cancellation": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "system": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "reason",
+                                  "by",
+                                  "system"
+                                ],
+                                "type": "object"
+                              },
                               "cancelledAt": {
                                 "format": "date-time",
                                 "nullable": true,
@@ -5677,7 +6841,8 @@
                               "lineTotal",
                               "orderedByName",
                               "notes",
-                              "cancelledAt"
+                              "cancelledAt",
+                              "cancellation"
                             ],
                             "type": "object"
                           },
@@ -6881,6 +8046,50 @@
                                       "items": {
                                         "additionalProperties": false,
                                         "properties": {
+                                          "cancellation": {
+                                            "additionalProperties": false,
+                                            "nullable": true,
+                                            "properties": {
+                                              "at": {
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                "type": "string"
+                                              },
+                                              "by": {
+                                                "additionalProperties": false,
+                                                "nullable": true,
+                                                "properties": {
+                                                  "displayName": {
+                                                    "type": "string"
+                                                  },
+                                                  "staffId": {
+                                                    "format": "uuid",
+                                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "staffId",
+                                                  "displayName"
+                                                ],
+                                                "type": "object"
+                                              },
+                                              "reason": {
+                                                "nullable": true,
+                                                "type": "string"
+                                              },
+                                              "system": {
+                                                "type": "boolean"
+                                              }
+                                            },
+                                            "required": [
+                                              "at",
+                                              "reason",
+                                              "by",
+                                              "system"
+                                            ],
+                                            "type": "object"
+                                          },
                                           "cancelledAt": {
                                             "format": "date-time",
                                             "nullable": true,
@@ -6963,7 +8172,8 @@
                                           "lineTotal",
                                           "orderedByName",
                                           "notes",
-                                          "cancelledAt"
+                                          "cancelledAt",
+                                          "cancellation"
                                         ],
                                         "type": "object"
                                       },
@@ -7797,6 +9007,50 @@
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
+                                    "cancellation": {
+                                      "additionalProperties": false,
+                                      "nullable": true,
+                                      "properties": {
+                                        "at": {
+                                          "format": "date-time",
+                                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                          "type": "string"
+                                        },
+                                        "by": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "reason": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "system": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "at",
+                                        "reason",
+                                        "by",
+                                        "system"
+                                      ],
+                                      "type": "object"
+                                    },
                                     "cancelledAt": {
                                       "format": "date-time",
                                       "nullable": true,
@@ -7879,7 +9133,8 @@
                                     "lineTotal",
                                     "orderedByName",
                                     "notes",
-                                    "cancelledAt"
+                                    "cancelledAt",
+                                    "cancellation"
                                   ],
                                   "type": "object"
                                 },

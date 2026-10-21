@@ -30,6 +30,8 @@ export const ORDER_ROWS_SQL = `
     i.ordered_by_name,
     i.notes,
     i.cancelled_at,
+    i.cancelled_by,
+    i.cancel_reason,
     m.modifier_option_id AS option_id,
     mo.name AS option_name,
     m.price_delta_snapshot AS price_delta
@@ -91,4 +93,38 @@ export const LINE_ON_TICKET_SQL = `
   SELECT cancelled_at
   FROM order_item
   WHERE ticket_id = $1 AND id = $2
+`;
+
+export const PENDING_ITEM_LINES_SQL = `
+  SELECT i.id AS item_id,
+         i.quantity,
+         t.id AS ticket_id,
+         t.status AS ticket_status,
+         o.visit_id,
+         o.order_number,
+         s.label AS seat_label
+  FROM order_item i
+  JOIN menu_item_variant v ON v.id = i.menu_item_variant_id
+  JOIN order_ticket t ON t.id = i.ticket_id
+  JOIN order_record o ON o.id = t.order_id
+  JOIN visit vis ON vis.id = o.visit_id
+  JOIN table_seat s ON s.id = vis.table_seat_id
+  WHERE v.menu_item_id = $1
+    AND i.cancelled_at IS NULL
+    AND t.status <> 'cancelled'
+  ORDER BY o.visit_id, t.id, i.id
+`;
+
+/** Same condition as PaymentRepository.findPendingByVisit. */
+export const PENDING_PAYMENT_SQL = `
+  SELECT 1 AS hit
+  FROM payment
+  WHERE visit_id = $1 AND status = 'pending'
+  LIMIT 1
+`;
+
+export const ACTIVE_LINE_COUNT_SQL = `
+  SELECT count(*)::int AS count
+  FROM order_item
+  WHERE ticket_id = $1 AND cancelled_at IS NULL
 `;

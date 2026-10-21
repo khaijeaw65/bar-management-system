@@ -1,12 +1,12 @@
 import type { KitchenStation, OrderLine, OrderStatus, TableSeatKind, TicketIssueReason } from '@bar/contracts';
 import type { OrderRow } from '../domain/order-row.types.js';
 import { money } from '../../../common/money.js';
-import type { FoldedOrder, FoldedTicket } from './folded-order.types.js';
+import type { FoldedLine, FoldedOrder, FoldedTicket } from './folded-order.types.js';
 
 export function foldOrders(rows: readonly OrderRow[]): FoldedOrder[] {
   const orders = new Map<string, FoldedOrder>();
   const tickets = new Map<string, FoldedTicket>();
-  const items = new Map<string, OrderLine>();
+  const items = new Map<string, FoldedLine>();
   for (const row of rows) addRow(orders, tickets, items, row);
   return [...orders.values()];
 }
@@ -14,7 +14,7 @@ export function foldOrders(rows: readonly OrderRow[]): FoldedOrder[] {
 function addRow(
   orders: Map<string, FoldedOrder>,
   tickets: Map<string, FoldedTicket>,
-  items: Map<string, OrderLine>,
+  items: Map<string, FoldedLine>,
   row: OrderRow,
 ): void {
   const order = orderOf(orders, row);
@@ -92,7 +92,7 @@ function reasonOf(value: string | null): TicketIssueReason | null {
   throw new Error('order row has an unknown issue reason');
 }
 
-function itemOf(items: Map<string, OrderLine>, ticket: FoldedTicket, row: OrderRow): OrderLine {
+function itemOf(items: Map<string, FoldedLine>, ticket: FoldedTicket, row: OrderRow): FoldedLine {
   const existing = items.get(row.itemId);
   if (existing) return existing;
   const created = newLine(row);
@@ -101,7 +101,7 @@ function itemOf(items: Map<string, OrderLine>, ticket: FoldedTicket, row: OrderR
   return created;
 }
 
-function newLine(row: OrderRow): OrderLine {
+function newLine(row: OrderRow): FoldedLine {
   return {
     id: row.itemId,
     variantId: row.variantId,
@@ -114,6 +114,18 @@ function newLine(row: OrderRow): OrderLine {
     orderedByName: row.orderedByName,
     notes: row.notes,
     cancelledAt: row.cancelledAt ? row.cancelledAt.toISOString() : null,
+    cancellation: cancellationOf(row),
+    cancelledById: row.cancelledBy,
+  };
+}
+
+function cancellationOf(row: OrderRow): OrderLine['cancellation'] {
+  if (!row.cancelledAt) return null;
+  return {
+    at: row.cancelledAt.toISOString(),
+    reason: row.cancelReason,
+    by: null,
+    system: row.cancelledBy === null,
   };
 }
 

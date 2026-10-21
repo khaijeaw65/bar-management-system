@@ -15,6 +15,7 @@ export const TicketStatusChangedPayloadSchema = z.object({
   orderId: UuidSchema,
   visitId: UuidSchema,
   status: OrderStatusSchema,
+  updatedAt: IsoDateTimeSchema,
   updatedBy: StaffRefSchema,
 });
 
@@ -30,6 +31,7 @@ export const TicketIssueEscalatedPayloadSchema = z.object({
   seatLabel: z.string(),
   reason: TicketIssueReasonSchema,
   escalatedAt: IsoDateTimeSchema,
+  updatedAt: IsoDateTimeSchema,
   escalatedBy: StaffRefSchema,
 });
 
