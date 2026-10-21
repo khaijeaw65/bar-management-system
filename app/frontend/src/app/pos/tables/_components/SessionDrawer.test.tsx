@@ -4,6 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import type { ReactNode } from "react";
 import { afterEach, expect, test, vi } from "vitest";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
 import { Toast, toast } from "@heroui/react";
 import { apiEnvelope } from "@/mocks/handlers";
 import { server } from "@/mocks/node";

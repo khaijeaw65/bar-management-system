@@ -1,5 +1,6 @@
-import type { MenuItem, TableSummary, Visit, VisitDetail } from "@bar/contracts";
+import type { MenuItem, Order, OrderLine, PlaceOrderRequest, TableSummary, Visit, VisitDetail } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
+import { scaleMoney, sumMoney } from "@/lib/utils/money";
 
 export const staffMe = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -81,6 +82,7 @@ export const menuItems: MenuItem[] = [
     isPromo: true,
     availableNow: false,
     unavailableReason: "out_of_window",
+    windows: [{ daysOfWeek: [5, 6], startTime: "22:00", endTime: "23:59" }],
   }),
   item({
     id: "44444444-4444-4444-8444-444444444444",
@@ -176,8 +178,15 @@ export function currentSeats(): TableSummary[] {
   return seats;
 }
 
+const ordersByVisit = new Map<string, Order[]>();
+const placedByKey = new Map<string, { body: string; order: Order }>();
+let nextOrderNumber = 1;
+
 export function resetFloor(): void {
   seats = buildSeats();
+  ordersByVisit.clear();
+  placedByKey.clear();
+  nextOrderNumber = 1;
 }
 
 function asVisit(seatRow: TableSummary, visit: Pick<Visit, "id" | "guestLabel" | "openedAt" | "openedBy" | "openedVia">): Visit {
@@ -223,6 +232,89 @@ const venueSettings = {
   counterQrEnabled: false,
 };
 
+function billFor(visit: NonNullable<TableSummary["currentVisit"]>): VisitDetail["bill"] {
+  const orders = ordersByVisit.get(visit.id) ?? [];
+  const total = orders.length > 0 ? sumMoney(orders.map((order) => order.total)) : visit.total;
+  return { total, paid: "0.00", remaining: total, locked: visit.paymentPending };
+}
+
+function lineFor(entry: PlaceOrderRequest["items"][number]): OrderLine {
+  let found: { item: MenuItem; variant: MenuItem["variants"][number] } | undefined;
+  for (const item of menuItems) {
+    const variant = item.variants.find((option) => option.id === entry.variantId);
+    if (variant) {
+      found = { item, variant };
+      break;
+    }
+  }
+  const options = found?.variant.modifierGroups.flatMap((group) => group.options) ?? [];
+  const chosen = options.filter((option) => entry.modifierOptionIds?.includes(option.id));
+  const unitPrice = sumMoney([found?.variant.price ?? "0.00", ...chosen.map((option) => option.priceDelta)]);
+  return {
+    id: crypto.randomUUID(),
+    variantId: entry.variantId,
+    name: found?.item.name ?? "รายการ",
+    variantName: found?.variant.name ?? "ปกติ",
+    quantity: entry.quantity,
+    unitPrice,
+    modifiers: chosen.map((option) => ({ optionId: option.id, name: option.name, priceDelta: option.priceDelta })),
+    lineTotal: scaleMoney(unitPrice, entry.quantity),
+    orderedByName: entry.orderedByName ?? null,
+    notes: entry.notes ?? null,
+    cancelledAt: null,
+    cancellation: null,
+  };
+}
+
+function rememberOrder(visitId: string, order: Order): void {
+  const orders = [order, ...(ordersByVisit.get(visitId) ?? [])];
+  ordersByVisit.set(visitId, orders);
+  const total = sumMoney(orders.map((entry) => entry.total));
+  const itemCount = orders.reduce(
+    (sum, entry) => sum + entry.tickets.reduce((count, ticket) => count + ticket.items.reduce((qty, line) => qty + line.quantity, 0), 0),
+    0,
+  );
+  seats = seats.map((row) =>
+    row.currentVisit?.id === visitId
+      ? { ...row, currentVisit: { ...row.currentVisit, state: "active", total, itemCount } }
+      : row,
+  );
+}
+
+function buildOrder(visitId: string, items: PlaceOrderRequest["items"]): Order {
+  const now = new Date().toISOString();
+  const row = seats.find((seat) => seat.currentVisit?.id === visitId);
+  const lines = items.map((entry) => lineFor(entry));
+  const id = crypto.randomUUID();
+  const orderNumber = nextOrderNumber;
+  nextOrderNumber += 1;
+  return {
+    id,
+    visitId,
+    orderNumber,
+    businessDate: now.slice(0, 10),
+    createdAt: now,
+    createdBy: { staffId: staffMe.id, displayName: staffMe.displayName },
+    total: sumMoney(lines.map((line) => line.lineTotal)),
+    tickets: [
+      {
+        id: crypto.randomUUID(),
+        orderId: id,
+        orderNumber,
+        station: "bar",
+        status: "pending",
+        seat: { id: row?.id ?? visitId, label: row?.label ?? "โต๊ะ", kind: row?.kind ?? "table" },
+        items: lines,
+        issue: null,
+        acceptedBy: null,
+        sentAt: null,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+  };
+}
+
 function detailFor(row: TableSummary): VisitDetail | null {
   const visit = row.currentVisit;
   if (!visit) return null;
@@ -237,13 +329,8 @@ function detailFor(row: TableSummary): VisitDetail | null {
     guestLabel: visit.guestLabel,
     openedBy: null,
     openedVia: "pos",
-    orders: [],
-    bill: {
-      total: visit.total,
-      paid: "0.00",
-      remaining: visit.total,
-      locked: visit.paymentPending,
-    },
+    orders: ordersByVisit.get(visit.id) ?? [],
+    bill: billFor(visit),
     payments: [],
   };
 }
@@ -313,5 +400,32 @@ export const handlers = [
     const closed = closedBody(row);
     seats = seats.map((item) => (item.id === row.id ? { ...item, currentVisit: null } : item));
     return json(closed);
+  }),
+  http.post("*/api/visits/:id/orders", async ({ request, params }) => {
+    const visitId = String(params.id);
+    const key = request.headers.get("Idempotency-Key") ?? "";
+    const raw = (await request.json()) as PlaceOrderRequest;
+    const body = JSON.stringify(raw);
+    const prior = key ? placedByKey.get(key) : undefined;
+    if (prior && key) {
+      if (prior.body !== body) return json(null, 409, "IDEMPOTENCY_KEY_REUSED", "ส่งอีกครั้งได้");
+      return json(prior.order, 201);
+    }
+    const items = raw.items ?? [];
+    // ponytail: the 409 e2e has no live menu toggle, so a note of หมดทดสอบ stands in for a stale tile.
+    if (items.some((item) => item.notes === "หมดทดสอบ")) {
+      return json(
+        { details: items.map((item) => ({ variantId: item.variantId, reason: "sold_out" as const })) },
+        409,
+        "ITEM_UNAVAILABLE",
+        "สินค้าหมด",
+      );
+    }
+    const row = seats.find((seat) => seat.currentVisit?.id === visitId);
+    if (!row?.currentVisit) return json(null, 409, "INVALID_STATE_TRANSITION", "สถานะโต๊ะไม่ถูกต้อง");
+    const order = buildOrder(visitId, items);
+    if (key) placedByKey.set(key, { body, order });
+    rememberOrder(visitId, order);
+    return json(order, 201);
   }),
 ];

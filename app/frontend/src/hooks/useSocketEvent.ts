@@ -24,7 +24,7 @@ export function useSocketEvent(event: string, handler: (payload: unknown) => voi
   }, [event]);
 }
 
-function useDisconnected(onReconnect: () => void): boolean {
+export function useDisconnected(onReconnect: () => void): boolean {
   const [banner, setBanner] = useState(false);
   const onReconnectRef = useRef(onReconnect);
 

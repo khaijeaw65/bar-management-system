@@ -9,7 +9,7 @@ export default function PosLayout({ children }: LayoutProps<"/pos">) {
         <PosRail />
         <div className="flex min-w-0 flex-1 flex-col">
           <PosTopBar />
-          <main className="min-w-0 flex-1 p-6">{children}</main>
+          <main className="flex min-h-0 min-w-0 flex-1 flex-col p-6">{children}</main>
         </div>
       </div>
     </SessionGate>
