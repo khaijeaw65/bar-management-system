@@ -11,10 +11,9 @@ import { quickVariant, lineFrom } from "../catalog";
 import { useCart } from "../_hooks/useCart";
 import { useMenuSync } from "../_hooks/useMenuSync";
 import { useOrderMenu } from "../_hooks/useOrderMenu";
-import { CartPanel } from "./CartPanel";
 import { ItemSheet } from "./ItemSheet";
 import { LeaveDialog } from "./LeaveDialog";
-import { MenuPanel } from "./MenuPanel";
+import { OrderColumns } from "./OrderColumns";
 import { OrderHeader } from "./OrderHeader";
 
 function countsOf(lines: readonly CartLine[]): Map<string, number> {
@@ -50,6 +49,12 @@ function OrderOverlays({
   );
 }
 
+function menuStatus(pending: boolean, failed: boolean): "loading" | "error" | "ready" {
+  if (pending) return "loading";
+  if (failed) return "error";
+  return "ready";
+}
+
 export function OrderScreen({ visitId }: Readonly<{ visitId: string }>) {
   const router = useRouter();
   const visit = useQuery({ queryKey: ["visits", visitId], queryFn: () => getVisit(visitId), retry: false });
@@ -70,7 +75,7 @@ export function OrderScreen({ visitId }: Readonly<{ visitId: string }>) {
   }
 
   function back(): void {
-    if (state.closed || state.lines.length === 0) {
+    if (state.closed || state.notice !== null || state.lines.length === 0) {
       leave();
       return;
     }
@@ -78,7 +83,7 @@ export function OrderScreen({ visitId }: Readonly<{ visitId: string }>) {
   }
 
   function pick(item: MenuItem): void {
-    if (state.pending || state.closed) return;
+    if (state.pending || state.closed || state.notice !== null) return;
     const variant = quickVariant(item);
     if (!variant) {
       setSheet(item);
@@ -90,36 +95,35 @@ export function OrderScreen({ visitId }: Readonly<{ visitId: string }>) {
     });
   }
 
-  const status = menu.items.isPending || menu.categories.isPending ? "loading" : menu.items.isError || menu.categories.isError ? "error" : "ready";
+  const status = menuStatus(
+    menu.items.isPending || menu.categories.isPending,
+    menu.items.isError || menu.categories.isError,
+  );
+
+  const held = state.pending || state.closed || state.notice !== null;
 
   return (
     <section className="flex min-h-0 flex-1 flex-col gap-3">
       <OrderHeader label={visit.data?.seatLabel ?? "…"} onBack={back} />
-      <div className="flex min-h-0 flex-1 gap-4">
-        <MenuPanel
-          items={items ?? []}
-          categories={menu.categories.data?.items ?? []}
-          counts={countsOf(state.lines)}
-          query={menu.query}
-          categoryId={menu.categoryId}
-          status={status}
-          disconnected={menu.disconnected}
-          locked={state.pending || state.closed}
-          onQuery={menu.setQuery}
-          onCategory={menu.setCategoryId}
-          onRetry={menu.refetch}
-          onPick={pick}
-        />
-        <CartPanel
-          visitId={visitId}
-          state={state}
-          dispatch={dispatch}
-          onSent={(count) => {
-            toast.success(`ส่งออเดอร์ ${visit.data?.seatLabel ?? ""} แล้ว · ${count} รายการ`);
-            leave();
-          }}
-        />
-      </div>
+      <OrderColumns
+        visitId={visitId}
+        label={visit.data?.seatLabel ?? ""}
+        items={items ?? []}
+        categories={menu.categories.data?.items ?? []}
+        counts={countsOf(state.lines)}
+        query={menu.query}
+        categoryId={menu.categoryId}
+        status={status}
+        disconnected={menu.disconnected}
+        locked={held}
+        onQuery={menu.setQuery}
+        onCategory={menu.setCategoryId}
+        onRetry={menu.refetch}
+        onPick={pick}
+        state={state}
+        dispatch={dispatch}
+        onLeave={leave}
+      />
       <OrderOverlays
         sheet={sheet}
         names={state.names}

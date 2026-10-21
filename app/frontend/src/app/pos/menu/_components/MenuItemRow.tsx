@@ -15,18 +15,19 @@ function statusLabel(item: MenuItem): string {
   return "พร้อมขาย";
 }
 
+function toneOf(label: string): string {
+  if (label === "หมด") return "bg-status-void-bg text-status-void-fg";
+  if (label === "นอกเวลาโปร") return "bg-warning-bg text-warning-fg";
+  return "bg-status-served-bg text-status-served-fg";
+}
+
 export function MenuItemRow({
   item,
   categoryName,
 }: Readonly<{ item: MenuItem; categoryName: string }>) {
   const label = statusLabel(item);
   const soldOut = item.unavailableReason === "sold_out";
-  const tone =
-    label === "หมด"
-      ? "bg-status-void-bg text-status-void-fg"
-      : label === "นอกเวลาโปร"
-        ? "bg-warning-bg text-warning-fg"
-        : "bg-status-served-bg text-status-served-fg";
+  const tone = toneOf(label);
 
   return (
     <Table.Row id={item.id}>

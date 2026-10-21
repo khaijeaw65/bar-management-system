@@ -40,12 +40,24 @@ test("a preview of 3 × ฿33.33 is ฿99.99 and drops flagged lines", () => {
   expect(previewOf(state.lines)).toEqual({ total: "0.00", count: 0 });
 });
 
-test("a reused key is replaced and a closed cart ignores another add", () => {
-  const state = createCart();
+test("a network failure freezes the cart and a reused key stays", () => {
+  let state = cartReducer(createCart(), { type: "add", line: line() });
+  const key = state.idempotencyKey;
+  const id = state.lines[0]?.id ?? "";
+  state = cartReducer(state, { type: "network" });
+  state = cartReducer(state, { type: "add", line: line() });
+  state = cartReducer(state, { type: "qty", id, quantity: 4 });
+  state = cartReducer(state, { type: "undo" });
+  state = cartReducer(state, { type: "remove", id });
+  state = cartReducer(state, { type: "rememberName", name: "นิด" });
+  expect(state.idempotencyKey).toBe(key);
+  expect(state.lines).toEqual([expect.objectContaining({ quantity: 1 })]);
+  expect(state.names).toEqual([]);
   const reused = cartReducer(state, { type: "reused" });
-  expect(reused.idempotencyKey).not.toBe(state.idempotencyKey);
+  expect(reused.idempotencyKey).toBe(key);
   expect(reused.notice).toBe("reused");
-  const closed = cartReducer(cartReducer(state, { type: "closed" }), { type: "add", line: line() });
+  expect(cartReducer(reused, { type: "add", line: line() }).lines).toHaveLength(1);
+  const closed = cartReducer(cartReducer(createCart(), { type: "closed" }), { type: "add", line: line() });
   expect(closed.lines).toHaveLength(0);
   expect(closed.closed).toBe(true);
 });

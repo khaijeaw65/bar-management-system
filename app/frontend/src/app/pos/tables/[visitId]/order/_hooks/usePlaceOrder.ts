@@ -27,7 +27,7 @@ export function usePlaceOrder(
   });
 
   function send(): void {
-    if (sending.current || state.pending || state.closed || state.forbidden) return;
+    if (sending.current || state.pending || state.closed || state.forbidden || state.notice === "reused") return;
     if (state.lines.some((line) => line.unavailable) || !state.lines.some((line) => !line.unavailable)) return;
     sending.current = true;
     mutation.mutate();

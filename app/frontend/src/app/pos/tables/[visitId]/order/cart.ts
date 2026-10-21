@@ -70,7 +70,7 @@ export function createCart(): CartState {
 }
 
 function signature(line: NewLine): string {
-  const options = [...line.modifierOptionIds].sort().join(",");
+  const options = [...line.modifierOptionIds].sort((left, right) => left.localeCompare(right)).join(",");
   return [line.variantId, options, line.orderedByName ?? "", line.notes ?? ""].join("|");
 }
 
@@ -127,6 +127,10 @@ export function sendFailure(error: unknown): CartAction {
   return { type: "network" };
 }
 
+function editsLocked(state: CartState): boolean {
+  return state.pending || state.closed || state.notice !== null;
+}
+
 function withQuantity(state: CartState, id: string, quantity: number, added: number): CartState {
   return {
     ...state,
@@ -136,81 +140,114 @@ function withQuantity(state: CartState, id: string, quantity: number, added: num
   };
 }
 
+function addLine(state: CartState, line: NewLine): CartState {
+  if (editsLocked(state)) return state;
+  const match = state.lines.find((entry) => !entry.unavailable && signature(entry) === signature(line));
+  if (match) {
+    const quantity = Math.min(99, match.quantity + line.quantity);
+    return withQuantity(state, match.id, quantity, quantity - match.quantity);
+  }
+  const id = `line-${state.nextId}`;
+  return {
+    ...state,
+    nextId: state.nextId + 1,
+    notice: null,
+    undo: { id, quantity: line.quantity },
+    lines: [...state.lines, { ...line, id, unavailable: null }],
+  };
+}
+
+function undoAdd(state: CartState): CartState {
+  if (!state.undo || editsLocked(state)) return state;
+  const { id, quantity } = state.undo;
+  return {
+    ...state,
+    undo: null,
+    lines: state.lines.flatMap((line) => {
+      if (line.id !== id) return [line];
+      const next = line.quantity - quantity;
+      return next > 0 ? [{ ...line, quantity: next }] : [];
+    }),
+  };
+}
+
+function setQuantity(state: CartState, id: string, requested: number): CartState {
+  if (editsLocked(state)) return state;
+  const quantity = Math.min(99, Math.max(1, requested));
+  return {
+    ...state,
+    undo: null,
+    lines: state.lines.map((line) => (line.id === id && !line.unavailable ? { ...line, quantity } : line)),
+  };
+}
+
+function removeLine(state: CartState, id: string): CartState {
+  if (editsLocked(state)) return state;
+  return { ...state, undo: null, lines: state.lines.filter((line) => line.id !== id) };
+}
+
+function rememberName(state: CartState, raw: string): CartState {
+  if (editsLocked(state)) return state;
+  const name = raw.trim();
+  if (!name || name.length > 30 || state.names.includes(name)) return state;
+  return { ...state, names: [...state.names, name] };
+}
+
+function flagUnavailable(state: CartState, details: UnavailableLine[]): CartState {
+  const reasons = new Map(details.map((detail) => [detail.variantId, detail.reason]));
+  return {
+    ...state,
+    pending: false,
+    lines: state.lines.map((line) => {
+      const reason = reasons.get(line.variantId);
+      return reason ? { ...line, unavailable: reason } : line;
+    }),
+  };
+}
+
+function syncMenu(state: CartState, items: readonly MenuItem[]): CartState {
+  let changed = false;
+  const lines = state.lines.map((line) => {
+    if (line.unavailable) return line;
+    const reason = lineReason(line, items);
+    if (!reason) return line;
+    changed = true;
+    return { ...line, unavailable: reason };
+  });
+  return changed ? { ...state, lines } : state;
+}
+
+function setPending(state: CartState, value: boolean): CartState {
+  return { ...state, pending: value, notice: value ? null : state.notice };
+}
+
 export function cartReducer(state: CartState, action: CartAction): CartState {
-  if (action.type === "add") {
-    if (state.pending || state.closed) return state;
-    const match = state.lines.find((line) => !line.unavailable && signature(line) === signature(action.line));
-    if (match) {
-      const quantity = Math.min(99, match.quantity + action.line.quantity);
-      return withQuantity(state, match.id, quantity, quantity - match.quantity);
-    }
-    const id = `line-${state.nextId}`;
-    return {
-      ...state,
-      nextId: state.nextId + 1,
-      notice: null,
-      undo: { id, quantity: action.line.quantity },
-      lines: [...state.lines, { ...action.line, id, unavailable: null }],
-    };
+  switch (action.type) {
+    case "add":
+      return addLine(state, action.line);
+    case "undo":
+      return undoAdd(state);
+    case "qty":
+      return setQuantity(state, action.id, action.quantity);
+    case "remove":
+      return removeLine(state, action.id);
+    case "rememberName":
+      return rememberName(state, action.name);
+    case "pending":
+      return setPending(state, action.value);
+    case "unavailable":
+      return flagUnavailable(state, action.details);
+    case "sync":
+      return syncMenu(state, action.items);
+    case "closed":
+      return { ...state, closed: true, pending: false };
+    case "forbidden":
+      return { ...state, forbidden: true, pending: false };
+    case "network":
+      return { ...state, notice: "network", pending: false };
+    case "reused":
+      return { ...state, notice: "reused", pending: false };
+    default:
+      return state;
   }
-  if (action.type === "undo") {
-    if (!state.undo || state.pending || state.closed) return state;
-    const { id, quantity } = state.undo;
-    return {
-      ...state,
-      undo: null,
-      lines: state.lines.flatMap((line) => {
-        if (line.id !== id) return [line];
-        const next = line.quantity - quantity;
-        return next > 0 ? [{ ...line, quantity: next }] : [];
-      }),
-    };
-  }
-  if (action.type === "qty") {
-    if (state.pending || state.closed) return state;
-    const quantity = Math.min(99, Math.max(1, action.quantity));
-    return {
-      ...state,
-      undo: null,
-      lines: state.lines.map((line) => (line.id === action.id && !line.unavailable ? { ...line, quantity } : line)),
-    };
-  }
-  if (action.type === "remove") {
-    if (state.pending || state.closed) return state;
-    return { ...state, undo: null, lines: state.lines.filter((line) => line.id !== action.id) };
-  }
-  if (action.type === "rememberName") {
-    const name = action.name.trim();
-    if (!name || name.length > 30 || state.names.includes(name)) return state;
-    return { ...state, names: [...state.names, name] };
-  }
-  if (action.type === "pending") {
-    return { ...state, pending: action.value, notice: action.value ? null : state.notice };
-  }
-  if (action.type === "unavailable") {
-    const reasons = new Map(action.details.map((detail) => [detail.variantId, detail.reason]));
-    return {
-      ...state,
-      pending: false,
-      lines: state.lines.map((line) => {
-        const reason = reasons.get(line.variantId);
-        return reason ? { ...line, unavailable: reason } : line;
-      }),
-    };
-  }
-  if (action.type === "sync") {
-    let changed = false;
-    const lines = state.lines.map((line) => {
-      if (line.unavailable) return line;
-      const reason = lineReason(line, action.items);
-      if (!reason) return line;
-      changed = true;
-      return { ...line, unavailable: reason };
-    });
-    return changed ? { ...state, lines } : state;
-  }
-  if (action.type === "closed") return { ...state, closed: true, pending: false };
-  if (action.type === "forbidden") return { ...state, forbidden: true, pending: false };
-  if (action.type === "network") return { ...state, notice: "network", pending: false };
-  return { ...state, idempotencyKey: crypto.randomUUID(), notice: "reused", pending: false };
 }

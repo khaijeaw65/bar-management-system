@@ -91,13 +91,15 @@ test("quick add merges a line and undo removes the last tap", async () => {
   expect(within(cart).getByText("1")).toBeInTheDocument();
 });
 
-test("retries a failed send with the same idempotency key and then returns to the table", async () => {
+test("retries a failed send with the same key and body, and discard leaves the table", async () => {
   const user = userEvent.setup();
   const keys: string[] = [];
+  const bodies: string[] = [];
   let calls = 0;
   server.use(
-    http.post("*/api/visits/:id/orders", ({ request }) => {
+    http.post("*/api/visits/:id/orders", async ({ request }) => {
       keys.push(request.headers.get("Idempotency-Key") ?? "");
+      bodies.push(await request.text());
       calls += 1;
       if (calls === 1) return HttpResponse.error();
       return HttpResponse.json(apiEnvelope(placedOrder()), { status: 201 });
@@ -107,9 +109,47 @@ test("retries a failed send with the same idempotency key and then returns to th
   await user.click(await screen.findByRole("button", { name: /สิงห์/ }));
   await user.click(screen.getByRole("button", { name: "ส่งออเดอร์" }));
   expect(await screen.findByText("ตะกร้ายังอยู่ครบ — ส่งซ้ำจะไม่เกิดออเดอร์ซ้ำ")).toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "ส่งออเดอร์" }));
+  const cart = screen.getByRole("complementary", { name: "ตะกร้า" });
+  expect(within(cart).getByRole("button", { name: "เพิ่ม" })).toBeDisabled();
+  expect(within(cart).getByRole("button", { name: "ลบรายการ สิงห์" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: /^สิงห์/ })).toBeDisabled();
+  await user.click(screen.getByRole("button", { name: "ส่งอีกครั้ง" }));
   expect(await screen.findByText(/ส่งออเดอร์ T3 แล้ว · 1 รายการ/)).toBeInTheDocument();
   expect(keys).toEqual([keys[0], keys[0]]);
+  expect(bodies[1]).toBe(bodies[0]);
+  expect(push).toHaveBeenCalledWith(`/pos/tables?visit=${visitId}`);
+});
+
+test("a network failure can discard the frozen cart", async () => {
+  const user = userEvent.setup();
+  server.use(http.post("*/api/visits/:id/orders", () => HttpResponse.error()));
+  renderScreen();
+  await user.click(await screen.findByRole("button", { name: /สิงห์/ }));
+  await user.click(screen.getByRole("button", { name: "ส่งออเดอร์" }));
+  await user.click(await screen.findByRole("button", { name: "ทิ้งตะกร้า" }));
+  expect(push).toHaveBeenCalledWith(`/pos/tables?visit=${visitId}`);
+});
+
+test("a reused key locks the cart and sends nothing further", async () => {
+  const user = userEvent.setup();
+  let calls = 0;
+  server.use(
+    http.post("*/api/visits/:id/orders", () => {
+      calls += 1;
+      return HttpResponse.json(apiEnvelope(null, 409, "IDEMPOTENCY_KEY_REUSED", "ใช้แล้ว"), { status: 409 });
+    }),
+  );
+  renderScreen();
+  await user.click(await screen.findByRole("button", { name: /สิงห์/ }));
+  await user.click(screen.getByRole("button", { name: "ส่งออเดอร์" }));
+  expect(await screen.findByText("ออเดอร์นี้อาจถูกส่งไปแล้ว")).toBeInTheDocument();
+  expect(screen.getByText("ตรวจที่โต๊ะก่อนสั่งเพิ่ม")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "ส่งออเดอร์" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "ส่งอีกครั้ง" })).not.toBeInTheDocument();
+  const cart = screen.getByRole("complementary", { name: "ตะกร้า" });
+  expect(within(cart).getByRole("button", { name: "เพิ่ม" })).toBeDisabled();
+  await user.click(within(cart).getByRole("button", { name: "กลับไปที่โต๊ะ" }));
+  expect(calls).toBe(1);
   expect(push).toHaveBeenCalledWith(`/pos/tables?visit=${visitId}`);
 });
 

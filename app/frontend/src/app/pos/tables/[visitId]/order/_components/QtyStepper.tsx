@@ -13,7 +13,7 @@ export function QtyStepper({
   onChange: (quantity: number) => void;
 }>) {
   return (
-    <div className="flex items-center gap-1" role="group" aria-label="จำนวน">
+    <fieldset className="flex items-center gap-1 border-0 p-0" aria-label="จำนวน">
       <Button isIconOnly className="size-11" size="sm" variant="secondary" aria-label="ลด" isDisabled={disabled || value <= 1} onPress={() => onChange(value - 1)}>
         <Minus aria-hidden size={16} />
       </Button>
@@ -21,6 +21,6 @@ export function QtyStepper({
       <Button isIconOnly className="size-11" size="sm" variant="secondary" aria-label="เพิ่ม" isDisabled={disabled || value >= 99} onPress={() => onChange(value + 1)}>
         <Plus aria-hidden size={16} />
       </Button>
-    </div>
+    </fieldset>
   );
 }

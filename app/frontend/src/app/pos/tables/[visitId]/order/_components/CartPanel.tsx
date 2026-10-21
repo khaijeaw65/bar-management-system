@@ -14,8 +14,53 @@ function alertCopy(state: CartState): { title: string; body: string } | null {
     return { title: "บัญชีนี้ไม่มีสิทธิ์ส่งออเดอร์แล้ว", body: "ตะกร้ายังอยู่ — ให้ผู้จัดการตรวจสิทธิ์ หรือให้พนักงานอื่นส่งแทน" };
   }
   if (state.notice === "network") return { title: "ส่งออเดอร์ไม่สำเร็จ", body: "ตะกร้ายังอยู่ครบ — ส่งซ้ำจะไม่เกิดออเดอร์ซ้ำ" };
-  if (state.notice === "reused") return { title: "ส่งอีกครั้งได้", body: "ส่งอีกครั้งได้" };
+  if (state.notice === "reused") return { title: "ออเดอร์นี้อาจถูกส่งไปแล้ว", body: "ตรวจที่โต๊ะก่อนสั่งเพิ่ม" };
   return null;
+}
+
+function CartFooter({
+  total,
+  pending,
+  sendDisabled,
+  notice,
+  onSend,
+  onLeave,
+}: Readonly<{
+  total: string;
+  pending: boolean;
+  sendDisabled: boolean;
+  notice: CartState["notice"];
+  onSend: () => void;
+  onLeave: () => void;
+}>) {
+  return (
+    <footer className="flex flex-col gap-3 px-5 py-4 shadow-(--shadow-sheet)">
+      <p className="flex items-baseline justify-between">
+        <span className="text-text-muted">รวม</span>
+        <span className="text-pos-total text-text-accent tabular-nums">{formatTHB(total)}</span>
+      </p>
+      {notice === "reused" ? (
+        <Button size="lg" fullWidth onPress={onLeave}>
+          กลับไปที่โต๊ะ
+        </Button>
+      ) : null}
+      {notice === "network" ? (
+        <>
+          <Button size="lg" fullWidth isPending={pending} onPress={onSend}>
+            ส่งอีกครั้ง
+          </Button>
+          <Button size="lg" fullWidth variant="secondary" onPress={onLeave}>
+            ทิ้งตะกร้า
+          </Button>
+        </>
+      ) : null}
+      {notice === null ? (
+        <Button size="lg" fullWidth isPending={pending} isDisabled={sendDisabled} onPress={onSend}>
+          ส่งออเดอร์
+        </Button>
+      ) : null}
+    </footer>
+  );
 }
 
 export function CartPanel({
@@ -23,17 +68,19 @@ export function CartPanel({
   state,
   dispatch,
   onSent,
+  onLeave,
 }: Readonly<{
   visitId: string;
   state: CartState;
   dispatch: (action: CartAction) => void;
   onSent: (count: number) => void;
+  onLeave: () => void;
 }>) {
   const place = usePlaceOrder(visitId, state, dispatch, onSent);
   const preview = previewOf(state.lines);
   const alert = alertCopy(state);
   const blocked = state.lines.some((line) => line.unavailable);
-  const locked = state.pending || state.closed;
+  const locked = state.pending || state.closed || state.notice !== null;
   const lines = orderedLines(state.lines);
 
   return (
@@ -64,15 +111,14 @@ export function CartPanel({
           ))}
         </ul>
       </div>
-      <footer className="flex flex-col gap-3 px-5 py-4 shadow-(--shadow-sheet)">
-        <p className="flex items-baseline justify-between">
-          <span className="text-text-muted">รวม</span>
-          <span className="text-pos-total text-text-accent tabular-nums">{formatTHB(preview.total)}</span>
-        </p>
-        <Button size="lg" fullWidth isPending={place.pending} isDisabled={blocked || locked || state.forbidden || preview.count === 0} onPress={place.send}>
-          ส่งออเดอร์
-        </Button>
-      </footer>
+      <CartFooter
+        total={preview.total}
+        pending={place.pending}
+        sendDisabled={blocked || state.pending || state.closed || state.forbidden || preview.count === 0}
+        notice={state.notice}
+        onSend={place.send}
+        onLeave={onLeave}
+      />
     </aside>
   );
 }

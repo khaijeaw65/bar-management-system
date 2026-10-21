@@ -12,10 +12,9 @@ export function useMenuSync(
 ): void {
   useEffect(() => {
     if (!items) return;
-    const newly = lines.filter((line) => !line.unavailable && lineReason(line, items));
-    const name = newly[0]?.itemName;
-    if (!name) return;
+    const first = lines.find((line) => !line.unavailable && lineReason(line, items));
+    if (!first) return;
     dispatch({ type: "sync", items });
-    toast.warning(`${name} หมดแล้ว`);
+    toast.warning(`${first.itemName} หมดแล้ว`);
   }, [items, lines, dispatch]);
 }
