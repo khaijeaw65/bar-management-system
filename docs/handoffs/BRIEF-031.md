@@ -5,9 +5,9 @@
 | **Implementer** | kj |
 | **Date** | 2026-10-22 |
 | **Brief revision** | 2 |
-| **Branch** | `feat/BRIEF-031-pos-order-entry` (PR opens after audit PASS) |
+| **Branch** | `feat/BRIEF-031-pos-order-entry` (PR opens after this PASS commit) |
 | **Commit** | `69bc334ab6031fbe35bf73af229751e78d3e46c2` |
-| **Status** | Implemented — Suggestions 3 and 4 pushed, no PASS commit, re-audit not started |
+| **Status** | Audit PASS — merged PR determines Done |
 
 > Gate evidence below was run on the work tree that became `69bc334`, before this docs commit. Node v24.14.0, pnpm 10.0.0. The first run proof was on `bd3778f`.
 
@@ -90,8 +90,9 @@ The gate still fails for two reasons outside those files:
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next: `audit BRIEF-031`
-- Work SHA: `69bc334ab6031fbe35bf73af229751e78d3e46c2` (Suggestions 3 and 4). Prior fix `1342d419259d06cb3abf2ab4325b8429952de8f5`. Audited SHA was `bd3778fe821d5309843491b1be809013ae027606`.
+- Audit: PASS · 0 Must fix · 0 open suggestions (S3 and S4 closed on `69bc334`)
+- Next: merge when `ci` is green on the PR head (Field's PR, pre-approved)
+- Work SHA: `69bc334ab6031fbe35bf73af229751e78d3e46c2` (Suggestions 3 and 4). Prior fix `1342d419259d06cb3abf2ab4325b8429952de8f5`. First audit was `bd3778fe821d5309843491b1be809013ae027606`.
 
 ## Notes for Reviewer
 - Cart state is a reducer. The preview total is display-only and is never sent.

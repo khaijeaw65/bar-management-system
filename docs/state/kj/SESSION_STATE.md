@@ -1,23 +1,23 @@
 # State — KJ
-Updated: 2026-10-22 00:55 · Agent: Cursor
+Updated: 2026-10-22 01:40 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2).
 
 ## Resume
-BRIEF-031 order entry **Implemented** on `feat/BRIEF-031-pos-order-entry` (`bd3778f`). Next: `audit BRIEF-031`.
+BRIEF-031 order entry **audit PASS** on `feat/BRIEF-031-pos-order-entry` (work `69bc334`). Next: merge when `ci` is green.
 
 ## Active
-- Brief: BRIEF-031 · Stage: Implemented · Branch: `feat/BRIEF-031-pos-order-entry` · Auditor: Cowork
+- Brief: BRIEF-031 · Stage: audit PASS · Branch: `feat/BRIEF-031-pos-order-entry` · Auditor: Cowork
 - Done 21–22 Oct: BRIEF-030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 (#67) · 024 (#66) · 013 (#64)
 - Drafts in checkout (untracked): 033 → 032 · BRIEF-023 Q1 open
 
 ## Next steps
-1. `audit BRIEF-031` → PASS commit → PR · then 033 · 032 if time · Sun night: full demo run + re-plan 26 Oct–2 Nov
+1. Merge BRIEF-031 when `ci` is green · then 033 · 032 if time · Sun night: full demo run + re-plan 26 Oct–2 Nov
 2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
 3. **Decide by 25 Oct:** CD-14 phone new-order — leaning web POS order + phone queue (BRIEF-010, Metee)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · 10 Nov: order → pay → close on the web POS
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-031 (Cowork)
+- Shared files: none · Review queue: BRIEF-031 PR (Field, pre-approved once `ci` is green)
 - Local DB: T1 (นิด, #2, ฿500) plus C1, C2, T5, T6 open · API watch left on 3001 · port 3000 free
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
@@ -35,5 +35,5 @@ BRIEF-031 order entry **Implemented** on `feat/BRIEF-031-pos-order-entry` (`bd37
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-031 (Implemented) · 033 → 032 (Drafts, untracked)
+1. BRIEF-031 (audit PASS) · 033 → 032 (Drafts, untracked)
 2. BRIEF-023 split equal (Q1 open) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
