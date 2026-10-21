@@ -3,6 +3,7 @@
 import { Alert } from "@heroui/react";
 import type { VisitDetail } from "@bar/contracts";
 import { BillFooter } from "./BillFooter";
+import { OrderEntryButton } from "./OrderEntryButton";
 import { OrderGroup } from "./OrderGroup";
 import { SessionHeader } from "./SessionHeader";
 import type { SessionGroup } from "./session-groups";
@@ -24,7 +25,7 @@ export function SessionBody({
 }>) {
   return (
     <>
-      <SessionHeader titleId={titleId} visit={visit} onClose={onClose} />
+      <SessionHeader titleId={titleId} visit={visit} hasOrders={groups.length > 0} onClose={onClose} />
       {paying ? (
         <Alert status="danger" role="alert">
           <Alert.Content>
@@ -35,9 +36,12 @@ export function SessionBody({
       ) : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {groups.length === 0 ? (
-          <div className="flex flex-col gap-1 py-6">
-            <p>ยังไม่มีออเดอร์</p>
-            <p className="text-small text-text-muted">ออเดอร์จาก QR ของโต๊ะจะขึ้นที่นี่ทันที</p>
+          <div className="flex flex-col items-start gap-3 py-6">
+            <div className="flex flex-col gap-1">
+              <p>ยังไม่มีออเดอร์</p>
+              <p className="text-small text-text-muted">ออเดอร์จาก QR ของโต๊ะจะขึ้นที่นี่ทันที</p>
+            </div>
+            <OrderEntryButton visitId={visit.id} prominent />
           </div>
         ) : (
           groups.map((group) => <OrderGroup key={group.key} group={group} />)

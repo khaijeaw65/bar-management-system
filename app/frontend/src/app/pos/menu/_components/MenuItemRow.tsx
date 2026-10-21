@@ -1,12 +1,12 @@
 import { Chip, Table } from "@heroui/react";
 import type { MenuItem } from "@bar/contracts";
 import { formatTHB } from "@/lib/utils/format";
+import { lowestMoney } from "@/lib/utils/money";
 
 function priceLabel(item: MenuItem): string {
   const prices = item.variants.map((variant) => variant.price);
   if (new Set(prices).size < 2) return formatTHB(item.basePrice);
-  const lowest = prices.reduce((min, price) => (Number(price) < Number(min) ? price : min));
-  return `เริ่ม ${formatTHB(lowest)}`;
+  return `เริ่ม ${formatTHB(lowestMoney(prices))}`;
 }
 
 function statusLabel(item: MenuItem): string {

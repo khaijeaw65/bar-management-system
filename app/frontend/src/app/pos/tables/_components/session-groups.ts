@@ -1,4 +1,5 @@
 import type { KitchenStation, Order, OrderLine, OrderStatus, Ticket, VisitState } from "@bar/contracts";
+import { toSatang } from "@/lib/utils/money";
 
 type ChipColor = "accent" | "danger" | "default" | "success" | "warning";
 
@@ -43,7 +44,7 @@ export function visitChip(state: VisitState): string {
 }
 
 export function hasMoney(value: string): boolean {
-  const amount = Number(value);
+  const amount = toSatang(value);
   return Number.isFinite(amount) && amount > 0;
 }
 

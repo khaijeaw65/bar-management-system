@@ -3,16 +3,19 @@
 import { Button, Chip } from "@heroui/react";
 import type { VisitDetail } from "@bar/contracts";
 import { X } from "lucide-react";
+import { OrderEntryButton } from "./OrderEntryButton";
 import { visitChip } from "./session-groups";
 import { formatElapsed, useMinuteClock } from "./table-time";
 
 export function SessionHeader({
   titleId,
   visit,
+  hasOrders,
   onClose,
 }: Readonly<{
   titleId: string;
   visit: VisitDetail;
+  hasOrders: boolean;
   onClose: () => void;
 }>) {
   const now = useMinuteClock();
@@ -29,8 +32,11 @@ export function SessionHeader({
             {visitChip(visit.state)}
           </Chip>
         </div>
-        <p className="text-small text-text-muted">
-          เปิด {elapsed} · {visit.guestLabel || "—"}
+        <p className="flex flex-wrap items-center gap-2 text-small text-text-muted">
+          <span>
+            เปิด {elapsed} · {visit.guestLabel || "—"}
+          </span>
+          {hasOrders ? <OrderEntryButton visitId={visit.id} /> : null}
         </p>
       </div>
       <Button isIconOnly aria-label="ปิด" variant="ghost" onPress={onClose}>

@@ -12,6 +12,10 @@ import { formatTHB } from "@/lib/utils/format";
 import { SessionDrawer } from "./SessionDrawer";
 import { closedVisit, drawerVisitId, visitDetail } from "./session.fixture";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
+
 vi.mock("socket.io-client", () => ({
   io: () => ({
     on() {},
