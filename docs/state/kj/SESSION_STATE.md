@@ -1,24 +1,24 @@
 # State — KJ
-Updated: 2026-10-21 23:50 · Agent: Cowork (Claude)
+Updated: 2026-10-22 00:15 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-030 session panel + close **Ready** Rev 1 — seeded on `feat/BRIEF-030-pos-session-panel-close`. Next: `execute BRIEF-030`.
+BRIEF-030 session panel + close **Implemented**, awaiting audit. Next: `audit BRIEF-030`.
 
 ## Active
-- Brief: BRIEF-030 · Stage: Ready · Branch: `feat/BRIEF-030-pos-session-panel-close` (seed from `main` @ `176ec25`)
+- Brief: BRIEF-030 · Stage: Implemented · Branch: `feat/BRIEF-030-pos-session-panel-close` · SHA `11569c2` · Handoff `docs/handoffs/BRIEF-030.md`
 - Done 21 Oct: BRIEF-029 (#70) · BRIEF-028 (#69) · BRIEF-027 (#68) · earlier: 017 (#67) · 024 (#66) · 013 (#64)
 - Drafts in checkout (decided, seed as deps merge): 031 → 033 → 032 · BRIEF-023 Q1 open
 
 ## Next steps
-1. `execute BRIEF-030` → then 031 → 033 · 032 if time · Sun night: full demo run + re-plan 26 Oct–2 Nov
+1. `audit BRIEF-030` → then 031 → 033 · 032 if time · Sun night: full demo run + re-plan 26 Oct–2 Nov
 2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
 3. **Decide by 25 Oct:** CD-14 phone new-order — leaning web POS order + phone queue (BRIEF-010, Metee)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · 10 Nov: order → pay → close on the web POS
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none
-- Local DB: T5 (ต้น) and T6 (แพร) still open from the 029 run proof — 030's close flow can use them · ports 3000/3001 free for run proofs
+- Shared files: none · Review queue: Cowork — `audit BRIEF-030`
+- Local DB: C1 (เจ, no order) and C2 (เจ, 2× ช้างดราฟต์) left open by this proof; T5 (ต้น) and T6 (แพร) still open from 029. `NEXT_PUBLIC_API_MOCKING` missing from frontend `.env.local`
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; 2–8 Nov no new features) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -35,5 +35,5 @@ BRIEF-030 session panel + close **Ready** Rev 1 — seeded on `feat/BRIEF-030-po
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-029 (Audit PASS) · 030 → 031 → 033 → 032 (Drafts, decided)
+1. BRIEF-030 (Implemented, awaiting audit) · 031 → 033 → 032 (Drafts, untracked)
 2. BRIEF-023 split equal (Q1 open) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
