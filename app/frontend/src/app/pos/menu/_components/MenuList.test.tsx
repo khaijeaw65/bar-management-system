@@ -24,6 +24,9 @@ test("shows the loaded menu", async () => {
   expect(screen.getByRole("rowheader", { name: "ปีกไก่ทอด" })).toBeInTheDocument();
   expect(screen.getByRole("rowheader", { name: "วิสกี้ซาวร์" })).toBeInTheDocument();
   expect(screen.getByText("฿120.00")).toBeInTheDocument();
+  expect(screen.getByText("เบียร์")).toBeInTheDocument();
+  expect(screen.getByText("เริ่ม ฿180.00")).toBeInTheDocument();
+  expect(screen.getByText("นอกเวลาโปร")).toBeInTheDocument();
   expect(screen.getByText("หมด")).toBeInTheDocument();
 });
 
@@ -31,7 +34,11 @@ test("shows the error state and retries", async () => {
   server.use(
     http.get(
       "*/api/menu/items",
-      () => HttpResponse.json({ status: 500, message: "เกิดข้อผิดพลาด", data: null }, { status: 500 }),
+      () =>
+        HttpResponse.json(
+          { status: 500, code: "INTERNAL_ERROR", message: "เกิดข้อผิดพลาด", data: null },
+          { status: 500 },
+        ),
       { once: true },
     ),
   );
@@ -44,7 +51,7 @@ test("shows the error state and retries", async () => {
 test("shows the empty state", async () => {
   server.use(
     http.get("*/api/menu/items", () =>
-      HttpResponse.json({ status: 200, message: "success", data: { items: [] } }),
+      HttpResponse.json({ status: 200, code: "", message: "success", data: { items: [] } }),
     ),
   );
   renderList();

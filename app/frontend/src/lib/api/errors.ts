@@ -1,11 +1,23 @@
+export type AuthPhase = "first-load" | "mid-use";
+
 export class ApiError extends Error {
   readonly status: number;
-  readonly body: unknown;
+  readonly code: string;
+  readonly data: unknown;
+  readonly authPhase?: AuthPhase;
 
-  constructor(status: number, body: unknown, message: string) {
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    data: unknown,
+    authPhase?: AuthPhase,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
-    this.body = body;
+    this.code = code;
+    this.data = data;
+    this.authPhase = authPhase;
   }
 }

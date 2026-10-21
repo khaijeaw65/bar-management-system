@@ -2,23 +2,39 @@
 
 import { Table } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { getMenuItems } from "@/lib/api/menu";
+import { getMenuCategories, getMenuItems } from "@/lib/api/menu";
 import { MenuItemRow } from "./MenuItemRow";
 import { MenuListError } from "./MenuListError";
 import { MenuListSkeleton } from "./MenuListSkeleton";
 
 export function MenuList() {
-  const query = useQuery({
+  const items = useQuery({
     queryKey: ["menu", "items"],
     queryFn: getMenuItems,
     retry: false,
   });
+  const categories = useQuery({
+    queryKey: ["menu", "categories"],
+    queryFn: getMenuCategories,
+    retry: false,
+  });
 
-  if (query.isPending) return <MenuListSkeleton />;
-  if (query.isError) return <MenuListError onRetry={() => void query.refetch()} />;
-  if (query.data.items.length === 0) {
+  if (items.isPending || categories.isPending) return <MenuListSkeleton />;
+  if (items.isError || categories.isError) {
+    return (
+      <MenuListError
+        onRetry={() => {
+          void items.refetch();
+          void categories.refetch();
+        }}
+      />
+    );
+  }
+  if (items.data.items.length === 0) {
     return <p className="text-text-muted">ยังไม่มีเมนู</p>;
   }
+
+  const names = new Map(categories.data.items.map((category) => [category.id, category.name]));
 
   return (
     <Table>
@@ -30,8 +46,10 @@ export function MenuList() {
             <Table.Column>ราคา</Table.Column>
             <Table.Column>สถานะ</Table.Column>
           </Table.Header>
-          <Table.Body items={query.data.items}>
-            {(item) => <MenuItemRow item={item} />}
+          <Table.Body items={items.data.items}>
+            {(item) => (
+              <MenuItemRow item={item} categoryName={names.get(item.categoryId) ?? "ไม่มีหมวด"} />
+            )}
           </Table.Body>
         </Table.Content>
       </Table.ScrollContainer>

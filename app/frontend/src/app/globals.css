@@ -42,6 +42,9 @@
   --accent-press: #B87020;
   --accent-soft: rgba(212,135,42,.14);
   --accent-soft-strong: rgba(212,135,42,.24);
+  /* LINE Login green — CD-01 §8, asset stays in public/ (BRIEF-028) */
+  --line-brand: #06C755;
+  --line-brand-fg: #FFFFFF;
   /* status: --status-x = dot/fill, -bg = chip fill, -fg = chip text, -border = tile/ticket border */
   --status-new: #E3A11B;    --status-new-bg: #40300B;    --status-new-fg: #E3A11B;    --status-new-border: rgba(227,161,27,.5);
   --status-making: #6E93A8; --status-making-bg: #1E2F38; --status-making-fg: #8DB0C4; --status-making-border: rgba(110,147,168,.5);
@@ -98,6 +101,8 @@
   --accent-press: #B87020;
   --accent-soft: rgba(212,135,42,.14);
   --accent-soft-strong: rgba(212,135,42,.26);
+  --line-brand: #06C755;
+  --line-brand-fg: #FFFFFF;
   --status-new: #E3A11B;    --status-new-bg: #F5E4BE;    --status-new-fg: #7A5200;    --status-new-border: rgba(122,82,0,.35);
   --status-making: #6E93A8; --status-making-bg: #DCE8EE; --status-making-fg: #2E5A72; --status-making-border: rgba(46,90,114,.35);
   --status-served: #7FA85C; --status-served-bg: #E1EBD3; --status-served-fg: #3F6526; --status-served-border: rgba(63,101,38,.35);
@@ -239,6 +244,8 @@
   --color-focus-ring: var(--focus-ring);
   --color-accent-press: var(--accent-press);
   --color-accent-soft-strong: var(--accent-soft-strong);
+  --color-line-brand: var(--line-brand);
+  --color-line-brand-fg: var(--line-brand-fg);
   --color-status-new: var(--status-new);
   --color-status-new-bg: var(--status-new-bg);
   --color-status-new-fg: var(--status-new-fg);
