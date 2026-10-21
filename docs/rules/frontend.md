@@ -143,7 +143,7 @@ export function getMenuItems(): Promise<MenuList> {
 
 ## Performance
 - `next/image` for content images; `next/font` in the root layout only
-- Exception: the PromptPay QR is a backend base64 PNG → plain `<img>` (DR-002 #12)
+- PromptPay QR: render Payment.qrPayload (EMVCo string) as SVG with qrcode.react, colours from qr-bg / qr-ink tokens (DR-018, supersedes DR-002 #12)
 - `dynamic()` for heavy components; no barrel `index.ts` re-exporting components
 
 ---

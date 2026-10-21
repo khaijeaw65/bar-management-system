@@ -41,7 +41,7 @@ Main option = the UI framework (others below are single-choice items):
 | 9 | Toasts / drawers / date inputs | HeroUI built-ins — no `sonner`, no `vaul` | One library |
 | 10 | Dates | HeroUI/React Aria date inputs with the **Thai Buddhist calendar** (`@internationalized/date`, comes with React Aria); display via `Intl` `th-TH` | No date library |
 | 11 | Money display | `Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' })`. **Frontend never does money math** — totals come from the backend | See money note below |
-| 12 | PromptPay QR | Backend returns a **base64 PNG**; frontend renders it with a plain `<img>`, not `next/image` | No QR library on the frontend |
+| 12 | PromptPay QR | ~~Backend returns a **base64 PNG**; frontend renders it with a plain `<img>`, not `next/image`~~ **Superseded by DR-018** (frontend renders `qrPayload` as SVG with `qrcode.react`) | ~~No QR library on the frontend~~ |
 | 13 | Charts | **Deferred** to Sprint 6 (dashboard) | Not needed yet |
 | 14 | API mocking | **MSW** (dev + tests), early phase | FE work isn't blocked on the backend scaffold brief |
 | 15 | Testing | **Vitest + Testing Library** (unit/component), **Playwright** (e2e gate) | Matches the brief testing gate |
