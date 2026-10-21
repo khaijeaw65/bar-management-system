@@ -1,4 +1,5 @@
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { StaffAccount } from "./StaffAccount";
 import { LiveClock } from "./LiveClock";
 
 export function PosTopBar() {
@@ -10,6 +11,7 @@ export function PosTopBar() {
         <p className="text-small text-text-muted">เดอะ ลอฟท์ บาร์</p>
       </div>
       <div className="flex items-center gap-3">
+        <StaffAccount />
         <LiveClock />
         <ThemeToggle />
       </div>

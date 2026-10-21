@@ -59,8 +59,7 @@ app/frontend/src/
 │   └── utils/                  ← cn(), formatTHB(), formatDate()
 ├── mocks/                      ← MSW handlers, browser.ts, node.ts
 ├── stores/                     ← Zustand slices (UI state only)
-├── test/                       ← Vitest setup
-└── proxy.ts                    ← route guard (Next 16 name for middleware) — auth brief
+└── test/                       ← Vitest setup
 ```
 
 ---
@@ -125,7 +124,7 @@ export function getMenuItems(): Promise<MenuList> {
 ## Auth (LINE SSO + JWT)
 - LINE login → backend sets HttpOnly cookies; the frontend never reads tokens
 - Current user: `useQuery(['auth', 'me'])` → `/api/auth/me`
-- Route guard in `proxy.ts` (Next 16) — cookie present? else redirect `/login`
+- Route guard = /pos layout session gate: GET /auth/me → 401 → one refresh → fail → /login (first load) or session-expired modal (mid-use). No proxy.ts cookie check — the access cookie expires every 15 min and API cookies are invisible to the web host in production (BRIEF-028 Q1).
 - Refresh on 401 via the axios interceptor (DR-007)
 
 ---

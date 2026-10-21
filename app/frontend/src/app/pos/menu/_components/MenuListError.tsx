@@ -1,14 +1,15 @@
+import { Alert } from "@heroui/react";
+
 export function MenuListError({ onRetry }: Readonly<{ onRetry: () => void }>) {
   return (
-    <div role="alert" className="flex flex-col items-start gap-3">
-      <p className="text-danger">เกิดข้อผิดพลาด</p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="h-10 rounded-md bg-accent px-4 text-sm font-semibold text-accent-foreground"
-      >
+    <Alert status="danger" role="alert">
+      <Alert.Content>
+        <Alert.Title>โหลดข้อมูลไม่สำเร็จ</Alert.Title>
+        <Alert.Description>เกิดข้อผิดพลาดในการดึงข้อมูลเมนู</Alert.Description>
+      </Alert.Content>
+      <button type="button" onClick={onRetry} className="text-small font-semibold text-danger-fg">
         ลองอีกครั้ง
       </button>
-    </div>
+    </Alert>
   );
 }
