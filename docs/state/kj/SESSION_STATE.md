@@ -1,31 +1,30 @@
 # State — KJ
-Updated: 2026-10-20 01:00 · Agent: Cursor
+Updated: 2026-10-21 22:00 · Agent: Cowork (Claude)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-017 Rev 3 audit **PASS** (0 Must fix). Work SHA `2dcc8f6`. Next: PR, then merge when `ci` is green.
+BRIEF-028 web login **Ready** Rev 1 — seeded on `feat/BRIEF-028-web-login-real-api`. BRIEF-027 Ready on its own seed. Next: `execute BRIEF-027` · `execute BRIEF-028`.
 
 ## Active
-- Brief: BRIEF-017 ticket issue flow · Stage: Audit PASS · Branch: `feat/BRIEF-017-void-comp-issues` (on `main` @ `998e6c0`, #66)
-- Handoff: `docs/handoffs/BRIEF-017.md` · audit: `docs/audits/BRIEF-017.md`
-- Done 19–20 Oct: BRIEF-024 (#66) · BRIEF-013 (#64) · Rev 21 seed-PR rule (#65)
+- Ready: BRIEF-027 (`feat/BRIEF-027-sold-out-auto-void`, backend) · BRIEF-028 (`feat/BRIEF-028-web-login-real-api`, frontend) — both from `main` @ `ef5c3af`; merge `main` first if it moved
+- Drafts in checkout (decided, seed one by one as deps merge): 029 floor → 030 panel → 031 order entry → 033 checkout → 032 orders board
 - Draft: BRIEF-023 split equal (Q1 open) on `feat/BRIEF-023-payment-split-equal` — merge `main` first
 
 ## Next steps
-1. Open the PR, then merge when `ci` is green (Field's PR, pre-approved)
-2. Cowork: seed BRIEF-027 sold-out (86) auto-void — Rev 2 §2/§3/AC-3–5 + Q3; new Q: 86 → payment-in-flight check without a new module cycle (PaymentModule imports OrderModule)
-3. **Field, real-world check:** PATCH real PromptPay ID (BRIEF-024), create a QR (BRIEF-013), scan with a banking app — name + amount, no transfer (BRIEF-013 AC-12 manual half)
-4. **Decide by 25 Oct:** phone new-order (CD-14) for the 8 Nov demo — 3rd Metee brief before the 2–8 Nov freeze, or demo = web POS order + phone login/queue
-5. Tunnel (ngrok static domain + https LINE callback) — before BRIEF-026 webhook
+1. `execute BRIEF-027` + `execute BRIEF-028` (Wed–Thu); Cowork seeds 029 when 028 merges
+2. **Fri–Sun (holiday push):** 029 → 030 → 031 → 033 · 032 if time · Sun night: full demo run + re-plan 26 Oct–2 Nov
+3. **Decide by 25 Oct:** CD-14 phone new-order — leaning demo = web POS order + phone queue (BRIEF-010, Metee)
+4. **Week of 26 Oct (on hold):** PromptPay real-bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
+5. 10 Nov update session: show order → pay → close on the web POS
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none (PASS, 3 Suggestions parked)
-- Setup: `app/frontend/.env.local` missing (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_API_MOCKING`)
+- Shared files: `docs/state/kj/SESSION_STATE.md` on both 027 and 028 seeds — the second to merge takes `main`'s copy + its own lines
+- Setup: `app/frontend/.env.local` — created by the BRIEF-028 executor
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; 2–8 Nov no new features) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)
-- Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete branches: merged (#45, #46, #48–#52, #54–#66 + local `docs/workflow-rev19`, `docs/rules-class-helpers`) and stale `docs/state-1018` (#53 closed), `docs/planning-1017-evening`, `docs/schema-38-tables`; optional auto-delete head branches
+- Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete branches: merged (#45, #46, #48–#52, #54–#67 + `feat/BRIEF-017-void-comp-issues` + local `docs/workflow-rev19`, `docs/rules-class-helpers`) and stale `docs/state-1018` (#53 closed), `docs/planning-1017-evening`, `docs/schema-38-tables`; optional auto-delete head branches
 - Before AWS (9 Nov): BRIEF-013 S2 — BullMQ connection drops `rediss://` TLS + DB index
 - Before >1 backend task: BRIEF-013 S1 — expiry job that fires early is a silent no-op → re-schedule
 - Follow-ups: before a real-bar pilot → IAM brief (incl. `venue:update_payment` owner-only) + BRIEF-018 PIN on PromptPay ID change · BRIEF-011 audit S3 · BRIEF-021 S1 + auth rate limiting · BRIEF-011 S1/S4 + `FRONTEND_URL` note + old IAM names · BRIEF-015 S3/S4 · BRIEF-016 S3 · BRIEF-019 S2 · BRIEF-024 S1 (shared exception instance), S2 (table-wide `hasPending`) · stale docs: FRD §13/§15 PWA, `docs/briefs/ui/*.md` tokens · DR-005 follow-ups (protected, Field): `backend.md` Auth + CLAUDE.md Auth row "Bearer for mobile"
@@ -33,8 +32,9 @@ BRIEF-017 Rev 3 audit **PASS** (0 Must fix). Work SHA `2dcc8f6`. Next: PR, then 
 - Sizing: BRIEF-013 came out ~2.2k added lines vs ~500 estimate — size module-scale briefs from that (BRIEF-013 S4)
 - Design: CD-11 re-copy (R1 + R5) before the 8 Nov export · CD-02 "แจ้งโอนแล้ว" alert variant next revision · canvas index/recipe → `docs/design/README.md`
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `0406c18` (was `e9e8c88` before the 20 Oct rebase) · add AC: void after a completed payment (`paid > total`, BRIEF-013 S5)
+- Printed bill with PromptPay QR (ใบแจ้งยอด, field visit — Field 21 Oct): print = create payment (lock); decide expiry for printed bills + re-print after new orders; QR from `qrPayload` (ESC/POS) → own CD + brief after 8 Nov
+- Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-017 ticket issue flow (audit PASS)
-2. BRIEF-027 sold-out (86) auto-void (to seed) · BRIEF-023 split equal (Q1 open)
-3. IAM brief (full policy editor) · BRIEF-018 void/comp + PIN · BRIEF-025 slip · BRIEF-026 gateway
+1. BRIEF-027 (Ready) · BRIEF-028 (Ready) · 029 → 030 → 031 → 033 → 032 (Drafts, decided)
+2. BRIEF-023 split equal (Q1 open) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
