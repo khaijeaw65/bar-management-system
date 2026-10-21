@@ -11,6 +11,7 @@ import { getTables } from "@/lib/api/tables";
 import { DisconnectedBanner } from "./DisconnectedBanner";
 import { FloorSummary } from "./FloorSummary";
 import { OpenTableModal } from "./OpenTableModal";
+import { SessionDrawer } from "./SessionDrawer";
 import { SeatSection } from "./SeatSection";
 import { TableGridSkeleton } from "./TableGridSkeleton";
 import { useMinuteClock } from "./table-time";
@@ -33,6 +34,13 @@ export function TableGrid() {
     const next = new URLSearchParams(params.toString());
     next.set("visit", visitId);
     router.replace(`/pos/tables?${next.toString()}`);
+  }
+
+  function clearVisit() {
+    const next = new URLSearchParams(params.toString());
+    next.delete("visit");
+    const query = next.toString();
+    router.replace(query ? `/pos/tables?${query}` : "/pos/tables");
   }
 
   function onSeat(seat: TableSummary) {
@@ -80,6 +88,7 @@ export function TableGrid() {
           }}
         />
       ) : null}
+      {selectedId ? <SessionDrawer key={selectedId} visitId={selectedId} onClose={clearVisit} /> : null}
     </section>
   );
 }

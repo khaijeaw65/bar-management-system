@@ -1,4 +1,4 @@
-import type { MenuItem, TableSummary, Visit } from "@bar/contracts";
+import type { MenuItem, TableSummary, Visit, VisitDetail } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 
 export const staffMe = {
@@ -215,6 +215,55 @@ function remember(visit: Visit): void {
   );
 }
 
+const venueSettings = {
+  name: "The Loft",
+  slug: "the-loft",
+  kitchenDisplayEnabled: false,
+  businessDayCutoff: "06:00",
+  counterQrEnabled: false,
+};
+
+function detailFor(row: TableSummary): VisitDetail | null {
+  const visit = row.currentVisit;
+  if (!visit) return null;
+  return {
+    id: visit.id,
+    tableSeatId: row.id,
+    seatLabel: row.label,
+    seatKind: row.kind,
+    state: visit.state,
+    openedAt: visit.openedAt,
+    closedAt: null,
+    guestLabel: visit.guestLabel,
+    openedBy: null,
+    openedVia: "pos",
+    orders: [],
+    bill: {
+      total: visit.total,
+      paid: "0.00",
+      remaining: visit.total,
+      locked: visit.paymentPending,
+    },
+    payments: [],
+  };
+}
+
+function closedBody(row: TableSummary): Visit {
+  const visit = row.currentVisit;
+  if (!visit) throw new Error("seat has no visit");
+  return {
+    ...asVisit(row, {
+      id: visit.id,
+      guestLabel: visit.guestLabel,
+      openedAt: visit.openedAt,
+      openedBy: null,
+      openedVia: "pos",
+    }),
+    state: "closed",
+    closedAt: new Date().toISOString(),
+  };
+}
+
 export const handlers = [
   http.get("*/api/auth/me", () => json(staffMe)),
   http.post("*/api/auth/refresh", () => json({ ok: true })),
@@ -247,5 +296,22 @@ export const handlers = [
     });
     remember(visit);
     return json({ visit, attached: false }, 201);
+  }),
+  http.get("*/api/venue", () => json(venueSettings)),
+  http.get("*/api/visits/:id", ({ params }) => {
+    const id = String(params.id);
+    const row = seats.find((item) => item.currentVisit?.id === id);
+    const detail = row ? detailFor(row) : null;
+    if (!detail) return json(null, 404, "NOT_FOUND", "ไม่พบการเข้าใช้");
+    return json(detail);
+  }),
+  http.post("*/api/visits/:id/close", ({ params }) => {
+    const id = String(params.id);
+    const row = seats.find((item) => item.currentVisit?.id === id);
+    if (!row?.currentVisit) return json(null, 409, "INVALID_STATE_TRANSITION", "สถานะโต๊ะไม่ถูกต้อง");
+    if (row.currentVisit.paymentPending) return json(null, 409, "PAYMENT_IN_FLIGHT", "มีการชำระเงินค้างอยู่");
+    const closed = closedBody(row);
+    seats = seats.map((item) => (item.id === row.id ? { ...item, currentVisit: null } : item));
+    return json(closed);
   }),
 ];
