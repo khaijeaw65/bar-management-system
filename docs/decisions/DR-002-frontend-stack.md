@@ -65,3 +65,7 @@ Main option = the UI framework (others below are single-choice items):
 **Decision:** Approved: A (HeroUI v3) + full decision list #1–#17
 **Why:** HeroUI is the only option with an official React Native counterpart, so web and the Expo app share one design language. The PWA is removed because the Expo app now handles native use and background push; the web stays an online in-app UI.
 **Date:** 2026-09-23 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR
+
+## Amendment 1 — Cart preview total · 2026-10-21 (BRIEF-031 Q1)
+#11 exception: the POS cart may show a **preview** total before an order exists — `(variant price + modifier deltas) × qty`, computed in integer satang by one helper (`lib/utils/money.ts`), display only, never sent to the server. Every stored or charged amount stays server-made; after send the UI shows the server total. Also allowed: the cash "รับเงินมา" change helper (CD-03, display only).
+**Decision:** Approved — Field, 2026-10-21 (session)
