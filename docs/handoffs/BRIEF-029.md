@@ -5,9 +5,9 @@
 | **Implementer** | kj |
 | **Date** | 2026-10-21 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-029-pos-floor-open-table` (PR opens after audit PASS) |
+| **Branch** | `feat/BRIEF-029-pos-floor-open-table` (PR opens after this PASS commit) |
 | **Commit** | `0174ffef37767b461801b3ec2776fef20ab7e5db` |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS — merged PR determines Done |
 
 > Gate evidence below was run on the work tree that became `0174ffe`, before this docs commit. Node v24.14.0, pnpm 10.0.0.
 
@@ -67,7 +67,8 @@ The first `migration:run` failed because `@bar/contracts` `dist` was stale again
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-029`
+- Audit: PASS · 0 Must fix · 2 Suggestions (not blocking)
+- Next: merge when `ci` is green on the PR head (Field's PR, pre-approved)
 - Work SHA: `0174ffef37767b461801b3ec2776fef20ab7e5db` · `POST /visits` body is `{ tableSeatId, guestLabel, via: 'pos' }` validated by `OpenVisitResponseSchema`. Guest over 100 characters uses the contracts message. Socket URL is the API origin + `/staff`, `withCredentials: true`. No contracts or schema change.
 
 ## Notes for Reviewer

@@ -3,20 +3,20 @@ Updated: 2026-10-21 23:40 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-029 floor + open table **Implemented**. Next: `audit BRIEF-029`.
+BRIEF-029 floor + open table **Audit PASS**. Next: PR, then merge when `ci` is green.
 
 ## Active
-- Brief: BRIEF-029 · Stage: Implemented · Branch: `feat/BRIEF-029-pos-floor-open-table` · Handoff: `docs/handoffs/BRIEF-029.md`
+- Brief: BRIEF-029 · Stage: Audit PASS · Branch: `feat/BRIEF-029-pos-floor-open-table` · Handoff: `docs/handoffs/BRIEF-029.md`
 - Untracked drafts (not committed): 030 → 031 → 033 → 032
 - Setup gap: `NEXT_PUBLIC_API_MOCKING` missing from `app/frontend/.env.local` (mocks stay off)
 
 ## Next steps
-1. `audit BRIEF-029` (Cowork) · then 030 → 031 → 033 · 032 if time
+1. Open the PR · merge when `ci` is green · then 030 → 031 → 033 · 032 if time
 2. PASS commit must land **before** any conflict resolve / merge (#69 lesson)
 3. **Decide by 25 Oct:** CD-14 · **Week of 26 Oct:** PromptPay scan · BRIEF-025 · 10 Nov demo
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-029 awaiting Cowork
+- Shared files: none · Review queue: none (audit PASS, 0 Must fix)
 - Run proof left T5 (ต้น) and T6 (แพร) open in the local DB
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
@@ -34,5 +34,5 @@ BRIEF-029 floor + open table **Implemented**. Next: `audit BRIEF-029`.
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-029 (Implemented, audit next) · 030 → 031 → 033 → 032 (Drafts, decided)
+1. BRIEF-029 (Audit PASS) · 030 → 031 → 033 → 032 (Drafts, decided)
 2. BRIEF-023 split equal (Q1 open) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
