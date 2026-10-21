@@ -1,23 +1,23 @@
 # State — KJ
-Updated: 2026-10-21 22:36 · Agent: Cursor
+Updated: 2026-10-21 22:50 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-027 sold-out (86) auto-void **Implemented** on `feat/BRIEF-027-sold-out-auto-void`. Next: `audit BRIEF-027`.
+BRIEF-027 audit **PASS** (0 Must fix; AC-6 403 deferral accepted). Work SHA `5763b38`. Next: PR, then merge when `ci` is green.
 
 ## Active
-- Brief: BRIEF-027 · Stage: Implemented · Branch: `feat/BRIEF-027-sold-out-auto-void` · backend + contracts · auditor Cowork
-- AC-6 403 is not live: `menu:toggle_availability` is decorator metadata, same as `orders:update_status`. `PermissionsGuard` is not an APP_GUARD.
+- Brief: BRIEF-027 · Stage: Audit PASS · Branch: `feat/BRIEF-027-sold-out-auto-void` · backend + contracts · auditor Cowork
+- Handoff: `docs/handoffs/BRIEF-027.md` · audit: `docs/audits/BRIEF-027.md` · AC-6 403 deferred to the IAM brief
 - Done 19–20 Oct: BRIEF-017 (#67) · BRIEF-024 (#66) · BRIEF-013 (#64) · Rev 21 seed-PR rule (#65)
 
 ## Next steps
-1. `audit BRIEF-027` (Cowork)
+1. Open the PR, then merge when `ci` is green (Field's PR, pre-approved)
 2. **Decide by 25 Oct:** phone new-order (CD-14) for the 8 Nov demo — 3rd Metee brief before the 2–8 Nov freeze, or demo = web POS order + phone login/queue
 3. **Week of 26 Oct (Field, 20 Oct — on hold until then):** PromptPay real-world check (PATCH real ID → QR → scan with a banking app, name + amount, no transfer — BRIEF-013 AC-12 manual half) · BRIEF-025 slip → EasySlip
 4. Tunnel (ngrok static domain + https LINE callback) — before BRIEF-026 webhook
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-027 awaiting Cowork · frontend untouched
+- Shared files: none · Review queue: none (PASS, 2 Suggestions parked) · frontend untouched
 - Setup: `app/frontend/.env.local` missing (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_API_MOCKING`)
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
@@ -33,5 +33,5 @@ BRIEF-027 sold-out (86) auto-void **Implemented** on `feat/BRIEF-027-sold-out-au
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `0406c18` (was `e9e8c88` before the 20 Oct rebase) · add AC: void after a completed payment (`paid > total`, BRIEF-013 S5)
 
 ## Queue
-1. BRIEF-027 audit (Cowork) · BRIEF-023 split equal (Q1 open)
+1. BRIEF-027 sold-out (audit PASS) · BRIEF-023 split equal (Q1 open)
 2. IAM brief (full policy editor) · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway

@@ -5,9 +5,9 @@
 | **Implementer** | kj |
 | **Date** | 2026-10-21 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-027-sold-out-auto-void` (PR opens after audit PASS) |
+| **Branch** | `feat/BRIEF-027-sold-out-auto-void` (PR opens after this PASS commit) |
 | **Commit** | `5763b38e533acbf8bf332e5ad2f9455115f7ab5c` |
-| **Status** | Implemented — audit not started |
+| **Status** | Audit PASS — merged PR determines Done |
 
 > Gates and the run proof were run on `5763b38`. Node v24.14.0. Postgres `bar` on localhost:5432, Redis `redis://127.0.0.1:6379`. Branch includes `main` through BRIEF-017 (PR #67, `ef5c3af`).
 
@@ -58,7 +58,8 @@ UI exercised: n/a
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next: `audit BRIEF-027`
+- Audit: PASS · 0 Must fix · 2 Suggestions (not blocking). AC-6 403 deferral accepted by Field 2026-10-21
+- Next: merge when `ci` is green on the PR head (Field's PR, pre-approved)
 - Work SHA: `5763b38e533acbf8bf332e5ad2f9455115f7ab5c`
 
 ## Notes for Reviewer
