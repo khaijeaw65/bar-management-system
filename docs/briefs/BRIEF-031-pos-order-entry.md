@@ -7,7 +7,7 @@
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | frontend |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | **BRIEF-030 merged ✅ (#71)** (drawer — this brief adds its "สั่งแทนลูกค้า" button) · BRIEF-012 ✅ (`POST /visits/:visitId/orders`, `Idempotency-Key`, `409 ITEM_UNAVAILABLE`) · BRIEF-016 ✅ (menu with variants, modifier groups, `availableNow`) · BRIEF-028 ✅ (menu wrappers on contracts) |
 | **References** | CD-04 handoff (order · item-sheet · order-states · send · send-conflicts · leave-confirm · §9) · CD-02 R8 (entry in the panel meta row) · DR-010 (promo windows) · DR-012 (server splits by station) · DR-017 (idempotency request hash) · `docs/api/README.md` §1 Idempotency, Money |
 | **Audit depth** | Full (core flow — order placement) |
@@ -30,8 +30,9 @@ The cashier puts a table's order in from menu tiles in a few taps and sends it o
   - `201` → `/pos/tables?visit=<id>`, Toast "ส่งออเดอร์ {label} แล้ว · n รายการ", new groups on top (030 refetches on `order.created`).
   - `409 ITEM_UNAVAILABLE` (`data.details: UnavailableLine[]`) → those lines move to the top, struck, Badge "หมด" / "หมดเวลาโปร", excluded from the preview, Alert "ลบออกก่อนจึงจะส่งได้", send disabled until removed (conflicts·4, ·7). Same UI when a tile flips to unavailable live (conflicts·5).
   - `409 INVALID_STATE_TRANSITION` (visit closed) → Alert "ออเดอร์ไม่ถูกส่ง — กลับไปที่โต๊ะแล้วเลือกใหม่", cart locked, back discards (conflicts·6).
-  - `409 IDEMPOTENCY_KEY_REUSED` (cart edited after a failed send) → new key, Alert "ส่งอีกครั้งได้" (DR-017).
-  - `403` → Alert (conflicts·8), cart kept · network → Alert "ตะกร้ายังอยู่ครบ — ส่งซ้ำจะไม่เกิดออเดอร์ซ้ำ", retry same key.
+  - **Network failure (Rev 2):** Alert "ตะกร้ายังอยู่ครบ — ส่งซ้ำจะไม่เกิดออเดอร์ซ้ำ" and the cart is **frozen** to the attempted body — add / qty / remove / undo / name and note changes disabled; actions = "ส่งอีกครั้ง" (same key, same body — the server replays the first result if it had committed) or "ทิ้งตะกร้า".
+  - **`409 IDEMPOTENCY_KEY_REUSED` (Rev 2):** means an earlier send with this key already succeeded or is still running (failed sends are released by the server). Keep the key, lock the cart, Alert "ออเดอร์นี้อาจถูกส่งไปแล้ว — ตรวจที่โต๊ะก่อนสั่งเพิ่ม" + "กลับไปที่โต๊ะ" (→ `/pos/tables?visit=<id>`). **Never** mint a new key or resend from this cart.
+  - `403` → Alert (conflicts·8), cart kept and editable, same key (the server released it).
 - **Money helper reuse (BRIEF-028 S4, BRIEF-030 S3):** once `lib/utils/money.ts` exists, `MenuItemRow.priceLabel` and `session-groups.hasMoney` compare through it instead of `Number()` (two one-line swaps).
 - **Leave:** empty cart → back; items → AlertDialog "ทิ้งตะกร้า?" (อยู่ต่อ / ทิ้งตะกร้า).
 - **States:** menu loading / error+retry / no result · cart empty · disconnected → Alert "สถานะเมนูอาจไม่ล่าสุด — ยังสั่งได้ ระบบตรวจของหมด / โปรหมดเวลาอีกครั้งตอนส่ง" (menu·5).
@@ -48,7 +49,7 @@ The cashier puts a table's order in from menu tiles in a few taps and sends it o
 - **Permissions:** `menu:read`, `orders:create` (server-side).
 - **Business rules:**
   - Quick add only for 1 variant + no required group; otherwise the sheet → CD-04 R2.
-  - One send = one POST with one key per cart; retry never duplicates → api README D3 · DR-017.
+  - One send = one POST with one key per cart; retry never duplicates → api README D3 · DR-017. A key is only ever resent with the **same body**: after a network failure the cart is frozen; `REUSED` never leads to a new key → Field Rev 2 (2026-10-22, BRIEF-031 audit F1).
   - Unavailable lines are never auto-removed; the user removes them → CD-04 §9.
   - Server splits the placement per station and reprices (`unit_price_snapshot`); the cart total is a preview only → DR-012 · DR-010 · Q1.
   - Failures keep the cart; visit closed locks it → CD-04 §9.
@@ -69,6 +70,7 @@ The cashier puts a table's order in from menu tiles in a few taps and sends it o
 - **AC-7** — The cart preview equals the sum of `(variant price + option deltas) × qty` in satang (e.g. 3 × ฿33.33 = ฿99.99, no float drift).
 - **AC-8** — Menu loading / error+retry / no-result / disconnected states per §2.
 - **AC-9** — Gates pass; run proof done.
+- **AC-10 (Rev 2)** — Given a send that fails with a network error, then add / qty / remove / undo are disabled, "ส่งอีกครั้ง" re-sends the **identical body with the same key**, and "ทิ้งตะกร้า" discards. Given `409 IDEMPOTENCY_KEY_REUSED`, the key is unchanged, the cart is locked, the Alert + "กลับไปที่โต๊ะ" show, and no further POST is possible from this cart.
 
 ## 5. Test Gate
 | AC | Test type | Location (expected) |
@@ -77,6 +79,7 @@ The cashier puts a table's order in from menu tiles in a few taps and sends it o
 | AC-1, AC-2 | component | `_components/ItemSheet.test.tsx` · `_components/MenuPanel.test.tsx` |
 | AC-3–AC-6 | component | `_components/CartPanel.test.tsx` (MSW) |
 | AC-3, AC-4 | e2e | `e2e/order-entry.spec.ts` (MSW: 201 path + 409 path) |
+| AC-10 | unit + component | `cart.test.ts` or `useCart.test.ts` (frozen reducer, REUSED keeps key) · `CartPanel.test.tsx` (network → retry sends the identical body + key; REUSED → no further POST) |
 
 Gate commands (all must pass):
 ```bash
@@ -89,7 +92,8 @@ pnpm --filter @bar/frontend build
 Run proof: BRIEF-028 run proof + `seed:menu`. UI change: open T1 → สั่งแทนลูกค้า → quick-add a drink ×2 + one item through the sheet → ส่งออเดอร์ → drawer shows the new group and the server total. Then mark a menu item sold out in the DB (or via BRIEF-027 if merged), add it from a stale tab → send → 409 flags the line. Screenshots in the handoff.
 
 ### Local Sonar scan
-- Optional — Field's brief.
+- **Required for this brief: yes** (Field, 2026-10-22 — Sonar warnings seen in this code). Follow `docs/quality/README.md`: `docker compose -f infra/docker-compose.yml --profile sonar up -d` → `pnpm sonar` → fix every issue in files this brief adds or changes → re-scan until the Quality Gate passes, or each remaining issue has a written reason → `pnpm sonar:report` output in the handoff's Sonar section.
+- Approved exclusions / "won't fix": none — any exclusion, "won't fix", "false positive" or gate change needs Field's approval first.
 
 ## 6. Constraints
 - Idempotency key from `crypto.randomUUID()`; never regenerated on retry.
@@ -127,3 +131,4 @@ Run proof: BRIEF-028 run proof + `seed:menu`. UI change: open T1 → สั่�
 | 1 | 2026-10-21 | Initial Draft (Cowork) — 10 Nov UI slice #4 |
 | 1 | 2026-10-21 | Field in session: Q1 A (cart preview total in satang, never sent; DR-002 amendment at seed); Q2 one brief; DR-002 Amendment 1 text approved — recorded by Cowork on Field's explicit instruction |
 | 1 | 2026-10-22 | 030 merged (#71); + money-helper reuse (028 S4, 030 S3). Field: "seed it" (session) → Ready — recorded by Cowork on Field's explicit instruction |
+| 2 | 2026-10-22 | Audit F1: network failure freezes the cart; `IDEMPOTENCY_KEY_REUSED` keeps the key and locks the cart (no resend) — prevents a duplicate order after a lost response; + AC-10; local Sonar scan required (Field, 2026-10-22). Field approved ("approve BRIEF-031 Rev 2" + "add sonarqube") — recorded by Cowork on Field's explicit instruction |
