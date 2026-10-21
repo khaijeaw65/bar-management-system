@@ -1,25 +1,24 @@
 # State — KJ
-Updated: 2026-10-21 22:00 · Agent: Cowork (Claude)
+Updated: 2026-10-21 22:30 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-028 web login **Ready** Rev 1 — seeded on `feat/BRIEF-028-web-login-real-api`. BRIEF-027 Ready on its own seed. Next: `execute BRIEF-027` · `execute BRIEF-028`.
+BRIEF-028 web login **Implemented**. Next: `audit BRIEF-028`. BRIEF-027 still Ready on its seed.
 
 ## Active
-- Ready: BRIEF-027 (`feat/BRIEF-027-sold-out-auto-void`, backend) · BRIEF-028 (`feat/BRIEF-028-web-login-real-api`, frontend) — both from `main` @ `ef5c3af`; merge `main` first if it moved
-- Drafts in checkout (decided, seed one by one as deps merge): 029 floor → 030 panel → 031 order entry → 033 checkout → 032 orders board
-- Draft: BRIEF-023 split equal (Q1 open) on `feat/BRIEF-023-payment-split-equal` — merge `main` first
+- Brief: BRIEF-028 · Stage: Implemented · Branch: `feat/BRIEF-028-web-login-real-api` · Handoff: `docs/handoffs/BRIEF-028.md`
+- Ready: BRIEF-027 (`feat/BRIEF-027-sold-out-auto-void`) — merge `main` first if it moved
+- Drafts in checkout (seed as deps merge): 029 → 030 → 031 → 033 → 032 · BRIEF-023 Q1 open
 
 ## Next steps
-1. `execute BRIEF-027` + `execute BRIEF-028` (Wed–Thu); Cowork seeds 029 when 028 merges
-2. **Fri–Sun (holiday push):** 029 → 030 → 031 → 033 · 032 if time · Sun night: full demo run + re-plan 26 Oct–2 Nov
-3. **Decide by 25 Oct:** CD-14 phone new-order — leaning demo = web POS order + phone queue (BRIEF-010, Metee)
-4. **Week of 26 Oct (on hold):** PromptPay real-bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
-5. 10 Nov update session: show order → pay → close on the web POS
+1. Cowork: `audit BRIEF-028` · seeds 029 when 028 merges
+2. `execute BRIEF-027` · Fri–Sun: 029 → 030 → 031 → 033 · 032 if time
+3. **Decide by 25 Oct:** CD-14 phone new-order — leaning web POS + phone queue
+4. **Week of 26 Oct:** PromptPay bank scan · BRIEF-025 · 10 Nov: order → pay → close on the web POS
 
 ## Blockers / Coordination
-- Shared files: `docs/state/kj/SESSION_STATE.md` on both 027 and 028 seeds — the second to merge takes `main`'s copy + its own lines
-- Setup: `app/frontend/.env.local` — created by the BRIEF-028 executor
+- Shared KJ state on the 027 seed — the second merge takes `main`'s copy + its own lines
+- Setup: `app/frontend/.env.local` created (mocking unset). Ports 3000/3001 held by another stack; proof used 3010/3011
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; 2–8 Nov no new features) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -36,5 +35,5 @@ BRIEF-028 web login **Ready** Rev 1 — seeded on `feat/BRIEF-028-web-login-real
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-027 (Ready) · BRIEF-028 (Ready) · 029 → 030 → 031 → 033 → 032 (Drafts, decided)
+1. BRIEF-028 (Implemented, audit next) · BRIEF-027 (Ready) · 029 → 030 → 031 → 033 → 032 (Drafts, decided)
 2. BRIEF-023 split equal (Q1 open) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
