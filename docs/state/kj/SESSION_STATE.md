@@ -1,24 +1,23 @@
 # State — KJ
-Updated: 2026-10-21 23:10 · Agent: Cowork (Claude)
+Updated: 2026-10-21 23:40 · Agent: Cursor
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-029 floor + open table **Ready** Rev 1 — seeded on `feat/BRIEF-029-pos-floor-open-table`. Next: `execute BRIEF-029` (Fri).
+BRIEF-029 floor + open table **Implemented**. Next: `audit BRIEF-029`.
 
 ## Active
-- Brief: BRIEF-029 · Stage: Ready · Branch: `feat/BRIEF-029-pos-floor-open-table` (seed from `main` @ `2e03770`)
-- Done 19–21 Oct: BRIEF-028 (#69 — audit + run-proof handoff landed in the 029 seed) · BRIEF-027 (#68, AC-6 403 → IAM brief) · BRIEF-017 (#67) · BRIEF-024 (#66) · BRIEF-013 (#64)
-- Drafts in checkout (decided, seed as deps merge): 030 → 031 → 033 → 032 · BRIEF-023 Q1 open
+- Brief: BRIEF-029 · Stage: Implemented · Branch: `feat/BRIEF-029-pos-floor-open-table` · Handoff: `docs/handoffs/BRIEF-029.md`
+- Untracked drafts (not committed): 030 → 031 → 033 → 032
+- Setup gap: `NEXT_PUBLIC_API_MOCKING` missing from `app/frontend/.env.local` (mocks stay off)
 
 ## Next steps
-1. **Fri–Sun:** `execute BRIEF-029` → 030 → 031 → 033 · 032 if time · Sun night: full demo run + re-plan 26 Oct–2 Nov
-2. PASS commit (audit + handoff + state) must be on the branch **before** any conflict resolve / merge (#69 lesson)
-3. **Decide by 25 Oct:** CD-14 phone new-order — leaning web POS order + phone queue (BRIEF-010, Metee)
-4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · 10 Nov: order → pay → close on the web POS
+1. `audit BRIEF-029` (Cowork) · then 030 → 031 → 033 · 032 if time
+2. PASS commit must land **before** any conflict resolve / merge (#69 lesson)
+3. **Decide by 25 Oct:** CD-14 · **Week of 26 Oct:** PromptPay scan · BRIEF-025 · 10 Nov demo
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none
-- Setup: local DB seeded (staff Field, venue, menu); `.env.local` present; ports 3000/3001 must be free for run proofs
+- Shared files: none · Review queue: BRIEF-029 awaiting Cowork
+- Run proof left T5 (ต้น) and T6 (แพร) open in the local DB
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; 2–8 Nov no new features) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -35,5 +34,5 @@ BRIEF-029 floor + open table **Ready** Rev 1 — seeded on `feat/BRIEF-029-pos-f
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-029 (Ready) · 030 → 031 → 033 → 032 (Drafts, decided)
+1. BRIEF-029 (Implemented, audit next) · 030 → 031 → 033 → 032 (Drafts, decided)
 2. BRIEF-023 split equal (Q1 open) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
