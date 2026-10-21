@@ -4,39 +4,39 @@
 |---|---|
 | **Implementer** | kj |
 | **Date** | 2026-10-22 |
-| **Brief revision** | 1 |
+| **Brief revision** | 2 |
 | **Branch** | `feat/BRIEF-031-pos-order-entry` (PR opens after audit PASS) |
-| **Commit** | `1342d419259d06cb3abf2ab4325b8429952de8f5` |
-| **Status** | Implemented — Rev 2 fixes pushed, re-audit not started |
+| **Commit** | `69bc334ab6031fbe35bf73af229751e78d3e46c2` |
+| **Status** | Implemented — Suggestions 3 and 4 pushed, no PASS commit, re-audit not started |
 
-> Gate evidence below was run on the work tree that became `1342d41`, before this docs commit. Node v24.14.0, pnpm 10.0.0. The first run proof was on `bd3778f`.
+> Gate evidence below was run on the work tree that became `69bc334`, before this docs commit. Node v24.14.0, pnpm 10.0.0. The first run proof was on `bd3778f`.
 
 ## Summary
-The cashier opens a table and orders from menu tiles. A one-variant item with no required group adds straight into the cart; anything else opens the item sheet. One send posts the cart once, with one `Idempotency-Key`. A lost response freezes that cart so the retry sends the same body. A reused key locks the cart and does not mint another key.
+The cashier opens a table and orders from menu tiles. A one-variant item with no required group adds straight into the cart; anything else opens the item sheet. One send posts the cart once, with one `Idempotency-Key`. A lost response freezes that cart so the retry sends the same body. If a line is flagged unavailable while that cart is frozen, retry is hidden and the only action is to drop the cart. A reused key locks the cart and does not mint another key.
 
 ## Acceptance Criteria
 | AC | Result | Test |
 |---|---|---|
 | AC-1 | ✅ | `useCart.test.ts` — "two quick adds merge, and undo removes only the last one" · `ItemSheet.test.tsx` — "keeps add disabled until a required group is met and stops at maxSelect" · `CartPanel.test.tsx` — "quick add merges a line and undo removes the last tap" |
 | AC-2 | ✅ | `MenuPanel.test.tsx` — "a sold-out tile is inert and a promo shows its next window" |
-| AC-3 | ✅ | `CartPanel.test.tsx` — "retries a failed send with the same idempotency key and then returns to the table" · `e2e/order-entry.spec.ts` — "sends one order and returns to the drawer" |
+| AC-3 | ✅ | `CartPanel.test.tsx` — "retries a failed send with the same key and body, and discard leaves the table" · `e2e/order-entry.spec.ts` — "sends one order and returns to the drawer" |
 | AC-4 | ✅ | `CartPanel.test.tsx` — "a 409 flags only the returned lines and blocks send until they are removed" · `e2e/order-entry.spec.ts` — "a stale send flags the unavailable lines" |
 | AC-5 | ✅ | `CartPanel.test.tsx` — "a closed visit locks the cart and back discards it" |
 | AC-6 | ✅ | `CartPanel.test.tsx` — "back with items asks before discarding the cart" |
 | AC-7 | ✅ | `useCart.test.ts` — "a preview of 3 × ฿33.33 is ฿99.99 and drops flagged lines" · `money.test.ts` |
 | AC-8 | ✅ | `MenuPanel.test.tsx` — "shows a loading menu" · "error retry and the disconnected alert" · "hides charge items and shows the search miss" |
 | AC-9 | ✅ | Gate table below. The live run proof is the one recorded on `bd3778f`. |
-| AC-10 | ✅ | `useCart.test.ts` — "a network failure freezes the cart and a reused key stays" · `CartPanel.test.tsx` — "retries a failed send with the same key and body, and discard leaves the table" · "a network failure can discard the frozen cart" · "a reused key locks the cart and sends nothing further" |
+| AC-10 | ✅ | `useCart.test.ts` — "a network failure freezes the cart and a reused key stays" · "a menu sync flags a frozen cart and leaves the key in place" · `CartPanel.test.tsx` — "retries a failed send with the same key and body, and discard leaves the table" · "a network failure can discard the frozen cart" · "a frozen cart with an unavailable line can only be discarded" · "a reused key locks the cart and sends nothing further" |
 
 ## Gate Evidence (G1)
-Run on the work tree that became `1342d41`. Node v24.14.0.
+Run on the work tree that became `69bc334`. Node v24.14.0.
 
 | Command | Exit | Result |
 |---|---|---|
 | `pnpm --filter @bar/frontend lint` | 0 | pass |
 | `pnpm --filter @bar/frontend typecheck` | 0 | pass |
-| `pnpm --filter @bar/frontend test` | 0 | 78 passed · 0 failed |
-| `pnpm --filter @bar/frontend test:e2e` | 0 | 9 passed · 0 failed |
+| `pnpm --filter @bar/frontend test` | 0 | 81 passed · 0 failed |
+| `pnpm --filter @bar/frontend test:e2e` | 0 | 9 passed · 0 failed. The order-entry run did not log "aria-label or aria-labelledby prop is required". |
 | `pnpm --filter @bar/frontend build` | 0 | pass, including `ƒ /pos/tables/[visitId]/order` |
 | run proof | 0 | Recorded on `bd3778f`, same checkout before Rev 2. Postgres + Redis already up. `migration:run` exit 0, no migrations pending. Backend `start:dev` started fresh. `curl localhost:3001/api/health` → **200** `data.status=ok`, `db=up`. Frontend `next dev` on **3000**. `NEXT_PUBLIC_API_MOCKING` unset. |
 
@@ -56,7 +56,7 @@ The API watch that was already on 3001 was stopped and started again for this pr
 
 ## Sonar (local scan)
 ```
-- Scanned commit: `1342d41`
+- Scanned commit: `69bc334`
 - Quality Gate: ERROR
 - Failed conditions:
 - `new_coverage` LT 80 (actual 0.0) — ERROR
@@ -64,7 +64,7 @@ The API watch that was already on 3001 was stopped and started again for this pr
 - Issues by severity: BLOCKER 0 · HIGH 5 · MEDIUM 7 · LOW 6 · INFO 1
 ```
 
-Issues in files this brief adds or changes were fixed and the re-scan shows none left there: nested ternaries in `OrderScreen` and `MenuItemRow`, `localeCompare` on modifier ids, cognitive complexity of `cartReducer` (split into helpers), the quantity stepper's `group` role (now a `fieldset`), `useMenuSync` using `find`, and read-only page props.
+The re-scan of `69bc334` shows no open issues in files this brief adds or changes. Earlier fixes in those files still hold: nested ternaries in `OrderScreen` and `MenuItemRow`, `localeCompare` on modifier ids, cognitive complexity of `cartReducer` (split into helpers), the quantity stepper's `group` role (now a `fieldset`), `useMenuSync` using `find`, and read-only page props.
 
 The gate still fails for two reasons outside those files:
 
@@ -79,8 +79,7 @@ The gate still fails for two reasons outside those files:
 - `useDisconnected` is now exported from `useSocketEvent.ts` so the order screen can show the CD-04 disconnected alert.
 - Menu "from" price and the session bill compare money with `lib/utils/money.ts` (integer satang). This is the BRIEF-028 S4 follow-up the brief's Q1 already decided.
 - Drawer entry is สั่งแทนลูกค้า: primary lg in the empty state, secondary sm in the meta row once the table has orders.
-- Work commit is 1,942 insertions and 19 deletions versus the ~650–800 estimate. No split: the tiles, the sheet, and the send are one outcome.
-- The e2e item sheet still logs HeroUI's "aria-label or aria-labelledby prop is required" warning. The radios have a visible label and an `aria-label`. The suite passes.
+- Work commit is 1,942 insertions and 19 deletions versus the ~650–800 estimate. No split: the tiles, the sheet, and the send are one outcome. The suggestion fix adds 95 lines and removes 21.
 
 ## Known Gaps / Follow-ups
 - `NEXT_PUBLIC_API_MOCKING` is not in `app/frontend/.env.local`. Mocking turns on only when that value is exactly `enabled`, so this run stayed on the real API. Backend `.env` matches `.env.example` (names only).
@@ -92,11 +91,13 @@ The gate still fails for two reasons outside those files:
 ## Review Routing
 - Assigned auditor: Cowork
 - Next: `audit BRIEF-031`
-- Work SHA: `1342d419259d06cb3abf2ab4325b8429952de8f5` (Rev 2 fix). Audited SHA was `bd3778fe821d5309843491b1be809013ae027606`.
+- Work SHA: `69bc334ab6031fbe35bf73af229751e78d3e46c2` (Suggestions 3 and 4). Prior fix `1342d419259d06cb3abf2ab4325b8429952de8f5`. Audited SHA was `bd3778fe821d5309843491b1be809013ae027606`.
 
 ## Notes for Reviewer
 - Cart state is a reducer. The preview total is display-only and is never sent.
 - A network failure sets `notice: "network"` and blocks add, qty, remove, undo, and new names. "ส่งอีกครั้ง" posts the same body and key. "ทิ้งตะกร้า" leaves the drawer.
+- If a line is flagged while that notice is still `network`, the alert keeps the title "ส่งออเดอร์ไม่สำเร็จ" and the body "มีรายการหมดระหว่างรอ — ส่งตะกร้านี้ซ้ำไม่ได้ ทิ้งตะกร้าแล้วสั่งใหม่". "ส่งอีกครั้ง" is hidden. "ทิ้งตะกร้า" is the only action. A menu sync can set that flag; it does not mint a new key or unlock remove.
+- The variant `RadioGroup` and each single-select modifier `RadioGroup` use `aria-labelledby` on the group heading. The name-chip `TagGroup` is the component that logged "aria-label or aria-labelledby prop is required"; it uses `aria-labelledby` on the "สั่งโดย" heading.
 - `IDEMPOTENCY_KEY_REUSED` keeps the key, sets `notice: "reused"`, and the only action is "กลับไปที่โต๊ะ". No second POST.
 - A 409 maps by `variantId`. A later menu sync sets a reason only when the line is not already flagged, and it never clears a 409 flag or removes the line.
 - Charge items stay hidden. The ค่าบริการ tab is still there; its tiles are not.
