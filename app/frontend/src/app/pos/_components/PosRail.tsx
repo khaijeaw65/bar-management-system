@@ -10,20 +10,22 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { Badge } from "@heroui/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePendingTicketCount } from "@/hooks/useTicketBoard";
 import { cn } from "@/lib/utils/cn";
 
 interface RailItem {
   key: string;
   label: string;
   icon: LucideIcon;
-  href?: "/pos/menu" | "/pos/tables";
+  href?: "/pos/menu" | "/pos/orders" | "/pos/tables";
 }
 
 const items: RailItem[] = [
   { key: "tables", label: "โต๊ะ", icon: Grid2x2, href: "/pos/tables" },
-  { key: "orders", label: "ออเดอร์", icon: ReceiptText },
+  { key: "orders", label: "ออเดอร์", icon: ReceiptText, href: "/pos/orders" },
   { key: "pay", label: "ชำระเงิน", icon: Banknote },
   { key: "menu", label: "เมนู", icon: BookOpen, href: "/pos/menu" },
   { key: "guests", label: "แขก", icon: Users },
@@ -44,6 +46,7 @@ function isActive(href: string, pathname: string): boolean {
 
 export function PosRail() {
   const pathname = usePathname();
+  const pendingTickets = usePendingTicketCount();
 
   return (
     <div className="flex w-22 shrink-0 flex-col border-r border-line-hairline bg-bg-sunken">
@@ -55,9 +58,19 @@ export function PosRail() {
         {items.map((item) => {
           const Icon = item.icon;
           const active = item.href !== undefined && isActive(item.href, pathname);
+          const icon = <Icon size={24} strokeWidth={1.75} aria-hidden />;
           const body = (
             <>
-              <Icon size={24} strokeWidth={1.75} aria-hidden />
+              {item.key === "orders" && pendingTickets > 0 ? (
+                <Badge.Anchor>
+                  {icon}
+                  <Badge color="danger" size="sm" aria-label={`รอรับ ${pendingTickets} ออเดอร์`}>
+                    {pendingTickets}
+                  </Badge>
+                </Badge.Anchor>
+              ) : (
+                icon
+              )}
               {item.label}
             </>
           );
