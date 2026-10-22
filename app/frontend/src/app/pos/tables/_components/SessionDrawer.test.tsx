@@ -119,7 +119,7 @@ test("shows two order groups newest first with lines and the server bill", async
   show(detail);
   renderDrawer(drawerVisitId);
 
-  const drawer = await screen.findByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = await screen.findByRole("complementary", { name: "โต๊ะ T3" });
   expect(within(drawer).getByText("มีแขก")).toBeInTheDocument();
   expect(within(drawer).getByText(/เปิด (?:--:--|\d+:\d{2}) · ต้น/)).toBeInTheDocument();
   expect(within(drawer).getAllByText(/#\d+/).map((item) => item.textContent)).toEqual(["#8", "#7"]);
@@ -155,7 +155,7 @@ test("splits one order into bar and kitchen groups when the kitchen screen is on
   show(detail);
   renderDrawer(drawerVisitId);
 
-  const drawer = await screen.findByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = await screen.findByRole("complementary", { name: "โต๊ะ T3" });
   expect(within(drawer).getAllByText("#4")).toHaveLength(2);
   expect(within(drawer).getByText("บาร์")).toBeInTheDocument();
   expect(within(drawer).getByText("ครัว")).toBeInTheDocument();
@@ -197,7 +197,7 @@ test("strikes a cancelled line and marks a fully cancelled ticket", async () => 
   show(detail);
   renderDrawer(drawerVisitId);
 
-  const drawer = await screen.findByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = await screen.findByRole("complementary", { name: "โต๊ะ T3" });
   expect(within(drawer).getByText("1× ปีกไก่ทอด")).toHaveClass("line-through");
   expect(within(drawer).getAllByText("ยกเลิก").length).toBeGreaterThan(0);
   expect(within(drawer).getByText("สั่งผิด · สั่งโดย บีม")).toBeInTheDocument();
@@ -235,7 +235,7 @@ test("refetches this visit when an order is created and ignores another visit", 
 
   latestSocket().emit("order.created", { visitId: drawerVisitId });
   expect(await screen.findByText("#9")).toBeInTheDocument();
-  const drawer = screen.getByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = screen.getByRole("complementary", { name: "โต๊ะ T3" });
   expect(within(drawer).getAllByText(/#\d+/).map((item) => item.textContent)[0]).toBe("#9");
   expect(onClose).not.toHaveBeenCalled();
 });
@@ -263,7 +263,7 @@ test("loading, error with retry, a missing visit, and escape", async () => {
     }),
   );
   const onClose = renderDrawer(drawerVisitId);
-  expect(screen.getByRole("dialog", { name: "กำลังโหลดโต๊ะ" })).toHaveAttribute("aria-busy", "true");
+  expect(screen.getByRole("complementary", { name: "กำลังโหลดโต๊ะ" })).toHaveAttribute("aria-busy", "true");
   expect(await screen.findByRole("alert")).toHaveTextContent("โหลดข้อมูลโต๊ะไม่สำเร็จ");
   fail = false;
   await userEvent.click(screen.getByRole("button", { name: "ลองอีกครั้ง" }));
@@ -281,7 +281,7 @@ test("a missing visit toasts and clears the selection", async () => {
 test("a locked bill blocks close", async () => {
   show(visitDetail({ bill: { total: "480.00", paid: "0.00", remaining: "480.00", locked: true } }));
   renderDrawer(drawerVisitId);
-  const drawer = await screen.findByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = await screen.findByRole("complementary", { name: "โต๊ะ T3" });
   expect(within(drawer).getByRole("alert")).toHaveTextContent("มีการชำระเงินค้างอยู่");
   expect(within(drawer).getByRole("button", { name: "ดู QR" })).toBeEnabled();
   expect(within(drawer).getByRole("button", { name: "ปิดโต๊ะ" })).toBeDisabled();
@@ -329,7 +329,7 @@ test("an order placed after the QR sits under the divider", async () => {
     }],
   }));
   renderDrawer(drawerVisitId);
-  const drawer = await screen.findByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = await screen.findByRole("complementary", { name: "โต๊ะ T3" });
   const text = drawer.textContent ?? "";
   const divider = text.indexOf("ออเดอร์ใหม่หลังสร้าง QR — ไม่รวมในยอดนี้");
   expect(text.indexOf("#7")).toBeLessThan(divider);

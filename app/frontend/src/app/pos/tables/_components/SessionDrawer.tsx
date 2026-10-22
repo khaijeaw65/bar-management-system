@@ -30,9 +30,8 @@ export function SessionDrawer({
   const groups = visit ? sessionGroups(visit.orders, session.venue.data?.kitchenDisplayEnabled === true) : [];
 
   return (
-    // ponytail: HeroUI Drawer is modal and would block taps on the floor. A side dialog keeps another card able to change ?visit=.
+    // ponytail: HeroUI Drawer is modal and would block taps on the floor. A non-modal side panel (complementary region, not a dialog) keeps another card able to change ?visit=.
     <aside
-      role="dialog"
       aria-labelledby={visit ? titleId : undefined}
       aria-label={visit ? undefined : emptyLabel}
       aria-busy={waiting || undefined}

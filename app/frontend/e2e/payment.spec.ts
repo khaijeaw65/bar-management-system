@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("creates a QR, confirms by hand and lands back on a paid, open table", async ({ page }) => {
   await page.goto("/pos/tables");
   await page.getByRole("button", { name: /T3/ }).click();
-  const drawer = page.getByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = page.getByRole("complementary", { name: "โต๊ะ T3" });
   await drawer.getByRole("button", { name: "ชำระเงิน" }).click();
 
   const checkout = page.getByRole("dialog").last();

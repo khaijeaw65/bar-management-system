@@ -1,11 +1,23 @@
 import { expect, test } from "@playwright/test";
 
 test("LINE login shows the pending label and leaves for the API", async ({ page }) => {
+  // The page leaves 250 ms after the click, and Playwright's own queries stall once that navigation starts.
+  // So the label is watched from inside the page and reported out, instead of polled from the test.
+  let sawPending = false;
+  await page.exposeFunction("reportPending", () => {
+    sawPending = true;
+  });
+  await page.addInitScript(() => {
+    new MutationObserver(() => {
+      const button = [...document.querySelectorAll("button")].find((node) => node.textContent?.includes("กำลังเปลี่ยนเส้นทาง..."));
+      if (button?.hasAttribute("disabled")) (window as unknown as { reportPending: () => void }).reportPending();
+    }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true });
+  });
   await page.route("**/auth/line/login", (route) => route.fulfill({ status: 200, body: "line" }));
   await page.goto("/login");
   await page.getByRole("button", { name: "เข้าสู่ระบบด้วย LINE" }).click({ noWaitAfter: true });
-  await expect(page.getByRole("button", { name: "กำลังเปลี่ยนเส้นทาง..." })).toBeDisabled();
   await page.waitForURL(/\/auth\/line\/login$/);
+  expect(sawPending).toBe(true);
 });
 
 test("login errors render without calling the API", async ({ page }) => {

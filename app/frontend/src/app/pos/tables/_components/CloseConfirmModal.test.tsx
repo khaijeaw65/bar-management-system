@@ -100,7 +100,7 @@ test("a payment in flight closes the confirm without sticking the button", async
   await userEvent.click(await screen.findByRole("button", { name: "ปิดโต๊ะ" }));
   const confirm = await screen.findByRole("dialog", { name: "ปิดโต๊ะ T3?" });
   await userEvent.click(within(confirm).getByRole("button", { name: "ปิดโต๊ะ" }));
-  const drawer = await screen.findByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = await screen.findByRole("complementary", { name: "โต๊ะ T3" });
   expect(within(drawer).queryByText("มีการชำระเงินค้างอยู่")).not.toBeInTheDocument();
   expect(within(drawer).getByRole("button", { name: "ปิดโต๊ะ" })).toBeEnabled();
   expect(screen.queryByRole("dialog", { name: "ปิดโต๊ะ T3?" })).not.toBeInTheDocument();

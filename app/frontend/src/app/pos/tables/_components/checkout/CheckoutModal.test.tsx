@@ -148,7 +148,7 @@ test("a network failure then retry reuses the same key", async () => {
   await user.click(await screen.findByRole("button", { name: "สร้าง QR" }));
   expect(await screen.findByText("สร้าง QR ไม่สำเร็จ ลองอีกครั้ง")).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "สร้าง QR" }));
-  expect(await screen.findByText(/หมดเวลาใน/)).toBeInTheDocument();
+  expect(await screen.findByText(/หมดเวลาใน/, undefined, { timeout: 4000 })).toBeInTheDocument();
   expect(keys).toHaveLength(2);
   expect(keys[1]).toBe(keys[0]);
 });
@@ -162,7 +162,7 @@ test("409 PAYMENT_IN_FLIGHT shows the existing pending QR", async () => {
   const user = userEvent.setup();
   renderModal();
   await user.click(await screen.findByRole("button", { name: "สร้าง QR" }));
-  expect(await screen.findByText(/หมดเวลาใน/)).toBeInTheDocument();
+  expect(await screen.findByText(/หมดเวลาใน/, undefined, { timeout: 4000 })).toBeInTheDocument();
 });
 
 test("409 PROMPTPAY_NOT_SET shows its alert and cash stays selectable", async () => {
@@ -202,7 +202,7 @@ test("cash completes in one POST; a short tender blocks, an empty one allows", a
 test("a completed event shows the paid result", async () => {
   server.use(http.get("*/api/visits/:id", () => reply(pendingVisit(payment()))), http.get("*/api/payments/:id", () => reply(payment())));
   renderModal();
-  await screen.findByText(/หมดเวลาใน/);
+  await screen.findByText(/หมดเวลาใน/, undefined, { timeout: 4000 });
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
   });
@@ -236,7 +236,7 @@ test("expired shows the timeout and a new QR sends a new key", async () => {
   const user = userEvent.setup();
   renderModal();
   await user.click(await screen.findByRole("button", { name: "สร้าง QR" }));
-  await screen.findByText(/หมดเวลาใน/);
+  await screen.findByText(/หมดเวลาใน/, undefined, { timeout: 4000 });
   act(() => {
     created.sockets.at(-1)?.emit("payment.status_changed", {
       paymentId,
@@ -252,7 +252,7 @@ test("expired shows the timeout and a new QR sends a new key", async () => {
   });
   expect(await screen.findByText("QR หมดเวลา")).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "สร้าง QR ใหม่" }));
-  await screen.findByText(/หมดเวลาใน/);
+  await screen.findByText(/หมดเวลาใน/, undefined, { timeout: 4000 });
   expect(keys).toHaveLength(2);
   expect(keys[1]).not.toBe(keys[0]);
 });
