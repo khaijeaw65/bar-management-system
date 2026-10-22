@@ -5,6 +5,19 @@ import { Chip, Skeleton } from "@heroui/react";
 import type { ReactNode } from "react";
 import type { ColumnDef } from "../board";
 
+function Body({ loading, empty, children }: Readonly<{ loading: boolean; empty: boolean; children?: ReactNode }>) {
+  if (loading) {
+    return (
+      <>
+        <Skeleton className="h-32 w-full rounded-card" />
+        <Skeleton className="h-32 w-full rounded-card" />
+      </>
+    );
+  }
+  if (empty) return <p className="py-6 text-center text-small text-text-faint">ไม่มีออเดอร์</p>;
+  return <ul className="flex flex-col gap-3">{children}</ul>;
+}
+
 export function BoardColumn({
   column,
   tickets,
@@ -26,16 +39,9 @@ export function BoardColumn({
           </Chip>
         )}
       </h2>
-      {loading ? (
-        <>
-          <Skeleton className="h-32 w-full rounded-card" />
-          <Skeleton className="h-32 w-full rounded-card" />
-        </>
-      ) : tickets.length === 0 ? (
-        <p className="py-6 text-center text-small text-text-faint">ไม่มีออเดอร์</p>
-      ) : (
-        <ul className="flex flex-col gap-3">{children}</ul>
-      )}
+      <Body loading={loading} empty={tickets.length === 0}>
+        {children}
+      </Body>
     </section>
   );
 }

@@ -52,7 +52,8 @@ export function OrdersBoard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-title">ออเดอร์</h1>
         {kitchenOn ? (
-          <div role="group" aria-label="กรองสถานี" className="flex gap-2">
+          <fieldset className="m-0 flex gap-2 border-0 p-0">
+            <legend className="sr-only">กรองสถานี</legend>
             {filters.map((filter) => (
               <Button
                 key={filter.key}
@@ -64,7 +65,7 @@ export function OrdersBoard() {
                 {filter.label}
               </Button>
             ))}
-          </div>
+          </fieldset>
         ) : null}
       </div>
       {disconnected ? <DisconnectedBanner /> : null}

@@ -99,7 +99,7 @@ test("kitchen off: three columns, oldest first, no station badge", async () => {
   expect(column("กำลังเตรียม").getByText("กำลังเตรียม · Beam")).toBeInTheDocument();
   expect(column("มีปัญหา").getByText("ของหมด")).toBeInTheDocument();
   expect(screen.queryByText("บาร์")).not.toBeInTheDocument();
-  expect(screen.queryByRole("group", { name: "กรองสถานี" })).not.toBeInTheDocument();
+  expect(screen.queryByText("กรองสถานี")).not.toBeInTheDocument();
 });
 
 test("accepting moves the card to กำลังเตรียม with the accepter's name", async () => {
