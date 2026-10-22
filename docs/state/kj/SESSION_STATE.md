@@ -3,22 +3,21 @@ Updated: 2026-10-22 · Agent: Cowork (seed BRIEF-032)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-032 orders board **Ready (Rev 1)** — seeded on `feat/BRIEF-032-pos-orders-board` from `main` @ `e1cd748`. Next: `execute BRIEF-032` · Sun 25 Oct: POS frontend done + backend ready for Metee.
+BRIEF-032 **Implemented** at `d13425a` (pushed, no PR) — next: `audit BRIEF-032` (Cowork), then `execute BRIEF-032` for the PASS commit + PR. Sun full demo run.
 
 ## Active
-- Brief: BRIEF-032 · Stage: Ready (seed) · Branch: `feat/BRIEF-032-pos-orders-board` · Sonar required
+- Brief: BRIEF-032 · Stage: Implemented / waiting audit · Branch: `feat/BRIEF-032-pos-orders-board` · Sonar required (16 open, none in this brief's files)
 - Done 21–22 Oct: BRIEF-033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 (#67) · 024 (#66) · 013 (#64)
-- Draft (on `main` via #63): BRIEF-023 split equal — Q1 open
 
 ## Next steps
-1. execute 032 → audit → PR · BRIEF-023 once Q1 is decided
-2. Sun 25 Oct (Field 22 Oct): full POS frontend + owner side if possible + backend ready for Metee (push token + mobile API check); Metee catches up on mobile after
-3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan puts it in S6 (9–22 Nov, Metee); record when Field confirms
-4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · owner dashboard (CD-05)
+1. audit 032 → PASS commit + PR → merge on green `ci` · Sun night: full demo run order → pay → close + re-plan 26 Oct–2 Nov
+2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
+3. **Decide by 25 Oct:** CD-14 phone new-order — leaning web POS order + phone queue (BRIEF-010, Metee)
+4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · 10 Nov: order → pay → close on the web POS
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: none
-- Local DB: T1 (นิด, ฿500), C1, C2, T5, T6 open from earlier proofs · 033's run proof needs a test PromptPay ID (`PATCH /venue/payment-settings`) · ports 3000/3001
+- Local DB: C1 (1 served ticket), C2, T5, T6 open from proofs · dev servers (backend 3001, frontend 3000) and SonarQube (9000) from this session still running · test PromptPay ID set
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
