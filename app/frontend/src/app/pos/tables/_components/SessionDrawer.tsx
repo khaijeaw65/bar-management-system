@@ -26,6 +26,7 @@ export function SessionDrawer({
   if (missing) return null;
 
   const waiting = !visit && session.pending;
+  const emptyLabel = waiting ? "กำลังโหลดโต๊ะ" : "โหลดข้อมูลโต๊ะไม่สำเร็จ";
   const groups = visit ? sessionGroups(visit.orders, session.venue.data?.kitchenDisplayEnabled === true) : [];
 
   return (
@@ -33,7 +34,7 @@ export function SessionDrawer({
     <aside
       role="dialog"
       aria-labelledby={visit ? titleId : undefined}
-      aria-label={visit ? undefined : waiting ? "กำลังโหลดโต๊ะ" : "โหลดข้อมูลโต๊ะไม่สำเร็จ"}
+      aria-label={visit ? undefined : emptyLabel}
       aria-busy={waiting || undefined}
       className="fixed inset-y-0 right-0 z-30 flex w-100 flex-col gap-4 bg-surface-overlay p-6 shadow-(--shadow-dialog)"
     >

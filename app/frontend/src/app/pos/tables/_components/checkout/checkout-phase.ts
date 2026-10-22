@@ -35,6 +35,14 @@ function fromStatus(payment: Payment): CheckoutPhase {
   return { name: "pending", payment };
 }
 
+function manualPhase(phase: CheckoutPhase, action: CheckoutAction): CheckoutPhase {
+  if (phase.name !== "manual") return phase;
+  if (action.type === "back") return { name: "pending", payment: phase.payment };
+  if (action.type === "reason") return { ...phase, reason: action.reason, note: action.reason === "other" ? phase.note : "" };
+  if (action.type === "note") return { ...phase, note: action.note };
+  return phase;
+}
+
 export function checkoutPhase(phase: CheckoutPhase, action: CheckoutAction): CheckoutPhase {
   switch (action.type) {
     case "resume":
@@ -53,15 +61,9 @@ export function checkoutPhase(phase: CheckoutPhase, action: CheckoutAction): Che
       return phase.name === "choose" ? phase : choose();
     case "manual":
       return phase.name === "pending" ? { name: "manual", payment: phase.payment, reason: "", note: "" } : phase;
-    case "back":
-      return phase.name === "manual" ? { name: "pending", payment: phase.payment } : phase;
-    case "reason":
-      return phase.name === "manual" ? { ...phase, reason: action.reason, note: action.reason === "other" ? phase.note : "" } : phase;
-    case "note":
-      return phase.name === "manual" ? { ...phase, note: action.note } : phase;
     case "sync":
       return fromStatus(action.payment);
     default:
-      return phase;
+      return manualPhase(phase, action);
   }
 }

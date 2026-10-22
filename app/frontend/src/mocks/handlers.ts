@@ -386,6 +386,30 @@ function attemptsFor(visitId: string): PaymentAttempt[] {
   }));
 }
 
+function buildPayment(visitId: string, method: PaymentMethod, amount: string): Payment {
+  const cash = method === "cash";
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    attemptId: crypto.randomUUID(),
+    visitId,
+    partNo: 1,
+    partCount: 1,
+    amount,
+    method,
+    status: cash ? "completed" : "pending",
+    confirmedVia: cash ? "cash" : null,
+    statusReason: null,
+    statusNote: null,
+    qrPayload: cash ? null : "00020101021229370016A000000677010111",
+    expiresAt: cash ? null : new Date(Date.now() + 15 * 60_000).toISOString(),
+    paidAt: cash ? now : null,
+    createdBy: staffMe.id,
+    updatedBy: null,
+    createdAt: now,
+  };
+}
+
 function settle(visitId: string, paid: string, remaining: string, locked: boolean): void {
   settlement.set(visitId, { paid, remaining, locked });
   seats = seats.map((row) =>
@@ -489,26 +513,7 @@ export const handlers = [
     if (pending) return json({ details: attemptOf(pending) }, 409, "PAYMENT_IN_FLIGHT", "มีการชำระเงินที่ยังไม่จบ");
     if (bill.remaining === "0.00") return json(null, 409, "NOTHING_TO_PAY", "ไม่มียอดที่ต้องชำระ");
     const method = raw.method === "cash" ? "cash" : "promptpay";
-    const now = new Date().toISOString();
-    const payment: Payment = {
-      id: crypto.randomUUID(),
-      attemptId: crypto.randomUUID(),
-      visitId,
-      partNo: 1,
-      partCount: 1,
-      amount: bill.remaining,
-      method,
-      status: method === "cash" ? "completed" : "pending",
-      confirmedVia: method === "cash" ? "cash" : null,
-      statusReason: null,
-      statusNote: null,
-      qrPayload: method === "promptpay" ? "00020101021229370016A000000677010111" : null,
-      expiresAt: method === "promptpay" ? new Date(Date.now() + 15 * 60_000).toISOString() : null,
-      paidAt: method === "cash" ? now : null,
-      createdBy: staffMe.id,
-      updatedBy: null,
-      createdAt: now,
-    };
+    const payment = buildPayment(visitId, method, bill.remaining);
     const attempt = attemptOf(payment);
     paymentById.set(payment.id, payment);
     if (key) paymentByKey.set(key, { body, attempt });
