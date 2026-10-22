@@ -6,9 +6,9 @@
 | **Date** | 2026-10-22 |
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-035-venue-settings` (PR opens with the PASS commit) |
-| **Work SHA** | `3fa6743` |
+| **Work SHA** | `3fa6743` · fix `57ff2cf` (audit S1–S2) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — awaiting `audit BRIEF-035` |
+| **Status** | Audit PASS (Cowork, `57ff2cf`) — merged PR determines Done |
 
 ## Summary
 - **Contracts:** `UpdateVenueSettingsSchema` (partial; `name` trimmed 1–200, `businessDayCutoff` `^([01]\d|2[0-3]):[0-5]\d$`, booleans; empty body rejected) in `schemas/venue-settings.ts`; `VENUE_SETTINGS_CHANGED` + `VenueSettingsChangedPayloadSchema` `{ settings, updatedAt }` in `events/venue.ts`.
@@ -26,7 +26,7 @@
 |---|---|
 | AC-1 | `venue-settings.e2e-spec.ts` "saves a change, audits only that field…" — 200, `GET /venue` shows it, one row `{kitchen_display_enabled}`, same body again → no new row, one event. Run proof audit rows below |
 | AC-1b | `business-date.spec.ts` `businessDateUnder` — 06:00 → 05:00 changed 23:00: 05:30 same night → tonight's date; next day → new cut-off; a later cut-off (07:00) does not reopen the finished day. Numbering follows `businessDate` (`nextNumber(date)`), so tonight's numbering continues |
-| AC-2 | e2e `it.each`: `25:00`, `6:00`, blank name, `{}`, non-boolean → 400 `VALIDATION_ERROR`, no audit row. **Field paths: not in the envelope → DR-021 (Pending)** |
+| AC-2 | e2e `it.each`: `25:00`, `6:00`, blank name, `{}`, non-boolean → 400 `VALIDATION_ERROR`, no audit row. Field paths: **DR-021 Approved B** — no path envelope; field rules checked in the browser with the shared schema |
 | AC-3 | e2e "splits tickets for orders placed after the kitchen screen is turned on" — before: `['bar']`; PATCH on; after: `['bar','food']`; first order still `['bar']` |
 | AC-4 | e2e: exactly one `venue.settings_changed` per real change, payload = response; run proof: tab 2 board 3 → 4 columns without reload |
 | AC-5 | `VenueSettingsScreen.test.tsx` (one PATCH `{ name, businessDayCutoff }` + Toast; empty name under the field, save disabled; server 400 → form Alert; leave dialog stay/leave) · `e2e/settings.spec.ts` (MSW) |
@@ -71,17 +71,32 @@ On `3fa6743`: the backend left from an earlier session (old `dist/main`) was sto
 ```
 No row for the blocked change. Not exercised live: the leave dialog (component + Playwright only) and the next-business-day cut-off switch (unit test with a fixed clock — needs a night).
 
+## Fix round — `57ff2cf` (audit S1–S2, Field 2026-10-23)
+- **S2:** `storeSettings` returns `replacedCutoff`; `updateSettings` records the grace after the commit, next to the event. `venue-settings.service.spec.ts` (new): grace recorded after commit · failed commit leaves grace and broadcast untouched (fails on `3fa6743`'s service) · other-field save keeps the grace.
+- **S1:** `useSettingsForm` keeps `base` (server values the draft started from); a different `['venue']` value rebases every unedited field (adjust-state-during-render). Tests: untouched form + refresh → not dirty, save disabled, no leave dialog · edited name + refresh → name kept, kitchen follows the server, save sends `{ name }` only (both fail on the old hook).
+
+| Command on `57ff2cf` | Exit | Result |
+|---|---|---|
+| contracts build | 0 | |
+| backend lint · typecheck · `openapi:check` | 0 | |
+| backend test · test:e2e | 0 | 91 passed (32 files) · 103 passed |
+| frontend lint · typecheck · build | 0 | |
+| frontend test | 0 | 125 passed on the 2nd full run. 1st run: 2 timeouts under load (`VenueSettingsScreen` AC-5 test — 454 ms alone — and `CartPanel` quick add, flaky since BRIEF-034); a further run had 1 timeout in a checkout test. Machine was running SonarQube + both dev servers |
+| frontend test:e2e | 0 | 13 passed (first attempt could not start: run-proof `next dev` still up → stopped it) |
+| Sonar | — | same 16 pre-existing new_violations + 0 % coverage; no open issue in any touched file |
+
+Run proof not repeated: the fix changes no endpoint, contract or screen layout; both behaviours are covered by tests that fail on the old code.
+
 ## Sonar (local scan)
 Scanned `15f8acd` + working tree (= `3fa6743`). Gate ERROR: `new_coverage` 0 % (no coverage path — known) and `new_violations` 16 — HIGH 5 · MEDIUM 5 · LOW 6 · INFO 1, all pre-existing (`test/setup.ts`, backend order/payment/menu/seed, `globals.css`, `openapi/document.ts`). **No open issue in any file this brief changes or adds** (17 open in the project, none matching). No exclusions, won't-fix or gate change.
 
 ## Dependency / DR
 - No new packages (`@internationalized/date` already a frontend dependency, used for the `TimeField` value).
-- **DR-021 (Pending)** — field paths on 400 `VALIDATION_ERROR`. Implemented option B meanwhile (client-side validation with the shared contracts schema; server 400 → form Alert). If Field picks A, it is a small follow-up across contracts + `HttpExceptionFilter`.
+- **DR-021 Approved B (Field, 2026-10-22)** — no field-path envelope, no follow-up brief. Client-side validation with the shared contracts schema; server 400 → form Alert. Field's error rule: 400 = schema safety net · DB conflicts = 409 + stable code from the catalog · `data` fixed per code · the UI maps a code to its field.
 
 ## Notes for the auditor
 - **Size:** ~1,119 net-new lines excl. `openapi.json` (≈ 410 tests / 709 source) vs the ~500 estimate — over the §2 target, in line with the UI ≈ 1.6× pattern.
 - `PATCH /venue/settings` emits after the transaction commits (outside `storeSettings`), so a rolled-back save never broadcasts.
-- `useSettingsForm` keeps the draft across a socket refresh from another tab (draft may then show as dirty against the new server values) — acceptable for a one-owner screen.
 - The cut-off grace is per process and in memory (see Summary).
 - Local DB caveat for future run proofs: backend `test:e2e` shares the dev database and clears staff/venue → re-seed before a signed-in proof.
 - AI usage: Field's own brief (agent writes all code per project split).

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Claude Code (executor) · 2026-10-22 |
 | **Brief** | BRIEF-035 (AC-2, AC-5) |
 | **Category** | Brief deviation · Data (contracts shape) |
@@ -26,6 +26,6 @@ A: `VALIDATION_ERROR` responses carry `data.details[{ path, message }]` (contrac
 ---
 
 ## Decision — Field only
-**Decision:**
-**Why:**
-**Date:**
+**Decision:** Approved: B — no field-path envelope (option A dropped, no follow-up brief).
+**Why:** Field-level rules live in the shared contracts schema and are checked in the browser first; rules that need the database are state conflicts, answered one at a time with a stable code. Error rule (Field, 2026-10-22): 400 `VALIDATION_ERROR` = schema (server keeps it as a safety net) · DB conflicts = 409 + a stable code from the contracts catalog (`docs/api/README.md`) · `data` shape fixed per code (closed union keyed by `code`, no generic optional bag) · one code per conflict kind, never per field combination; the UI maps a code to its field.
+**Date:** 2026-10-22 · recorded by Cowork on Field's explicit instruction (session)
