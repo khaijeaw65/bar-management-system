@@ -5,7 +5,7 @@ import { http, HttpResponse } from "msw";
 import type { ReactNode } from "react";
 import { afterEach, expect, test, vi } from "vitest";
 import { Toast, toast } from "@heroui/react";
-import { usePendingTicketCount } from "@/hooks/useTicketBoard";
+import { usePendingTicketCount, useTicketBoardEvents } from "@/hooks/useTicketBoard";
 import { apiEnvelope } from "@/mocks/handlers";
 import { server } from "@/mocks/node";
 import { resetStaffSocket } from "@/lib/socket/socket";
@@ -61,6 +61,11 @@ const kitchenVenue = {
   counterQrEnabled: false,
 };
 
+function Events() {
+  useTicketBoardEvents();
+  return null;
+}
+
 function Count() {
   return <output aria-label="pending">{usePendingTicketCount()}</output>;
 }
@@ -71,6 +76,7 @@ function renderBoard() {
     return (
       <QueryClientProvider client={client}>
         <Toast.Provider placement="top end" />
+        <Events />
         <Count />
         {children}
       </QueryClientProvider>
@@ -244,4 +250,75 @@ test("shows busy columns while loading", async () => {
   const regions = ["ใหม่", "กำลังเตรียม", "มีปัญหา"].map((name) => screen.getByRole("region", { name }));
   for (const region of regions) expect(region).toHaveAttribute("aria-busy", "true");
   await screen.findByRole("article", { name: "ออเดอร์ #0041 T3" });
+});
+
+test("two quick taps keep both cards pending until each answer arrives", async () => {
+  const ids = ["60000000-0000-4000-8000-000000000001", "60000000-0000-4000-8000-000000000002"];
+  const gates = new Map<string, () => void>();
+  server.use(
+    http.post("*/api/tickets/:id/accept", async ({ params }) => {
+      await new Promise<void>((resolve) => gates.set(String(params.id), resolve));
+      return HttpResponse.json(apiEnvelope({ id: params.id }));
+    }),
+    http.post("*/api/tickets/:id/send", async ({ params }) => {
+      await new Promise<void>((resolve) => gates.set(String(params.id), resolve));
+      return HttpResponse.json(apiEnvelope({ id: params.id }));
+    }),
+  );
+  const user = userEvent.setup();
+  renderBoard();
+  const accept = await screen.findByRole("button", { name: "รับออเดอร์ #0041 T3" });
+  const send = screen.getByRole("button", { name: "เสิร์ฟแล้ว #0042 C4" });
+  await user.click(accept);
+  await user.click(send);
+  await waitFor(() => expect(gates.size).toBe(2));
+  expect(accept).toHaveAttribute("data-pending", "true");
+  expect(send).toHaveAttribute("data-pending", "true");
+
+  act(() => gates.get(ids[0])?.());
+  await waitFor(() => expect(accept).not.toHaveAttribute("data-pending", "true"));
+  expect(send).toHaveAttribute("data-pending", "true");
+  act(() => gates.get(ids[1])?.());
+});
+
+test("one status event refetches the board once with rail and board mounted", async () => {
+  let calls = 0;
+  server.use(
+    http.get("*/api/tickets", () => {
+      calls += 1;
+      return HttpResponse.json(apiEnvelope({ items: [] }));
+    }),
+  );
+  renderBoard();
+  await waitFor(() => expect(calls).toBe(1));
+  emit("ticket.status_changed", { ticketId: "x", updatedAt: "2030-01-01T00:00:00.000Z" });
+  await waitFor(() => expect(calls).toBe(2));
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  expect(calls).toBe(2);
+});
+
+test("only escalated issues show in มีปัญหา, chip count included", async () => {
+  const issue = (escalatedAt: string | null) => ({
+    reason: "out_of_stock" as const,
+    itemId: null,
+    note: null,
+    reportedBy: { staffId: "20000000-0000-4000-8000-000000000001", displayName: "นุ่น" },
+    escalatedAt,
+  });
+  const line = (n: number, name: string) => orderLine(`70000000-0000-4000-8000-0000000003${n}0`, name);
+  const items = [
+    ticket("60000000-0000-4000-8000-000000000041", 71, [line(1, "ส่งต่อแล้ว")], {
+      status: "issue",
+      issue: issue("2026-10-22T10:00:00.000Z"),
+    }),
+    ticket("60000000-0000-4000-8000-000000000042", 72, [line(2, "ยังไม่ส่งต่อ")], {
+      status: "issue",
+      issue: issue(null),
+    }),
+  ];
+  server.use(http.get("*/api/tickets", () => HttpResponse.json(apiEnvelope({ items }))));
+  renderBoard();
+  expect(await screen.findByRole("article", { name: "ออเดอร์ #0071 T3" })).toBeInTheDocument();
+  expect(screen.queryByRole("article", { name: "ออเดอร์ #0072 T3" })).not.toBeInTheDocument();
+  expect(screen.getByText("มีปัญหา 1")).toBeInTheDocument();
 });

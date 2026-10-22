@@ -88,7 +88,7 @@ export function OrdersBoard() {
                   key={ticket.id}
                   ticket={ticket}
                   kitchenOn={kitchenOn}
-                  pending={actions.pendingId === ticket.id}
+                  pending={actions.pendingIds.has(ticket.id)}
                   fresh={fresh.has(ticket.id)}
                   onOpen={() => setOpenId(ticket.id)}
                   onAct={(kind) => actions.act(ticket, kind)}
@@ -102,7 +102,7 @@ export function OrdersBoard() {
         <TicketDrawer
           ticket={opened}
           kitchenOn={kitchenOn}
-          resolving={actions.pendingId === opened.id}
+          resolving={actions.pendingIds.has(opened.id)}
           onResolve={() => actions.resolve(opened)}
           onClose={() => setOpenId(null)}
         />

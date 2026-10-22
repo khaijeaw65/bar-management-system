@@ -58,6 +58,8 @@ export function ticketsIn(
 ): Ticket[] {
   return items
     .filter((ticket) => columnOf(ticket.status, kitchenOn) === column)
+    // Issues the staff app has not escalated stay with staff (BRIEF-034 Q1 = A).
+    .filter((ticket) => ticket.status !== "issue" || ticket.issue?.escalatedAt != null)
     .filter((ticket) => !kitchenOn || station === "all" || ticket.station === station)
     .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
 }
