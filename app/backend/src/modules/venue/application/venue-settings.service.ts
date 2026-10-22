@@ -1,14 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
-import type { UpdateVenuePaymentSettings, VenuePaymentSettings, VenueSettings } from '@bar/contracts';
+import {
+  VENUE_SETTINGS_CHANGED,
+  type UpdateVenuePaymentSettings,
+  type UpdateVenueSettings,
+  type VenuePaymentSettings,
+  type VenueSettings,
+} from '@bar/contracts';
+import { CLOCK, type Clock } from '../../../common/clock.js';
 import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { AuditRecord } from '../../../common/audit/audit-log.types.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { hhmm } from '../../../common/time-label.js';
+import { NotificationsService } from '../../notifications/notifications.service.js';
 import { PaymentGuard } from '../../payment/application/payment-guard.js';
 import {
   VENUE_REPOSITORY,
+  type BusinessDayRule,
   type LockedVenue,
+  type LockedVenueSettings,
+  type VenueSettingsPatch,
   type StoredPromptPay,
   type VenuePaymentAccount,
   type VenueRecord,
@@ -22,7 +33,12 @@ export class VenueSettingsService {
     @Inject(VENUE_REPOSITORY) private readonly venues: VenueRepository,
     private readonly paymentGuard: PaymentGuard,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
+    @Inject(CLOCK) private readonly clock: Clock,
   ) {}
+
+  /** Cut-off changes apply from the next business day: the day open at the change keeps the old cut-off (BRIEF-035 Q1 A). Held in memory, so a restart applies the new cut-off at once. */
+  private previousCutoff: BusinessDayRule['previous'] = null;
 
   public async get(): Promise<VenueSettings> {
     const venue = await this.requireVenue();
@@ -33,6 +49,26 @@ export class VenueSettingsService {
       businessDayCutoff: hhmm(venue.businessDayCutoff),
       counterQrEnabled: venue.counterQrEnabled,
     };
+  }
+
+  public async businessDayRule(): Promise<BusinessDayRule> {
+    const venue = await this.requireVenue();
+    return { cutoff: hhmm(venue.businessDayCutoff), previous: this.previousCutoff };
+  }
+
+  public async updateSettings(input: UpdateVenueSettings): Promise<VenueSettings> {
+    const outcome = await this.storeSettings(input);
+    // After the commit, so a rolled-back save leaves neither the grace nor a broadcast behind.
+    if (outcome.replacedCutoff !== null) {
+      this.previousCutoff = { cutoff: outcome.replacedCutoff, changedAt: this.clock.now() };
+    }
+    if (outcome.changed) {
+      this.notifications.emitToStaff(VENUE_SETTINGS_CHANGED, {
+        settings: outcome.settings,
+        updatedAt: this.clock.now().toISOString(),
+      });
+    }
+    return outcome.settings;
   }
 
   public async lockedPaymentAccount(): Promise<VenuePaymentAccount> {
@@ -61,6 +97,54 @@ export class VenueSettingsService {
     await this.venues.savePromptPay(venue.id, stored);
     await this.auditLog.record(this.changeOf(venue, stored));
     return this.present({ ...venue, ...stored });
+  }
+
+  @Transactional()
+  private async storeSettings(
+    input: UpdateVenueSettings,
+  ): Promise<StoredSettings> {
+    const venue = await this.venues.lockTheVenueSettings();
+    if (!venue) throw new DomainException('NOT_FOUND', 'ไม่พบร้าน', 404);
+    const patch = this.changesOf(venue, input);
+    if (Object.keys(patch).length === 0) {
+      return { settings: await this.get(), changed: false, replacedCutoff: null };
+    }
+    await this.venues.saveSettings(venue.id, patch);
+    await this.auditLog.record(this.settingsChangeOf(venue, patch));
+    const replacedCutoff = patch.businessDayCutoff === undefined ? null : venue.businessDayCutoff;
+    return { settings: await this.get(), changed: true, replacedCutoff };
+  }
+
+  private changesOf(venue: LockedVenueSettings, input: UpdateVenueSettings): VenueSettingsPatch {
+    const patch: VenueSettingsPatch = {};
+    if (input.name !== undefined && input.name !== venue.name) patch.name = input.name;
+    if (input.businessDayCutoff !== undefined && input.businessDayCutoff !== venue.businessDayCutoff) {
+      patch.businessDayCutoff = input.businessDayCutoff;
+    }
+    if (
+      input.kitchenDisplayEnabled !== undefined &&
+      input.kitchenDisplayEnabled !== venue.kitchenDisplayEnabled
+    ) {
+      patch.kitchenDisplayEnabled = input.kitchenDisplayEnabled;
+    }
+    if (input.counterQrEnabled !== undefined && input.counterQrEnabled !== venue.counterQrEnabled) {
+      patch.counterQrEnabled = input.counterQrEnabled;
+    }
+    return patch;
+  }
+
+  private settingsChangeOf(venue: LockedVenueSettings, patch: VenueSettingsPatch): AuditRecord {
+    const columns: Record<keyof VenueSettingsPatch, string> = {
+      name: 'name',
+      businessDayCutoff: 'business_day_cutoff',
+      kitchenDisplayEnabled: 'kitchen_display_enabled',
+      counterQrEnabled: 'counter_qr_enabled',
+    };
+    const changedFields: AuditRecord['changedFields'] = {};
+    for (const key of Object.keys(patch) as (keyof VenueSettingsPatch)[]) {
+      changedFields[columns[key]] = { from: String(venue[key]), to: String(patch[key]) };
+    }
+    return { entity: 'venue', entityId: venue.id, action: 'UPDATE', changedFields };
   }
 
   private async requireVenue(): Promise<VenueRecord> {
@@ -101,4 +185,11 @@ export class VenueSettingsService {
       },
     };
   }
+}
+
+interface StoredSettings {
+  settings: VenueSettings;
+  changed: boolean;
+  /** The cut-off this save replaced, or null when the cut-off did not change. */
+  replacedCutoff: string | null;
 }

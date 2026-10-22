@@ -2,6 +2,7 @@ import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   UpdateVenuePaymentSettingsSchema,
+  UpdateVenueSettingsSchema,
   VenuePaymentSettingsSchema,
   VenueSettingsSchema,
   type VenuePaymentSettings,
@@ -27,6 +28,18 @@ export class VenueController {
   @ApiEnvelopedOk(VenueSettingsSchema)
   public get(): Promise<VenueSettings> {
     return this.venueSettings.get();
+  }
+
+  @Patch('settings')
+  @RequirePermissions('venue:update')
+  @ApiOperation({
+    summary: 'Update venue settings',
+    description: staffAccess('venue:update'),
+  })
+  @ApiBody({ schema: zodToOpenApi(UpdateVenueSettingsSchema) })
+  @ApiEnvelopedOk(VenueSettingsSchema)
+  public updateSettings(@Body() body: unknown): Promise<VenueSettings> {
+    return this.venueSettings.updateSettings(UpdateVenueSettingsSchema.parse(body));
   }
 
   @Get('payment-settings')

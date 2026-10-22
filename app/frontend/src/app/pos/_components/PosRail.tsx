@@ -20,7 +20,7 @@ interface RailItem {
   key: string;
   label: string;
   icon: LucideIcon;
-  href?: "/pos/menu" | "/pos/orders" | "/pos/tables";
+  href?: "/pos/menu" | "/pos/orders" | "/pos/settings" | "/pos/tables";
 }
 
 const items: RailItem[] = [
@@ -30,7 +30,7 @@ const items: RailItem[] = [
   { key: "menu", label: "เมนู", icon: BookOpen, href: "/pos/menu" },
   { key: "guests", label: "แขก", icon: Users },
   { key: "reports", label: "รายงาน", icon: ChartColumn },
-  { key: "settings", label: "ตั้งค่า", icon: Settings },
+  { key: "settings", label: "ตั้งค่า", icon: Settings, href: "/pos/settings" },
 ];
 
 const itemClass = (active: boolean) =>
