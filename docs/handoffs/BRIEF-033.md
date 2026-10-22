@@ -5,8 +5,8 @@
 | **Implementer** | kj (Cursor started, Claude Code finished) |
 | **Date** | 2026-10-22 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-033-pos-payment-checkout` (no PR until audit PASS) |
-| **Status** | Implemented — audit Suggestions 1–3 fixed (commit `f36352e`), awaiting Cowork compact re-check |
+| **Branch** | `feat/BRIEF-033-pos-payment-checkout` (PR opens with this PASS commit) |
+| **Status** | Audit PASS (Cowork, re-check of `f36352e`) — merged PR determines Done |
 
 ## Summary
 Drawer footer "ชำระเงิน" and the close-confirm "ไปที่ชำระเงิน" open the checkout modal (`?pay=1`). PromptPay QR (rendered from `qrPayload` with `qrcode.react`, DR-018) and cash. Pending view with countdown, cancel, manual confirm; result by `payment.status_changed` or a 5 s poll when the socket is down. Drawer shows the in-flight state, "ดู QR", and the divider for orders placed after the QR. BRIEF-030 S1: ปิดโต๊ะ "paying" comes from `bill.locked` only.
