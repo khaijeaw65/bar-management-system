@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-22 |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-22 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | BRIEF-012 ✅ (orders, tickets) · BRIEF-013 ✅ (payments) · BRIEF-011 ✅ (visits) · BRIEF-016 ✅ (venue cut-off) |
 | **References** | CD-05 R5, R6, §4, §9 · DR-014 #4 (business day) · DR-004 (money on the wire) · `order/application/business-date.ts` · `docs/schema.sql` §5–§7 |
 | **Audit depth** | Full (money figures) |
@@ -30,6 +30,7 @@ The owner's dashboard gets correct numbers from the server: revenue, bills, aver
 - Business day = `businessDate(paid_at | closed_at | order created_at, venue cut-off)` — reuse `order/application/business-date.ts` (move to `common/` if two modules need it — allowed, no behaviour change).
 - Money = `MoneySchema` strings (DR-004), computed in SQL `NUMERIC`, never JS floats.
 - Contracts: `ReportsPeriodQuerySchema`, `ReportItemsQuerySchema`, `ReportSummarySchema`, `ReportDailySchema`, `ReportItemsSchema`, `ReportTodaySchema`; OpenAPI; `docs/api/README.md` Reports table.
+- **Rev 2 — e2e on its own database (do this first):** backend e2e never touches the dev DB `bar`. `test/set-auth-env.ts` (and any other place that sets `PGDATABASE`) forces `PGDATABASE=bar_test` (overridable only by `PGDATABASE_TEST`); a Jest global setup creates `bar_test` if missing and runs migrations on it; a guard aborts the run when the resolved database is `bar` (or equals the dev `.env` value). GitHub `ci` uses `bar_test` on its own Postgres service (workflow change only if its DB name differs → protected `.github/**`: stop and ask). Note the setup in the handoff (no `docs/rules` edits).
 - **Dev seed `pnpm --filter @bar/backend seed:demo-history`** — 30 business days ending yesterday: realistic visits / orders / payments over the seeded menu and seats (Fri / Sat peaks, ~70 % PromptPay, a few manual confirmations, 1–2 cancelled lines per day). Idempotent (tags rows, re-run replaces only its own rows). **Refuses to run when `NODE_ENV=production`.** Rows go through repositories / `save()` so audit columns are filled (`created_by` = seeded staff).
 
 ### Out (do NOT build here)
@@ -55,6 +56,7 @@ The owner's dashboard gets correct numbers from the server: revenue, bills, aver
 - **AC-5** — Invalid query → 400 with field paths; > 92 days → 400.
 - **AC-6** — `seed:demo-history` creates 30 days, re-run is idempotent (same counts), refuses with `NODE_ENV=production`.
 - **AC-7** — Gates + run proof pass; OpenAPI + `openapi:check`; README updated.
+- **AC-8 (Rev 2)** — After `seed:staff` + `seed:demo-history` on `bar`, a full `test:e2e` run leaves `bar` untouched (row counts of `staff_user`, `payment`, `visit` equal before / after); pointing the tests at `bar` aborts with a clear message.
 
 ## 5. Test Gate
 | AC | Test type | Location (expected) |
@@ -76,7 +78,7 @@ Run proof: `seed:demo-history` on the local DB → `curl` (as Field's session) `
 - SQL parameterised; indexes only if a query plan shows a seq-scan problem on seeded data (then a migration — schema change → ask first).
 
 ## 7. Decision Points (Field Guard)
-- **Pre-decided (Field 22 Oct, session):** overview + today only (comps / voids later with BRIEF-018) · demo history seed is dev-only.
+- **Pre-decided (Field 22 Oct, session):** overview + today only (comps / voids later with BRIEF-018) · demo history seed is dev-only · **Rev 2: e2e uses its own `bar_test` database** (BRIEF-035 audit Finding 4).
 - **Q1 — Where report SQL lives. ✅ Decided (Field, 2026-10-22): A — `reports` module with read-only SQL over other modules' tables.** *Cowork recommends:* **A — a `reports` module that reads other modules' tables with read-only SQL** (one place for every figure; the usual read-model pattern; no service-to-service calls). *Alternative:* **B — each module exposes a stats method** (order / payment / venue) and reports composes them — more files and cross-module calls, harder to keep periods consistent.
 - **Likely DRs:** none (Q1 = A recorded here).
 
@@ -97,3 +99,4 @@ Run proof: `seed:demo-history` on the local DB → `curl` (as Field's session) `
 |---|---|---|
 | 1 | 2026-10-22 | Initial Draft (Cowork) — owner side S5 #2 (dashboard backend); Field: overview + today only |
 | 1 | 2026-10-22 | Ready — Field in session: "036 Q1 = A, approve BRIEF-036 Rev 1 Ready" |
+| 2 | 2026-10-22 | Field approved: e2e on its own `bar_test` database + AC-8 (BRIEF-035 audit Finding 4 — e2e was clearing staff / venue in the dev DB) |
