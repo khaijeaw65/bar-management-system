@@ -1,27 +1,27 @@
 # State — KJ
-Updated: 2026-10-22 · Agent: Claude Code
+Updated: 2026-10-22 · Agent: Cowork (seed BRIEF-032)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-033 checkout **audit PASS** — PASS commit + PR on `feat/BRIEF-033-pos-payment-checkout`; merge when `ci` is green (own PR, §7). Next: BRIEF-032 if time · Sun full demo run.
+BRIEF-032 orders board **Ready (Rev 1)** — seeded on `feat/BRIEF-032-pos-orders-board` from `main` @ `e1cd748`. Next: `execute BRIEF-032` · Sun 25 Oct: POS frontend done + backend ready for Metee.
 
 ## Active
-- Brief: BRIEF-033 · Stage: Audit PASS / PR · Branch: `feat/BRIEF-033-pos-payment-checkout` (seed from `main` @ `8c57ebe`) · Sonar required
-- Done 21–22 Oct: BRIEF-031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 (#67) · 024 (#66) · 013 (#64)
-- Draft in checkout (decided): 032 orders board (should-have) · BRIEF-023 Q1 open
+- Brief: BRIEF-032 · Stage: Ready (seed) · Branch: `feat/BRIEF-032-pos-orders-board` · Sonar required
+- Done 21–22 Oct: BRIEF-033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 (#67) · 024 (#66) · 013 (#64)
+- Draft (on `main` via #63): BRIEF-023 split equal — Q1 open
 
 ## Next steps
-1. merge 033 → 032 if time · Sun night: full demo run order → pay → close + re-plan 26 Oct–2 Nov
-2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
-3. **Decide by 25 Oct:** CD-14 phone new-order — leaning web POS order + phone queue (BRIEF-010, Metee)
-4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · 10 Nov: order → pay → close on the web POS
+1. execute 032 → audit → PR · BRIEF-023 once Q1 is decided
+2. Sun 25 Oct (Field 22 Oct): full POS frontend + owner side if possible + backend ready for Metee (push token + mobile API check); Metee catches up on mobile after
+3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan puts it in S6 (9–22 Nov, Metee); record when Field confirms
+4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · owner dashboard (CD-05)
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: none
 - Local DB: T1 (นิด, ฿500), C1, C2, T5, T6 open from earlier proofs · 033's run proof needs a test PromptPay ID (`PATCH /venue/payment-settings`) · ports 3000/3001
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
-- Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; 2–8 Nov no new features) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
+- Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)
 - Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete branches: merged (#45, #46, #48–#52, #54–#72 + `feat/BRIEF-017-void-comp-issues`, `feat/BRIEF-027-sold-out-auto-void`, `feat/BRIEF-028-web-login-real-api`, `feat/BRIEF-029-pos-floor-open-table`, `feat/BRIEF-030-pos-session-panel-close`, `feat/BRIEF-031-pos-order-entry` + local `docs/workflow-rev19`, `docs/rules-class-helpers`) and stale `docs/state-1018` (#53 closed), `docs/planning-1017-evening`, `docs/schema-38-tables`; optional auto-delete head branches
 - Before AWS (9 Nov): BRIEF-013 S2 — BullMQ connection drops `rediss://` TLS + DB index
