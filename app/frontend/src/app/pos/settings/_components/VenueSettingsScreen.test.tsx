@@ -39,6 +39,25 @@ function renderScreen() {
     );
   }
   render(<VenueSettingsScreen />, { wrapper: Wrap });
+  return client;
+}
+
+// Another tab turned the kitchen screen on: the server now answers with it, and venue.settings_changed refetches ['venue'].
+async function refetchWithKitchenOn(client: QueryClient) {
+  server.use(
+    http.get("*/api/venue", () =>
+      HttpResponse.json(
+        apiEnvelope({
+          name: "The Loft",
+          slug: "the-loft",
+          kitchenDisplayEnabled: true,
+          businessDayCutoff: "06:00",
+          counterQrEnabled: false,
+        }),
+      ),
+    ),
+  );
+  await client.invalidateQueries({ queryKey: ["venue"] });
 }
 
 function bodiesOf(path: string): unknown[] {
@@ -116,6 +135,37 @@ test("asks before leaving with unsaved changes (AC-5)", async () => {
   await user.click(screen.getByRole("link", { name: "ไปหน้าโต๊ะ" }));
   await user.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "ออกโดยไม่บันทึก" }));
   expect(push).toHaveBeenCalledWith("/pos/tables");
+});
+
+test("an untouched form follows a refresh from another tab: not dirty, nothing to save", async () => {
+  const user = userEvent.setup();
+  const client = renderScreen();
+  const kitchen = await screen.findByRole("switch", { name: /จอครัว/ });
+  expect(kitchen).not.toBeChecked();
+
+  await refetchWithKitchenOn(client);
+
+  await waitFor(() => expect(kitchen).toBeChecked());
+  expect(screen.getByRole("button", { name: "บันทึก" })).toBeDisabled();
+  await user.click(screen.getByRole("link", { name: "ไปหน้าโต๊ะ" }));
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
+test("a refresh keeps the user's edit and takes the server value for the rest", async () => {
+  const user = userEvent.setup();
+  const bodies = bodiesOf("/venue/settings");
+  const client = renderScreen();
+  const name = await screen.findByRole("textbox", { name: "ชื่อร้าน" });
+  await user.clear(name);
+  await user.type(name, "ร้านใหม่");
+
+  await refetchWithKitchenOn(client);
+
+  await waitFor(() => expect(screen.getByRole("switch", { name: /จอครัว/ })).toBeChecked());
+  expect(name).toHaveValue("ร้านใหม่");
+  await user.click(screen.getByRole("button", { name: "บันทึก" }));
+  expect(await screen.findByText("บันทึกแล้ว")).toBeInTheDocument();
+  expect(bodies).toEqual([{ name: "ร้านใหม่" }]);
 });
 
 test("changes the PromptPay account and shows the new mask (AC-6)", async () => {

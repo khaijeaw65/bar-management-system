@@ -58,6 +58,10 @@ export class VenueSettingsService {
 
   public async updateSettings(input: UpdateVenueSettings): Promise<VenueSettings> {
     const outcome = await this.storeSettings(input);
+    // After the commit, so a rolled-back save leaves neither the grace nor a broadcast behind.
+    if (outcome.replacedCutoff !== null) {
+      this.previousCutoff = { cutoff: outcome.replacedCutoff, changedAt: this.clock.now() };
+    }
     if (outcome.changed) {
       this.notifications.emitToStaff(VENUE_SETTINGS_CHANGED, {
         settings: outcome.settings,
@@ -98,17 +102,17 @@ export class VenueSettingsService {
   @Transactional()
   private async storeSettings(
     input: UpdateVenueSettings,
-  ): Promise<{ settings: VenueSettings; changed: boolean }> {
+  ): Promise<StoredSettings> {
     const venue = await this.venues.lockTheVenueSettings();
     if (!venue) throw new DomainException('NOT_FOUND', 'ไม่พบร้าน', 404);
     const patch = this.changesOf(venue, input);
-    if (Object.keys(patch).length === 0) return { settings: await this.get(), changed: false };
+    if (Object.keys(patch).length === 0) {
+      return { settings: await this.get(), changed: false, replacedCutoff: null };
+    }
     await this.venues.saveSettings(venue.id, patch);
     await this.auditLog.record(this.settingsChangeOf(venue, patch));
-    if (patch.businessDayCutoff !== undefined) {
-      this.previousCutoff = { cutoff: venue.businessDayCutoff, changedAt: this.clock.now() };
-    }
-    return { settings: await this.get(), changed: true };
+    const replacedCutoff = patch.businessDayCutoff === undefined ? null : venue.businessDayCutoff;
+    return { settings: await this.get(), changed: true, replacedCutoff };
   }
 
   private changesOf(venue: LockedVenueSettings, input: UpdateVenueSettings): VenueSettingsPatch {
@@ -181,4 +185,11 @@ export class VenueSettingsService {
       },
     };
   }
+}
+
+interface StoredSettings {
+  settings: VenueSettings;
+  changed: boolean;
+  /** The cut-off this save replaced, or null when the cut-off did not change. */
+  replacedCutoff: string | null;
 }

@@ -38,10 +38,29 @@ export function fieldErrors(patch: UpdateVenueSettings): Partial<Record<DraftFie
   return errors;
 }
 
+// A refresh from another tab or device updates every field the user has not edited, so บันทึก never sends stale values back.
+export function rebase(draft: SettingsDraft, base: SettingsDraft, saved: SettingsDraft): SettingsDraft {
+  const next = { ...draft };
+  for (const key of FIELDS) {
+    if (draft[key] === base[key]) Object.assign(next, { [key]: saved[key] });
+  }
+  return next;
+}
+
+function sameDraft(a: SettingsDraft, b: SettingsDraft): boolean {
+  return FIELDS.every((key) => a[key] === b[key]);
+}
+
 export function useSettingsForm(venue: VenueSettings) {
   const client = useQueryClient();
   const saved = draftOf(venue);
   const [draft, setDraft] = useState<SettingsDraft>(saved);
+  const [base, setBase] = useState<SettingsDraft>(saved);
+  if (!sameDraft(base, saved)) {
+    // Adjusting state while rendering (React's pattern for "state from a changed prop") — no stale frame.
+    setBase(saved);
+    setDraft(rebase(draft, base, saved));
+  }
   const patch = changedFields(saved, draft);
   const errors = fieldErrors(patch);
   const mutation = useMutation({
