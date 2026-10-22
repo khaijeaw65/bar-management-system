@@ -5,9 +5,9 @@
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-22 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-032-pos-orders-board` (no PR until audit PASS) |
+| **Branch** | `feat/BRIEF-032-pos-orders-board` (PR opens with this PASS commit) |
 | **Work SHA** | `d13425a` |
-| **Status** | Implemented — waiting for audit (Cowork) |
+| **Status** | Audit PASS (Cowork, `d13425a`) — merged PR determines Done |
 
 ## Summary
 `/pos/orders`: columns ใหม่ / กำลังเตรียม / (พร้อมเสิร์ฟ when the kitchen screen is on) / มีปัญหา, station filter, cards with one action each, non-modal detail/issue drawer (ทำต่อ → `resolve substitute`; void/replace disabled), live via `order.created` · `ticket.status_changed` · `ticket.issue_escalated` · `menu.availability_changed`. Rail "ออเดอร์" links to the board with a pending-ticket Badge. One query `['tickets','board']` (`hooks/useTicketBoard.ts`) feeds board and rail. No contracts, packages or backend changes.
@@ -54,6 +54,9 @@ None. No new packages, endpoints or contract changes.
 - Drawer is a non-modal `aside` like the session drawer; "ไปที่โต๊ะ" is disabled when the seat has no current visit.
 - MSW handler store now also receives tickets from `POST /visits/:id/orders`.
 - Stale-payload skip uses `updatedAt` strictly older than the cached ticket.
+
+## Audit follow-up
+PASS, 0 Must fix. Suggestions left as is (no scope expansion): S1 card button holds a `<ul>` · S2 shared mutation moves the spinner between cards (a second tap gives an honest 409) · S3 double event subscription (rail + board) · S4 board shows unescalated `issue` tickets — revisit with `escalated=true` when the staff app flags issues.
 
 ## AI usage
 n/a (Field's own brief).

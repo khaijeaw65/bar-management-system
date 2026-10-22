@@ -3,14 +3,14 @@ Updated: 2026-10-22 · Agent: Cowork (seed BRIEF-032)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-032 **Implemented** at `d13425a` (pushed, no PR) — next: `audit BRIEF-032` (Cowork), then `execute BRIEF-032` for the PASS commit + PR. Sun full demo run.
+BRIEF-032 **audit PASS** — PASS commit + PR on `feat/BRIEF-032-pos-orders-board`; merge when `ci` is green (own PR, §7). Sun full demo run.
 
 ## Active
-- Brief: BRIEF-032 · Stage: Implemented / waiting audit · Branch: `feat/BRIEF-032-pos-orders-board` · Sonar required (16 open, none in this brief's files)
+- Brief: BRIEF-032 · Stage: Audit PASS / PR · Branch: `feat/BRIEF-032-pos-orders-board` · Sonar required (16 open, none in this brief's files)
 - Done 21–22 Oct: BRIEF-033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 (#67) · 024 (#66) · 013 (#64)
 
 ## Next steps
-1. audit 032 → PASS commit + PR → merge on green `ci` · Sun night: full demo run order → pay → close + re-plan 26 Oct–2 Nov
+1. merge 032 on green `ci` · Sun night: full demo run order → pay → close + re-plan 26 Oct–2 Nov
 2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
 3. **Decide by 25 Oct:** CD-14 phone new-order — leaning web POS order + phone queue (BRIEF-010, Metee)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · 10 Nov: order → pay → close on the web POS
