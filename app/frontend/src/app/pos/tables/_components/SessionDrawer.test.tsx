@@ -282,7 +282,57 @@ test("a locked bill blocks close", async () => {
   show(visitDetail({ bill: { total: "480.00", paid: "0.00", remaining: "480.00", locked: true } }));
   renderDrawer(drawerVisitId);
   const drawer = await screen.findByRole("dialog", { name: "โต๊ะ T3" });
-  expect(within(drawer).getByRole("alert")).toHaveTextContent("มีการชำระเงินค้างอยู่ ปิดโต๊ะไม่ได้");
+  expect(within(drawer).getByRole("alert")).toHaveTextContent("มีการชำระเงินค้างอยู่");
+  expect(within(drawer).getByRole("button", { name: "ดู QR" })).toBeEnabled();
   expect(within(drawer).getByRole("button", { name: "ปิดโต๊ะ" })).toBeDisabled();
   expect(screen.queryByRole("dialog", { name: "ปิดโต๊ะ T3?" })).not.toBeInTheDocument();
+});
+
+test("an order placed after the QR sits under the divider", async () => {
+  const early = order("30000000-0000-4000-8000-000000000041", 7, "2026-10-21T11:00:00.000Z", [
+    ticket("60000000-0000-4000-8000-000000000041", 7, [orderLine("40000000-0000-4000-8000-000000000041", "สิงห์")], {
+      createdAt: "2026-10-21T11:00:00.000Z",
+    }),
+  ], "120.00");
+  const late = order("30000000-0000-4000-8000-000000000042", 9, "2026-10-21T12:30:00.000Z", [
+    ticket("60000000-0000-4000-8000-000000000042", 9, [orderLine("40000000-0000-4000-8000-000000000042", "โมฮิโต้")], {
+      createdAt: "2026-10-21T12:30:00.000Z",
+    }),
+  ], "180.00");
+  show(visitDetail({
+    orders: [early, late],
+    bill: { total: "120.00", paid: "0.00", remaining: "120.00", locked: true },
+    payments: [{
+      attemptId: "71000000-0000-4000-8000-000000000041",
+      visitId: drawerVisitId,
+      mode: "merge",
+      total: "120.00",
+      parts: [{
+        id: "70000000-0000-4000-8000-000000000041",
+        attemptId: "71000000-0000-4000-8000-000000000041",
+        visitId: drawerVisitId,
+        partNo: 1,
+        partCount: 1,
+        amount: "120.00",
+        method: "promptpay",
+        status: "pending",
+        confirmedVia: null,
+        statusReason: null,
+        statusNote: null,
+        qrPayload: "payload",
+        expiresAt: "2026-10-21T12:15:00.000Z",
+        paidAt: null,
+        createdBy: null,
+        updatedBy: null,
+        createdAt: "2026-10-21T12:00:00.000Z",
+      }],
+    }],
+  }));
+  renderDrawer(drawerVisitId);
+  const drawer = await screen.findByRole("dialog", { name: "โต๊ะ T3" });
+  const text = drawer.textContent ?? "";
+  const divider = text.indexOf("ออเดอร์ใหม่หลังสร้าง QR — ไม่รวมในยอดนี้");
+  expect(text.indexOf("#7")).toBeLessThan(divider);
+  expect(divider).toBeLessThan(text.indexOf("#9"));
+  expect(within(drawer).getByRole("button", { name: "ปิดโต๊ะ" })).toBeDisabled();
 });

@@ -21,6 +21,7 @@ export function CloseConfirmModal({
   failed,
   onDismiss,
   onConfirm,
+  onPay,
 }: Readonly<{
   label: string;
   bill: Bill;
@@ -28,6 +29,7 @@ export function CloseConfirmModal({
   failed: boolean;
   onDismiss: () => void;
   onConfirm: () => void;
+  onPay: () => void;
 }>) {
   const owed = hasMoney(bill.remaining);
 
@@ -59,6 +61,11 @@ export function CloseConfirmModal({
             <Button variant="secondary" className="flex-1" onPress={onDismiss}>
               ยกเลิก
             </Button>
+            {owed ? (
+              <Button className="flex-1" onPress={onPay}>
+                ไปชำระเงิน
+              </Button>
+            ) : null}
             <Button className="flex-1" isDisabled={owed} isPending={pending} onPress={onConfirm}>
               ปิดโต๊ะ
             </Button>

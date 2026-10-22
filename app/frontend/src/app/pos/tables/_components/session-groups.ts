@@ -96,6 +96,15 @@ function split(order: Order, ticket: Ticket): SessionGroup {
   };
 }
 
+export function splitLate(groups: readonly SessionGroup[], lockedAt: string | null): { locked: SessionGroup[]; late: SessionGroup[] } {
+  if (!lockedAt) return { locked: [...groups], late: [] };
+  const cut = Date.parse(lockedAt);
+  return {
+    locked: groups.filter((group) => Date.parse(group.createdAt) <= cut),
+    late: groups.filter((group) => Date.parse(group.createdAt) > cut),
+  };
+}
+
 export function sessionGroups(orders: readonly Order[], kitchenOn: boolean): SessionGroup[] {
   const newest = [...orders].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   if (!kitchenOn) return newest.map(grouped);

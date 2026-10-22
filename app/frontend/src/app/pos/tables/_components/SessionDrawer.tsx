@@ -11,11 +11,15 @@ import { useSession } from "./useSession";
 export function SessionDrawer({
   visitId,
   onClose,
+  onPay = () => undefined,
+  holdEscape = false,
 }: Readonly<{
   visitId: string;
   onClose: () => void;
+  onPay?: () => void;
+  holdEscape?: boolean;
 }>) {
-  const session = useSession(visitId, onClose);
+  const session = useSession(visitId, onClose, holdEscape);
   const titleId = useId();
   const visit = session.visit.data;
   const missing = session.visit.error instanceof ApiError && session.visit.error.status === 404;
@@ -40,6 +44,7 @@ export function SessionDrawer({
           groups={groups}
           paying={session.paying}
           onClose={onClose}
+          onPay={onPay}
           onCloseTable={session.requestClose}
         />
       ) : (
@@ -59,6 +64,10 @@ export function SessionDrawer({
           failed={session.retryable}
           onDismiss={session.dismissConfirm}
           onConfirm={session.confirmClose}
+          onPay={() => {
+            session.dismissConfirm();
+            onPay();
+          }}
         />
       ) : null}
     </aside>
