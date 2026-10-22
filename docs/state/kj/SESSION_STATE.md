@@ -1,19 +1,19 @@
 # State — KJ
-Updated: 2026-10-22 · Agent: Cowork (seed BRIEF-032)
+Updated: 2026-10-22 · Agent: Cowork (seed BRIEF-034)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-032 **audit PASS** — PASS commit + PR on `feat/BRIEF-032-pos-orders-board`; merge when `ci` is green (own PR, §7). Sun full demo run.
+BRIEF-034 orders board polish **Ready (Rev 1)** — seeded on `feat/BRIEF-034-pos-orders-board-polish` from `main` @ `230882b`. Next: `execute BRIEF-034` · Sun 25 Oct: full demo run.
 
 ## Active
-- Brief: BRIEF-032 · Stage: Audit PASS / PR · Branch: `feat/BRIEF-032-pos-orders-board` · Sonar required (16 open, none in this brief's files)
-- Done 21–22 Oct: BRIEF-033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 (#67) · 024 (#66) · 013 (#64)
+- Brief: BRIEF-034 · Stage: Ready (seed) · Branch: `feat/BRIEF-034-pos-orders-board-polish` · Sonar required · Q1 = A (escalated issues only)
+- Done 21–22 Oct: BRIEF-032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 · 024 · 013
 
 ## Next steps
-1. merge 032 on green `ci` · Sun night: full demo run order → pay → close + re-plan 26 Oct–2 Nov
+1. execute 034 → audit → PR · Sun 25 Oct (Field 22 Oct): POS frontend done + owner side if possible + backend ready for Metee (push token + mobile API check); Metee catches up on mobile after
 2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
-3. **Decide by 25 Oct:** CD-14 phone new-order — leaning web POS order + phone queue (BRIEF-010, Metee)
-4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · 10 Nov: order → pay → close on the web POS
+3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms
+4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · owner dashboard (CD-05)
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: none
