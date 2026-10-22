@@ -61,3 +61,10 @@ test("kitchen on shows the station badge", () => {
   renderCard({ station: "food" }, lines(1), true);
   expect(screen.getByText("ครัว")).toBeInTheDocument();
 });
+
+test("the open button holds only phrasing content, not the lines list", () => {
+  renderCard({}, lines(2));
+  const open = screen.getByRole("button", { name: "ดูรายละเอียด #0045 T3" });
+  expect(open.querySelector("ul, li, div, p")).toBeNull();
+  expect(open).toHaveTextContent("1× เมนู1");
+});

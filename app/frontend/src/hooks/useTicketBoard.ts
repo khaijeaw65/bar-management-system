@@ -14,8 +14,12 @@ function isOlder(shown: string, incoming: unknown): boolean {
 
 // One query feeds the board and the rail Badge, so they never disagree (BRIEF-032 §3b).
 export function useTicketBoard() {
+  return useQuery({ queryKey: BOARD_KEY, queryFn: getBoardTickets, retry: false });
+}
+
+// Mounted once per POS page: every useTicketBoard() caller would otherwise add its own listeners and refetch.
+export function useTicketBoardEvents(): void {
   const client = useQueryClient();
-  const query = useQuery({ queryKey: BOARD_KEY, queryFn: getBoardTickets, retry: false });
 
   const refresh = useCallback(() => {
     void client.invalidateQueries({ queryKey: BOARD_KEY });
@@ -36,7 +40,6 @@ export function useTicketBoard() {
   useSocketEvent("order.created", refresh);
   useSocketEvent("ticket.status_changed", onChanged);
   useSocketEvent("ticket.issue_escalated", onChanged);
-  return query;
 }
 
 export function usePendingTicketCount(): number {

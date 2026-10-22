@@ -12,14 +12,14 @@ const VISIBLE_LINES = 4;
 function Line({ line }: Readonly<{ line: OrderLine }>) {
   const cancelled = line.cancelledAt !== null;
   return (
-    <li>
+    <span className="block">
       <span className={cn("text-body-md", cancelled && "text-text-muted line-through")}>
         {line.quantity}× {line.name}
       </span>
       {line.cancellation?.system ? (
         <span className="block text-small text-text-muted">ยกเลิกอัตโนมัติ · ของหมด</span>
       ) : null}
-    </li>
+    </span>
   );
 }
 
@@ -69,11 +69,11 @@ export function TicketCard({
               {stationLabel[ticket.station]}
             </Chip>
           ) : null}
-          <ul className="flex flex-col gap-1">
+          <span className="flex flex-col gap-1">
             {ticket.items.slice(0, VISIBLE_LINES).map((line) => (
               <Line key={line.id} line={line} />
             ))}
-          </ul>
+          </span>
           {hidden > 0 ? <span className="text-small text-text-muted">+ {hidden} รายการ</span> : null}
           {ticket.status === "accepted" && ticket.acceptedBy ? (
             <span className="text-small text-text-muted">กำลังเตรียม · {ticket.acceptedBy.displayName}</span>
