@@ -1,19 +1,19 @@
 # State — KJ
-Updated: 2026-10-22 · Agent: Claude Code
+Updated: 2026-10-22 · Agent: Cowork (seed BRIEF-035)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-034 **audit PASS** — PASS commit + PR on `feat/BRIEF-034-pos-orders-board-polish`; merge when `ci` is green (own PR, §7). Next: Sun 25 Oct full demo run.
+BRIEF-035 venue settings **Ready (Rev 1)** — seeded on `feat/BRIEF-035-venue-settings` from `main` @ `b275749`. Next: `execute BRIEF-035` · drafts queued: 036 reports API → 037 dashboard UI → menu API / UI (photos via S3 `bar-app-dev`, DR pending).
 
 ## Active
-- Brief: BRIEF-034 · Stage: Audit PASS / PR · Branch: `feat/BRIEF-034-pos-orders-board-polish` · Sonar required (no open issue in changed files)
-- Done 21–22 Oct: BRIEF-032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 · 024 · 013
+- Brief: BRIEF-035 · Stage: Ready (seed) · Branch: `feat/BRIEF-035-venue-settings` · Sonar required · Q1 = A (cut-off applies next business day)
+- Done 21–22 Oct: BRIEF-034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. execute 034 → audit → PR · Sun 25 Oct (Field 22 Oct): POS frontend done + owner side if possible + backend ready for Metee (push token + mobile API check); Metee catches up on mobile after
+1. execute 035 → audit → PR · weekend push to Sat night (Field 22 Oct): settings → reports API → dashboard → menu; Mon afternoon update
 2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
-3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms
-4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip · owner dashboard (CD-05)
+3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
+4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: none
