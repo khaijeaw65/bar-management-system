@@ -5,9 +5,9 @@
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-22 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-034-pos-orders-board-polish` (no PR until audit PASS) |
+| **Branch** | `feat/BRIEF-034-pos-orders-board-polish` (PR opens with the PASS commit) |
 | **Work SHA** | `63442f1` |
-| **Status** | Implemented — waiting for audit (Cowork) |
+| **Status** | Audit PASS (Cowork, `63442f1`) — merged PR determines Done |
 
 ## Summary
 Closes BRIEF-032 audit notes N1–N4. Frontend only; no contracts, packages, endpoints or backend changes.
