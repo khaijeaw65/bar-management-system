@@ -7430,6 +7430,162 @@
         ]
       }
     },
+    "/api/venue/settings": {
+      "patch": {
+        "description": "Permission: venue:update. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "VenueController_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "businessDayCutoff": {
+                    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                    "type": "string"
+                  },
+                  "counterQrEnabled": {
+                    "type": "boolean"
+                  },
+                  "kitchenDisplayEnabled": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "businessDayCutoff": {
+                          "pattern": "^\\d{2}:\\d{2}$",
+                          "type": "string"
+                        },
+                        "counterQrEnabled": {
+                          "type": "boolean"
+                        },
+                        "kitchenDisplayEnabled": {
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "slug",
+                        "kitchenDisplayEnabled",
+                        "businessDayCutoff",
+                        "counterQrEnabled"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Update venue settings",
+        "tags": [
+          "venue"
+        ]
+      }
+    },
     "/api/visits": {
       "post": {
         "description": "Permission: visits:open. Access token from the access_token cookie, or Authorization: Bearer.",

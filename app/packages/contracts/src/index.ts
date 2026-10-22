@@ -1,6 +1,7 @@
 export * from './events/menu.js';
 export * from './events/order.js';
 export * from './events/payment.js';
+export * from './events/venue.js';
 export * from './events/visit.js';
 export * from './schemas/api-error.js';
 export * from './schemas/auth.js';
@@ -11,4 +12,5 @@ export * from './schemas/menu.js';
 export * from './schemas/orders.js';
 export * from './schemas/payments.js';
 export * from './schemas/venue-payment.js';
+export * from './schemas/venue-settings.js';
 export * from './schemas/visits.js';

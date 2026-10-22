@@ -1,3 +1,4 @@
+import type { BusinessDayRule } from '../../venue/domain/venue.repository.js';
 import { clockSeconds } from '../../../common/time-label.js';
 
 const BANGKOK = 'Asia/Bangkok';
@@ -16,6 +17,18 @@ export function businessDate(now: Date, cutoff: string): string {
   const local = bangkok(now);
   if (clockSeconds(local.time) < clockSeconds(cutoff)) return previousDay(local.isoDate);
   return local.isoDate;
+}
+
+/**
+ * The business day open when the cut-off changed finishes under the old cut-off;
+ * the new one applies from the next business day.
+ */
+export function businessDateUnder(now: Date, rule: BusinessDayRule): string {
+  const current = businessDate(now, rule.cutoff);
+  if (!rule.previous) return current;
+  const old = businessDate(now, rule.previous.cutoff);
+  if (old === businessDate(rule.previous.changedAt, rule.previous.cutoff)) return old;
+  return old > current ? old : current;
 }
 
 /** Integer key for pg_advisory_xact_lock, one value per business date. */
