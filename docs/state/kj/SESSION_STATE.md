@@ -1,12 +1,12 @@
 # State — KJ
-Updated: 2026-10-22 · Agent: Cowork (seed BRIEF-034)
+Updated: 2026-10-22 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-034 orders board polish **Ready (Rev 1)** — seeded on `feat/BRIEF-034-pos-orders-board-polish` from `main` @ `230882b`. Next: `execute BRIEF-034` · Sun 25 Oct: full demo run.
+BRIEF-034 **Implemented** on `feat/BRIEF-034-pos-orders-board-polish` (work SHA in handoff) — waiting for audit (Cowork), then PASS commit + PR. Next: Sun 25 Oct full demo run.
 
 ## Active
-- Brief: BRIEF-034 · Stage: Ready (seed) · Branch: `feat/BRIEF-034-pos-orders-board-polish` · Sonar required · Q1 = A (escalated issues only)
+- Brief: BRIEF-034 · Stage: Implemented / audit · Branch: `feat/BRIEF-034-pos-orders-board-polish` · Sonar required (no open issue in changed files)
 - Done 21–22 Oct: BRIEF-032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68) · earlier: 017 · 024 · 013
 
 ## Next steps
