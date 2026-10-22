@@ -1,4 +1,4 @@
-import type { MenuItem, Order, OrderLine, PlaceOrderRequest, TableSummary, Visit, VisitDetail } from "@bar/contracts";
+import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod, PlaceOrderRequest, TableSummary, Visit, VisitDetail } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 import { scaleMoney, sumMoney } from "@/lib/utils/money";
 
@@ -180,12 +180,18 @@ export function currentSeats(): TableSummary[] {
 
 const ordersByVisit = new Map<string, Order[]>();
 const placedByKey = new Map<string, { body: string; order: Order }>();
+const paymentById = new Map<string, Payment>();
+const paymentByKey = new Map<string, { body: string; attempt: PaymentAttempt }>();
+const settlement = new Map<string, { paid: string; remaining: string; locked: boolean }>();
 let nextOrderNumber = 1;
 
 export function resetFloor(): void {
   seats = buildSeats();
   ordersByVisit.clear();
   placedByKey.clear();
+  paymentById.clear();
+  paymentByKey.clear();
+  settlement.clear();
   nextOrderNumber = 1;
 }
 
@@ -235,6 +241,8 @@ const venueSettings = {
 function billFor(visit: NonNullable<TableSummary["currentVisit"]>): VisitDetail["bill"] {
   const orders = ordersByVisit.get(visit.id) ?? [];
   const total = orders.length > 0 ? sumMoney(orders.map((order) => order.total)) : visit.total;
+  const extra = settlement.get(visit.id);
+  if (extra) return { total, paid: extra.paid, remaining: extra.remaining, locked: extra.locked };
   return { total, paid: "0.00", remaining: total, locked: visit.paymentPending };
 }
 
@@ -331,7 +339,7 @@ function detailFor(row: TableSummary): VisitDetail | null {
     openedVia: "pos",
     orders: ordersByVisit.get(visit.id) ?? [],
     bill: billFor(visit),
-    payments: [],
+    payments: attemptsFor(visit.id),
   };
 }
 
@@ -349,6 +357,66 @@ function closedBody(row: TableSummary): Visit {
     state: "closed",
     closedAt: new Date().toISOString(),
   };
+}
+
+function attemptOf(payment: Payment): PaymentAttempt {
+  return {
+    attemptId: payment.attemptId,
+    visitId: payment.visitId,
+    mode: "merge",
+    total: payment.amount,
+    parts: [payment],
+  };
+}
+
+function attemptsFor(visitId: string): PaymentAttempt[] {
+  const byAttempt = new Map<string, Payment[]>();
+  for (const payment of paymentById.values()) {
+    if (payment.visitId !== visitId) continue;
+    const parts = byAttempt.get(payment.attemptId) ?? [];
+    parts.push(payment);
+    byAttempt.set(payment.attemptId, parts);
+  }
+  return [...byAttempt.entries()].map(([attemptId, parts]) => ({
+    attemptId,
+    visitId,
+    mode: "merge" as const,
+    total: parts[0]?.amount ?? "0.00",
+    parts,
+  }));
+}
+
+function buildPayment(visitId: string, method: PaymentMethod, amount: string): Payment {
+  const cash = method === "cash";
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    attemptId: crypto.randomUUID(),
+    visitId,
+    partNo: 1,
+    partCount: 1,
+    amount,
+    method,
+    status: cash ? "completed" : "pending",
+    confirmedVia: cash ? "cash" : null,
+    statusReason: null,
+    statusNote: null,
+    qrPayload: cash ? null : "00020101021229370016A000000677010111",
+    expiresAt: cash ? null : new Date(Date.now() + 15 * 60_000).toISOString(),
+    paidAt: cash ? now : null,
+    createdBy: staffMe.id,
+    updatedBy: null,
+    createdAt: now,
+  };
+}
+
+function settle(visitId: string, paid: string, remaining: string, locked: boolean): void {
+  settlement.set(visitId, { paid, remaining, locked });
+  seats = seats.map((row) =>
+    row.currentVisit?.id === visitId
+      ? { ...row, currentVisit: { ...row.currentVisit, paymentPending: locked } }
+      : row,
+  );
 }
 
 export const handlers = [
@@ -427,5 +495,61 @@ export const handlers = [
     if (key) placedByKey.set(key, { body, order });
     rememberOrder(visitId, order);
     return json(order, 201);
+  }),
+  http.post("*/api/visits/:id/payments", async ({ request, params }) => {
+    const visitId = String(params.id);
+    const key = request.headers.get("Idempotency-Key") ?? "";
+    const raw = (await request.json()) as { method?: PaymentMethod };
+    const body = JSON.stringify({ method: raw.method, mode: "merge" });
+    const prior = key ? paymentByKey.get(key) : undefined;
+    if (prior && key) {
+      if (prior.body !== body) return json(null, 409, "IDEMPOTENCY_KEY_REUSED", "ส่งอีกครั้งได้");
+      return json(prior.attempt, 201);
+    }
+    const row = seats.find((seat) => seat.currentVisit?.id === visitId);
+    if (!row?.currentVisit) return json(null, 404, "NOT_FOUND", "ไม่พบการเข้าใช้");
+    const bill = billFor(row.currentVisit);
+    const pending = [...paymentById.values()].find((item) => item.visitId === visitId && item.status === "pending");
+    if (pending) return json({ details: attemptOf(pending) }, 409, "PAYMENT_IN_FLIGHT", "มีการชำระเงินที่ยังไม่จบ");
+    if (bill.remaining === "0.00") return json(null, 409, "NOTHING_TO_PAY", "ไม่มียอดที่ต้องชำระ");
+    const method = raw.method === "cash" ? "cash" : "promptpay";
+    const payment = buildPayment(visitId, method, bill.remaining);
+    const attempt = attemptOf(payment);
+    paymentById.set(payment.id, payment);
+    if (key) paymentByKey.set(key, { body, attempt });
+    if (method === "cash") settle(visitId, payment.amount, "0.00", false);
+    else settle(visitId, "0.00", bill.remaining, true);
+    return json(attempt, 201);
+  }),
+  http.get("*/api/payments/:id", ({ params }) => {
+    const payment = paymentById.get(String(params.id));
+    if (!payment) return json(null, 404, "NOT_FOUND", "ไม่พบการชำระเงิน");
+    return json(payment);
+  }),
+  http.post("*/api/payments/:id/cancel", ({ params }) => {
+    const payment = paymentById.get(String(params.id));
+    if (!payment) return json(null, 404, "NOT_FOUND", "ไม่พบการชำระเงิน");
+    if (payment.status !== "pending") return json(null, 409, "INVALID_STATE_TRANSITION", "สถานะการชำระเงินไม่ถูกต้อง");
+    const next = { ...payment, status: "cancelled" as const, statusReason: "staff_cancel" as const };
+    paymentById.set(payment.id, next);
+    settle(payment.visitId, "0.00", payment.amount, false);
+    return json(next);
+  }),
+  http.post("*/api/payments/:id/mark-paid", async ({ request, params }) => {
+    const payment = paymentById.get(String(params.id));
+    if (!payment) return json(null, 404, "NOT_FOUND", "ไม่พบการชำระเงิน");
+    if (payment.status !== "pending") return json(null, 409, "INVALID_STATE_TRANSITION", "สถานะการชำระเงินไม่ถูกต้อง");
+    const raw = (await request.json()) as { reason?: Payment["statusReason"]; note?: string };
+    const next: Payment = {
+      ...payment,
+      status: "completed",
+      confirmedVia: "manual",
+      statusReason: raw.reason ?? null,
+      statusNote: raw.note ?? null,
+      paidAt: new Date().toISOString(),
+    };
+    paymentById.set(payment.id, next);
+    settle(payment.visitId, payment.amount, "0.00", false);
+    return json(next);
   }),
 ];

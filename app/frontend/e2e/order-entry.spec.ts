@@ -5,7 +5,7 @@ const visitId = "20000000-0000-4000-8000-000000000003";
 test("sends one order and returns to the drawer", async ({ page }) => {
   await page.goto("/pos/tables");
   await page.getByRole("button", { name: /T3/ }).click();
-  await page.getByRole("dialog", { name: "โต๊ะ T3" }).getByRole("button", { name: "สั่งแทนลูกค้า" }).click();
+  await page.getByRole("complementary", { name: "โต๊ะ T3" }).getByRole("button", { name: "สั่งแทนลูกค้า" }).click();
   await expect(page).toHaveURL(new RegExp(`/pos/tables/${visitId}/order`));
 
   const singha = page.getByRole("button", { name: /^สิงห์/ });
@@ -22,7 +22,7 @@ test("sends one order and returns to the drawer", async ({ page }) => {
 
   await expect(page).toHaveURL(new RegExp(`visit=${visitId}`));
   await expect(page.getByText("ส่งออเดอร์ T3 แล้ว · 3 รายการ")).toBeVisible();
-  const drawer = page.getByRole("dialog", { name: "โต๊ะ T3" });
+  const drawer = page.getByRole("complementary", { name: "โต๊ะ T3" });
   await expect(drawer.getByText(/สิงห์/)).toBeVisible();
   await expect(drawer.getByText(/โมฮิโต้/)).toBeVisible();
 });

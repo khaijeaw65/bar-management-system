@@ -3,11 +3,13 @@
 import { Button } from "@heroui/react";
 import type { TableSummary } from "@bar/contracts";
 import { useQuery } from "@tanstack/react-query";
+import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { LoadError } from "@/components/ui/LoadError";
 import { useTableLive } from "@/hooks/useSocketEvent";
 import { getTables } from "@/lib/api/tables";
+import { CheckoutModal } from "./checkout/CheckoutModal";
 import { DisconnectedBanner } from "./DisconnectedBanner";
 import { FloorSummary } from "./FloorSummary";
 import { OpenTableModal } from "./OpenTableModal";
@@ -20,6 +22,14 @@ function byOrder(a: TableSummary, b: TableSummary): number {
   return a.sortOrder - b.sortOrder;
 }
 
+function withPay(params: URLSearchParams, on: boolean): Route {
+  const next = new URLSearchParams(params.toString());
+  if (on) next.set("pay", "1");
+  else next.delete("pay");
+  const query = next.toString();
+  return (query ? `/pos/tables?${query}` : "/pos/tables") as Route;
+}
+
 export function TableGrid() {
   const tables = useQuery({ queryKey: ["tables"], queryFn: getTables, retry: false });
   const disconnected = useTableLive();
@@ -29,6 +39,7 @@ export function TableGrid() {
   const router = useRouter();
   const items = tables.data?.items ?? [];
   const selectedId = params.get("visit");
+  const payOpen = params.get("pay") === "1" && selectedId !== null;
 
   function selectVisit(visitId: string) {
     const next = new URLSearchParams(params.toString());
@@ -39,6 +50,7 @@ export function TableGrid() {
   function clearVisit() {
     const next = new URLSearchParams(params.toString());
     next.delete("visit");
+    next.delete("pay");
     const query = next.toString();
     router.replace(query ? `/pos/tables?${query}` : "/pos/tables");
   }
@@ -88,7 +100,16 @@ export function TableGrid() {
           }}
         />
       ) : null}
-      {selectedId ? <SessionDrawer key={selectedId} visitId={selectedId} onClose={clearVisit} /> : null}
+      {selectedId ? (
+        <SessionDrawer
+          key={selectedId}
+          visitId={selectedId}
+          holdEscape={payOpen}
+          onClose={clearVisit}
+          onPay={() => router.replace(withPay(params, true))}
+        />
+      ) : null}
+      {payOpen && selectedId ? <CheckoutModal visitId={selectedId} onClose={() => router.replace(withPay(params, false))} /> : null}
     </section>
   );
 }

@@ -26,12 +26,11 @@ function failureOf(error: unknown): "flight" | "gone" | "retry" {
   return "retry";
 }
 
-export function useSession(visitId: string, onClose: () => void) {
+export function useSession(visitId: string, onClose: () => void, holdEscape = false) {
   const client = useQueryClient();
   const visit = useQuery({ queryKey: ["visits", visitId], queryFn: () => getVisit(visitId), retry: false });
   const venue = useQuery({ queryKey: ["venue"], queryFn: getVenue, staleTime: 60_000, retry: false });
   const [confirming, setConfirming] = useState(false);
-  const [blocked, setBlocked] = useState(false);
   const onCloseRef = useRef(onClose);
   const self = useRef(false);
   const reportedMissing = useRef<string | null>(null);
@@ -71,14 +70,14 @@ export function useSession(visitId: string, onClose: () => void) {
   }, [visit.error, visitId]);
 
   useEffect(() => {
-    if (confirming) return;
+    if (confirming || holdEscape) return;
     function onKey(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       onCloseRef.current();
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [confirming]);
+  }, [confirming, holdEscape]);
 
   const close = useMutation({
     mutationFn: () => closeVisit(visitId),
@@ -93,7 +92,6 @@ export function useSession(visitId: string, onClose: () => void) {
       const failure = failureOf(error);
       if (failure === "flight") {
         setConfirming(false);
-        setBlocked(true);
         void visit.refetch();
         return;
       }
@@ -106,7 +104,7 @@ export function useSession(visitId: string, onClose: () => void) {
   });
 
   function requestClose() {
-    if (blocked || visit.data?.bill.locked) return;
+    if (visit.data?.bill.locked) return;
     setConfirming(true);
     void visit.refetch();
   }
@@ -122,7 +120,7 @@ export function useSession(visitId: string, onClose: () => void) {
     visit,
     venue,
     confirming,
-    paying: blocked || visit.data?.bill.locked === true,
+    paying: visit.data?.bill.locked === true,
     pending: visit.isPending || (venue.isPending && !venue.isError),
     retryable: close.isError && failureOf(close.error) === "retry",
     close,

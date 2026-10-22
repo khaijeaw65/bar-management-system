@@ -29,13 +29,13 @@ test("closes an empty table from the drawer", async ({ page }) => {
   await open.getByRole("button", { name: "เปิดโต๊ะ" }).click();
   await expect(page.getByText("เปิด T6 แล้ว")).toBeVisible();
   await page.getByRole("button", { name: /T6/ }).click();
-  const drawer = page.getByRole("dialog", { name: "โต๊ะ T6" });
+  const drawer = page.getByRole("complementary", { name: "โต๊ะ T6" });
   await expect(drawer.getByText("ยังไม่มีออเดอร์")).toBeVisible();
   await drawer.getByRole("button", { name: "ปิดโต๊ะ" }).click();
   const confirm = page.getByRole("dialog", { name: "ปิดโต๊ะ T6?" });
   await confirm.getByRole("button", { name: "ปิดโต๊ะ" }).click();
   await expect(page.getByText("ปิดโต๊ะ T6 แล้ว")).toBeVisible();
-  await expect(page.getByRole("dialog", { name: "โต๊ะ T6" })).toHaveCount(0);
+  await expect(page.getByRole("complementary", { name: "โต๊ะ T6" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "T6" })).not.toContainText("เปิดแล้ว");
 });
 
