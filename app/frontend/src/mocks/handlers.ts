@@ -1,4 +1,5 @@
 import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod, PlaceOrderRequest, TableSummary, Ticket, Visit, VisitDetail } from "@bar/contracts";
+import { UpdateVenuePaymentSettingsSchema, UpdateVenueSettingsSchema } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 import { scaleMoney, sumMoney } from "@/lib/utils/money";
 
@@ -103,7 +104,7 @@ export function apiEnvelope(
   return { status, code, message, data };
 }
 
-function json(data: unknown, status = 200, code = "", message = "success") {
+function json(data: unknown, status = 200, code = "", message: string | string[] = "success") {
   return HttpResponse.json(apiEnvelope(data, status, code, message), { status });
 }
 
@@ -260,6 +261,8 @@ export function resetFloor(): void {
   settlement.clear();
   tickets = buildTickets();
   nextOrderNumber = 1;
+  venueSettings = { ...initialVenue };
+  paymentSettings = { ...initialPaymentSettings };
 }
 
 function asVisit(seatRow: TableSummary, visit: Pick<Visit, "id" | "guestLabel" | "openedAt" | "openedBy" | "openedVia">): Visit {
@@ -297,13 +300,47 @@ function remember(visit: Visit): void {
   );
 }
 
-const venueSettings = {
+const initialVenue = {
   name: "The Loft",
   slug: "the-loft",
   kitchenDisplayEnabled: false,
   businessDayCutoff: "06:00",
   counterQrEnabled: false,
 };
+let venueSettings = { ...initialVenue };
+
+const initialPaymentSettings = {
+  paymentMode: "own_promptpay" as const,
+  promptpayIdType: "mobile" as "mobile" | "national_id" | "ewallet" | null,
+  promptpayIdMasked: "XXX-XXX-5678" as string | null,
+};
+let paymentSettings = { ...initialPaymentSettings };
+
+function patchVenue(raw: unknown) {
+  const parsed = UpdateVenueSettingsSchema.safeParse(raw);
+  if (!parsed.success) {
+    return json(null, 400, "VALIDATION_ERROR", parsed.error.issues.map((issue) => issue.message));
+  }
+  venueSettings = { ...venueSettings, ...parsed.data };
+  return json(venueSettings);
+}
+
+function patchPromptPay(raw: unknown) {
+  const parsed = UpdateVenuePaymentSettingsSchema.safeParse(raw);
+  const digits = parsed.success ? parsed.data.promptpayId.replaceAll(/\D/g, "") : "";
+  if (!parsed.success || (parsed.data.promptpayIdType === "mobile" && !/^0\d{9}$/.test(digits))) {
+    return json(null, 400, "VALIDATION_ERROR", ["รูปแบบพร้อมเพย์ไม่ถูกต้อง"]);
+  }
+  if (seats.some((row) => row.currentVisit?.paymentPending)) {
+    return json(null, 409, "PAYMENT_IN_FLIGHT", "มีการชำระเงินค้างอยู่");
+  }
+  paymentSettings = {
+    ...paymentSettings,
+    promptpayIdType: parsed.data.promptpayIdType,
+    promptpayIdMasked: `XXX-XXX-${digits.slice(-4)}`,
+  };
+  return json(paymentSettings);
+}
 
 function billFor(visit: NonNullable<TableSummary["currentVisit"]>): VisitDetail["bill"] {
   const orders = ordersByVisit.get(visit.id) ?? [];
@@ -521,6 +558,9 @@ export const handlers = [
     return json({ visit, attached: false }, 201);
   }),
   http.get("*/api/venue", () => json(venueSettings)),
+  http.patch("*/api/venue/settings", async ({ request }) => patchVenue(await request.json())),
+  http.get("*/api/venue/payment-settings", () => json(paymentSettings)),
+  http.patch("*/api/venue/payment-settings", async ({ request }) => patchPromptPay(await request.json())),
   http.get("*/api/tickets", ({ request }) => {
     const wanted = new URL(request.url).searchParams.get("status")?.split(",") ?? ["pending", "accepted", "ready"];
     return json({ items: tickets.filter((ticket) => wanted.includes(ticket.status)) });
