@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Deferred — DR-019 (Field 2026-10-22) |
 | **Implementer** | kj (executor agent — Cursor) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -50,7 +50,7 @@ Unit `src/modules/payment/application/split.spec.ts` (AC-1, AC-2 math) · e2e `t
 Same as BRIEF-013 §6.
 
 ## 7. Decision Points (Field Guard)
-- **Q1 — Charge lines added after the split attempt.** *Cowork recommends:* they are outside the lock and stay due (same rule as new orders, BRIEF-013). *Alternative:* block new charge lines while a split is pending.
+- **Q1 — moot: brief deferred (DR-019).** ~~Charge lines added after the split attempt.~~ *Cowork recommends:* they are outside the lock and stay due (same rule as new orders, BRIEF-013). *Alternative:* block new charge lines while a split is pending.
 - **Pre-decided:** none yet.
 
 ## 8. Unlocked Protected Files
@@ -69,3 +69,4 @@ Same as BRIEF-013 §6.
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-19 | Initial Draft (Cowork) — split out of BRIEF-013 Rev 2 on Field's Q6 decision |
+| 1 | 2026-10-22 | Deferred — DR-019: split-equal out of Phase 1 core (Field in session) |

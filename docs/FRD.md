@@ -220,6 +220,8 @@ Cancelled items stay **visible on the bill, struck through / marked cancelled**,
 Both real bars observed rely on **manual slip verification** (staff looks at a payment screenshot → closes tab). This is vulnerable to **fake payment slips** — a known fraud vector in Thailand. Webhook auto-confirm fixes it: the tab only closes when the **bank confirms money actually arrived**, which can't be faked. This is a genuine, defensible improvement over existing practice — good thesis point.
 
 ### Split options
+> **Deferred (DR-019, 2026-10-22):** split-equal is out of Phase 1 core — checkout is merge only. Counter seats still pay separately by design (§3). The text below is kept as the target for a later phase.
+
 - **Merge bill** (one QR) OR **Split bill** (equal, separate QR per person). **No item-level split** (out of scope — izakaya continuous ordering makes per-item attribution unrealistic, and pooled orders can't be cleanly attributed).
 - Follows the session model (§3):
   - **Shared session** (one QR) → merge (one payment) OR split-equal at checkout. "Pooled but someone wants their own" → split-equal or private settle, NOT item attribution.
