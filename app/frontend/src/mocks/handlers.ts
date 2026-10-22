@@ -1,4 +1,4 @@
-import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod, PlaceOrderRequest, TableSummary, Visit, VisitDetail } from "@bar/contracts";
+import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod, PlaceOrderRequest, TableSummary, Ticket, Visit, VisitDetail } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 import { scaleMoney, sumMoney } from "@/lib/utils/money";
 
@@ -174,6 +174,72 @@ function buildSeats(): TableSummary[] {
 
 let seats = buildSeats();
 
+const boardStaff = { staffId: staffMe.id, displayName: staffMe.displayName };
+
+function boardLine(id: string, name: string, quantity = 1, extra: Partial<OrderLine> = {}): OrderLine {
+  return {
+    id,
+    variantId: id,
+    name,
+    variantName: "ปกติ",
+    quantity,
+    unitPrice: "120.00",
+    modifiers: [],
+    lineTotal: scaleMoney("120.00", quantity),
+    orderedByName: null,
+    notes: null,
+    cancelledAt: null,
+    cancellation: null,
+    ...extra,
+  };
+}
+
+function boardTicket(n: number, seatId: string, label: string, status: Ticket["status"], extra: Partial<Ticket> = {}): Ticket {
+  const at = minutesAgo(40 - n * 5);
+  return {
+    id: `60000000-0000-4000-8000-0000000000${String(n).padStart(2, "0")}`,
+    orderId: `30000000-0000-4000-8000-0000000000${String(n).padStart(2, "0")}`,
+    orderNumber: 40 + n,
+    station: "bar",
+    status,
+    seat: { id: seatId, label, kind: label.startsWith("C") ? "counter" : "table" },
+    items: [boardLine(`70000000-0000-4000-8000-0000000000${String(n).padStart(2, "0")}`, "สิงห์", 2)],
+    issue: null,
+    acceptedBy: null,
+    sentAt: null,
+    createdAt: at,
+    updatedAt: at,
+    ...extra,
+  };
+}
+
+function buildTickets(): Ticket[] {
+  return [
+    boardTicket(1, seatIds.t3, "T3", "pending"),
+    boardTicket(2, seatIds.c4, "C4", "accepted", { acceptedBy: boardStaff }),
+    boardTicket(3, seatIds.t2, "T2", "issue", {
+      issue: {
+        reason: "out_of_stock",
+        itemId: "70000000-0000-4000-8000-000000000003",
+        note: "น้ำแข็งหมด",
+        reportedBy: { staffId: staffMe.id, displayName: "นุ่น" },
+        escalatedAt: minutesAgo(3),
+      },
+    }),
+  ];
+}
+
+let tickets = buildTickets();
+
+function moveTicket(id: string, from: Ticket["status"][], patch: Partial<Ticket>) {
+  const found = tickets.find((ticket) => ticket.id === id);
+  if (!found) return json(null, 404, "NOT_FOUND", "ไม่พบออเดอร์");
+  if (!from.includes(found.status)) return json(null, 409, "INVALID_STATE_TRANSITION", "สถานะออเดอร์ไม่ถูกต้อง");
+  const next = { ...found, ...patch, updatedAt: new Date().toISOString() };
+  tickets = tickets.map((ticket) => (ticket.id === id ? next : ticket));
+  return json(next);
+}
+
 export function currentSeats(): TableSummary[] {
   return seats;
 }
@@ -192,6 +258,7 @@ export function resetFloor(): void {
   paymentById.clear();
   paymentByKey.clear();
   settlement.clear();
+  tickets = buildTickets();
   nextOrderNumber = 1;
 }
 
@@ -275,6 +342,7 @@ function lineFor(entry: PlaceOrderRequest["items"][number]): OrderLine {
 }
 
 function rememberOrder(visitId: string, order: Order): void {
+  tickets = [...tickets, ...order.tickets];
   const orders = [order, ...(ordersByVisit.get(visitId) ?? [])];
   ordersByVisit.set(visitId, orders);
   const total = sumMoney(orders.map((entry) => entry.total));
@@ -453,6 +521,20 @@ export const handlers = [
     return json({ visit, attached: false }, 201);
   }),
   http.get("*/api/venue", () => json(venueSettings)),
+  http.get("*/api/tickets", ({ request }) => {
+    const wanted = new URL(request.url).searchParams.get("status")?.split(",") ?? ["pending", "accepted", "ready"];
+    return json({ items: tickets.filter((ticket) => wanted.includes(ticket.status)) });
+  }),
+  http.post("*/api/tickets/:id/accept", ({ params }) =>
+    moveTicket(String(params.id), ["pending"], { status: "accepted", acceptedBy: boardStaff }),
+  ),
+  http.post("*/api/tickets/:id/ready", ({ params }) => moveTicket(String(params.id), ["accepted"], { status: "ready" })),
+  http.post("*/api/tickets/:id/send", ({ params }) =>
+    moveTicket(String(params.id), ["accepted", "ready"], { status: "sent", sentAt: new Date().toISOString() }),
+  ),
+  http.post("*/api/tickets/:id/resolve", ({ params }) =>
+    moveTicket(String(params.id), ["issue"], { status: "accepted", issue: null }),
+  ),
   http.get("*/api/visits/:id", ({ params }) => {
     const id = String(params.id);
     const row = seats.find((item) => item.currentVisit?.id === id);
