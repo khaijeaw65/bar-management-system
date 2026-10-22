@@ -1,23 +1,24 @@
 # State — KJ
-Updated: 2026-10-22 · Agent: Cowork (seed BRIEF-035)
+Updated: 2026-10-22 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-035 venue settings **Ready (Rev 1)** — seeded on `feat/BRIEF-035-venue-settings` from `main` @ `b275749`. Next: `execute BRIEF-035` · drafts queued: 036 reports API → 037 dashboard UI → menu API / UI (photos via S3 `bar-app-dev`, DR pending).
+BRIEF-035 venue settings **Implemented** — work `3fa6743` on `feat/BRIEF-035-venue-settings`, pushed, no PR. Next: `audit BRIEF-035` (Cowork) · then 036 reports API → 037 dashboard UI → menu API / UI.
 
 ## Active
-- Brief: BRIEF-035 · Stage: Ready (seed) · Branch: `feat/BRIEF-035-venue-settings` · Sonar required · Q1 = A (cut-off applies next business day)
+- Brief: BRIEF-035 · Stage: Implemented · Branch: `feat/BRIEF-035-venue-settings` (seed `15f8acd`) · Sonar: no issues in touched files
+- **FIELD REVIEW NEEDED: DR-021** — field paths on 400 `VALIDATION_ERROR` (B implemented: client-side validation with the shared schema)
 - Done 21–22 Oct: BRIEF-034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. execute 035 → audit → PR · weekend push to Sat night (Field 22 Oct): settings → reports API → dashboard → menu; Mon afternoon update
+1. audit 035 → PASS commit + PR → merge (own PR, §7) · weekend push to Sat night (Field 22 Oct): settings → reports API → dashboard → menu; Mon afternoon update
 2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none
-- Local DB: C1 (1 served ticket), C2, T5, T6 open from proofs · dev servers (backend 3001, frontend 3000) and SonarQube (9000) from this session still running · test PromptPay ID set
+- Shared files: none · Review queue: BRIEF-035 (Cowork) · DR-021 Pending (Field)
+- Local DB: backend `test:e2e` wiped staff/venue → re-seeded (Field, venue, menu); venue now kitchen on, cut-off 05:00, test PromptPay `…0000`; T1 open (1 beer, QR cancelled) · dev servers 3000/3001 + SonarQube 9000 running · untracked `DR-020` (Cowork's) left as is
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -34,5 +35,5 @@ BRIEF-035 venue settings **Ready (Rev 1)** — seeded on `feat/BRIEF-035-venue-s
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-031 (audit PASS) · 033 → 032 (Drafts, untracked)
-2. BRIEF-023 split equal (Q1 open) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
+1. BRIEF-035 (Implemented, audit) · 036 reports API → 037 dashboard UI → menu API / UI (Drafts)
+2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
