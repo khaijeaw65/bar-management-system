@@ -1,22 +1,22 @@
 # State — KJ
-Updated: 2026-10-23 · Agent: Claude Code (BRIEF-041 Ready seed)
+Updated: 2026-10-23 · Agent: Cowork (BRIEF-045 Draft seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-041 **Audit PASS** (Cowork, S `a57debf`; Rev 2 switch fix included) — PR opened with the PASS commit → merge on green `ci` (own PR, §7) → 045.
+BRIEF-045 **Draft** (categories Modal + add-on groups page + category `itemCount`) — Field reviews in place → Q1 (unique category name) → Ready → `execute BRIEF-045`.
 
 ## Active
-- Brief: BRIEF-041 Rev 2 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-041-menu-photo-ui` · handoff `docs/handoffs/BRIEF-041.md`
-- Done 21–23 Oct: BRIEF-040 (#90) · BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
+- Brief: BRIEF-045 Rev 1 · Stage: Draft · Branch: `feat/BRIEF-045-menu-categories-addons-ui` (seed, local)
+- Done 21–23 Oct: BRIEF-041 (#91) · BRIEF-040 (#90) · BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
 
 ## Next steps
-1. 040 Ready (Field 23 Oct) · 041: bucket CORS `POST` :3000 + `tmp/` 1-day lifecycle set (Field 23 Oct) · Cowork drafts 045 · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
+1. Field reviews BRIEF-045 Draft (size ~1.3–1.4k by Field's choice, Q1 open) · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
 2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none · bucket `bar-app-dev` still needs the `tmp/` 1-day lifecycle + CORS `POST` from the web origin before the photo UI (041) · if `ci` hits frontend timeouts → re-run once (038 audit F4) · `nest start --watch` respawns a backend on :3001 after any `src` edit (it stole a payment-expiry job in 044's first e2e run) — the two in `app/backend` were stopped 23 Oct
+- Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4) · `nest start --watch` respawns a backend on :3001 after any `src` edit (it stole a payment-expiry job in 044's first e2e run) — the two in `app/backend` were stopped 23 Oct
 - e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations; a `nest start --watch` respawns it, so stop that too); frontend e2e needs no other `next dev` in `app/frontend`; frontend unit tests time out under heavy machine load (038 handoff)
 - Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 5 × จินโทนิค (180/200/200/220+ชีส/220+ชีสเยิ้ม), bill ฿1,305 · migrations `OrderLineSnapshots` + `UpdatedAtTrigger` + `ModifierGroupArchive` applied on `bar` · backend 3001 = plain `node dist/main` of `b000e4e` (no `nest start --watch` — restart it if wanted, stop it before `test:e2e`) · web `next dev` :3000 (another session) + SonarQube 9000 running
 
@@ -36,5 +36,5 @@ BRIEF-041 **Audit PASS** (Cowork, S `a57debf`; Rev 2 switch fix included) — PR
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-040 (Ready) → 041 (Draft) → 045 categories + add-on screens (to draft) → phone 390 shell (after 8 Nov)
+1. BRIEF-045 categories + add-on screens (Draft) → phone 390 shell (after 8 Nov)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
