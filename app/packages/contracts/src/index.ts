@@ -11,6 +11,7 @@ export * from './schemas/errors.js';
 export * from './schemas/menu.js';
 export * from './schemas/orders.js';
 export * from './schemas/payments.js';
+export * from './schemas/reports.js';
 export * from './schemas/venue-payment.js';
 export * from './schemas/venue-settings.js';
 export * from './schemas/visits.js';

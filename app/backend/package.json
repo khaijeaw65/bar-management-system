@@ -28,6 +28,7 @@
     "seed:staff": "nest build && node --env-file=.env ./dist/cli/seed-staff.js",
     "seed:venue": "nest build && node --env-file=.env ./dist/cli/seed-venue-main.js",
     "seed:menu": "nest build && node --env-file=.env ./dist/cli/seed-menu.js",
+    "seed:demo-history": "nest build && node --env-file=.env ./dist/cli/seed-demo-history.js",
     "openapi:export": "pnpm --filter @bar/contracts build && nest build && node --experimental-strip-types ./scripts/openapi-export.ts",
     "openapi:check": "pnpm openapi:export && git diff --exit-code -- ../../docs/api/openapi.json"
   },
