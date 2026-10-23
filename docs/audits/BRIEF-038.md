@@ -74,3 +74,20 @@ Recorded by Cowork on Field's explicit instruction. All three are **new work out
 
 Timing (Field, same session): F1 name snapshot runs **before 8 Nov**, right after BRIEF-039. F2 table scope: open (pros / cons sent to Field).
 F2 table scope (Field, same session): **Option 2 — all audited tables.** One shared `BEFORE UPDATE` trigger on every table with `updated_at`, monotonic: `GREATEST(now(), OLD.updated_at + interval '1 millisecond')`; the app-side `clock.now()` stamp in the menu PATCH is removed. Services that return `updatedAt` from a saved entity must re-read it. → DR-023.
+
+## Re-check — 2026-10-23 (Cowork) · `510b625` (§7 compact re-check after a post-PASS change)
+**Trigger:** `ci` failed on the PASS head `64b22e6` (attempt 2); the executor added a test-only fix commit on top.
+
+| Check | Result |
+|---|---|
+| `64b22e6` (PASS commit) | evidence only — this audit (committed unchanged, incl. Field's decisions), handoff status / outcome, KJ state; no code |
+| `510b625` diff | `test/menu-write.e2e-spec.ts` only, 1 assertion: ordered `toEqual` → `arrayContaining` + `toHaveLength(2)`. Still proves both old lines keep their name + snapshot price (180 / 260) and nothing else is there. No app code, contract, schema or dependency change |
+| Root cause | real and pre-existing: `order.typeorm-repository.ts:103` orders lines `ORDER BY o.created_at, t.created_at, i.created_at`; lines inserted in one transaction share `now()`, so their order is undefined |
+
+**Result: PASS** (unchanged). New audited S = `510b625`.
+
+**Finding 6 — Suggestion (next order brief), Low:** the same tie means lines placed together can swap places between reads on the POS drawer / orders board / tickets. **Current:** no tie-breaker. **Updated:** a stable insertion order — e.g. a `line_no` on `order_item` set at order time — added in the F1 name-snapshot brief (DR-022), which already changes `order_item` and the order read. Not part of BRIEF-038.
+
+**Info:** the handoff "Audit outcome" places F2 in BRIEF-039; Field chose the scope (all audited tables) but not yet the brief or timing — Cowork proposed its own brief. Settled when DR-023 is drafted; no change needed on this branch.
+
+**Next command:** `execute BRIEF-038` — commit this re-check unchanged as the new H (`docs(BRIEF-038): audit re-check 510b625`), push, merge once `ci` is green on that H (Field's own PR; S..H evidence-only).
