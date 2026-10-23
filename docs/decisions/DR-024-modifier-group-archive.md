@@ -22,7 +22,7 @@ B, as Field directed — the list stays clean and nothing that past orders point
 
 ## If Approved — Locks
 - `modifier_group.is_active BOOLEAN NOT NULL DEFAULT TRUE` (one migration; existing rows → true).
-- `DELETE /menu/modifier-groups/:id`: still linked to any variant → 409 `MODIFIER_GROUP_IN_USE`; otherwise **archive** (`is_active = false`) — never a hard delete, whether or not it was ever ordered. Archiving an archived or unknown group → 404.
+- `DELETE /menu/modifier-groups/:id`: still linked through an **active** variant (`menu_item_variant.is_available`) → 409 `MODIFIER_GROUP_IN_USE` (links on deactivated variants are ignored and kept); otherwise **archive** (`is_active = false`) — never a hard delete, whether or not it was ever ordered. Archiving an archived or unknown group → 404.
 - Archived groups: not in `GET /menu/modifier-groups`; can't be linked by item writes (BRIEF-038 `POST` / `PATCH /menu/items` → 400, same as an unknown group).
 - No race between linking and archiving: item writes hold the listed groups `FOR KEY SHARE` and require `is_active`; archive holds the group `FOR UPDATE` and then counts links.
 - Restoring an archived group is not in S1 (create a new one).
@@ -34,3 +34,4 @@ B, as Field directed — the list stays clean and nothing that past orders point
 **Decision:** Approved: B (archive — `modifier_group.is_active`; DELETE archives an unlinked group, never a hard delete; linking guard; no restore in S1)
 **Why:** Keeps the add-on list clean without removing anything past orders point at.
 **Date:** 2026-10-23 · recorded by Cowork on Field's explicit instruction (session: "approve DR-024, approve BRIEF-044 Rev 1 Ready")
+**Amended:** 2026-10-23 (BRIEF-044 audit F2): "linked" = through an active variant; links on deactivated variants are ignored and kept — recorded by Cowork on Field's explicit instruction (session: "approve DR-024 amendment").
