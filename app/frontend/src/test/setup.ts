@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { resetApiSession } from "../lib/api/client";
 import { resetFloor } from "../mocks/handlers";
+import { resetMenu } from "../mocks/menu";
 import { server } from "../mocks/node";
 
 if (!globalThis.ResizeObserver) {
@@ -39,6 +40,7 @@ afterEach(() => {
   server.resetHandlers();
   resetApiSession();
   resetFloor();
+  resetMenu();
 });
 
 afterAll(() => {
