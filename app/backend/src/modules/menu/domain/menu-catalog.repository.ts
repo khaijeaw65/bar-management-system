@@ -18,7 +18,8 @@ export interface MenuCatalogRepository {
   shareItems(variantIds: readonly string[]): Promise<ReadonlyMap<string, boolean>>;
   /** Locks one item `FOR UPDATE`. Null when the id does not exist. */
   lockItem(id: string): Promise<MenuItemRecord | null>;
-  saveAvailability(id: string, available: boolean): Promise<void>;
+  /** Returns the `updated_at` the database stamped on the item (DR-023). */
+  saveAvailability(id: string, available: boolean): Promise<Date>;
 }
 
 export const MENU_CATALOG_REPOSITORY = Symbol('MENU_CATALOG_REPOSITORY');

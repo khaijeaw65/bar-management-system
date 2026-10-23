@@ -41,7 +41,8 @@ export interface VenueRepository {
   lockTheVenue(): Promise<LockedVenue | null>;
   lockTheVenueShared(): Promise<LockedVenue | null>;
   lockTheVenueSettings(): Promise<LockedVenueSettings | null>;
-  saveSettings(id: string, patch: VenueSettingsPatch): Promise<void>;
+  /** Returns the `updated_at` the database stamped on the row. */
+  saveSettings(id: string, patch: VenueSettingsPatch): Promise<Date>;
   savePromptPay(id: string, stored: StoredPromptPay): Promise<void>;
 }
 

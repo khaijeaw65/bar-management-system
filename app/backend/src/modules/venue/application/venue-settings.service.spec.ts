@@ -7,6 +7,8 @@ import type { LockedVenueSettings, VenueRecord, VenueRepository } from '../domai
 import { VenueSettingsService } from './venue-settings.service.js';
 
 const NOW = new Date('2026-10-22T16:00:00.000Z');
+// What the database stamped on the save — not the service clock (DR-023).
+const STORED_AT = new Date('2026-10-22T16:00:00.250Z');
 
 const LOCKED: LockedVenueSettings = {
   id: '11111111-1111-4111-8111-111111111111',
@@ -67,6 +69,7 @@ describe('VenueSettingsService cut-off grace', () => {
     commitFails = false;
     venues.lockTheVenueSettings.mockResolvedValue({ ...LOCKED });
     venues.findTheVenue.mockResolvedValue({ ...RECORD });
+    venues.saveSettings.mockResolvedValue(STORED_AT);
   });
 
   it('records the replaced cut-off once the save commits', async () => {
@@ -75,6 +78,15 @@ describe('VenueSettingsService cut-off grace', () => {
 
     expect((await settings.businessDayRule()).previous).toEqual({ cutoff: '06:00', changedAt: NOW });
     expect(notifications.emitToStaff).toHaveBeenCalledWith(VENUE_SETTINGS_CHANGED, expect.anything());
+  });
+
+  it('broadcasts the updated_at the database stamped, not the service clock (DR-023)', async () => {
+    await service().updateSettings({ kitchenDisplayEnabled: true });
+
+    expect(notifications.emitToStaff).toHaveBeenCalledWith(VENUE_SETTINGS_CHANGED, {
+      settings: expect.anything(),
+      updatedAt: STORED_AT.toISOString(),
+    });
   });
 
   it('leaves the grace and the broadcast untouched when the commit fails', async () => {

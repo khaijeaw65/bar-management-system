@@ -49,11 +49,14 @@ export class VenueTypeormRepository implements VenueRepository {
     };
   }
 
-  public async saveSettings(id: string, patch: VenueSettingsPatch): Promise<void> {
+  public async saveSettings(id: string, patch: VenueSettingsPatch): Promise<Date> {
     const venue = await this.venues.findOneBy({ id });
     if (!venue) throw new Error('venue row missing');
     Object.assign(venue, patch);
+    // Re-read: the trigger sets updated_at (DR-023), so the saved entity's copy is not the stored value.
     await this.venues.save(venue);
+    const stored = await this.venues.findOneByOrFail({ id });
+    return stored.updatedAt;
   }
 
   public async savePromptPay(id: string, stored: StoredPromptPay): Promise<void> {

@@ -44,14 +44,14 @@ export interface MenuWriteRepository {
   lockItem(id: string): Promise<LockedMenuItem | null>;
   /**
    * Saves the item and its variant set: listed ids are updated and re-activated, new ones inserted,
-   * the rest deactivated. Links of every active variant become `groupIds`.
+   * the rest deactivated. Links of every active variant become `groupIds`. The item row is always
+   * touched, so a variant-only or link-only edit still moves its `updated_at` (DR-023).
    */
   updateItem(
     id: string,
     fields: MenuItemFields,
     variants: readonly MenuVariantInput[],
     groupIds: readonly string[],
-    touchedAt: Date,
   ): Promise<void>;
   insertCategory(name: string): Promise<MenuCategoryRecord>;
   saveCategory(id: string, patch: { name?: string; isActive?: boolean }): Promise<MenuCategoryRecord | null>;

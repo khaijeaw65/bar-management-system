@@ -22,7 +22,7 @@ const LIVE_STATES = ['open', 'active', 'idle'] as const;
 const LIVE_VISIT_INDEX = 'uq_visit_live_per_seat';
 const CLOSE_IF_LIVE = `
   UPDATE visit
-  SET state = 'closed', closed_at = now(), updated_at = now()
+  SET state = 'closed', closed_at = now()
   WHERE id = $1 AND state IN ('open', 'active', 'idle')
   RETURNING id, table_seat_id, state, opened_at, closed_at,
             guest_label, opened_by, opened_via
@@ -33,7 +33,7 @@ const LOCK_VISIT = `
   FROM visit WHERE id = $1 FOR UPDATE
 `;
 const ACTIVATE_VISIT = `
-  UPDATE visit SET state = 'active', updated_at = now()
+  UPDATE visit SET state = 'active'
   WHERE id = $1 AND state IN ('open', 'idle')
   RETURNING id, table_seat_id, state, opened_at, closed_at, guest_label, opened_by, opened_via
 `;
