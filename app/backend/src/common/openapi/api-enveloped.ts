@@ -2,6 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -40,6 +41,18 @@ export function ApiEnvelopedOk(
 ): ClassDecorator & MethodDecorator {
   return applyDecorators(
     ApiOkResponse({
+      description: 'Standard success envelope',
+      schema: zodToOpenApi(apiResponseSchema(data)),
+    }),
+    ApiStandardErrors(),
+  );
+}
+
+export function ApiEnvelopedCreated(
+  data: z.ZodType,
+): ClassDecorator & MethodDecorator {
+  return applyDecorators(
+    ApiCreatedResponse({
       description: 'Standard success envelope',
       schema: zodToOpenApi(apiResponseSchema(data)),
     }),

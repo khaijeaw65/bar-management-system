@@ -6,6 +6,8 @@ import { AuthService } from '../dist/modules/auth/application/auth.service.js';
 import { HealthController } from '../dist/modules/health/health.controller.js';
 import { HealthService } from '../dist/modules/health/health.service.js';
 import { MenuCatalogService } from '../dist/modules/menu/application/menu-catalog.service.js';
+import { MenuWriteService } from '../dist/modules/menu/application/menu-write.service.js';
+import { MenuItemWriteController } from '../dist/modules/menu/infrastructure/http/menu-item-write.controller.js';
 import { MenuController } from '../dist/modules/menu/infrastructure/http/menu.controller.js';
 import { IdempotencyService } from '../dist/common/idempotency/idempotency.service.js';
 import { OrderQueryService } from '../dist/modules/order/application/order-query.service.js';
@@ -39,6 +41,7 @@ const documentedControllers = [
   VisitsController,
   VenueController,
   MenuController,
+  MenuItemWriteController,
   OrdersController,
   TicketsController,
   MenuAvailabilityController,
@@ -59,6 +62,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: VisitService, useValue: {} },
       { provide: VenueSettingsService, useValue: {} },
       { provide: MenuCatalogService, useValue: {} },
+      { provide: MenuWriteService, useValue: {} },
       { provide: OrderService, useValue: {} },
       { provide: OrderQueryService, useValue: {} },
       { provide: TicketService, useValue: {} },

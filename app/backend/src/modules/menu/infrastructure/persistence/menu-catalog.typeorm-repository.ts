@@ -240,6 +240,7 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
       isAvailable: item.isAvailable,
       isPromo: item.isPromo,
       sortOrder: item.sortOrder,
+      updatedAt: item.updatedAt,
       windows: windows.map((window) => this.toWindow(window)),
       variants: variants
         .map((variant) => this.toVariant(variant, groups.get(variant.id) ?? []))

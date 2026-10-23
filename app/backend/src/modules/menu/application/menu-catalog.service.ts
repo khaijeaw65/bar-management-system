@@ -169,6 +169,7 @@ export class MenuCatalogService {
         isAvailable: variant.isAvailable,
         modifierGroups: variant.modifierGroups.map((group) => this.toGroup(group)),
       })),
+      updatedAt: record.updatedAt.toISOString(),
     };
   }
 

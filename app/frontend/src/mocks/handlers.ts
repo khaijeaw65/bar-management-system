@@ -33,6 +33,7 @@ function item(
     availableNow: true,
     unavailableReason: null,
     windows: [],
+    updatedAt: "2026-10-01T00:00:00.000Z",
     variants: [
       {
         id: overrides.id,

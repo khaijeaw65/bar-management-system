@@ -20,6 +20,7 @@ function record(overrides: Partial<MenuItemRecord> = {}): MenuItemRecord {
     isAvailable: true,
     isPromo: false,
     sortOrder: 1,
+    updatedAt: NOON,
     windows: [],
     variants: [
       {

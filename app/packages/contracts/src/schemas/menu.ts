@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { apiResponseSchema, MoneySchema, UuidSchema } from './common.js';
+import { apiResponseSchema, IsoDateTimeSchema, MoneySchema, UuidSchema } from './common.js';
 import { ItemTypeSchema, KitchenStationSchema, OrderStatusSchema } from './enums.js';
 
 export const UnavailableReasonSchema = z.enum(['sold_out', 'out_of_window']);
@@ -55,6 +55,8 @@ export const MenuItemSchema = z.object({
   unavailableReason: UnavailableReasonSchema.nullable(),
   windows: z.array(MenuWindowSchema),
   variants: z.array(MenuItemVariantSchema),
+  // Sent back on PATCH /menu/items/:id; an older value → 409 MENU_ITEM_STALE (BRIEF-038 Q1).
+  updatedAt: IsoDateTimeSchema,
 });
 export type MenuItem = z.infer<typeof MenuItemSchema>;
 

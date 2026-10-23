@@ -42,6 +42,7 @@ export interface MenuItemRecord {
   isAvailable: boolean;
   isPromo: boolean;
   sortOrder: number;
+  updatedAt: Date;
   windows: MenuWindowRecord[];
   variants: MenuVariantRecord[];
 }

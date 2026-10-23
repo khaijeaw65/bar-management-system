@@ -66,7 +66,7 @@ Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_
 
 ### Realtime (socket.io)
 - Namespaces: `/staff` (auth = same access token), `/customer` (visit session).
-- Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `notification.created`. `order.created`, `ticket.status_changed`, and `ticket.issue_escalated` go to room `staff`. `visit.*` stays on room `pos`.
+- Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`, `notification.created`. `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, and `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu) go to room `staff`. `visit.*` stays on room `pos`.
 - Payload = the **same contracts schema** as the REST resource (or a documented slice). Events notify; clients refetch via React Query when unsure (no event-sourced client state).
 - Event schemas live in `contracts/src/events/<domain>.ts`.
 
@@ -114,7 +114,12 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | GET | `/api/menu/items` | list for POS/staff (`?categoryId`, `?available`) | `menu:read` |
 | GET | `/api/menu/items/:id` | detail incl. variants + modifier groups | `menu:read` |
 | POST | `/api/menu/items/:id/mark-unavailable` · `/mark-available` | 86 / un-86. Unavailable auto-voids that item's lines on `pending` tickets (`ของหมด`, system), skips a visit with a pending payment and any ticket already started, and cancels a ticket left with no active line. Already in that state is a no-op. Available only flips the flag. | `menu:toggle_availability` |
-| POST/PATCH | `/api/menu/items` · `/api/menu/items/:id` | create / edit (CD-04) | `menu:write` |
+| POST | `/api/menu/items` | create `{ categoryId, name, description?, itemType: simple \| charge, station: bar \| food \| null, isPromo, variants: [{ name, price }] (≥ 1), modifierGroupIds? }` → `MenuItem` (201). `station` required unless `charge`, null for `charge` (DR-012); `recipe` → 400 in S1. Price = money string ≥ `0.00`. The same groups link to every variant. `basePrice` = lowest variant price. Optional `Idempotency-Key` (DR-017) | `menu:write` |
+| PATCH | `/api/menu/items/:id` | whole form + `updatedAt` from the item you loaded → `MenuItem`. Older `updatedAt` → 409 `MENU_ITEM_STALE`, `data.details` = the item as stored now. `variants: [{ id?, name, price }]` is the new active set: listed ids updated (and re-activated), new ones added, missing ones deactivated (`isAvailable: false`, never deleted — old order lines keep them; new orders get `ITEM_UNAVAILABLE`). `modifierGroupIds` omitted → current links kept. Order lines keep `unit_price_snapshot`. A mark-(un)available also moves `updatedAt` | `menu:write` |
+| POST | `/api/menu/categories` | `{ name }` → `MenuCategory` (201), last in order | `menu:write` |
+| PATCH | `/api/menu/categories/:id` | `{ name?, isActive? }` → `MenuCategory`. `isActive: false` hides the category and its items on every menu surface | `menu:write` |
+| PUT | `/api/menu/categories/order` | `{ ids }` — every visible category once (hidden ones may be left out and go last) → `MenuCategoryList` | `menu:write` |
+| DELETE | `/api/menu/categories/:id` | → `{ ok: true }`. 409 `CATEGORY_NOT_EMPTY` while it holds any item (hide it instead) | `menu:write` |
 | GET | `/api/public/menu` | customer QR menu (available only) | visit session |
 
 ### Tables & visits
