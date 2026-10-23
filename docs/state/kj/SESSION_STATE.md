@@ -3,7 +3,7 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-040 menu editor UI **Implemented** on `feat/BRIEF-040-menu-editor-ui` — gates green; **real-API run proof open** (needs Field's LINE sign-in on :3000). Then `audit BRIEF-040` (Cowork).
+BRIEF-040 menu editor UI **Implemented** on `feat/BRIEF-040-menu-editor-ui` — gates + real-API run proof done. Next: `audit BRIEF-040` (Cowork).
 
 ## Active
 - Brief: BRIEF-040 Rev 1 · Stage: Implemented (no PR) · Branch: `feat/BRIEF-040-menu-editor-ui` (seed `2ee875c`) · handoff `docs/handoffs/BRIEF-040.md`

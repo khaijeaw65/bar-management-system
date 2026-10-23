@@ -26,7 +26,7 @@
 | AC-5 | ✅ | `MenuEditor.test.tsx` validation + charge |
 | AC-6 | ✅ | `MenuEditor.test.tsx` leave |
 | AC-7 | ✅ | `hooks/useMenuLive.test.ts` (fake socket) |
-| AC-8 | ⚠️ | gates ✅; real-API run proof not done |
+| AC-8 | ✅ | gates ✅; run proof on the real API below |
 
 ## Gate Evidence (G1)
 Run on the working tree after the last code change (before the handoff commit):
@@ -38,6 +38,14 @@ Run on the working tree after the last code change (before the handoff commit):
 | `pnpm --filter @bar/frontend test` | 0 | 151 passed (31 files) |
 | `pnpm --filter @bar/frontend test:e2e` | 0 | 17 passed |
 | `pnpm --filter @bar/frontend build` | 0 | pass (`/pos/menu/new`, `/pos/menu/[id]` listed) |
+
+## Run proof
+Real API (`:3001`) + `next dev :3000` (web-real) on the work tree, Field signed in via LINE; browser viewport 1280×900. Steps in the in-app browser:
+1. `/pos/menu/new`: จินโทนิค, ไฮบอล, บาร์, ปกติ 220 + ดับเบิล 320, add-on "น้ำแข็ง" → บันทึก → `POST /menu/items` **201** → toast, redirect to `/pos/menu?highlight=<id>`, row in the list.
+2. Tab B (same item) saves ปกติ 220 → 230; tab A (old copy) sets ปกติ 250 and saves → `PATCH` **409** → "เมนูนี้ถูกแก้โดยคนอื่น" Alert, typed 250 kept; "โหลดฉบับล่าสุด" → 230.00 / 320.00.
+3. Rename ดับเบิล → ดับเบิ้ล and 320 → 340 → บันทึก → rename dialog "ตัวเลือก: ดับเบิล → ดับเบิ้ล"; ยืนยัน → `PATCH` **200**.
+4. Order entry for T1 in a third tab that was never reloaded: the item sheet shows "ดับเบิ้ล ฿340.00" (refetch from `menu.changed`; two `GET /menu/items` seen in that tab).
+Not captured as files: screenshots were taken in the session only. The test item "จินโทนิค" (ไฮบอล) is left in the local dev DB `bar`.
 
 ## Sonar
 Gate ERROR (as on main): `new_coverage` 0 % (no coverage path yet) and 17 issues, none in this brief's files. First scan flagged 2 S6819 (`role="group"`) in `MenuToolbar` / `AddOnsSection` → fixed with `<fieldset>` + `<legend>`; re-scan: HIGH 5 · MEDIUM 5 · LOW 6 · INFO 1, all in `test/setup.ts` and backend files that existed before.
@@ -51,5 +59,4 @@ Gate ERROR (as on main): `new_coverage` 0 % (no coverage path yet) and 17 issues
 - `.env.local` lacks `NEXT_PUBLIC_API_MOCKING` (setup gap, name only).
 
 ## Limitations
-- **Run proof (real API) not done:** the web app needs a LINE sign-in and there is no dev login; I did not mint a session by script. Needs Field to sign in on `http://localhost:3000` (web-real), then run the brief's steps (create จินโทนิค → second tab price change → stale → rename confirm → order entry without reload) with screenshots.
 - Photo (041), categories / add-on screens (045), phone layout, permission gating: out of scope.
