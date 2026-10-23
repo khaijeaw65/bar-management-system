@@ -5,6 +5,8 @@ export type DemoRandom = () => number;
 
 export interface DemoVariant {
   id: string;
+  itemName: string;
+  variantName: string;
   price: string;
   station: KitchenStation;
 }
@@ -74,6 +76,7 @@ export interface DemoTicketWrite extends DemoOrderWrite {
 
 export interface DemoItemContext {
   ticketId: string;
+  lineNo: number;
   staffId: string;
   at: Date;
 }

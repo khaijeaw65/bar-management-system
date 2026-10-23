@@ -36,6 +36,8 @@ export interface MenuItemRecord {
   categoryActive: boolean;
   name: string;
   description: string | null;
+  /** S3 object key (`menu/<itemId>/…`); the catalog turns it into a presigned URL. */
+  imageKey: string | null;
   basePrice: string;
   itemType: ItemType;
   kitchenTag: KitchenStation | null;
@@ -51,4 +53,5 @@ export interface MenuCategoryRecord {
   id: string;
   name: string;
   sortOrder: number;
+  isActive: boolean;
 }

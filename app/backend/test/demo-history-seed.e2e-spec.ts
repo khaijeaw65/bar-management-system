@@ -17,6 +17,9 @@ import { clearStaffAndVenue, insertStaff } from './staff-session.js';
 // 02:00 Bangkok on 23 Oct → business date 22 Oct (cut-off 06:00) → history 22 Sep – 21 Oct.
 const NOW = new Date('2026-10-23T02:00:00+07:00');
 
+// A slow CI runner took 99 s for the e2e step vs 42 s normally; the default 30 s fired mid-seed.
+const FULL_SEED_TIMEOUT_MS = 120_000;
+
 describe('seed:demo-history (e2e, AC-6)', () => {
   let app: INestApplication;
   let dataSource: DataSource;
@@ -51,12 +54,13 @@ describe('seed:demo-history (e2e, AC-6)', () => {
     expect(await busiestWeekdays()).toEqual(expect.arrayContaining([5, 6]));
     expect(await unaudited()).toBe(0);
     const methods = await dataSource.query(
-      `SELECT confirmed_via, count(*)::int AS count FROM payment GROUP BY 1 ORDER BY 1::text`,
+      `SELECT confirmed_via, count(*)::int AS count FROM payment GROUP BY 1 ORDER BY confirmed_via::text`,
     );
     expect(methods.map((row: { confirmed_via: string }) => row.confirmed_via)).toEqual(['cash', 'manual', 'slip_verify']);
     const [cancelled] = await dataSource.query(`SELECT count(*)::int AS count FROM order_item WHERE cancelled_at IS NOT NULL`);
     expect(cancelled.count).toBeGreaterThanOrEqual(30);
-  });
+    expect(await gappedOrders()).toBe(0);
+  }, FULL_SEED_TIMEOUT_MS);
 
   it('a re-run replaces only its own rows, with the same counts', async () => {
     const first = await countDemoHistory(dataSource);
@@ -74,7 +78,7 @@ describe('seed:demo-history (e2e, AC-6)', () => {
       DEMO_HISTORY_TAG,
     ]);
     expect(tagged.count).toBe(first.visits);
-  });
+  }, FULL_SEED_TIMEOUT_MS);
 
   it('refuses NODE_ENV=production', () => {
     expect(() => assertDemoSeedAllowed('production')).toThrow(/refuses to run with NODE_ENV=production/);
@@ -97,5 +101,18 @@ describe('seed:demo-history (e2e, AC-6)', () => {
       [staffId],
     );
     return Number(row.count);
+  }
+
+  /** Orders whose line numbers are not exactly 1 … n. */
+  async function gappedOrders(): Promise<number> {
+    const [row] = await dataSource.query(
+      `SELECT count(*)::int AS count FROM (
+         SELECT t.order_id
+         FROM order_item i JOIN order_ticket t ON t.id = i.ticket_id
+         GROUP BY t.order_id
+         HAVING max(i.line_no) <> count(*) OR count(DISTINCT i.line_no) <> count(*)
+       ) gapped`,
+    );
+    return row.count;
   }
 });

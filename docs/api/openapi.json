@@ -272,9 +272,7 @@
                         "type": "string"
                       },
                       "imageUrl": {
-                        "enum": [
-                          null
-                        ],
+                        "format": "uri",
                         "nullable": true,
                         "type": "string"
                       },
@@ -1417,9 +1415,23 @@
     },
     "/api/menu/categories": {
       "get": {
-        "description": "Permission: menu:read. Access token from the access_token cookie, or Authorization: Bearer.",
+        "description": "Permission: menu:read. Access token from the access_token cookie, or Authorization: Bearer. `?includeHidden=true` also lists hidden categories (`isActive: false`) for the back office.",
         "operationId": "MenuController_listCategories",
-        "parameters": [],
+        "parameters": [
+          {
+            "description": "When true, hidden categories too",
+            "in": "query",
+            "name": "includeHidden",
+            "required": false,
+            "schema": {
+              "enum": [
+                "true",
+                "false"
+              ],
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -1445,6 +1457,9 @@
                                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                                 "type": "string"
                               },
+                              "isActive": {
+                                "type": "boolean"
+                              },
                               "name": {
                                 "type": "string"
                               },
@@ -1457,7 +1472,8 @@
                             "required": [
                               "id",
                               "name",
-                              "sortOrder"
+                              "sortOrder",
+                              "isActive"
                             ],
                             "type": "object"
                           },
@@ -1595,6 +1611,9 @@
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string"
                         },
+                        "isActive": {
+                          "type": "boolean"
+                        },
                         "name": {
                           "type": "string"
                         },
@@ -1607,7 +1626,8 @@
                       "required": [
                         "id",
                         "name",
-                        "sortOrder"
+                        "sortOrder",
+                        "isActive"
                       ],
                       "type": "object"
                     },
@@ -1748,6 +1768,9 @@
                                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                                 "type": "string"
                               },
+                              "isActive": {
+                                "type": "boolean"
+                              },
                               "name": {
                                 "type": "string"
                               },
@@ -1760,7 +1783,8 @@
                             "required": [
                               "id",
                               "name",
-                              "sortOrder"
+                              "sortOrder",
+                              "isActive"
                             ],
                             "type": "object"
                           },
@@ -2034,6 +2058,9 @@
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string"
                         },
+                        "isActive": {
+                          "type": "boolean"
+                        },
                         "name": {
                           "type": "string"
                         },
@@ -2046,7 +2073,8 @@
                       "required": [
                         "id",
                         "name",
-                        "sortOrder"
+                        "sortOrder",
+                        "isActive"
                       ],
                       "type": "object"
                     },
@@ -2133,9 +2161,22 @@
     },
     "/api/menu/items": {
       "get": {
-        "description": "Permission: menu:read. Access token from the access_token cookie, or Authorization: Bearer.",
+        "description": "Permission: menu:read. Access token from the access_token cookie, or Authorization: Bearer. `imageUrl` is a presigned URL valid for 1 hour. `?includeHidden=true` also lists the items of hidden categories (`availableNow: false`).",
         "operationId": "MenuController_listItems",
         "parameters": [
+          {
+            "description": "When true, items of hidden categories too",
+            "in": "query",
+            "name": "includeHidden",
+            "required": false,
+            "schema": {
+              "enum": [
+                "true",
+                "false"
+              ],
+              "type": "string"
+            }
+          },
           {
             "description": "When true, only items available now",
             "in": "query",
@@ -2201,9 +2242,7 @@
                                 "type": "string"
                               },
                               "imageUrl": {
-                                "enum": [
-                                  null
-                                ],
+                                "format": "uri",
                                 "nullable": true,
                                 "type": "string"
                               },
@@ -2485,7 +2524,7 @@
         ]
       },
       "post": {
-        "description": "Permission: menu:write. Access token from the access_token cookie, or Authorization: Bearer. Optional Idempotency-Key (DR-017): a replay returns the same item.",
+        "description": "Permission: menu:write. Access token from the access_token cookie, or Authorization: Bearer. Optional Idempotency-Key (DR-017): a replay returns the same item. `imageKey`: a `tmp/…` key from image-upload-url attaches the photo (null / omitted = none).",
         "operationId": "MenuItemWriteController_create",
         "parameters": [
           {
@@ -2512,6 +2551,11 @@
                   },
                   "description": {
                     "maxLength": 1000,
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "imageKey": {
+                    "maxLength": 500,
                     "nullable": true,
                     "type": "string"
                   },
@@ -2630,9 +2674,7 @@
                           "type": "string"
                         },
                         "imageUrl": {
-                          "enum": [
-                            null
-                          ],
+                          "format": "uri",
                           "nullable": true,
                           "type": "string"
                         },
@@ -2906,6 +2948,159 @@
         ]
       }
     },
+    "/api/menu/items/image-upload-url": {
+      "post": {
+        "description": "Permission: menu:write. Access token from the access_token cookie, or Authorization: Bearer. Valid 5 minutes. POST the form (`fields` first, then the file) to `url`; S3 itself rejects any other Content-Type and files over 5 MB. Then send the returned `key` as `imageKey` when saving the item.",
+        "operationId": "MenuItemWriteController_createImageUploadUrl",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "contentType": {
+                    "enum": [
+                      "image/jpeg",
+                      "image/png",
+                      "image/webp"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "contentType"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "expiresAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "fields": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
+                        "key": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "format": "uri",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "url",
+                        "fields",
+                        "key",
+                        "expiresAt"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Presigned POST for a menu photo",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
     "/api/menu/items/{id}": {
       "get": {
         "description": "Permission: menu:read. Access token from the access_token cookie, or Authorization: Bearer.",
@@ -2960,9 +3155,7 @@
                           "type": "string"
                         },
                         "imageUrl": {
-                          "enum": [
-                            null
-                          ],
+                          "format": "uri",
                           "nullable": true,
                           "type": "string"
                         },
@@ -3236,7 +3429,7 @@
         ]
       },
       "patch": {
-        "description": "Permission: menu:write. Access token from the access_token cookie, or Authorization: Bearer. Send the updatedAt you loaded; an older one → 409 MENU_ITEM_STALE with the current item. Variants are the new active set: listed ids are kept, new ones added, missing ones deactivated (never deleted). Existing order lines keep their snapshot price.",
+        "description": "Permission: menu:write. Access token from the access_token cookie, or Authorization: Bearer. Send the updatedAt you loaded; an older one → 409 MENU_ITEM_STALE with the current item. Variants are the new active set: listed ids are kept, new ones added, missing ones deactivated (never deleted). Existing order lines keep their snapshot price. `imageKey`: omitted keeps the photo, null removes it, a `tmp/…` key replaces it, the current key keeps it, anything else → 400.",
         "operationId": "MenuItemWriteController_update",
         "parameters": [
           {
@@ -3263,6 +3456,11 @@
                   },
                   "description": {
                     "maxLength": 1000,
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "imageKey": {
+                    "maxLength": 500,
                     "nullable": true,
                     "type": "string"
                   },
@@ -3387,9 +3585,7 @@
                           "type": "string"
                         },
                         "imageUrl": {
-                          "enum": [
-                            null
-                          ],
+                          "format": "uri",
                           "nullable": true,
                           "type": "string"
                         },
@@ -3767,9 +3963,7 @@
                               "type": "string"
                             },
                             "imageUrl": {
-                              "enum": [
-                                null
-                              ],
+                              "format": "uri",
                               "nullable": true,
                               "type": "string"
                             },
@@ -4198,9 +4392,7 @@
                               "type": "string"
                             },
                             "imageUrl": {
-                              "enum": [
-                                null
-                              ],
+                              "format": "uri",
                               "nullable": true,
                               "type": "string"
                             },

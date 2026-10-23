@@ -31,7 +31,7 @@ pnpm --filter @bar/backend seed:staff -- --line-user-id <LINE sub> --name "<disp
 
 Running it again for the same LINE user id prints `already registered`.
 
-`JWT_ACCESS_SECRET` must be at least 32 characters. `REDIS_URL`, `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET`, `LINE_CALLBACK_URL`, and `FRONTEND_URL` are required before the API will boot. Use the placeholders in `.env.example` for local development and replace the LINE values with the channel from the LINE console.
+`JWT_ACCESS_SECRET` must be at least 32 characters. `REDIS_URL`, `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET`, `LINE_CALLBACK_URL`, `FRONTEND_URL`, `AWS_REGION`, and `S3_BUCKET` are required before the API will boot (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` are optional, local dev only). Use the placeholders in `.env.example` for local development and replace the LINE values with the channel from the LINE console.
 
 ## Phone & webhooks via tunnel
 

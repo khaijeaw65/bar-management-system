@@ -231,8 +231,8 @@ describe('Reports (e2e)', () => {
     const pendingTicket = await ticket(first, 'bar', 'pending');
     const beer = await line(pendingTicket, 'beer', { quantity: 2, price: '120.00' });
     await dataSource.query(
-      `INSERT INTO order_item_modifier (order_item_id, modifier_option_id, price_delta_snapshot)
-       VALUES ($1, $2, 10.00)`,
+      `INSERT INTO order_item_modifier (order_item_id, modifier_option_id, option_name_snapshot, price_delta_snapshot)
+       VALUES ($1, $2, 'add-on', 10.00)`,
       [beer, await modifierOption()],
     );
     const second = await order(c1, '2026-10-15');
@@ -280,9 +280,9 @@ describe('Reports (e2e)', () => {
     values: { quantity: number; price: string; cancelled?: boolean },
   ): Promise<string> {
     const [row] = await dataSource.query(
-      `INSERT INTO order_item (ticket_id, menu_item_variant_id, quantity, unit_price_snapshot, cancelled_at)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [ticketId, menu[`${item}Variant`], values.quantity, values.price, values.cancelled ? NOW : null],
+      `INSERT INTO order_item (ticket_id, menu_item_variant_id, item_name_snapshot, variant_name_snapshot, line_no, quantity, unit_price_snapshot, cancelled_at)
+       VALUES ($1, $2, $6, 'ปกติ', 1, $3, $4, $5) RETURNING id`,
+      [ticketId, menu[`${item}Variant`], values.quantity, values.price, values.cancelled ? NOW : null, item],
     );
     return row.id;
   }

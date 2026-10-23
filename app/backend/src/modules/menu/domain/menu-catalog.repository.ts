@@ -4,9 +4,10 @@ import type {
 } from './menu.types.js';
 
 export interface MenuCatalogRepository {
-  listCategories(): Promise<MenuCategoryRecord[]>;
-  /** Active categories only, ordered by category then item sort_order. */
-  listItems(categoryId?: string): Promise<MenuItemRecord[]>;
+  /** Active categories; hidden ones too when `includeHidden`. */
+  listCategories(includeHidden?: boolean): Promise<MenuCategoryRecord[]>;
+  /** Ordered by category then item sort_order. Items of hidden categories only when `includeHidden`. */
+  listItems(categoryId?: string, includeHidden?: boolean): Promise<MenuItemRecord[]>;
   findItem(id: string): Promise<MenuItemRecord | null>;
   /** Items that own the requested variants. Variants are filtered to those ids. */
   findVariants(ids: readonly string[]): Promise<MenuItemRecord[]>;

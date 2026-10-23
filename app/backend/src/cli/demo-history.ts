@@ -78,7 +78,7 @@ async function loadCatalog(dataSource: DataSource): Promise<DemoCatalog> {
   const staff = await dataSource.query(`SELECT id FROM staff_user WHERE is_active ORDER BY created_at LIMIT 1`);
   const seats = await dataSource.query(`SELECT id FROM table_seat WHERE is_active ORDER BY sort_order, label`);
   const variants = await dataSource.query(
-    `SELECT v.id, v.price::text AS price, mi.kitchen_tag AS station
+    `SELECT v.id, mi.name AS "itemName", v.name AS "variantName", v.price::text AS price, mi.kitchen_tag AS station
      FROM menu_item_variant v
      JOIN menu_item mi ON mi.id = v.menu_item_id
      WHERE mi.item_type <> 'charge' AND mi.is_available AND v.is_available
@@ -160,7 +160,9 @@ async function writeTicket(manager: EntityManager, input: DemoTicketWrite): Prom
     sentAt: allCancelled ? null : new Date(at.getTime() + 8 * MINUTE_MS),
   });
   await manager.getRepository(OrderItem).save(
-    input.lines.map((line) => orderItem(line, { ticketId: ticket.id, staffId: input.staffId, at })),
+    input.lines.map((line) =>
+      orderItem(line, { ticketId: ticket.id, lineNo: input.order.lines.indexOf(line) + 1, staffId: input.staffId, at }),
+    ),
   );
 }
 
@@ -170,6 +172,9 @@ function orderItem(line: DemoLine, context: DemoItemContext): Partial<OrderItem>
     ...audited(context.staffId, context.at),
     ticketId: context.ticketId,
     menuItemVariantId: line.variant.id,
+    itemNameSnapshot: line.variant.itemName,
+    variantNameSnapshot: line.variant.variantName,
+    lineNo: context.lineNo,
     quantity: line.quantity,
     unitPriceSnapshot: line.variant.price,
     cancelledAt,
