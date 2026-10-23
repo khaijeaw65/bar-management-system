@@ -573,6 +573,10 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
       <div class="callout-body"><strong>order_item.unit_price_snapshot</strong> and <strong>order_item_modifier.price_delta_snapshot</strong> freeze prices at order time; <strong>item_name_snapshot</strong>, <strong>variant_name_snapshot</strong> and <strong>option_name_snapshot</strong> freeze names (DR-022). Menu price or name changes never retroactively alter a bill.</div>
     </div>
     <div class="callout">
+      <div class="callout-title">updated_at — Database-Owned</div>
+      <div class="callout-body">A <strong>BEFORE UPDATE</strong> trigger (<strong>set_updated_at()</strong>, DR-023) stamps <strong>updated_at</strong> on every table that has it — never earlier than the previous stamp + 1 ms. App code never writes it; new tables attach the trigger in their own migration.</div>
+    </div>
+    <div class="callout">
       <div class="callout-title">Audit Log — Append Only</div>
       <div class="callout-body">No UPDATE or DELETE ever touches <strong>audit_log</strong>. Voids, comps, and price changes leave a before/after jsonb payload trail. Pair with a DB trigger or TypeORM subscriber.</div>
     </div>
