@@ -3,10 +3,10 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-040 menu editor UI **Implemented** on `feat/BRIEF-040-menu-editor-ui` — gates + real-API run proof done. Next: `audit BRIEF-040` (Cowork).
+BRIEF-040 menu editor UI **Audit PASS** (Cowork, S `fbaee5b`) — PR opened with the PASS commit → merge on green `ci` (own PR, §7) → 041 photos / 045.
 
 ## Active
-- Brief: BRIEF-040 Rev 1 · Stage: Implemented (no PR) · Branch: `feat/BRIEF-040-menu-editor-ui` (seed `2ee875c`) · handoff `docs/handoffs/BRIEF-040.md`
+- Brief: BRIEF-040 Rev 1 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-040-menu-editor-ui` (seed `2ee875c`) · handoff `docs/handoffs/BRIEF-040.md`
 - Done 21–23 Oct: BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
 
 ## Next steps

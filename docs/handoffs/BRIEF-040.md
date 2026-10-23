@@ -5,7 +5,7 @@
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-23 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-040-menu-editor-ui` (seed `2ee875c`; no PR until audit PASS) |
+| **Branch** | `feat/BRIEF-040-menu-editor-ui` (seed `2ee875c`) · audited work SHA `fbaee5b` (first audit `3df722b`, Must fix #1 fixed in `fbaee5b`) |
 | **Assigned auditor** | Cowork |
 | **Status** | Implemented — **run proof on the real API still open** (see Limitations) |
 | **AI usage** | n/a (Field's brief, agent-written) |
@@ -46,6 +46,9 @@ Real API (`:3001`) + `next dev :3000` (web-real) on the work tree, Field signed 
 3. Rename ดับเบิล → ดับเบิ้ล and 320 → 340 → บันทึก → rename dialog "ตัวเลือก: ดับเบิล → ดับเบิ้ล"; ยืนยัน → `PATCH` **200**.
 4. Order entry for T1 in a third tab that was never reloaded: the item sheet shows "ดับเบิ้ล ฿340.00" (refetch from `menu.changed`; two `GET /menu/items` seen in that tab).
 Not captured as files: screenshots were taken in the session only. The test item "จินโทนิค" (ไฮบอล) is left in the local dev DB `bar`.
+
+## Audit round 1 fix
+Must fix #1: `draftOf` now keeps only `isAvailable` price options and takes add-on links from them, so saving never re-activates a removed option (also on the stale reload). Two tests added. Re-run on `fbaee5b`: lint, typecheck, build exit 0; unit 153 passed; e2e 17 passed (the first unit run had 2 load flakes, green on two re-runs). Run proof not repeated (test-covered change). Merged `main` (docs #88/#89) before this commit.
 
 ## Sonar
 Gate ERROR (as on main): `new_coverage` 0 % (no coverage path yet) and 17 issues, none in this brief's files. First scan flagged 2 S6819 (`role="group"`) in `MenuToolbar` / `AddOnsSection` → fixed with `<fieldset>` + `<legend>`; re-scan: HIGH 5 · MEDIUM 5 · LOW 6 · INFO 1, all in `test/setup.ts` and backend files that existed before.
