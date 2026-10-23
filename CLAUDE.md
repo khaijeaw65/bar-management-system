@@ -98,7 +98,7 @@ Full schema: `docs/schema.sql` | Visual ERD: `docs/erd.html`
 - `AuditSubscriber` is global — registered once in `AppModule`, not per module.
 - Services must use `save()` not `update()` on audited entities.
 - `audit_log` is append-only — never UPDATE or DELETE.
-- `order_item.unit_price_snapshot` frozen at order time — menu price changes never affect existing orders.
+- `order_item.unit_price_snapshot` + name snapshots (`item_name_snapshot`, `variant_name_snapshot`, `order_item_modifier.option_name_snapshot`) frozen at order time — menu price or name changes never affect existing orders (DR-022).
 - `gateway_tx_id` UNIQUE constraint = payment idempotency key.
 
 ---
