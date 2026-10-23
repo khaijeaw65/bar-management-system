@@ -42,10 +42,11 @@ test("marks เมนู active and links โต๊ะ to the floor", () => {
   const tables = screen.getByRole("link", { name: "โต๊ะ" });
   expect(tables).toHaveAttribute("href", "/pos/tables");
   expect(tables).not.toHaveAttribute("aria-current");
-  expect(screen.getAllByRole("link")).toHaveLength(3);
+  expect(screen.getAllByRole("link")).toHaveLength(4);
+  expect(screen.getByRole("link", { name: "ตั้งค่า" })).toHaveAttribute("href", "/pos/settings");
 
   const soon = screen.getAllByTitle("เร็ว ๆ นี้");
-  expect(soon.map((item) => item.textContent)).toEqual(labels.filter((label) => !["เมนู", "โต๊ะ", "ออเดอร์"].includes(label)));
+  expect(soon.map((item) => item.textContent)).toEqual(labels.filter((label) => !["เมนู", "โต๊ะ", "ออเดอร์", "ตั้งค่า"].includes(label)));
   for (const item of soon) {
     expect(item).toHaveAttribute("aria-disabled", "true");
     expect(item.tagName).toBe("SPAN");

@@ -2,8 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import type { EntityManager, Repository } from 'typeorm';
+import { hhmm } from '../../../../common/time-label.js';
 import type {
   LockedVenue,
+  LockedVenueSettings,
+  VenueSettingsPatch,
   StoredPromptPay,
   VenueRecord,
   VenueRepository,
@@ -34,6 +37,25 @@ export class VenueTypeormRepository implements VenueRepository {
     return this.lockBy(LOCK_VENUE_SHARE);
   }
 
+  public async lockTheVenueSettings(): Promise<LockedVenueSettings | null> {
+    const venue = await this.lockedRow(LOCK_VENUE);
+    if (!venue) return null;
+    return {
+      id: venue.id,
+      name: venue.name,
+      kitchenDisplayEnabled: venue.kitchenDisplayEnabled,
+      businessDayCutoff: hhmm(venue.businessDayCutoff),
+      counterQrEnabled: venue.counterQrEnabled,
+    };
+  }
+
+  public async saveSettings(id: string, patch: VenueSettingsPatch): Promise<void> {
+    const venue = await this.venues.findOneBy({ id });
+    if (!venue) throw new Error('venue row missing');
+    Object.assign(venue, patch);
+    await this.venues.save(venue);
+  }
+
   public async savePromptPay(id: string, stored: StoredPromptPay): Promise<void> {
     const venue = await this.venues.findOneBy({ id });
     if (!venue) throw new Error('venue row missing');
@@ -43,12 +65,15 @@ export class VenueTypeormRepository implements VenueRepository {
   }
 
   private async lockBy(sql: string): Promise<LockedVenue | null> {
+    const venue = await this.lockedRow(sql);
+    return venue ? this.toLocked(venue) : null;
+  }
+
+  private async lockedRow(sql: string): Promise<Venue | null> {
     const locked: unknown = await this.manager.query(sql);
     const id = this.firstId(locked);
     if (!id) return null;
-    const venue = await this.venues.findOneBy({ id });
-    if (!venue) return null;
-    return this.toLocked(venue);
+    return this.venues.findOneBy({ id });
   }
 
   private toRecord(venue: Venue): VenueRecord {

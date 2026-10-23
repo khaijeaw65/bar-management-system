@@ -14,7 +14,7 @@ import type { NewOrder, NewTicket, PricedLine, TicketBucket } from '../domain/or
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
 import { VisitService } from '../../venue/application/visit.service.js';
-import { businessDate } from './business-date.js';
+import { businessDateUnder } from './business-date.js';
 import { bucketFor, priceLines } from './order-lines.js';
 import type { PlaceOrderInput } from './order.types.js';
 import { OrderQueryService } from './order-query.service.js';
@@ -59,7 +59,7 @@ export class OrderService {
     now: Date,
   ): Promise<Omit<NewOrder, 'visitId'>> {
     const settings = await this.venues.get();
-    const date = businessDate(now, settings.businessDayCutoff);
+    const date = businessDateUnder(now, await this.venues.businessDayRule());
     return {
       orderNumber: await this.orders.nextNumber(date),
       businessDate: date,
