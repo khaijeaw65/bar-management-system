@@ -2,13 +2,13 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
-| **Implementer** | kj (executor agent) — same as BRIEF-040 Q1 |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-23 |
+| **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | frontend |
 | **Revision** | 1 |
-| **Depends on** | BRIEF-040 merged (editor) · BRIEF-039 ✅ (presign API) · **dev bucket `bar-app-dev`: CORS allows `POST` from `http://localhost:3000` + `tmp/` 1-day lifecycle (Field, AWS console)** |
+| **Depends on** | BRIEF-040 ✅ (#90) · BRIEF-039 ✅ (presign API) · **dev bucket `bar-app-dev`: CORS allows `POST` from `http://localhost:3000` + `tmp/` 1-day lifecycle (Field, AWS console) — set 2026-10-23** ✅ |
 | **References** | CD-12 editor·4 (upload states), §4 "Upload photo", §9 Photo, R7-2 · DR-020 (presigned POST, ≤ 5 MB, jpeg / png / webp) · contracts `IMAGE_MAX_BYTES`, `ImageUploadUrlSchema` |
 | **Audit depth** | Compact (UI; S3 enforces type + size) |
 | **Size** | ~1 day · est. ~400–500 net-new lines incl. tests |
@@ -74,13 +74,14 @@ Run proof (real API + `bar-app-dev`): upload a JPG in the editor → save → th
 ---
 
 ## Ready Checklist
-- [ ] Named implementer and auditor; scope/ACs/contracts/references complete
-- [ ] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
-- [ ] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
-- [ ] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Named implementer and auditor; scope/ACs/contracts/references complete
+- [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
+- [x] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
+- [x] No unresolved decision blocking the main outcome
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-23 | Initial Draft (Cowork) — menu UI part 2 (photo) |
+| 1 | 2026-10-23 | Ready — Field in session: "approve BRIEF-041 Rev 1 Ready" (bucket CORS + lifecycle set) |

@@ -1,17 +1,17 @@
 # State — KJ
-Updated: 2026-10-23 · Agent: Claude Code
+Updated: 2026-10-23 · Agent: Cowork (BRIEF-041 Ready seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-044 add-on groups CRUD **Audit PASS** (Cowork, S `b000e4e`) — PR opened with the PASS commit → merge on green `ci` (own PR, §7) → menu UI 040 / 041.
+BRIEF-041 **Ready** (menu photo upload + list thumbnails) on `feat/BRIEF-041-menu-photo-ui` → `execute BRIEF-041` (merge `main` first). Next: Cowork drafts BRIEF-045 (categories + add-on screens).
 
 ## Active
-- Brief: BRIEF-044 Rev 1 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-044-modifier-groups-api` (seed `10f801f`, from `b083e38`) · work `b000e4e` (Rev 2)
-- Done 21–23 Oct: BRIEF-043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
+- Brief: BRIEF-041 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-041-menu-photo-ui` (seed)
+- Done 21–23 Oct: BRIEF-040 (#90) · BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
 
 ## Next steps
-1. 044 PR → merge on green `ci` · then menu UI 040 (rename confirm Pre-decided, listen `menu.changed`) / 041 photos · Cowork: DR-023 rule line + `erd.html` diffs for Field
-2. Open from 038 audit: POS listen to `menu.changed` → UI brief · `?includeHidden` IAM later
+1. 040 Ready (Field 23 Oct) · 041: bucket CORS `POST` :3000 + `tmp/` 1-day lifecycle set (Field 23 Oct) · Cowork drafts 045 · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
+2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
@@ -36,5 +36,5 @@ BRIEF-044 add-on groups CRUD **Audit PASS** (Cowork, S `b000e4e`) — PR opened 
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-044 (PASS, PR) → menu UI 040 / 041
+1. BRIEF-040 (Ready) → 041 (Draft) → 045 categories + add-on screens (to draft) → phone 390 shell (after 8 Nov)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
