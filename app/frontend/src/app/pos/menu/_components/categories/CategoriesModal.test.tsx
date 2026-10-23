@@ -123,3 +123,11 @@ test("Enter then blur before the response sends exactly one PATCH", async () => 
   await screen.findByRole("button", { name: "แก้ชื่อ ของกิน" });
   expect(sent.filter((call) => call.method === "PATCH")).toHaveLength(1);
 });
+
+test("a click on the visible switch track toggles it once (HeroUI keeps the track outside the label)", async () => {
+  const user = userEvent.setup();
+  renderModal();
+  const input = await screen.findByRole("switch", { name: "แสดง อาหาร" });
+  await user.click(input.closest('[data-slot="switch"]')!.querySelector('[data-slot="switch-control"]')!);
+  await waitFor(() => expect(sent.filter((call) => call.method === "PATCH")).toEqual([expect.objectContaining({ body: { isActive: false } })]));
+});

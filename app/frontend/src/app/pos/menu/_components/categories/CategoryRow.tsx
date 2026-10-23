@@ -1,10 +1,11 @@
 "use client";
 
 import type { MenuCategory } from "@bar/contracts";
-import { Button, Label, Switch } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button as DragHandle } from "react-aria-components";
+import { MenuSwitch } from "../MenuSwitch";
 import { CategoryNameInput } from "./CategoryNameInput";
 
 export function CategoryRow({
@@ -57,14 +58,7 @@ export function CategoryRow({
           )}
         </div>
         <span className="text-small tabular-nums text-text-muted">{category.itemCount} เมนู</span>
-        <Switch isSelected={category.isActive} onChange={onActive}>
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Content>
-            <Label className="sr-only">แสดง {category.name}</Label>
-          </Switch.Content>
-        </Switch>
+        <MenuSwitch hideLabel label={`แสดง ${category.name}`} isSelected={category.isActive} onChange={onActive} />
         <Button isIconOnly size="sm" variant="ghost" aria-label={`ลบ ${category.name}`} isDisabled={blocked} onPress={onDelete}>
           <Trash2 size={16} aria-hidden />
         </Button>

@@ -46,7 +46,6 @@ export function CategoryNameInput({
         if (initial !== "") void submit();
       }}
       onKeyDown={(event) => {
-        event.stopPropagation();
         if (event.key === "Enter") void submit();
         if (event.key === "Escape") onCancel();
       }}

@@ -1,7 +1,8 @@
 "use client";
 
-import { Button, FieldError, Input, Label, Switch, TextField } from "@heroui/react";
+import { Button, FieldError, Input, TextField } from "@heroui/react";
 import { Plus, Trash2 } from "lucide-react";
+import { MenuSwitch } from "../../_components/MenuSwitch";
 import { optionNameKey, optionPriceKey, type GroupErrors, type OptionDraft } from "../_lib/group";
 
 function OptionRow({
@@ -23,14 +24,7 @@ function OptionRow({
         <Input placeholder="+฿" />
         {priceError ? <FieldError>{priceError}</FieldError> : null}
       </TextField>
-      <Switch className="mt-2" isSelected={option.on} onChange={(on) => onChange({ on })}>
-        <Switch.Control>
-          <Switch.Thumb />
-        </Switch.Control>
-        <Switch.Content>
-          <Label className="sr-only">ขาย {option.name || "ตัวเลือกใหม่"}</Label>
-        </Switch.Content>
-      </Switch>
+      <MenuSwitch className="mt-2" hideLabel label={`ขาย ${option.name || "ตัวเลือกใหม่"}`} isSelected={option.on} onChange={(on) => onChange({ on })} />
       {option.id ? null : (
         <Button isIconOnly variant="ghost" aria-label={`ลบตัวเลือก ${option.name || "ใหม่"}`} onPress={onRemove}>
           <Trash2 size={16} aria-hidden />

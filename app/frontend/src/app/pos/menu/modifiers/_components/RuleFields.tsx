@@ -1,6 +1,7 @@
 "use client";
 
-import { FieldError, Label, NumberField, Switch } from "@heroui/react";
+import { FieldError, Label, NumberField } from "@heroui/react";
+import { MenuSwitch } from "../../_components/MenuSwitch";
 import type { GroupDraft, GroupErrors } from "../_lib/group";
 
 function Count({
@@ -31,17 +32,11 @@ export function RuleFields({
 }: Readonly<{ draft: GroupDraft; errors: GroupErrors; onChange: (changes: Partial<GroupDraft>) => void }>) {
   return (
     <div className="flex flex-col gap-3">
-      <Switch
+      <MenuSwitch
+        label="ต้องเลือก"
         isSelected={draft.isRequired}
         onChange={(isRequired) => onChange({ isRequired, minSelect: isRequired ? Math.max(draft.minSelect, 1) : 0 })}
-      >
-        <Switch.Control>
-          <Switch.Thumb />
-        </Switch.Control>
-        <Switch.Content>
-          <Label>ต้องเลือก</Label>
-        </Switch.Content>
-      </Switch>
+      />
       <div className="flex gap-3">
         <Count label="ขั้นต่ำ" value={draft.isRequired ? draft.minSelect : 0} min={0} disabled={!draft.isRequired} error={errors.minSelect} onChange={(minSelect) => onChange({ minSelect })} />
         <Count label="สูงสุด" value={draft.maxSelect} min={1} error={errors.maxSelect} onChange={(maxSelect) => onChange({ maxSelect })} />
