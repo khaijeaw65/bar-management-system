@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-23 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -73,13 +73,14 @@ Run proof: on the dev DB (`bar`, with demo history + T1's จินโทนิ�
 ---
 
 ## Ready Checklist
-- [ ] Named implementer and auditor; scope/ACs/contracts/references complete
-- [ ] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
-- [ ] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
-- [ ] No unresolved decision blocking the main outcome (DR-022 Approved)
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Named implementer and auditor; scope/ACs/contracts/references complete
+- [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
+- [x] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
+- [x] No unresolved decision blocking the main outcome (DR-022 Approved)
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-23 | Initial Draft (Cowork) — BRIEF-038 audit F1 (Field: option B + UI confirm) + F6 line order |
+| 1 | 2026-10-23 | Ready — Field in session: "approve all" (DR-022 Approved) |

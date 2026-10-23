@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Cowork · 2026-10-23 (BRIEF-038 audit Finding 1) |
 | **Brief** | BRIEF-042 (backend) · BRIEF-040 (menu UI — rename confirm) |
 | **Category** | Data · Flow/Architecture |
@@ -32,6 +32,6 @@ B — same pattern as the price snapshot already in the schema, typed, and the r
 ---
 
 ## Decision — Field only
-**Decision:**
-**Why:**
-**Date:**
+**Decision:** Approved: B (snapshot columns + `order_item.line_no`, UI rename confirm in BRIEF-040)
+**Why:** Past orders, tickets and bills must read as they were placed; same pattern as the price snapshot.
+**Date:** 2026-10-23 · recorded by Cowork on Field's explicit instruction (session: "approve all" on DR-022, DR-023, BRIEF-039 Q1 = A + Ready, BRIEF-042 Ready, BRIEF-043 Ready)
