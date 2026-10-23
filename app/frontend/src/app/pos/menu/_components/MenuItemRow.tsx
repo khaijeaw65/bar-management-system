@@ -6,6 +6,7 @@ import { ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatTHB } from "@/lib/utils/format";
 import { lowestMoney } from "@/lib/utils/money";
+import type { SyntheticEvent } from "react";
 import { useAvailabilityToggle } from "../_hooks/useAvailabilityToggle";
 
 function priceLabel(item: MenuItem): string {
@@ -25,6 +26,10 @@ function toneOf(label: string): string {
   if (label === "นอกเวลาโปร") return "bg-warning-bg text-warning-fg";
   return "bg-status-served-bg text-status-served-fg";
 }
+
+// The row opens the editor on press (onAction); the Switch inside must not. React Aria rows listen to
+// pointer / mouse / click / key events, so they all stop here — the hidden input alone is not enough.
+const stop = (event: SyntheticEvent) => event.stopPropagation();
 
 function stationLabel(item: MenuItem): string {
   if (item.station === null) return "ไม่ส่งสถานี";
@@ -76,18 +81,34 @@ export function MenuItemRow({
       <Table.Cell className="text-text-accent tabular-nums">{priceLabel(item)}</Table.Cell>
       <Table.Cell>
         <div className="flex items-center gap-3">
-          <Switch
-            isSelected={toggle.available}
-            isDisabled={toggle.pending}
-            onChange={toggle.toggle}
+          <div
+            role="presentation"
+            onPointerDown={stop}
+            onPointerUp={stop}
+            onMouseDown={stop}
+            onMouseUp={stop}
+            onClick={(event) => {
+              event.stopPropagation();
+              // HeroUI's visible control sits outside the label, so a click on it reaches nothing but the row.
+              const onControl = (event.target as Element).closest('[data-slot="switch-control"]') !== null;
+              if (onControl && !toggle.pending) toggle.toggle(!toggle.available);
+            }}
+            onKeyDown={stop}
+            onKeyUp={stop}
           >
-            <Switch.Control>
-              <Switch.Thumb />
-            </Switch.Control>
-            <Switch.Content>
-              <Label className="sr-only">พร้อมขาย {item.name}</Label>
-            </Switch.Content>
-          </Switch>
+            <Switch
+              isSelected={toggle.available}
+              isDisabled={toggle.pending}
+              onChange={toggle.toggle}
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+              <Switch.Content>
+                <Label className="sr-only">พร้อมขาย {item.name}</Label>
+              </Switch.Content>
+            </Switch>
+          </div>
           <Chip size="sm" className={toneOf(label)}>
             {label}
           </Chip>
