@@ -3,10 +3,10 @@ Updated: 2026-10-23 · Agent: Cowork (BRIEF-045 Ready seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-045 **Implemented** (work `c99a1c2`, branch pushed, no PR) → `audit BRIEF-045` (Cowork) → `execute BRIEF-045` for the PASS commit + PR. Backend on :3001 is plain `node dist/main` of `c99a1c2`; stop it before `test:e2e`.
+BRIEF-045 audit round 1 fixed (work `419a159`, branch pushed, run proof done) → compact re-check by Cowork → `execute BRIEF-045` for the PASS commit + PR. Backend :3001 is plain `node dist/main`; `next dev` :3000 stopped (Playwright needs it free).
 
 ## Active
-- Brief: BRIEF-045 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-045-menu-categories-addons-ui` · handoff `docs/handoffs/BRIEF-045.md`
+- Brief: BRIEF-045 Rev 1 · Stage: Round 1 fixed · Branch: `feat/BRIEF-045-menu-categories-addons-ui` · handoff `docs/handoffs/BRIEF-045.md`
 - Done 21–23 Oct: BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps

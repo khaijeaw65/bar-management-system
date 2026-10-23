@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-045-menu-categories-addons-ui` (seed `64e82be`) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — work SHA `c99a1c2` (backend `7431d97` + UI `c99a1c2`), awaiting `audit BRIEF-045` |
+| **Status** | CHANGES REQUIRED round 1 fixed — new work SHA `419a159`, awaiting compact re-check |
 | **AI usage** | n/a (Field's brief, agent-written) |
 
 ## Summary
@@ -47,12 +47,30 @@ On work SHA `c99a1c2`:
 ## Sonar
 Gate ERROR as on main: `new_coverage` 0 %, 18 issues — the same 18 pre-existing ones (`test/setup.ts`, backend order / payment / menu-availability, `MenuItemRow`); none in this brief's files.
 
-## Run proof
-On `c99a1c2`: `migration:run` applied `CategoryNameUnique1762700000000` on dev DB `bar`; fresh `nest build` + `node dist/main` → `/api/health` 200 `{"db":"up"}` (dev backend left running on :3001).
-**Not done:** the two-tab UI walkthrough on the real API (needs Field's LINE sign-in); the UI is verified by component tests, Playwright against the in-page MSW server and the backend e2e. Field / auditor to do the walkthrough in the brief §5 if wanted.
+## Audit round 1 — Must fix #1–#4 (work SHA `419a159`)
+- **#2** `CategoryNameInput`: `submitting` ref ignores Enter / blur while a save is pending (test: Enter then blur → exactly one `PATCH`). `6d7b372`.
+- **#3** `ModifierGroupEditor.test.tsx`: required + min 2 + max 1 → "เลือกสูงสุดต้องไม่น้อยกว่าขั้นต่ำ", no request. `6d7b372`.
+- **#4** `menu-write.e2e-spec.ts`: duplicate-row `DELETE` moved into `finally` before `migration.up`. `6d7b372`.
+- **#1** run proof below. It found **two bugs the tests missed**, fixed in `419a159`:
+  1. **Clicking the visible switch track toggled nothing** (categories "แสดง", option "ขาย", "ต้องเลือก") — the same HeroUI quirk as BRIEF-041 Rev 2 (track sits outside the `<label>` that holds the input); the jsdom tests clicked the hidden input. New `menu/_components/MenuSwitch.tsx` turns a click on `[data-slot="switch-control"]` into the toggle (label / keyboard still use the Switch's `onChange`); used in `CategoryRow`, `OptionRows`, `RuleFields`. New test clicks the track (`CategoriesModal.test.tsx`).
+  2. A React Aria console error "stopPropagation is now the default…" from `event.stopPropagation()` in `CategoryNameInput` — removed (RAC already stops propagation; verified Esc cancels the input without closing the modal).
+
+Gates on `419a159`: frontend lint · typecheck · build 0 · unit 177 passed · e2e 21 passed. Backend untouched since `c99a1c2` except the test move (#4): lint, typecheck, `test:e2e` 169 passed on `6d7b372`. Not re-run after `6d7b372`: contracts and backend unit (no source change).
+
+## Run proof (§5, real API)
+On the work tree, real API `:3001` (plain `node dist/main`) + `next dev :3000`, Field signed in via LINE, the in-app browser (pane ≈ 800 px wide), two tabs: back office and the order-entry page of T1 (`/pos/tables/<visit>/order`).
+1. **Categories modal:** counts from the API match the list (เบียร์สด 3, ค็อกเทล 3, …); every row with items shows "ลบไม่ได้ — ยังมี n เมนูในหมวดนี้" with delete disabled.
+2. **Drag with the mouse** (ไฮบอล from 4th to 2nd row) moved it at once; after a full reload the order persisted. **↑ with the keyboard** (focus the button, Enter) moved ไฮบอล to 2nd and kept focus. The order tab (opened after) showed chips "โปรโมชั่น · ไฮบอล · เบียร์สด · …".
+3. **Hide โปรโมชั่น** (after fix 1) → the already-open order tab dropped the chip **without a reload** (`menu.changed`); shown again → back.
+4. **Add** "ทดสอบ" → row appended with "0 เมนู"; add " ทดสอบ " → "มีหมวดชื่อนี้แล้ว" under the field, typed value kept; **Esc** cancelled the input and left the modal open; **delete** ทดสอบ → row gone.
+5. **Groups page:** real list ("น้ำแข็ง ต้องเลือก 1 · ใช้กับ 2 เมนู", "เพิ่ม ไม่บังคับ · สูงสุด 1"). Created "ท็อปปิ้ง" (ไม่บังคับ, max 2, ชีส 20 / ไข่ดาว 0 / เบคอน 0) → listed "ไม่บังคับ · สูงสุด 2 · 3 ตัวเลือก · ใช้กับ 0 เมนู"; linked it to จินโทนิค (ไฮบอล) in the item editor → "ใช้กับ 1 เมนู", delete disabled with the reason.
+6. **Option switch off** (ชีส, after fix 1) + save → the POS order sheet for that item showed ชีส **disabled**; reopening the editor loaded the option with its switch off; **switch on** + save → the sheet showed it enabled again (live, no reload).
+7. **Delete:** unlinked the group in the item editor → delete enabled → AlertDialog "ลบกลุ่ม ท็อปปิ้ง? / ลบแล้วกู้คืนไม่ได้" → ลบ → the group left the list.
+Screenshots were viewed in the session only (the browser tool cannot write files). Test data left in the dev DB: none (ทดสอบ and ท็อปปิ้ง deleted / archived; จินโทนิค (ไฮบอล) saved once with and once without the group). The test group row stays archived (`is_active = false`, DR-024).
+Visual note: in the 800 px pane the group drawer's text inputs have no visible border (placeholders show, typing works) — not in the brief; for CD-12 polish.
 
 ## Limitations
-- Pointer drag-and-drop is untested (above); keyboard / button reorder is.
+- Pointer drag-and-drop has no automated test (jsdom); it was exercised by hand in the run proof above.
 - `uq_menu_category_name` is an expression index, so it is not declared on the TypeORM entity (decorators take columns only) — the migration and `docs/schema.sql` carry it; `docs/erd.html` is Cowork's (DR-025).
 - PUT `/categories/order` returns active categories only, so the UI refetches instead of replacing the cache from the response (hidden rows would vanish).
 - Diff is ~1.55k added lines vs the ~500 target (accepted by Field, Selected 1).
