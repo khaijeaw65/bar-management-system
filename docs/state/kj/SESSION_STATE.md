@@ -3,11 +3,11 @@ Updated: 2026-10-23 · Agent: Cowork (BRIEF-045 Ready seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-045 **Ready** Rev 1 (categories Modal + add-on groups page + `itemCount` + DR-025 unique name) → `execute BRIEF-045`.
+BRIEF-045 **Implemented** (work `c99a1c2`, branch pushed, no PR) → `audit BRIEF-045` (Cowork) → `execute BRIEF-045` for the PASS commit + PR. Backend on :3001 is plain `node dist/main` of `c99a1c2`; stop it before `test:e2e`.
 
 ## Active
-- Brief: BRIEF-045 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-045-menu-categories-addons-ui` (seed, local)
-- Done 21–23 Oct: BRIEF-041 (#91) · BRIEF-040 (#90) · BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
+- Brief: BRIEF-045 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-045-menu-categories-addons-ui` · handoff `docs/handoffs/BRIEF-045.md`
+- Done 21–23 Oct: BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
 1. `execute BRIEF-045` (size ~1.4–1.5k accepted; before run proof check `bar` for duplicate category names — DR-025 migration fails on them) · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
