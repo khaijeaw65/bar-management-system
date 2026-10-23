@@ -2,8 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { MENU_AVAILABILITY_CHANGED } from "@bar/contracts";
-import { useDisconnected, useSocketEvent } from "@/hooks/useSocketEvent";
+import { useMenuLive } from "@/hooks/useMenuLive";
+import { useDisconnected } from "@/hooks/useSocketEvent";
 import { getMenuCategories, getMenuItems } from "@/lib/api/menu";
 
 export function useOrderMenu() {
@@ -22,7 +22,7 @@ export function useOrderMenu() {
     void items.refetch();
     void categories.refetch();
   }, [items, categories]);
-  useSocketEvent(MENU_AVAILABILITY_CHANGED, refetch);
+  useMenuLive();
   const disconnected = useDisconnected(refetch);
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState("all");

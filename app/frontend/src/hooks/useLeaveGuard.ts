@@ -30,6 +30,8 @@ export function useLeaveGuard(dirty: boolean) {
 
   return {
     target,
+    // For buttons that leave the page: ask first when dirty, else go straight there.
+    go: (route: Route) => (dirty ? setTarget(route) : router.push(route)),
     stay: () => setTarget(null),
     leave: () => {
       if (target) router.push(target);
