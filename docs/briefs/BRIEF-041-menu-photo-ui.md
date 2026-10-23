@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-23 |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-23 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | frontend |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | BRIEF-040 ✅ (#90) · BRIEF-039 ✅ (presign API) · **dev bucket `bar-app-dev`: CORS allows `POST` from `http://localhost:3000` + `tmp/` 1-day lifecycle (Field, AWS console) — set 2026-10-23** ✅ |
 | **References** | CD-12 editor·4 (upload states), §4 "Upload photo", §9 Photo, R7-2 · DR-020 (presigned POST, ≤ 5 MB, jpeg / png / webp) · contracts `IMAGE_MAX_BYTES`, `ImageUploadUrlSchema` |
 | **Audit depth** | Compact (UI; S3 enforces type + size) |
@@ -24,6 +24,7 @@ The manager attaches, replaces or removes a menu item's photo in the editor, wit
 - เปลี่ยนรูป (new upload) · ลบรูป (`imageKey: null`) · an untouched photo sends no `imageKey` (keep).
 - Errors (editor·4): wrong type / too big (client) · S3 rejection (403 policy / 400 `EntityTooLarge`) · network → "อัปโหลดไม่สำเร็จ / ไฟล์ต้องเป็น JPG, PNG หรือ WebP ไม่เกิน 5 MB / เลือกไฟล์ใหม่".
 - **List thumbnail** on `/pos/menu` rows from `imageUrl`; no photo → `image` icon fallback. A broken image (`imageUrl` expired after 1 h) triggers one refetch of the menu query.
+- **List Switch fix (Rev 2, BRIEF-040 regression found by Field):** in `MenuItemRow.tsx` the sold-out Switch must not trigger the row's `onAction` — its pointer / click / key events stop at the Switch wrapper. The test clicks the **visible** switch control (not the hidden input) and asserts the toggle request fires and `router.push` does not; `e2e` clicks the switch on `/pos/menu` in a real browser and asserts the URL stays `/pos/menu`.
 - `lib/api/menu.ts` presign call; the S3 upload uses `axios` (`onUploadProgress`, `AbortController`) — no new dependency.
 
 ### Out (do NOT build here)
@@ -41,12 +42,14 @@ The manager attaches, replaces or removes a menu item's photo in the editor, wit
 - **AC-4** — ลบรูป saves `imageKey: null`; เปลี่ยนรูป replaces; an untouched photo sends no `imageKey`.
 - **AC-5** — บันทึก is disabled while uploading; ยกเลิกการอัปโหลด aborts and restores the previous photo.
 - **AC-6** — Gates + run proof against the real dev bucket.
+- **AC-7 (Rev 2)** — Clicking the sold-out Switch on a `/pos/menu` row toggles availability and stays on the list (component test on the visible control + e2e in a real browser); a click elsewhere on the row still opens the editor.
 
 ## 5. Test Gate
 | AC | Test type | Location (expected) |
 |---|---|---|
 | AC-1 – AC-5 | component (MSW + mocked upload) | `src/app/pos/menu/[id]/_components/PhotoField.test.tsx` |
 | AC-1 | e2e (MSW) | `e2e/menu-photo.spec.ts` |
+| AC-7 | component + e2e | `MenuList.test.tsx` (visible control) · `e2e/menu-editor.spec.ts` or a new spec |
 
 Gate commands (all must pass):
 ```bash
@@ -85,3 +88,4 @@ Run proof (real API + `bar-app-dev`): upload a JPG in the editor → save → th
 |---|---|---|
 | 1 | 2026-10-23 | Initial Draft (Cowork) — menu UI part 2 (photo) |
 | 1 | 2026-10-23 | Ready — Field in session: "approve BRIEF-041 Rev 1 Ready" (bucket CORS + lifecycle set) |
+| 2 | 2026-10-23 | + list Switch stops row `onAction` (BRIEF-040 regression, found by Field) — Field-approved ("approve BRIEF-041 Rev 2 (switch fix)") |
