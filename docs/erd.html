@@ -570,7 +570,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     </div>
     <div class="callout">
       <div class="callout-title">Snapshots on Order Items</div>
-      <div class="callout-body"><strong>order_item.unit_price_snapshot</strong> and <strong>order_item_modifier.price_delta_snapshot</strong> freeze prices at order time. Menu price changes never retroactively alter a bill.</div>
+      <div class="callout-body"><strong>order_item.unit_price_snapshot</strong> and <strong>order_item_modifier.price_delta_snapshot</strong> freeze prices at order time; <strong>item_name_snapshot</strong>, <strong>variant_name_snapshot</strong> and <strong>option_name_snapshot</strong> freeze names (DR-022). Menu price or name changes never retroactively alter a bill.</div>
     </div>
     <div class="callout">
       <div class="callout-title">Audit Log — Append Only</div>
@@ -795,6 +795,9 @@ erDiagram
         uuid id PK
         uuid ticket_id FK
         uuid menu_item_variant_id FK
+        string item_name_snapshot
+        string variant_name_snapshot
+        int line_no
         int quantity
         decimal unit_price_snapshot
         text notes
@@ -806,6 +809,7 @@ erDiagram
         uuid id PK
         uuid order_item_id FK
         uuid modifier_option_id FK
+        string option_name_snapshot
         decimal price_delta_snapshot
     }
     payment {
@@ -1467,6 +1471,9 @@ erDiagram
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> ticket_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> menu_item_variant_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">item_name_snapshot</span><span class="field-type">varchar(200)</span></div>
+            <div class="field-row"><span class="field-name">variant_name_snapshot</span><span class="field-type">varchar(200)</span></div>
+            <div class="field-row"><span class="field-name">line_no</span><span class="field-type">smallint</span></div>
             <div class="field-row"><span class="field-name">quantity</span><span class="field-type">smallint</span></div>
             <div class="field-row"><span class="field-name">unit_price_snapshot</span><span class="field-type">numeric(10,2)</span></div>
             <div class="field-row"><span class="field-name">notes</span><span class="field-type">text</span></div>
@@ -1477,7 +1484,7 @@ erDiagram
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">Belongs to one ticket (DR-013). No per-item progress status — cancelled_at NULL = active. unit_price_snapshot frozen at order time. Cancelled items stay visible, struck-through, with who / when / why (audit principle).</div>
+          <div class="field-note">Belongs to one ticket (DR-013). No per-item progress status — cancelled_at NULL = active. unit_price_snapshot and the name snapshots frozen at order time (DR-022); line_no = 1 … n per order, request order. Cancelled items stay visible, struck-through, with who / when / why (audit principle).</div>
         </div>
 
         <div class="entity-card">
@@ -1489,9 +1496,10 @@ erDiagram
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> order_item_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> modifier_option_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">option_name_snapshot</span><span class="field-type">varchar(200)</span></div>
             <div class="field-row"><span class="field-name">price_delta_snapshot</span><span class="field-type">numeric(10,2)</span></div>
           </div>
-          <div class="field-note">Snapshot frozen at order time — modifier price changes don't affect existing orders.</div>
+          <div class="field-note">Snapshots frozen at order time — modifier price or name changes don't affect existing orders (DR-022).</div>
         </div>
 
       </div>

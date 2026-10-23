@@ -62,7 +62,7 @@ Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `a
 4. **Do not touch `audit_log`** with UPDATE or DELETE — append-only.
 5. **Do not reintroduce cut features:** offline mode, member QR, staff performance analytics.
 6. **Do not add Kubernetes/EKS** until ECS is stable and shipping.
-7. **Price snapshots are immutable** — `order_item.unit_price_snapshot` is frozen at order time.
+7. **Price and name snapshots are immutable** — `order_item.unit_price_snapshot` and the name snapshots (`item_name_snapshot`, `variant_name_snapshot`, `order_item_modifier.option_name_snapshot`) are frozen at order time (DR-022).
 8. **Payment idempotency** — always check `gateway_tx_id` before processing a webhook.
 9. **Never decide alone** — anything on the Field Guard trigger list goes through a DR (workflow.md §5).
 10. **Never change brief scope/approval, rules, or the other person's state on your own initiative. Packaging commits (Field-approved brief revision, audit report at PASS) and explicit Field-authorized maintenance are defined in workflow.md.** Protected files only if the active brief lists the exact path under *Unlocked protected files*.
