@@ -3,14 +3,14 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-040 **Draft** (menu item list + editor + live menu) on `feat/BRIEF-040-menu-editor-ui` → Field: Q1 implementer, Q2 phone 390 → Ready. BRIEF-041 Draft (photo UI) seeded on `feat/BRIEF-041-menu-photo-ui`; categories / add-on screens = BRIEF-045 (to draft).
+BRIEF-040 **Ready** (menu item list + editor + live menu; Q1 = A kj, Q2 = A phone 390 later) on `feat/BRIEF-040-menu-editor-ui` → `execute BRIEF-040`. BRIEF-041 Draft (photo UI) seeded on `feat/BRIEF-041-menu-photo-ui`; categories / add-on screens = BRIEF-045 (to draft).
 
 ## Active
-- Brief: BRIEF-040 Rev 1 · Stage: Draft · Branch: `feat/BRIEF-040-menu-editor-ui` (seed)
+- Brief: BRIEF-040 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-040-menu-editor-ui` (seed)
 - Done 21–23 Oct: BRIEF-044 (#87) · DR-023 docs (#86) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. Field: 040 Q1 implementer / Q2 phone 390 → Ready · 041 needs bucket CORS `POST` from :3000 + `tmp/` lifecycle (Field, AWS console) · Cowork drafts 045 · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
+1. 040 Ready (Field 23 Oct) · 041: bucket CORS `POST` :3000 + `tmp/` 1-day lifecycle set (Field 23 Oct) · Cowork drafts 045 · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
 2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
@@ -36,5 +36,5 @@ BRIEF-040 **Draft** (menu item list + editor + live menu) on `feat/BRIEF-040-men
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-040 (Draft) → 041 (Draft) → 045 categories + add-on screens (to draft) → phone 390 shell (after 8 Nov)
+1. BRIEF-040 (Ready) → 041 (Draft) → 045 categories + add-on screens (to draft) → phone 390 shell (after 8 Nov)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway

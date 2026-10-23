@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
-| **Implementer** | kj (executor agent) — Q1 |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-23 |
+| **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | frontend |
@@ -76,8 +76,8 @@ Run proof (real API): create "จินโทนิค" (2 options, บาร์
 
 ## 7. Decision Points (Field Guard)
 - **Pre-decided:** routes `/pos/menu`, `/pos/menu/new`, `/pos/menu/[id]` (CD-12 canvas `/admin/menu/…` maps to the POS shell, DR-002) · rename confirm (DR-022) · สูตร saves as `simple` · add-on groups apply to every price option (BRIEF-038).
-- **Q1 — Implementer.** *Cowork recommends:* **A — kj (executor agent)**, same as the menu backend this week. *Alternative:* **B — methee** (learning mode §8: ≤ 20 % agent; would need a smaller split).
-- **Q2 — Phone 390 layout.** BRIEF-037 deferred the responsive shell "to the menu UI brief". *Cowork recommends:* **A — own brief after 8 Nov** (shell + nav drawer + 390 list for the J2 sold-out-from-phone journey). *Alternative:* **B — here** (~+300 lines).
+- **Q1 — Implementer. ✅ Decided (Field, 2026-10-23): A — kj (executor agent).** *Cowork recommends:* **A — kj (executor agent)**, same as the menu backend this week. *Alternative:* **B — methee** (learning mode §8: ≤ 20 % agent; would need a smaller split).
+- **Q2 — Phone 390 layout. ✅ Decided (Field, 2026-10-23): A — own brief after 8 Nov.** BRIEF-037 deferred the responsive shell "to the menu UI brief". *Cowork recommends:* **A — own brief after 8 Nov** (shell + nav drawer + 390 list for the J2 sold-out-from-phone journey). *Alternative:* **B — here** (~+300 lines).
 - **Likely DRs:** none.
 
 ## 8. Unlocked Protected Files
@@ -86,13 +86,14 @@ Run proof (real API): create "จินโทนิค" (2 options, บาร์
 ---
 
 ## Ready Checklist
-- [ ] Named implementer and auditor; scope/ACs/contracts/references complete
-- [ ] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
-- [ ] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
-- [ ] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Named implementer and auditor; scope/ACs/contracts/references complete
+- [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
+- [x] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
+- [x] No unresolved decision blocking the main outcome
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-23 | Initial Draft (Cowork) — menu UI part 1; photo → 041, categories / add-on screens → 045 |
+| 1 | 2026-10-23 | Ready — Field in session: "040 Q1 = A, Q2 = A, approve BRIEF-040 Rev 1 Ready" |
