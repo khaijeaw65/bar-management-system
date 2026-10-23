@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-045-menu-categories-addons-ui` (seed `64e82be`) |
 | **Assigned auditor** | Cowork |
-| **Status** | CHANGES REQUIRED round 1 fixed — new work SHA `419a159`, awaiting compact re-check |
+| **Status** | Audit PASS (Cowork, S `419a159`, re-audit) — PR opened |
 | **AI usage** | n/a (Field's brief, agent-written) |
 
 ## Summary
