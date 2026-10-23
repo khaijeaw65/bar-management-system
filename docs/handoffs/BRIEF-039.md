@@ -59,6 +59,8 @@ Run on `ed1b45c` (same tree as `f2ed6cf` except one README sentence). The older 
 | `POST /menu/items` with a `tmp/` key that is not in the bucket | **500**: `HeadObject` on a missing key returns **403** (not 404) because the same user also lacks `s3:ListBucket`. No item row created (count 0). With `ListBucket` this is the designed 400 |
 | `GET /menu/categories?includeHidden=true` | 200, `isActive` on all 6 |
 
+**Re-run after Field's IAM grant (2026-10-23, fresh `PORT=3002` backend on `a7d412a`):** unchanged — the JPG upload still gets S3 **403 AccessDenied** "`bar-app-local` is not authorized to perform: s3:PutObject … no identity-based policy allows", the 6 MB upload the same 403, `HeadObject` on the tmp key 403, create with a tmp key → 500; the `text/plain` policy rejection and presign 200 behave as before. The grant is not taking effect for this user/resource (not debugged — IAM is Field's). No item row was created.
+
 **Not proven on the real bucket:** upload → create with the key → `GET` → `curl imageUrl` = 200 `image/jpeg`; the 6 MB `EntityTooLarge`; `PATCH imageKey:null` → HeadObject 404. All of that logic is covered with the in-memory fake (AC-2/3/4) and the `StorageService` calls are unit-tested against the SDK client, but the end-to-end S3 behaviour is unverified until the IAM user can write.
 **Needs Field:** attach to `bar-app-local` (or its group) `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject` on `arn:aws:s3:::bar-app-dev/*` and `s3:ListBucket` on `arn:aws:s3:::bar-app-dev`, plus the `tmp/` 1-day lifecycle and a CORS rule allowing `POST` from the web origin on the bucket. Then I re-run the table above (≈ 10 min). I changed nothing in AWS.
 
