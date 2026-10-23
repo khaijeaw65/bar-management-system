@@ -8,7 +8,7 @@
 | **Branch** | `feat/BRIEF-042-order-name-snapshot` (seed `d25a4d0`, `main` merged `1007285`; PR opens after audit PASS) |
 | **Commit** | Work SHA `ef1151d` |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — waiting for audit |
+| **Status** | Audit PASS (Cowork, 2026-10-23, S = `ef1151d`) — PR opened with this commit |
 
 ## Summary
 - **Migration** `1762400000000-OrderLineSnapshots.ts` (registered in `migrations.ts`): adds `order_item.item_name_snapshot`, `variant_name_snapshot` (VARCHAR 200), `line_no` (SMALLINT) and `order_item_modifier.option_name_snapshot` (VARCHAR 200) nullable → backfills in SQL (names from the live `menu_item` / `menu_item_variant` / `modifier_option`; `line_no` = `ROW_NUMBER()` per order by `created_at, id` through the ticket) → `SET NOT NULL`. `down` drops the four columns. Entities updated.
@@ -80,7 +80,8 @@ Run on `ef1151d` (clean tree). e2e used `bar_test`; the dev backend (see Run pro
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-042`
+- Audit: **PASS** (`docs/audits/BRIEF-042.md`), zero Must fix; S = `ef1151d`, S..H = audit / handoff / state only. Finding 3 (Suggestion): the AC-2 test does not restore the columns if an assertion between `down()` and `up()` fails — `global-setup` rebuilds the test DB next run; no action here. Findings 1–2 info (restart the dev watch process; Cowork edits `erd.html` + the CLAUDE.md schema-rule line after merge)
+- Next command: merge on green `ci` (Field's own PR, §7)
 - Work SHA: `ef1151d` · self-check: brief §2–§4 ↔ DR-022 locks ↔ `1762400000000-OrderLineSnapshots.ts` ↔ `schema.sql` §6 ↔ entities ↔ `order.sql.ts` / repository ↔ `order-snapshots.e2e-spec.ts`; no API shape, contract or permission change
 
 ## Notes for Reviewer
