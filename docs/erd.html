@@ -736,6 +736,7 @@ erDiagram
         boolean is_required
         int min_select
         int max_select
+        boolean is_active
     }
     modifier_option {
         uuid id PK
@@ -1305,13 +1306,13 @@ erDiagram
           </div>
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
-            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">is_required</span><span class="field-type">boolean</span></div>
             <div class="field-row"><span class="field-name">min_select</span><span class="field-type">smallint</span></div>
             <div class="field-row"><span class="field-name">max_select</span><span class="field-type">smallint</span></div>
+            <div class="field-row"><span class="field-name">is_active</span><span class="field-type">boolean</span></div>
           </div>
-          <div class="field-note">Defines a choice set. e.g. "Sugar level" (required, pick exactly 1), "Add-ons" (optional, pick 0–3). Attached to specific variants via menu_variant_modifier_group.</div>
+          <div class="field-note">Defines a choice set. e.g. "Sugar level" (required, pick exactly 1), "Add-ons" (optional, pick 0–3). Attached to specific variants via menu_variant_modifier_group. "Delete" archives (is_active = false, DR-024) once no active variant links it — past orders keep pointing at its options.</div>
         </div>
 
         <div class="entity-card">
