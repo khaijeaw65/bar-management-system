@@ -22,6 +22,7 @@
               "PROMPTPAY_NOT_SET",
               "MENU_ITEM_STALE",
               "CATEGORY_NOT_EMPTY",
+              "CATEGORY_NAME_TAKEN",
               "MODIFIER_GROUP_IN_USE"
             ],
             "type": "string"
@@ -1461,6 +1462,11 @@
                               "isActive": {
                                 "type": "boolean"
                               },
+                              "itemCount": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
                               "name": {
                                 "type": "string"
                               },
@@ -1474,7 +1480,8 @@
                               "id",
                               "name",
                               "sortOrder",
-                              "isActive"
+                              "isActive",
+                              "itemCount"
                             ],
                             "type": "object"
                           },
@@ -1615,6 +1622,11 @@
                         "isActive": {
                           "type": "boolean"
                         },
+                        "itemCount": {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
                         "name": {
                           "type": "string"
                         },
@@ -1628,7 +1640,8 @@
                         "id",
                         "name",
                         "sortOrder",
-                        "isActive"
+                        "isActive",
+                        "itemCount"
                       ],
                       "type": "object"
                     },
@@ -1772,6 +1785,11 @@
                               "isActive": {
                                 "type": "boolean"
                               },
+                              "itemCount": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
                               "name": {
                                 "type": "string"
                               },
@@ -1785,7 +1803,8 @@
                               "id",
                               "name",
                               "sortOrder",
-                              "isActive"
+                              "isActive",
+                              "itemCount"
                             ],
                             "type": "object"
                           },
@@ -2062,6 +2081,11 @@
                         "isActive": {
                           "type": "boolean"
                         },
+                        "itemCount": {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
                         "name": {
                           "type": "string"
                         },
@@ -2075,7 +2099,8 @@
                         "id",
                         "name",
                         "sortOrder",
-                        "isActive"
+                        "isActive",
+                        "itemCount"
                       ],
                       "type": "object"
                     },

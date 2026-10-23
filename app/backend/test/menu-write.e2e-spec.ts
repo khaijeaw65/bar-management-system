@@ -11,6 +11,7 @@ import { configureApp } from '../src/bootstrap/configure-app.js';
 import { seedMenu } from '../src/cli/seed-menu-catalog.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
 import { PERMISSIONS_KEY } from '../src/common/guards/permissions.guard.js';
+import { CategoryNameUnique1762700000000 } from '../src/providers/database/migrations/1762700000000-CategoryNameUnique.js';
 import { MenuItemWriteController } from '../src/modules/menu/infrastructure/http/menu-item-write.controller.js';
 import { MenuController } from '../src/modules/menu/infrastructure/http/menu.controller.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
@@ -219,6 +220,64 @@ describe('Menu write API (e2e)', () => {
       { categoryIds: reversed.filter((id) => id !== cocktails) },
       { categoryIds: [created.id] },
     ]);
+  });
+
+  it('counts every item (active or not) in itemCount on each category response', async () => {
+    const cocktails = await categoryId('ค็อกเทล');
+    const expected = Number((await one(`SELECT COUNT(*) AS n FROM menu_item WHERE category_id = $1`, [cocktails])).n);
+    expect(expected).toBeGreaterThan(0);
+    await dataSource.query(`UPDATE menu_item SET is_available = FALSE WHERE category_id = $1`, [cocktails]);
+    await request(app.getHttpServer()).patch(`/api/menu/categories/${cocktails}`).set(auth()).send({ isActive: false }).expect(200);
+
+    const listed = (await get('/api/menu/categories?includeHidden=true').expect(200)).body.data.items as MenuCategory[];
+    expect(listed.find((category) => category.id === cocktails)?.itemCount).toBe(expected);
+    expect((await categories()).every((category) => category.id !== cocktails)).toBe(true);
+
+    const created = (await post('/api/menu/categories').send({ name: 'ว่าง' }).expect(201)).body.data as MenuCategory;
+    expect(created.itemCount).toBe(0);
+    const patched = await request(app.getHttpServer())
+      .patch(`/api/menu/categories/${cocktails}`)
+      .set(auth())
+      .send({ isActive: true })
+      .expect(200);
+    expect(patched.body.data.itemCount).toBe(expected);
+    const ordered = (await put((await categories()).map((category) => category.id)).expect(200)).body.data.items as MenuCategory[];
+    expect(ordered.find((category) => category.id === cocktails)?.itemCount).toBe(expected);
+  });
+
+  it('keeps category names unique on lower(trim(name)), hidden ones too (DR-025)', async () => {
+    const hidden = await categoryId('ค็อกเทล');
+    await request(app.getHttpServer()).patch(`/api/menu/categories/${hidden}`).set(auth()).send({ isActive: false }).expect(200);
+    const before = (await categories()).length;
+
+    const taken = await post('/api/menu/categories').send({ name: ' ค็อกเทล ' });
+    expect(taken.status).toBe(409);
+    expect(taken.body.code).toBe('CATEGORY_NAME_TAKEN');
+    expect((await get('/api/menu/categories?includeHidden=true').expect(200)).body.data.items).toHaveLength(before + 1);
+
+    await post('/api/menu/categories').send({ name: 'Beer' }).expect(201);
+    expect((await post('/api/menu/categories').send({ name: 'beer' })).status).toBe(409);
+
+    const wine = (await post('/api/menu/categories').send({ name: 'ไวน์' }).expect(201)).body.data as MenuCategory;
+    const clash = await request(app.getHttpServer()).patch(`/api/menu/categories/${wine.id}`).set(auth()).send({ name: 'BEER' });
+    expect(clash.status).toBe(409);
+    expect(clash.body.code).toBe('CATEGORY_NAME_TAKEN');
+    const same = await request(app.getHttpServer()).patch(`/api/menu/categories/${wine.id}`).set(auth()).send({ name: '  ไวน์ ' });
+    expect(same.status).toBe(200);
+  });
+
+  it('refuses to create the unique index while duplicate names exist (DR-025)', async () => {
+    const migration = new CategoryNameUnique1762700000000();
+    const runner = dataSource.createQueryRunner();
+    try {
+      await migration.down(runner);
+      await dataSource.query(`INSERT INTO menu_category (name) VALUES ('เบียร์สด '), (' เบียร์สด'), ('x'), ('X')`);
+      await expect(migration.up(runner)).rejects.toThrow(/duplicate names.*"x"/);
+      await dataSource.query(`DELETE FROM menu_category WHERE name IN (' เบียร์สด', 'เบียร์สด ', 'x', 'X')`);
+    } finally {
+      await migration.up(runner);
+      await runner.release();
+    }
   });
 
   it('declares menu:write on every write route', () => {

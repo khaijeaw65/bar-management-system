@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { ClsService } from 'nestjs-cls';
-import { In } from 'typeorm';
+import { In, QueryFailedError, Repository } from 'typeorm';
 import type { MenuVariantInput } from '@bar/contracts';
 import type {
   CategoryOrderRow,
@@ -11,6 +11,7 @@ import type {
   MenuWriteRepository,
 } from '../../domain/menu-write.repository.js';
 import type { MenuCategoryRecord } from '../../domain/menu.types.js';
+import { DomainException } from '../../../../common/domain-exception.js';
 import { MenuCategory } from './menu-category.entity.js';
 import { MenuItem } from './menu-item.entity.js';
 import { MenuItemVariant } from './menu-item-variant.entity.js';
@@ -43,6 +44,10 @@ const LOCK_CATEGORIES = `
   ORDER BY sort_order, name
   FOR UPDATE
 `;
+
+const CATEGORY_NAME_INDEX = 'uq_menu_category_name';
+
+const CATEGORY_ITEM_COUNT = `SELECT COUNT(*) AS items FROM menu_item WHERE category_id = $1`;
 
 const LOCK_CATEGORY_ITEMS = `
   SELECT (SELECT COUNT(*) FROM menu_item WHERE category_id = c.id) AS items
@@ -122,10 +127,11 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
   public async insertCategory(name: string): Promise<MenuCategoryRecord> {
     const [next] = await this.query(NEXT_CATEGORY_SORT, []);
     const categories = this.txHost.tx.getRepository(MenuCategory);
-    const saved = await categories.save(
+    const saved = await this.saveNamed(
+      categories,
       categories.create({ name, isActive: true, sortOrder: Number(next?.next ?? 0) }),
     );
-    return this.toCategory(saved);
+    return this.toCategory(saved, 0);
   }
 
   public async saveCategory(
@@ -137,7 +143,9 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
     if (!category) return null;
     if (patch.name !== undefined) category.name = patch.name;
     if (patch.isActive !== undefined) category.isActive = patch.isActive;
-    return this.toCategory(await categories.save(category));
+    const saved = await this.saveNamed(categories, category);
+    const [count] = await this.query(CATEGORY_ITEM_COUNT, [id]);
+    return this.toCategory(saved, Number(count?.items ?? 0));
   }
 
   public async lockCategoryOrder(): Promise<CategoryOrderRow[]> {
@@ -213,8 +221,23 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
     };
   }
 
-  private toCategory(row: MenuCategory): MenuCategoryRecord {
-    return { id: row.id, name: row.name, sortOrder: row.sortOrder, isActive: row.isActive };
+  private toCategory(row: MenuCategory, itemCount: number): MenuCategoryRecord {
+    return { id: row.id, name: row.name, sortOrder: row.sortOrder, isActive: row.isActive, itemCount };
+  }
+
+  /** DR-025: the unique index is the referee; only a clash on it becomes 409. */
+  private async saveNamed(categories: Repository<MenuCategory>, row: MenuCategory): Promise<MenuCategory> {
+    try {
+      return await categories.save(row);
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        const driver = error.driverError as { code?: string; constraint?: string };
+        if (driver.code === '23505' && driver.constraint === CATEGORY_NAME_INDEX) {
+          throw new DomainException('CATEGORY_NAME_TAKEN', 'มีหมวดชื่อนี้แล้ว', 409);
+        }
+      }
+      throw error;
+    }
   }
 
   private async query(sql: string, parameters: unknown[]): Promise<Record<string, unknown>[]> {
