@@ -80,21 +80,23 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
     private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
 
-  public async listCategories(): Promise<MenuCategoryRecord[]> {
+  public async listCategories(includeHidden = false): Promise<MenuCategoryRecord[]> {
     const rows = await this.categories.find({
-      where: { isActive: true },
+      where: includeHidden ? {} : { isActive: true },
       order: { sortOrder: 'ASC', name: 'ASC' },
     });
     return rows.map((row) => ({
       id: row.id,
       name: row.name,
       sortOrder: row.sortOrder,
+      isActive: row.isActive,
     }));
   }
 
-  public async listItems(categoryId?: string): Promise<MenuItemRecord[]> {
+  public async listItems(categoryId?: string, includeHidden = false): Promise<MenuItemRecord[]> {
+    const visibility = includeHidden ? {} : { isActive: true };
     const categories = await this.categories.find({
-      where: categoryId ? { id: categoryId, isActive: true } : { isActive: true },
+      where: categoryId ? { id: categoryId, ...visibility } : visibility,
       order: { sortOrder: 'ASC', name: 'ASC' },
     });
     if (categories.length === 0) return [];
@@ -109,7 +111,7 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
       if (byCategory !== 0) return byCategory;
       return left.sortOrder - right.sortOrder || left.name.localeCompare(right.name, 'th');
     });
-    const active = new Map(categories.map((category) => [category.id, true]));
+    const active = new Map(categories.map((category) => [category.id, category.isActive]));
     return this.assemble(items, active);
   }
 
@@ -234,6 +236,7 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
       categoryActive,
       name: item.name,
       description: item.description,
+      imageKey: item.imageKey,
       basePrice: String(item.basePrice),
       itemType: item.itemType,
       kitchenTag: item.kitchenTag,

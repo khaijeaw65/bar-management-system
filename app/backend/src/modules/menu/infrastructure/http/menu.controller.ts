@@ -8,6 +8,7 @@ import {
   UpdateMenuCategorySchema,
   type MenuCategory,
   type Ok,
+  MenuCategoriesQuerySchema,
   MenuCategoryListSchema,
   MenuItemListSchema,
   MenuItemSchema,
@@ -36,18 +37,24 @@ export class MenuController {
   @RequirePermissions('menu:read')
   @ApiOperation({
     summary: 'Active menu categories',
-    description: staffAccess('menu:read'),
+    description: `${staffAccess('menu:read')} \`?includeHidden=true\` also lists hidden categories (\`isActive: false\`) for the back office.`,
+  })
+  @ApiQuery({
+    name: 'includeHidden',
+    required: false,
+    schema: { type: 'string', enum: ['true', 'false'] },
+    description: 'When true, hidden categories too',
   })
   @ApiEnvelopedOk(MenuCategoryListSchema)
-  public listCategories(): Promise<MenuCategoryList> {
-    return this.menuCatalog.listCategories();
+  public listCategories(@Query() query: unknown): Promise<MenuCategoryList> {
+    return this.menuCatalog.listCategories(MenuCategoriesQuerySchema.parse(query).includeHidden === 'true');
   }
 
   @Get('items')
   @RequirePermissions('menu:read')
   @ApiOperation({
     summary: 'Menu items with variants, modifiers, and live availability',
-    description: staffAccess('menu:read'),
+    description: `${staffAccess('menu:read')} \`imageUrl\` is a presigned URL valid for 1 hour. \`?includeHidden=true\` also lists the items of hidden categories (\`availableNow: false\`).`,
   })
   @ApiQuery({
     name: 'categoryId',
@@ -60,12 +67,19 @@ export class MenuController {
     schema: { type: 'string', enum: ['true'] },
     description: 'When true, only items available now',
   })
+  @ApiQuery({
+    name: 'includeHidden',
+    required: false,
+    schema: { type: 'string', enum: ['true', 'false'] },
+    description: 'When true, items of hidden categories too',
+  })
   @ApiEnvelopedOk(MenuItemListSchema)
   public listItems(@Query() query: unknown): Promise<MenuItemList> {
     const parsed = MenuItemsQuerySchema.parse(query);
     return this.menuCatalog.listItems({
       categoryId: parsed.categoryId,
       availableOnly: parsed.available === 'true',
+      includeHidden: parsed.includeHidden === 'true',
     });
   }
 

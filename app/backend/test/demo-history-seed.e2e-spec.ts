@@ -51,7 +51,7 @@ describe('seed:demo-history (e2e, AC-6)', () => {
     expect(await busiestWeekdays()).toEqual(expect.arrayContaining([5, 6]));
     expect(await unaudited()).toBe(0);
     const methods = await dataSource.query(
-      `SELECT confirmed_via, count(*)::int AS count FROM payment GROUP BY 1 ORDER BY 1::text`,
+      `SELECT confirmed_via, count(*)::int AS count FROM payment GROUP BY 1 ORDER BY confirmed_via::text`,
     );
     expect(methods.map((row: { confirmed_via: string }) => row.confirmed_via)).toEqual(['cash', 'manual', 'slip_verify']);
     const [cancelled] = await dataSource.query(`SELECT count(*)::int AS count FROM order_item WHERE cancelled_at IS NOT NULL`);
