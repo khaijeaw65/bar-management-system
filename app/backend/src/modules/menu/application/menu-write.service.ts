@@ -1,9 +1,12 @@
+import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   MENU_CHANGED,
+  type CreateImageUploadUrl,
   type CreateMenuCategory,
   type CreateMenuItem,
+  type ImageUploadUrl,
   type MenuCategory,
   type MenuCategoryList,
   type MenuChangedPayload,
@@ -15,6 +18,7 @@ import {
 import { CLOCK, type Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { fromSatang, toSatang } from '../../../common/money.js';
+import { StorageService, UPLOAD_URL_TTL_SECONDS } from '../../../common/storage/storage.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import {
   MENU_WRITE_REPOSITORY,
@@ -22,6 +26,7 @@ import {
   type MenuWriteRepository,
 } from '../domain/menu-write.repository.js';
 import { MenuCatalogService } from './menu-catalog.service.js';
+import { MenuPhotoService, type AttachedPhoto } from './menu-photo.service.js';
 
 /**
  * Manager menu edits (BRIEF-038). Each write is one transaction; `menu.changed` goes out after the
@@ -33,17 +38,44 @@ export class MenuWriteService {
     @Inject(MENU_WRITE_REPOSITORY) private readonly menu: MenuWriteRepository,
     private readonly catalog: MenuCatalogService,
     private readonly notifications: NotificationsService,
+    private readonly photos: MenuPhotoService,
+    private readonly storage: StorageService,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** A 5-minute presigned POST into `tmp/`; no DB write, no event. */
+  public async createImageUploadUrl(input: CreateImageUploadUrl): Promise<ImageUploadUrl> {
+    const upload = await this.storage.presignUpload(input.contentType);
+    return { ...upload, expiresAt: new Date(this.clock.now().getTime() + UPLOAD_URL_TTL_SECONDS * 1000).toISOString() };
+  }
+
   public async createItem(input: CreateMenuItem): Promise<MenuItem> {
-    const id = await this.insertItem(input);
+    // A new item has no current photo, so only a `tmp/` upload can be attached.
+    if (input.imageKey && !this.photos.isTmpKey(input.imageKey)) throw this.foreignImageKey();
+    const id = randomUUID();
+    // The copy happens before the transaction opens; no S3 call runs while a row lock is held.
+    const photo = await this.attachPhoto(id, input.imageKey);
+    try {
+      await this.insertItem(id, input, photo?.key ?? null);
+    } catch (error) {
+      await this.photos.discard(photo);
+      throw error;
+    }
+    await this.photos.release(photo?.tmpKey);
     this.changed({ itemIds: [id] });
     return this.catalog.getItem(id);
   }
 
   public async updateItem(id: string, input: UpdateMenuItem): Promise<MenuItem> {
-    await this.saveItem(id, input);
+    const photo = await this.attachPhoto(id, input.imageKey);
+    let replaced: string | null;
+    try {
+      replaced = await this.saveItem(id, input, photo);
+    } catch (error) {
+      await this.photos.discard(photo);
+      throw error;
+    }
+    await this.photos.release(photo?.tmpKey, replaced);
     this.changed({ itemIds: [id] });
     return this.catalog.getItem(id);
   }
@@ -72,14 +104,20 @@ export class MenuWriteService {
     return { ok: true };
   }
 
-  @Transactional()
-  private async insertItem(input: CreateMenuItem): Promise<string> {
-    await this.requireReferences(input.categoryId, input.modifierGroupIds ?? []);
-    return this.menu.insertItem(this.fields(input), input.variants, input.modifierGroupIds ?? []);
+  /** A `tmp/` key is checked and copied; null / omitted need no S3 call; anything else is judged later. */
+  private async attachPhoto(itemId: string, imageKey: string | null | undefined): Promise<AttachedPhoto | null> {
+    return imageKey && this.photos.isTmpKey(imageKey) ? this.photos.attach(itemId, imageKey) : null;
   }
 
   @Transactional()
-  private async saveItem(id: string, input: UpdateMenuItem): Promise<void> {
+  private async insertItem(id: string, input: CreateMenuItem, imageKey: string | null): Promise<void> {
+    await this.requireReferences(input.categoryId, input.modifierGroupIds ?? []);
+    await this.menu.insertItem(id, this.fields(input, imageKey), input.variants, input.modifierGroupIds ?? []);
+  }
+
+  /** Returns the old photo's key when this save replaced or removed it, for deletion after commit. */
+  @Transactional()
+  private async saveItem(id: string, input: UpdateMenuItem, photo: AttachedPhoto | null): Promise<string | null> {
     const locked = await this.menu.lockItem(id);
     if (!locked) throw new DomainException('NOT_FOUND', 'ไม่พบเมนู', 404);
     if (Date.parse(input.updatedAt) < locked.updatedAt.getTime()) {
@@ -94,7 +132,22 @@ export class MenuWriteService {
     }
     const groupIds = input.modifierGroupIds ?? locked.groupIds;
     await this.requireReferences(input.categoryId, input.modifierGroupIds ?? []);
-    await this.menu.updateItem(id, this.fields(input), input.variants, groupIds, this.clock.now());
+    const imageKey = this.nextImageKey(input.imageKey, locked.imageKey, photo);
+    await this.menu.updateItem(id, this.fields(input, imageKey), input.variants, groupIds, this.clock.now());
+    return locked.imageKey !== null && locked.imageKey !== imageKey ? locked.imageKey : null;
+  }
+
+  /** omitted → keep · null → remove · attached `tmp/` → replace · the current key → keep · else 400. */
+  private nextImageKey(requested: string | null | undefined, current: string | null, photo: AttachedPhoto | null): string | null {
+    if (requested === undefined) return current;
+    if (requested === null) return null;
+    if (photo) return photo.key;
+    if (requested === current) return current;
+    throw this.foreignImageKey();
+  }
+
+  private foreignImageKey(): DomainException {
+    return new DomainException('VALIDATION_ERROR', 'รูปไม่ถูกต้อง อัปโหลดรูปใหม่อีกครั้ง', 400);
   }
 
   @Transactional()
@@ -143,11 +196,12 @@ export class MenuWriteService {
     }
   }
 
-  private fields(input: CreateMenuItem | UpdateMenuItem): MenuItemFields {
+  private fields(input: CreateMenuItem | UpdateMenuItem, imageKey: string | null): MenuItemFields {
     return {
       categoryId: input.categoryId,
       name: input.name,
       description: input.description || null,
+      imageKey,
       itemType: input.itemType,
       kitchenTag: input.station,
       isPromo: input.isPromo,

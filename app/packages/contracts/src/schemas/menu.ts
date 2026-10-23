@@ -45,7 +45,8 @@ export const MenuItemSchema = z.object({
   categoryId: UuidSchema,
   name: z.string(),
   description: z.string().nullable(),
-  imageUrl: z.null(),
+  // Presigned GET (1 h, DR-020); null while the item has no photo.
+  imageUrl: z.url().nullable(),
   itemType: ItemTypeSchema,
   station: KitchenStationSchema.nullable(),
   isPromo: z.boolean(),
@@ -64,6 +65,8 @@ export const MenuCategorySchema = z.object({
   id: UuidSchema,
   name: z.string(),
   sortOrder: z.number().int(),
+  // false = hidden from the POS; only `?includeHidden=true` lists hidden categories (BRIEF-039).
+  isActive: z.boolean(),
 });
 export type MenuCategory = z.infer<typeof MenuCategorySchema>;
 
@@ -89,8 +92,14 @@ export type VenueSettings = z.infer<typeof VenueSettingsSchema>;
 export const MenuItemsQuerySchema = z.object({
   categoryId: z.uuid('รหัสหมวดไม่ถูกต้อง').optional(),
   available: z.literal('true', 'ใช้ได้เฉพาะ available=true').optional(),
+  includeHidden: z.enum(['true', 'false'], 'includeHidden ต้องเป็น true หรือ false').optional(),
 });
 export type MenuItemsQuery = z.infer<typeof MenuItemsQuerySchema>;
+
+export const MenuCategoriesQuerySchema = z.object({
+  includeHidden: MenuItemsQuerySchema.shape.includeHidden,
+});
+export type MenuCategoriesQuery = z.infer<typeof MenuCategoriesQuerySchema>;
 
 export const MenuItemListResponseSchema = apiResponseSchema(MenuItemListSchema);
 export type MenuItemListResponse = z.infer<typeof MenuItemListResponseSchema>;

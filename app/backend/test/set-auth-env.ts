@@ -17,6 +17,11 @@ export function applyTestEnv(): void {
   process.env.LINE_CHANNEL_SECRET ??= 'line-channel-secret-test';
   process.env.LINE_CALLBACK_URL ??= 'http://localhost:3001/api/auth/line/callback';
   process.env.FRONTEND_URL ??= 'http://localhost:3000';
+  process.env.AWS_REGION ??= 'ap-southeast-1';
+  process.env.S3_BUCKET ??= 'bar-test';
+  // Forced empty (BRIEF-039 AC-6): the suite runs with no AWS keys; photo tests swap in FakeStorage.
+  process.env.AWS_ACCESS_KEY_ID = '';
+  process.env.AWS_SECRET_ACCESS_KEY = '';
 }
 
 applyTestEnv();

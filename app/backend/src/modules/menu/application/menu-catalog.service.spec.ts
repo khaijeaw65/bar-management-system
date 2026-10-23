@@ -1,3 +1,4 @@
+import { asStorage, FakeStorage } from '../../../../test/fake-storage.js';
 import type { MenuCatalogRepository } from '../domain/menu-catalog.repository.js';
 import type { MenuItemRecord } from '../domain/menu.types.js';
 import { MenuCatalogService } from './menu-catalog.service.js';
@@ -14,6 +15,7 @@ function record(overrides: Partial<MenuItemRecord> = {}): MenuItemRecord {
     categoryActive: true,
     name: 'โอลด์แฟชั่น',
     description: null,
+    imageKey: null,
     basePrice: '260.00',
     itemType: 'simple',
     kitchenTag: 'bar',
@@ -63,7 +65,7 @@ describe('MenuCatalogService.getOrderable', () => {
     lockItem: async () => null,
     saveAvailability: async () => undefined,
   };
-  const service = new MenuCatalogService(catalog, { now: () => NOON });
+  const service = new MenuCatalogService(catalog, { now: () => NOON }, asStorage(new FakeStorage()));
 
   it('returns price, station, and modifiers, and reports an unknown id', async () => {
     findVariants.mockResolvedValue([record()]);
@@ -140,5 +142,42 @@ describe('MenuCatalogService.getOrderable', () => {
       found: [],
       missing: [MISSING],
     });
+  });
+});
+
+describe('MenuCatalogService reads (BRIEF-039)', () => {
+  const listItems = vi.fn<MenuCatalogRepository['listItems']>();
+  const listCategories = vi.fn<MenuCatalogRepository['listCategories']>();
+  const findItem = vi.fn<MenuCatalogRepository['findItem']>();
+  const catalog = {
+    listCategories,
+    listItems,
+    findItem,
+  } as unknown as MenuCatalogRepository;
+  const service = new MenuCatalogService(catalog, { now: () => NOON }, asStorage(new FakeStorage()));
+
+  it('imageUrl is a presigned GET for the stored key and null without one', async () => {
+    findItem.mockResolvedValueOnce(record({ imageKey: `menu/${ITEM}/photo.jpg` }));
+    expect((await service.getItem(ITEM)).imageUrl).toBe(`https://fake-s3.test/bar-test/menu/${ITEM}/photo.jpg?X-Amz-Signature=fake`);
+    findItem.mockResolvedValueOnce(record());
+    expect((await service.getItem(ITEM)).imageUrl).toBeNull();
+  });
+
+  it('lists items of a hidden category only for includeHidden, as not available', async () => {
+    listItems.mockResolvedValue([record({ categoryActive: false })]);
+    expect((await service.listItems({ availableOnly: false })).items).toEqual([]);
+    const hidden = await service.listItems({ availableOnly: false, includeHidden: true });
+    expect(hidden.items).toHaveLength(1);
+    expect(hidden.items[0]).toMatchObject({ availableNow: false, unavailableReason: 'sold_out' });
+    expect(listItems).toHaveBeenLastCalledWith(undefined, true);
+    expect((await service.listItems({ availableOnly: true, includeHidden: true })).items).toEqual([]);
+  });
+
+  it('passes includeHidden to the category read', async () => {
+    listCategories.mockResolvedValue([{ id: ITEM, name: 'ซ่อน', sortOrder: 0, isActive: false }]);
+    expect(await service.listCategories(true)).toEqual({
+      items: [{ id: ITEM, name: 'ซ่อน', sortOrder: 0, isActive: false }],
+    });
+    expect(listCategories).toHaveBeenLastCalledWith(true);
   });
 });

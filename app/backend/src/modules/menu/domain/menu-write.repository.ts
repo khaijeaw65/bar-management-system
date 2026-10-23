@@ -5,6 +5,8 @@ export interface MenuItemFields {
   categoryId: string;
   name: string;
   description: string | null;
+  /** `menu/<itemId>/…` key, or null for no photo. */
+  imageKey: string | null;
   itemType: ItemType;
   kitchenTag: KitchenStation | null;
   isPromo: boolean;
@@ -15,6 +17,7 @@ export interface MenuItemFields {
 /** The row a PATCH checks under `FOR UPDATE`. */
 export interface LockedMenuItem {
   updatedAt: Date;
+  imageKey: string | null;
   variantIds: string[];
   /** Union of the groups linked to the item's active variants. */
   groupIds: string[];
@@ -31,7 +34,13 @@ export interface MenuWriteRepository {
   /** Locks the category `FOR KEY SHARE`, so a concurrent delete waits for this write. */
   holdCategory(id: string): Promise<boolean>;
   missingModifierGroups(ids: readonly string[]): Promise<string[]>;
-  insertItem(fields: MenuItemFields, variants: readonly MenuVariantInput[], groupIds: readonly string[]): Promise<string>;
+  /** The caller picks `id`, so the photo can be copied to `menu/<id>/…` before the row exists. */
+  insertItem(
+    id: string,
+    fields: MenuItemFields,
+    variants: readonly MenuVariantInput[],
+    groupIds: readonly string[],
+  ): Promise<void>;
   lockItem(id: string): Promise<LockedMenuItem | null>;
   /**
    * Saves the item and its variant set: listed ids are updated and re-activated, new ones inserted,

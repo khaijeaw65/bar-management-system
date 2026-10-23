@@ -18,7 +18,7 @@ import { ModifierGroup } from './modifier-group.entity.js';
 
 const HOLD_CATEGORY = `SELECT id FROM menu_category WHERE id = $1 FOR KEY SHARE`;
 
-const LOCK_ITEM = `SELECT updated_at AS "updatedAt" FROM menu_item WHERE id = $1 FOR UPDATE`;
+const LOCK_ITEM = `SELECT updated_at AS "updatedAt", image_key AS "imageKey" FROM menu_item WHERE id = $1 FOR UPDATE`;
 
 const ACTIVE_GROUPS = `
   SELECT DISTINCT l.modifier_group_id AS id
@@ -64,12 +64,14 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
   }
 
   public async insertItem(
+    id: string,
     fields: MenuItemFields,
     variants: readonly MenuVariantInput[],
     groupIds: readonly string[],
-  ): Promise<string> {
+  ): Promise<void> {
     const [next] = await this.query(NEXT_ITEM_SORT, [fields.categoryId]);
     const item = this.txHost.tx.getRepository(MenuItem).create({
+      id,
       ...this.itemColumns(fields),
       isAvailable: true,
       sortOrder: Number(next?.next ?? 0),
@@ -77,7 +79,6 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
     const saved = await this.txHost.tx.getRepository(MenuItem).save(item);
     const ids = await this.saveVariantSet(saved.id, variants, []);
     await this.replaceLinks(ids, groupIds);
-    return saved.id;
   }
 
   public async lockItem(id: string): Promise<LockedMenuItem | null> {
@@ -90,6 +91,7 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
     const groups = await this.query(ACTIVE_GROUPS, [id]);
     return {
       updatedAt: new Date(row.updatedAt as string | Date),
+      imageKey: typeof row.imageKey === 'string' ? row.imageKey : null,
       variantIds: variants.map((variant) => variant.id),
       groupIds: groups.map((group) => String(group.id)),
     };
@@ -199,6 +201,7 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
       categoryId: fields.categoryId,
       name: fields.name,
       description: fields.description,
+      imageKey: fields.imageKey,
       itemType: fields.itemType,
       kitchenTag: fields.kitchenTag,
       isPromo: fields.isPromo,
@@ -207,7 +210,7 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
   }
 
   private toCategory(row: MenuCategory): MenuCategoryRecord {
-    return { id: row.id, name: row.name, sortOrder: row.sortOrder };
+    return { id: row.id, name: row.name, sortOrder: row.sortOrder, isActive: row.isActive };
   }
 
   private async query(sql: string, parameters: unknown[]): Promise<Record<string, unknown>[]> {

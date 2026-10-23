@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type {
+  MenuCategoryList,
   MenuItem,
   MenuItemList,
   MenuModifierGroup,
   UnavailableReason,
 } from '@bar/contracts';
+import { StorageService } from '../../../common/storage/storage.service.js';
 import { hhmm } from '../../../common/time-label.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { CLOCK, type Clock } from '../../../common/clock.js';
@@ -23,6 +25,8 @@ import { money } from '../../../common/money.js';
 export interface MenuListQuery {
   categoryId?: string;
   availableOnly: boolean;
+  /** Hidden categories and their items too (back office, BRIEF-039). */
+  includeHidden?: boolean;
 }
 
 export interface OrderableVariant {
@@ -48,19 +52,20 @@ export class MenuCatalogService {
     @Inject(MENU_CATALOG_REPOSITORY)
     private readonly catalog: MenuCatalogRepository,
     @Inject(CLOCK) private readonly clock: Clock,
+    private readonly storage: StorageService,
   ) {}
 
-  public async listCategories(): Promise<{
-    items: Array<{ id: string; name: string; sortOrder: number }>;
-  }> {
-    return { items: await this.catalog.listCategories() };
+  public async listCategories(includeHidden = false): Promise<MenuCategoryList> {
+    return { items: await this.catalog.listCategories(includeHidden) };
   }
 
   public async listItems(query: MenuListQuery): Promise<MenuItemList> {
     const now = this.clock.now();
-    const items = (await this.catalog.listItems(query.categoryId))
-      .map((record) => this.toListedItem(record, now))
-      .filter((item): item is MenuItem => item !== null);
+    const records = await this.catalog.listItems(query.categoryId, query.includeHidden);
+    const listed = records.filter(
+      (record) => query.includeHidden || menuAvailability(this.availabilityInput(record), now).listed,
+    );
+    const items = await Promise.all(listed.map((record) => this.toItem(record, now)));
     return {
       items: query.availableOnly
         ? items.filter((item) => item.availableNow)
@@ -71,7 +76,7 @@ export class MenuCatalogService {
   public async getItem(id: string): Promise<MenuItem> {
     const record = await this.catalog.findItem(id);
     if (!record) throw new DomainException('NOT_FOUND', 'ไม่พบเมนู', 404);
-    return this.toItem(record, this.clock.now());
+    return await this.toItem(record, this.clock.now());
   }
 
   public async setAvailability(
@@ -81,12 +86,12 @@ export class MenuCatalogService {
     const locked = await this.catalog.lockItem(itemId);
     if (!locked) throw new DomainException('NOT_FOUND', 'ไม่พบเมนู', 404);
     if (locked.isAvailable === available) {
-      return { changed: false, item: this.toItem(locked, this.clock.now()) };
+      return { changed: false, item: await this.toItem(locked, this.clock.now()) };
     }
     await this.catalog.saveAvailability(itemId, available);
     return {
       changed: true,
-      item: this.toItem({ ...locked, isAvailable: available }, this.clock.now()),
+      item: await this.toItem({ ...locked, isAvailable: available }, this.clock.now()),
     };
   }
 
@@ -137,19 +142,14 @@ export class MenuCatalogService {
     return { ...record, isAvailable: flag };
   }
 
-  private toListedItem(record: MenuItemRecord, now: Date): MenuItem | null {
-    if (!menuAvailability(this.availabilityInput(record), now).listed) return null;
-    return this.toItem(record, now);
-  }
-
-  private toItem(record: MenuItemRecord, now: Date): MenuItem {
+  private async toItem(record: MenuItemRecord, now: Date): Promise<MenuItem> {
     const decision = menuAvailability(this.availabilityInput(record), now);
     return {
       id: record.id,
       categoryId: record.categoryId,
       name: record.name,
       description: record.description,
-      imageUrl: null,
+      imageUrl: record.imageKey ? await this.storage.presignRead(record.imageKey) : null,
       itemType: record.itemType,
       station: record.kitchenTag,
       isPromo: record.isPromo,

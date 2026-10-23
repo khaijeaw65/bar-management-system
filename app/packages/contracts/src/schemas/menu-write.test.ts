@@ -1,4 +1,6 @@
+import { MenuCategorySchema, MenuCategoriesQuerySchema, MenuItemSchema, MenuItemsQuerySchema } from './menu.js';
 import {
+  CreateImageUploadUrlSchema,
   CreateMenuItemSchema,
   ReorderMenuCategoriesSchema,
   UpdateMenuCategorySchema,
@@ -91,5 +93,74 @@ describe('category schemas', () => {
   it('rejects a reorder with the same id twice', () => {
     expect(ReorderMenuCategoriesSchema.safeParse({ ids: [CATEGORY, CATEGORY] }).success).toBe(false);
     expect(ReorderMenuCategoriesSchema.safeParse({ ids: [CATEGORY] }).success).toBe(true);
+  });
+});
+
+describe('imageKey', () => {
+  const tmp = 'tmp/5b0c3f1e-8d2a-4c47-9a51-0e6f2b7d3c18.jpg';
+
+  it('is optional on create and update, and may be null', () => {
+    expect(CreateMenuItemSchema.parse(gin).imageKey).toBeUndefined();
+    expect(CreateMenuItemSchema.parse({ ...gin, imageKey: null }).imageKey).toBeNull();
+    expect(CreateMenuItemSchema.parse({ ...gin, imageKey: tmp }).imageKey).toBe(tmp);
+    const update = { ...gin, updatedAt: '2026-10-23T10:00:00.000Z' };
+    expect(UpdateMenuItemSchema.parse(update).imageKey).toBeUndefined();
+    expect(UpdateMenuItemSchema.parse({ ...update, imageKey: null }).imageKey).toBeNull();
+  });
+
+  it('rejects a non-string or oversized key', () => {
+    expect(issues(CreateMenuItemSchema.safeParse({ ...gin, imageKey: 5 }))).toEqual(['imageKey']);
+    expect(issues(CreateMenuItemSchema.safeParse({ ...gin, imageKey: 'x'.repeat(501) }))).toEqual(['imageKey']);
+  });
+});
+
+describe('CreateImageUploadUrlSchema', () => {
+  it('accepts the three image types', () => {
+    for (const contentType of ['image/jpeg', 'image/png', 'image/webp']) {
+      expect(CreateImageUploadUrlSchema.safeParse({ contentType }).success).toBe(true);
+    }
+  });
+
+  it('rejects any other type', () => {
+    for (const contentType of ['image/gif', 'text/plain', 'application/pdf', '']) {
+      expect(issues(CreateImageUploadUrlSchema.safeParse({ contentType }))).toEqual(['contentType']);
+    }
+  });
+});
+
+describe('menu reads (BRIEF-039)', () => {
+  const item = {
+    id: CATEGORY,
+    categoryId: CATEGORY,
+    name: 'จินโทนิค',
+    description: null,
+    imageUrl: null,
+    itemType: 'simple',
+    station: 'bar',
+    isPromo: false,
+    basePrice: '180.00',
+    sortOrder: 0,
+    availableNow: true,
+    unavailableReason: null,
+    windows: [],
+    variants: [],
+    updatedAt: '2026-10-23T10:00:00.000Z',
+  };
+
+  it('imageUrl is null or a URL', () => {
+    expect(MenuItemSchema.safeParse(item).success).toBe(true);
+    expect(MenuItemSchema.safeParse({ ...item, imageUrl: 'https://bucket.s3.amazonaws.com/menu/a.jpg?X-Amz-Signature=1' }).success).toBe(true);
+    expect(MenuItemSchema.safeParse({ ...item, imageUrl: 'menu/a.jpg' }).success).toBe(false);
+  });
+
+  it('every category carries isActive', () => {
+    expect(MenuCategorySchema.safeParse({ id: CATEGORY, name: 'ค็อกเทล', sortOrder: 0, isActive: false }).success).toBe(true);
+    expect(MenuCategorySchema.safeParse({ id: CATEGORY, name: 'ค็อกเทล', sortOrder: 0 }).success).toBe(false);
+  });
+
+  it('includeHidden is true or false', () => {
+    expect(MenuItemsQuerySchema.parse({ includeHidden: 'true' }).includeHidden).toBe('true');
+    expect(MenuCategoriesQuerySchema.parse({}).includeHidden).toBeUndefined();
+    expect(MenuCategoriesQuerySchema.safeParse({ includeHidden: 'yes' }).success).toBe(false);
   });
 });
