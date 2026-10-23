@@ -119,7 +119,9 @@ test("a row tap opens the editor, the switch toggles without opening it", async 
   await userEvent.click(control!);
   expect(await screen.findByText("สิงห์ หมดแล้ว")).toBeInTheDocument();
   expect(push).not.toHaveBeenCalled();
-  expect(requests).toContain(`POST /api/menu/items/${menuItems[0]?.id}/mark-unavailable`);
+  // Exactly one: if HeroUI ever moves the control inside the button, the manual toggle would double up.
+  const toggles = requests.filter((request) => request.includes("/mark-"));
+  expect(toggles).toEqual([`POST /api/menu/items/${menuItems[0]?.id}/mark-unavailable`]);
   server.events.removeAllListeners();
 });
 
