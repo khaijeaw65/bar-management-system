@@ -100,7 +100,7 @@ export class OrderTypeormRepository implements OrderRepository {
     const values: unknown[] = [];
     const where = orderWhere(query, values);
     const result: unknown = await this.manager.query(
-      `${ORDER_ROWS_SQL} ${where} ORDER BY o.created_at, t.created_at, i.created_at`,
+      `${ORDER_ROWS_SQL} ${where} ORDER BY o.created_at, o.id, t.created_at, t.station, t.id, i.line_no, m.id`,
       values,
     );
     return rowList(result).map(toOrderRow);
@@ -185,6 +185,9 @@ export class OrderTypeormRepository implements OrderRepository {
     return this.manager.getRepository(OrderItem).create({
       ticketId,
       menuItemVariantId: line.variantId,
+      itemNameSnapshot: line.itemName,
+      variantNameSnapshot: line.variantName,
+      lineNo: line.lineNo,
       quantity: line.quantity,
       unitPriceSnapshot: line.unitPrice,
       orderedByName: line.orderedByName,
@@ -204,6 +207,7 @@ export class OrderTypeormRepository implements OrderRepository {
     await modifiers.save(modifiers.create({
       orderItemId,
       modifierOptionId: modifier.optionId,
+      optionNameSnapshot: modifier.name,
       priceDeltaSnapshot: modifier.priceDelta,
     }));
   }

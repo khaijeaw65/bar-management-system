@@ -392,6 +392,9 @@ CREATE TABLE order_item (
   id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   ticket_id             UUID NOT NULL REFERENCES order_ticket(id),   -- order reached through the ticket (DR-013)
   menu_item_variant_id  UUID NOT NULL REFERENCES menu_item_variant(id),
+  item_name_snapshot    VARCHAR(200) NOT NULL,   -- frozen at order time (DR-022) — a later rename never rewrites a past order
+  variant_name_snapshot VARCHAR(200) NOT NULL,   -- frozen at order time (DR-022)
+  line_no               SMALLINT NOT NULL,       -- 1 … n per order, request order (DR-022)
   quantity              SMALLINT NOT NULL DEFAULT 1,
   unit_price_snapshot   NUMERIC(10,2) NOT NULL,   -- frozen at order time
   ordered_by_name       VARCHAR(100),           -- e.g. 'Filippo' — label shown on order card
@@ -413,6 +416,7 @@ CREATE TABLE order_item_modifier (
   id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   order_item_id        UUID NOT NULL REFERENCES order_item(id),
   modifier_option_id   UUID NOT NULL REFERENCES modifier_option(id),
+  option_name_snapshot VARCHAR(200) NOT NULL,     -- frozen at order time (DR-022)
   price_delta_snapshot NUMERIC(10,2) NOT NULL     -- frozen at order time
 );
 
