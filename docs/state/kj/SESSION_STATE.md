@@ -3,11 +3,11 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-040 **Ready** (menu item list + editor + live menu; Q1 = A kj, Q2 = A phone 390 later) on `feat/BRIEF-040-menu-editor-ui` → `execute BRIEF-040`. BRIEF-041 Draft (photo UI) seeded on `feat/BRIEF-041-menu-photo-ui`; categories / add-on screens = BRIEF-045 (to draft).
+BRIEF-040 menu editor UI **Implemented** on `feat/BRIEF-040-menu-editor-ui` — gates green; **real-API run proof open** (needs Field's LINE sign-in on :3000). Then `audit BRIEF-040` (Cowork).
 
 ## Active
-- Brief: BRIEF-040 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-040-menu-editor-ui` (seed)
-- Done 21–23 Oct: BRIEF-044 (#87) · DR-023 docs (#86) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
+- Brief: BRIEF-040 Rev 1 · Stage: Implemented (no PR) · Branch: `feat/BRIEF-040-menu-editor-ui` (seed `2ee875c`) · handoff `docs/handoffs/BRIEF-040.md`
+- Done 21–23 Oct: BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
 
 ## Next steps
 1. 040 Ready (Field 23 Oct) · 041: bucket CORS `POST` :3000 + `tmp/` 1-day lifecycle set (Field 23 Oct) · Cowork drafts 045 · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
