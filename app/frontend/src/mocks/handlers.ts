@@ -2,6 +2,7 @@ import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod
 import { UpdateVenuePaymentSettingsSchema, UpdateVenueSettingsSchema } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 import { scaleMoney, sumMoney } from "@/lib/utils/money";
+import { reportHandlers } from "./reports";
 
 export const staffMe = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -557,6 +558,7 @@ export const handlers = [
     remember(visit);
     return json({ visit, attached: false }, 201);
   }),
+  ...reportHandlers,
   http.get("*/api/venue", () => json(venueSettings)),
   http.patch("*/api/venue/settings", async ({ request }) => patchVenue(await request.json())),
   http.get("*/api/venue/payment-settings", () => json(paymentSettings)),
