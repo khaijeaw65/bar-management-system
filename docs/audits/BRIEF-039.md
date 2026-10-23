@@ -73,3 +73,17 @@ Signing still runs inside the 86 transaction; it can no longer fail it, and with
 **Result: PASS** — zero Must fix. Audited S = `a8dabae`.
 
 **Next command:** `execute BRIEF-039` (PASS commit: this audit unchanged + handoff + state, then PR; Field's own PR — merge once `ci` is green on H and S..H is evidence-only).
+
+## Re-check — 2026-10-23 (Cowork) · `3853a4b` (§7 compact re-check after a post-PASS change)
+**Trigger:** `ci` red on the PASS head `6f2c39e` — the known `demo-history-seed` flake (Finding 2).
+
+| Check | Result |
+|---|---|
+| `6f2c39e` (PASS commit) | evidence only — this audit committed unchanged (byte-identical), handoff, KJ state |
+| `3853a4b` diff | `test/demo-history-seed.e2e-spec.ts` only, 1 line: `ORDER BY 1::text` (a constant expression, not column 1 → arbitrary order) → `ORDER BY confirmed_via::text`; the expected `['cash', 'manual', 'slip_verify']` is now the deterministic alphabetical order. No app code, contract, schema or dependency change |
+
+Finding 2 is fixed here instead of in BRIEF-042 — BRIEF-042 no longer needs it.
+
+**Result: PASS** (unchanged). Audited S = `3853a4b`.
+
+**Next command:** `execute BRIEF-039` — commit this re-check unchanged as the new H (`docs(BRIEF-039): audit re-check 3853a4b`), push, merge once `ci` is green on that H (Field's own PR; S..H evidence-only).
