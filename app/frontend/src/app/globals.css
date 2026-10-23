@@ -53,6 +53,8 @@
   --status-neutral-bg: #362B1E; --status-neutral-fg: #C4B698; --status-neutral-border: rgba(240,230,208,.12);
   /* bottle keep */
   --bottle-keep: #9A9CE0; --bottle-keep-bg: #25264A; --bottle-keep-border: rgba(154,156,224,.45);
+  /* charts — CD-05 R2; single-series charts use --chart-1 only */
+  --chart-1: #B87020; --chart-2: #7E80D8;
   /* feedback */
   --success: #7FA85C; --success-fg: #98BF76; --success-bg: #2E3A20;
   --warning: #E3A11B; --warning-fg: #E3A11B; --warning-bg: #40300B;
@@ -109,6 +111,7 @@
   --status-void: #C4503A;   --status-void-bg: #F5DCD4;   --status-void-fg: #A0351F;   --status-void-border: rgba(160,53,31,.35);
   --status-neutral-bg: #EBE0CB; --status-neutral-fg: #5C4A35; --status-neutral-border: rgba(42,32,22,.14);
   --bottle-keep: #3F3F9A; --bottle-keep-bg: #E3E2F4; --bottle-keep-border: rgba(63,63,154,.35);
+  --chart-1: #B87020; --chart-2: #6E6FC8;
   --success: #7FA85C; --success-fg: #3F6526; --success-bg: #E1EBD3;
   --warning: #E3A11B; --warning-fg: #7A5200; --warning-bg: #F5E4BE;
   --info: #6E93A8;    --info-fg: #2E5A72;    --info-bg: #DCE8EE;
@@ -268,6 +271,8 @@
   --color-bottle-keep: var(--bottle-keep);
   --color-bottle-keep-bg: var(--bottle-keep-bg);
   --color-bottle-keep-border: var(--bottle-keep-border);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
   --color-success-fg: var(--success-fg);
   --color-success-bg: var(--success-bg);
   --color-warning-fg: var(--warning-fg);
