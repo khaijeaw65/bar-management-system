@@ -4,10 +4,10 @@
 |---|---|
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-23 |
-| **Brief revision** | 1 |
+| **Brief revision** | 2 |
 | **Branch** | `feat/BRIEF-041-menu-photo-ui` (seed `9a3a5d2`, merged `origin/main` `d4590b4` first) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — run proof done on the real API + `bar-app-dev` (below) |
+| **Status** | Audit PASS (Cowork, S `a57debf`) — PR opened |
 | **AI usage** | n/a (Field's brief, agent-written) |
 
 ## Summary
@@ -26,6 +26,7 @@
 | AC-4 | ✅ | "remove saves null", "untouched sends no imageKey"; replace = AC-1 |
 | AC-5 | ✅ | "save disabled while uploading; cancel…" |
 | AC-6 | ✅ | gates + run proof below |
+| AC-7 (Rev 2) | ✅ | `MenuList.test.tsx` (visible control, exactly one `mark-unavailable`, no push) · `e2e/menu.spec.ts` (real Chromium: URL stays `/pos/menu`; row click opens the editor) |
 
 ## Gate Evidence (G1)
 Working tree at the work commit:
@@ -34,11 +35,16 @@ Working tree at the work commit:
 | `pnpm --filter @bar/frontend lint` | 0 | pass |
 | `pnpm --filter @bar/frontend typecheck` | 0 | pass |
 | `pnpm --filter @bar/frontend test` | 0 | 159 passed (32 files) |
-| `pnpm --filter @bar/frontend test:e2e` | 0 | 18 passed (run before a one-line nested-ternary refactor in `PhotoField`; unit rerun after) |
+| `pnpm --filter @bar/frontend test:e2e` | 0 | 19 passed (re-run on `f4aa6f3`) |
 | `pnpm --filter @bar/frontend build` | 0 | pass |
 
 ## Sonar
 Gate ERROR (as on main: `new_coverage` 0 %, 17 issues). One issue in this brief's files (S3358 nested ternary in `PhotoField`) → fixed after the scan; not re-scanned. The rest are `test/setup.ts` and backend files from before.
+
+## Rev 2 — list Switch fix (BRIEF-040 regression, Field)
+HeroUI renders `Switch.Control` (the visible track) outside the label and input, so a click on it toggled nothing and only reached the row's `onAction` (opened the editor); BRIEF-040's jsdom test clicked the hidden input. Fix in `MenuItemRow.tsx`: a wrapper stops pointer / mouse / click / key events before the row, and a click on `[data-slot="switch-control"]` toggles through `useAvailabilityToggle` (skipped while pending; keyboard still toggles through the Switch's own `onChange`). Reproduced in Playwright first (control click → editor URL), then fixed. Audit round: Must fix #3 (this fix, `f4aa6f3`), Must fix #4 (assert exactly one request, `a57debf`) — both PASS. The jsdom test does not reproduce the bug itself; the e2e is the real check.
+Gates after the fix (on `f4aa6f3`): lint, typecheck, build 0 · unit 159 · e2e 19. `a57debf` is test-only; lint, typecheck and `MenuList.test.tsx` re-run (7 passed).
+Note: stopped Field's `next dev :3000` to run Playwright (it blocks a second dev server in the folder); it was left stopped.
 
 ## Run proof
 Real API `:3001` + `next dev :3000` on this work tree (HEAD `e6395c1`, work `f1d25e1`), Field signed in via LINE, viewport 1280×900, the in-app browser. The test item is "จินโทนิค" (ไฮบอล) from BRIEF-040's proof. The file picker was driven from page JS (a canvas-made 800×600 JPG put on the input via `DataTransfer`), everything after is the real app, API and bucket.
