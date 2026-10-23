@@ -18,6 +18,7 @@ export const ErrorCodeSchema = z.enum([
   'PROMPTPAY_NOT_SET',
   'MENU_ITEM_STALE',
   'CATEGORY_NOT_EMPTY',
+  'CATEGORY_NAME_TAKEN',
   'MODIFIER_GROUP_IN_USE',
 ]);
 

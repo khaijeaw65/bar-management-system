@@ -156,8 +156,13 @@ describe('menu reads (BRIEF-039)', () => {
   });
 
   it('every category carries isActive', () => {
-    expect(MenuCategorySchema.safeParse({ id: CATEGORY, name: 'ค็อกเทล', sortOrder: 0, isActive: false }).success).toBe(true);
+    expect(MenuCategorySchema.safeParse({ id: CATEGORY, name: 'ค็อกเทล', sortOrder: 0, isActive: false, itemCount: 0 }).success).toBe(true);
     expect(MenuCategorySchema.safeParse({ id: CATEGORY, name: 'ค็อกเทล', sortOrder: 0 }).success).toBe(false);
+    const withCount = (itemCount: number) =>
+      MenuCategorySchema.safeParse({ id: CATEGORY, name: 'ค็อกเทล', sortOrder: 0, isActive: true, itemCount }).success;
+    expect(withCount(2)).toBe(true);
+    expect(withCount(-1)).toBe(false);
+    expect(withCount(1.5)).toBe(false);
   });
 
   it('includeHidden is true or false', () => {

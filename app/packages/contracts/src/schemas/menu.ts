@@ -67,6 +67,8 @@ export const MenuCategorySchema = z.object({
   sortOrder: z.number().int(),
   // false = hidden from the POS; only `?includeHidden=true` lists hidden categories (BRIEF-039).
   isActive: z.boolean(),
+  // Every menu item in the category, active or not — the same count the delete guard uses (BRIEF-045).
+  itemCount: z.number().int().min(0),
 });
 export type MenuCategory = z.infer<typeof MenuCategorySchema>;
 

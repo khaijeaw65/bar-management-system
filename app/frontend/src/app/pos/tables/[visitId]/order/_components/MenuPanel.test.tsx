@@ -12,8 +12,8 @@ function renderPanel(extra: Partial<Parameters<typeof MenuPanel>[0]> = {}) {
     <MenuPanel
       items={menuItems}
       categories={[
-        { id: "c1111111-1111-4111-8111-111111111111", name: "เบียร์", sortOrder: 0, isActive: true },
-        { id: "c2222222-2222-4222-8222-222222222222", name: "ค็อกเทล", sortOrder: 1, isActive: true },
+        { id: "c1111111-1111-4111-8111-111111111111", name: "เบียร์", sortOrder: 0, isActive: true, itemCount: 1 },
+        { id: "c2222222-2222-4222-8222-222222222222", name: "ค็อกเทล", sortOrder: 1, isActive: true, itemCount: 2 },
       ]}
       counts={new Map()}
       query=""

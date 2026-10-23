@@ -192,9 +192,9 @@ describe('MenuCatalogService reads (BRIEF-039)', () => {
   });
 
   it('passes includeHidden to the category read', async () => {
-    listCategories.mockResolvedValue([{ id: ITEM, name: 'ซ่อน', sortOrder: 0, isActive: false }]);
+    listCategories.mockResolvedValue([{ id: ITEM, name: 'ซ่อน', sortOrder: 0, isActive: false, itemCount: 3 }]);
     expect(await service.listCategories(true)).toEqual({
-      items: [{ id: ITEM, name: 'ซ่อน', sortOrder: 0, isActive: false }],
+      items: [{ id: ITEM, name: 'ซ่อน', sortOrder: 0, isActive: false, itemCount: 3 }],
     });
     expect(listCategories).toHaveBeenLastCalledWith(true);
   });

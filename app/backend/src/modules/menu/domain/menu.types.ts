@@ -54,4 +54,6 @@ export interface MenuCategoryRecord {
   name: string;
   sortOrder: number;
   isActive: boolean;
+  /** Every item in the category, active or not — the delete guard's count. */
+  itemCount: number;
 }

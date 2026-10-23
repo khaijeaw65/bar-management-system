@@ -85,11 +85,19 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
       where: includeHidden ? {} : { isActive: true },
       order: { sortOrder: 'ASC', name: 'ASC' },
     });
+    const counts = await this.items
+      .createQueryBuilder('item')
+      .select('item.categoryId', 'categoryId')
+      .addSelect('COUNT(*)', 'items')
+      .groupBy('item.categoryId')
+      .getRawMany<{ categoryId: string; items: string }>();
+    const itemCount = new Map(counts.map((row) => [row.categoryId, Number(row.items)]));
     return rows.map((row) => ({
       id: row.id,
       name: row.name,
       sortOrder: row.sortOrder,
       isActive: row.isActive,
+      itemCount: itemCount.get(row.id) ?? 0,
     }));
   }
 

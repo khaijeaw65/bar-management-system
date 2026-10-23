@@ -16,9 +16,9 @@ const cocktailId = "c2222222-2222-4222-8222-222222222222";
 const foodId = "c3333333-3333-4333-8333-333333333333";
 
 export const menuCategories = [
-  { id: beerId, name: "เบียร์", sortOrder: 0, isActive: true },
-  { id: cocktailId, name: "ค็อกเทล", sortOrder: 1, isActive: true },
-  { id: foodId, name: "อาหาร", sortOrder: 2, isActive: true },
+  { id: beerId, name: "เบียร์", sortOrder: 0, isActive: true, itemCount: 1 },
+  { id: cocktailId, name: "ค็อกเทล", sortOrder: 1, isActive: true, itemCount: 2 },
+  { id: foodId, name: "อาหาร", sortOrder: 2, isActive: true, itemCount: 1 },
 ];
 
 function item(

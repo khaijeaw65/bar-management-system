@@ -1,22 +1,22 @@
 # State — KJ
-Updated: 2026-10-23 · Agent: Claude Code (BRIEF-041 Ready seed)
+Updated: 2026-10-23 · Agent: Cowork (BRIEF-045 Ready seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-041 **Audit PASS** (Cowork, S `a57debf`; Rev 2 switch fix included) — PR opened with the PASS commit → merge on green `ci` (own PR, §7) → 045.
+BRIEF-045 **Audit PASS** (Cowork, S `419a159`) — PR opened with the PASS commit → merge on green `ci` (own PR, §7) → next in Queue.
 
 ## Active
-- Brief: BRIEF-041 Rev 2 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-041-menu-photo-ui` · handoff `docs/handoffs/BRIEF-041.md`
-- Done 21–23 Oct: BRIEF-040 (#90) · BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
+- Brief: BRIEF-045 Rev 1 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-045-menu-categories-addons-ui` · handoff `docs/handoffs/BRIEF-045.md`
+- Done 21–23 Oct: BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
-1. 040 Ready (Field 23 Oct) · 041: bucket CORS `POST` :3000 + `tmp/` 1-day lifecycle set (Field 23 Oct) · Cowork drafts 045 · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
+1. `execute BRIEF-045` (size ~1.4–1.5k accepted; before run proof check `bar` for duplicate category names — DR-025 migration fails on them) · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
 2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none · bucket `bar-app-dev` still needs the `tmp/` 1-day lifecycle + CORS `POST` from the web origin before the photo UI (041) · if `ci` hits frontend timeouts → re-run once (038 audit F4) · `nest start --watch` respawns a backend on :3001 after any `src` edit (it stole a payment-expiry job in 044's first e2e run) — the two in `app/backend` were stopped 23 Oct
+- Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4) · `nest start --watch` respawns a backend on :3001 after any `src` edit (it stole a payment-expiry job in 044's first e2e run) — the two in `app/backend` were stopped 23 Oct
 - e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations; a `nest start --watch` respawns it, so stop that too); frontend e2e needs no other `next dev` in `app/frontend`; frontend unit tests time out under heavy machine load (038 handoff)
 - Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 5 × จินโทนิค (180/200/200/220+ชีส/220+ชีสเยิ้ม), bill ฿1,305 · migrations `OrderLineSnapshots` + `UpdatedAtTrigger` + `ModifierGroupArchive` applied on `bar` · backend 3001 = plain `node dist/main` of `b000e4e` (no `nest start --watch` — restart it if wanted, stop it before `test:e2e`) · web `next dev` :3000 (another session) + SonarQube 9000 running
 
@@ -27,7 +27,7 @@ BRIEF-041 **Audit PASS** (Cowork, S `a57debf`; Rev 2 switch fix included) — PR
 - Dev env isolation (Field 23 Oct — after 036–038): e2e still shares Redis with the dev backend (BullMQ payments queue steals test expiry jobs; e2e flushdb signs out dev sessions) → own Redis DB index / queue prefix for tests, together with BRIEF-013 S2 (BullMQ drops the DB index) · until then stop the dev backend before backend test:e2e · after any e2e/seed reset: re-run seed:staff with Field's LINE sub (dev DB staff is "Field (demo)" / U-demo-owner since BRIEF-036) · demo menu needs created_at ≥ 7 days for "ขายน้อย" (BRIEF-036 run proof backdated it by hand)
 - Before AWS (9 Nov): BRIEF-013 S2 — BullMQ connection drops `rediss://` TLS + DB index
 - Before >1 backend task: BRIEF-013 S1 — expiry job that fires early is a silent no-op → re-schedule
-- Follow-ups: before a real-bar pilot → IAM brief (incl. `venue:update_payment` owner-only, `PermissionsGuard` as APP_GUARD — BRIEF-027 AC-6) · BRIEF-027 S2 (`runAsSystem` CLS helper when a 2nd system job appears) · BRIEF-028 S4 (menu "from" price → satang helper in 031) · BRIEF-029 S1 (`guestLabel` field parse) · BRIEF-030 S2 (group chip from the station ticket once charge items exist) · Sonar: add a coverage report path to `sonar-project.properties` (gate shows 0 %) + 18 pre-existing issues (setup.ts, SessionDrawer, backend order / payment / menu / seed) — cleanup brief or fix when each module is next touched (BRIEF-031) · S2 tooling: `migration:run` / `start:dev` build `@bar/contracts` first + BRIEF-018 PIN on PromptPay ID change · BRIEF-011 audit S3 · BRIEF-021 S1 + auth rate limiting · BRIEF-011 S1/S4 + `FRONTEND_URL` note + old IAM names · BRIEF-015 S3/S4 · BRIEF-016 S3 · BRIEF-019 S2 · BRIEF-024 S1 (shared exception instance), S2 (table-wide `hasPending`) · stale docs: FRD §13/§15 PWA, `docs/briefs/ui/*.md` tokens · DR-005 follow-ups (protected, Field): `backend.md` Auth + CLAUDE.md Auth row "Bearer for mobile" · BRIEF-038: `menu:write` for `?includeHidden` with IAM · `docs/erd.html` after 042 / 043 (Cowork, Field-approved) · DR-023 rule line "new tables with `updated_at` attach the trigger" → `backend.md` / CLAUDE.md (Field)
+- Follow-ups: before a real-bar pilot → IAM brief (incl. `venue:update_payment` owner-only, `PermissionsGuard` as APP_GUARD — BRIEF-027 AC-6) · BRIEF-027 S2 (`runAsSystem` CLS helper when a 2nd system job appears) · BRIEF-028 S4 (menu "from" price → satang helper in 031) · BRIEF-029 S1 (`guestLabel` field parse) · BRIEF-030 S2 (group chip from the station ticket once charge items exist) · Sonar: add a coverage report path to `sonar-project.properties` (gate shows 0 %) + 18 pre-existing issues (setup.ts, SessionDrawer, backend order / payment / menu / seed) — cleanup brief or fix when each module is next touched (BRIEF-031) · S2 tooling: `migration:run` / `start:dev` build `@bar/contracts` first + BRIEF-018 PIN on PromptPay ID change · BRIEF-011 audit S3 · BRIEF-021 S1 + auth rate limiting · BRIEF-011 S1/S4 + `FRONTEND_URL` note + old IAM names · BRIEF-015 S3/S4 · BRIEF-016 S3 · BRIEF-019 S2 · BRIEF-024 S1 (shared exception instance), S2 (table-wide `hasPending`) · stale docs: FRD §13/§15 PWA, `docs/briefs/ui/*.md` tokens · DR-005 follow-ups (protected, Field): `backend.md` Auth + CLAUDE.md Auth row "Bearer for mobile" · BRIEF-038: `menu:write` for `?includeHidden` with IAM · `docs/erd.html` after 042 / 043 / DR-025 (Cowork, Field-approved) · DR-023 rule line "new tables with `updated_at` attach the trigger" → `backend.md` / CLAUDE.md (Field)
 - Payment brief IDs (Field, 19 Oct): 013 core ✅ · 023 split · 024 PromptPay ID ✅ · 025 slip → EasySlip (CD-03 Q2 real slip) · 026 gateway + webhook (Xendit vs Omise DR; webhook URL = tunnel) · 027 sold-out auto-void ✅
 - Sizing: BRIEF-013 ~2.2k vs ~500 · BRIEF-027 ~1.2k vs ~700 · BRIEF-028 ~860 vs ~500 · 036 ~1.8k · 037 ~1.5k · 038 ~1.2k — race-heavy backend ≈ 1.7×, UI ≈ 1.6× (tests ≈ 40 %) → estimates now count tests
 - Design: CD-11 re-copy (R1 + R5) before the 8 Nov export · CD-02 "แจ้งโอนแล้ว" alert variant next revision · canvas index/recipe → `docs/design/README.md`
@@ -36,5 +36,5 @@ BRIEF-041 **Audit PASS** (Cowork, S `a57debf`; Rev 2 switch fix included) — PR
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-040 (Ready) → 041 (Draft) → 045 categories + add-on screens (to draft) → phone 390 shell (after 8 Nov)
+1. BRIEF-045 categories + add-on screens (Ready) → phone 390 shell (after 8 Nov)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
