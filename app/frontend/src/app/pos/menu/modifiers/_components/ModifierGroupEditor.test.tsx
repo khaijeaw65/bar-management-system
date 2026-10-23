@@ -120,3 +120,18 @@ test("maximum above the switched-on options is an inline error", async () => {
   expect(await screen.findByText("เลือกสูงสุดต้องไม่เกินจำนวนตัวเลือก")).toBeInTheDocument();
   expect(sent).toHaveLength(0);
 });
+
+test("maximum below the minimum is an inline error", async () => {
+  const user = userEvent.setup();
+  renderScreen();
+  await openNew(user);
+  await user.type(screen.getByRole("textbox", { name: "ชื่อกลุ่ม" }), "ก");
+  await fillOption(user, 0, "ข", "0");
+  await user.click(screen.getByRole("switch", { name: "ต้องเลือก" }));
+  await user.clear(screen.getByRole("textbox", { name: "ขั้นต่ำ" }));
+  await user.type(screen.getByRole("textbox", { name: "ขั้นต่ำ" }), "2");
+  await user.tab();
+  await user.click(screen.getByRole("button", { name: "บันทึก" }));
+  expect(await screen.findByText("เลือกสูงสุดต้องไม่น้อยกว่าขั้นต่ำ")).toBeInTheDocument();
+  expect(sent).toHaveLength(0);
+});

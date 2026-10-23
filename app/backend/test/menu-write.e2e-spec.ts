@@ -273,8 +273,8 @@ describe('Menu write API (e2e)', () => {
       await migration.down(runner);
       await dataSource.query(`INSERT INTO menu_category (name) VALUES ('เบียร์สด '), (' เบียร์สด'), ('x'), ('X')`);
       await expect(migration.up(runner)).rejects.toThrow(/duplicate names.*"x"/);
-      await dataSource.query(`DELETE FROM menu_category WHERE name IN (' เบียร์สด', 'เบียร์สด ', 'x', 'X')`);
     } finally {
+      await dataSource.query(`DELETE FROM menu_category WHERE name IN (' เบียร์สด', 'เบียร์สด ', 'x', 'X')`);
       await migration.up(runner);
       await runner.release();
     }

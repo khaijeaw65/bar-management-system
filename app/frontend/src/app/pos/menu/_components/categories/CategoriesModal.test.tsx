@@ -111,3 +111,15 @@ test("blocks delete while the category holds items and deletes an empty one", as
   await waitFor(() => expect(screen.queryByRole("button", { name: "แก้ชื่อ ว่าง" })).not.toBeInTheDocument());
   expect(sent.some((call) => call.method === "DELETE")).toBe(true);
 });
+
+test("Enter then blur before the response sends exactly one PATCH", async () => {
+  const user = userEvent.setup();
+  renderModal();
+  await user.click(await screen.findByRole("button", { name: "แก้ชื่อ อาหาร" }));
+  const input = screen.getByRole("textbox", { name: "ชื่อหมวด อาหาร" });
+  await user.clear(input);
+  await user.type(input, "ของกิน{Enter}");
+  await user.tab();
+  await screen.findByRole("button", { name: "แก้ชื่อ ของกิน" });
+  expect(sent.filter((call) => call.method === "PATCH")).toHaveLength(1);
+});

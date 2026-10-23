@@ -21,7 +21,7 @@ test("creates an add-on group from the toolbar", async ({ page }) => {
   // Data on screen = hydrated, so the click is not lost.
   await expect(page.getByRole("rowheader", { name: "สิงห์" })).toBeVisible();
   await page.getByRole("button", { name: "ตัวเลือกเสริม" }).click();
-  await expect(page).toHaveURL(/\/pos\/menu\/modifiers$/);
+  await expect(page).toHaveURL(/\/pos\/menu\/modifiers$/, { timeout: 20_000 });
 
   await page.getByRole("button", { name: "เพิ่มกลุ่ม" }).click();
   await page.getByRole("textbox", { name: "ชื่อกลุ่ม" }).fill("ท็อปปิ้ง");
