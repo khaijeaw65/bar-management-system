@@ -94,7 +94,7 @@ Domains: Venue & Tables · Guest & Identity · Staff IAM · Menu · Inventory ·
 Full schema: `docs/schema.sql` | Visual ERD: `docs/erd.html`
 
 **Critical schema rules:**
-- All mutable tables have `created_by` / `updated_by` (FK → `staff_user`) + `created_at` / `updated_at` — populated by `AuditSubscriber` via `@nestjs/cls`.
+- All mutable tables have `created_by` / `updated_by` (FK → `staff_user`) + `created_at` / `updated_at` — `created_by` / `updated_by` populated by `AuditSubscriber` via `@nestjs/cls`; `updated_at` is set by the database (trigger `trg_<table>_updated_at`, DR-023) — app code never writes it, and a migration that creates a table with `updated_at` attaches the trigger.
 - `AuditSubscriber` is global — registered once in `AppModule`, not per module.
 - Services must use `save()` not `update()` on audited entities.
 - `audit_log` is append-only — never UPDATE or DELETE.

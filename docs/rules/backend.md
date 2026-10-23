@@ -242,6 +242,7 @@ No magic strings for column types.
 - Load relations explicitly: `{ relations: { items: true } }` — never auto-loaded
 - Both sides declared: `@ManyToOne` on child + `@OneToMany` on parent
 - Use `save()` not `update()` on audited entities — AuditSubscriber needs `databaseEntity`
+- `updated_at` belongs to the database (DR-023): `trg_<table>_updated_at` → `set_updated_at()` stamps it on every UPDATE. Never set it in app code or raw SQL; a migration that creates a table with `updated_at` attaches the trigger; return the stored value (re-read in the same transaction), not the entity's in-memory copy
 - Soft delete: filter `IS NULL` on `deletedAt` in every active-record query
 - SSL in production: `{ ssl: { rejectUnauthorized: false } }` when `NODE_ENV !== 'local'`
 
