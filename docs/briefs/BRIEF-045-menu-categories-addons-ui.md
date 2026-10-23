@@ -2,14 +2,14 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-23 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | frontend · backend · contracts |
 | **Revision** | 1 |
 | **Depends on** | BRIEF-038 ✅ (#80, category write API) · BRIEF-040 ✅ (#90, `/pos/menu` list + toolbar, `useMenuLive`) · BRIEF-041 ✅ (#91) · BRIEF-044 ✅ (#87, modifier-group CRUD, DR-024 archive) |
-| **References** | **DR-025 (Pending — category name unique)** · CD-12 boards `modifiers` (1–6), `categories` (1–6), `flow`; §4 Action table rows "Groups CRUD" / "Categories"; R6 (delete group in use disabled), R7-3 (`CATEGORY_NOT_EMPTY`, `MODIFIER_GROUP_IN_USE`), R7-4 (group rules) · CD-04 F4 (rule label on the order sheet) · DR-024 (archive, no restore) · BRIEF-038 §2 Categories · BRIEF-044 §2 · `catalog.ts` / `ModifierGroup.tsx` (order sheet rule wording) |
+| **References** | **DR-025 (Approved — category name unique)** · CD-12 boards `modifiers` (1–6), `categories` (1–6), `flow`; §4 Action table rows "Groups CRUD" / "Categories"; R6 (delete group in use disabled), R7-3 (`CATEGORY_NOT_EMPTY`, `MODIFIER_GROUP_IN_USE`), R7-4 (group rules) · CD-04 F4 (rule label on the order sheet) · DR-024 (archive, no restore) · BRIEF-038 §2 Categories · BRIEF-044 §2 · `catalog.ts` / `ModifierGroup.tsx` (order sheet rule wording) |
 | **Audit depth** | Full for the backend part (migration + contract change) · Compact for the UI (every rule is enforced server-side) (proposed) |
 | **Size** | ~2.5 days · est. **~1.4–1.5k** net-new lines incl. tests (DR-025 adds ~100) — **above the ~500 target by Field's choice (one brief, both screens — see Selected)**. Suggested commit order for review: 1) backend + contracts (`itemCount`, DR-025 index) · 2) categories modal · 3) add-on screens (proposed) |
 
@@ -40,7 +40,7 @@ The manager creates, renames, reorders, hides and deletes menu categories, and c
 **Backend + contracts (Selected 7, 9)**
 - `MenuCategorySchema` gains **`itemCount: z.number().int().min(0)`** (required) = number of `menu_item` rows in the category, counted exactly like the `CATEGORY_NOT_EMPTY` delete guard (`lockCategoryItemCount`) — so the blocked-delete message always matches.
 - Every response that returns `MenuCategory` / `MenuCategoryList` carries it: `GET /menu/categories` (with and without `includeHidden`), `POST /menu/categories` (→ 0), `PATCH /menu/categories/:id`, `PUT /menu/categories/order`. One `LEFT JOIN … GROUP BY` in the catalog read (proposed); no schema change, no migration.
-- **Unique category names (DR-025, once Approved):** migration `<timestamp>-CategoryNameUnique.ts` — check for duplicates (`lower(trim(name))`) and throw listing them, else `CREATE UNIQUE INDEX uq_menu_category_name ON menu_category (lower(trim(name)))`; `down` drops it. Repository maps `QueryFailedError` `23505` on `uq_menu_category_name` → 409 `CATEGORY_NAME_TAKEN` ("มีหมวดชื่อนี้แล้ว") for `POST` and `PATCH { name }`; any other error rethrown. Entity index metadata + `docs/schema.sql` §4 (unlocked below).
+- **Unique category names (DR-025):** migration `<timestamp>-CategoryNameUnique.ts` — check for duplicates (`lower(trim(name))`) and throw listing them, else `CREATE UNIQUE INDEX uq_menu_category_name ON menu_category (lower(trim(name)))`; `down` drops it. Repository maps `QueryFailedError` `23505` on `uq_menu_category_name` → 409 `CATEGORY_NAME_TAKEN` ("มีหมวดชื่อนี้แล้ว") for `POST` and `PATCH { name }`; any other error rethrown. Entity index metadata + `docs/schema.sql` §4 (unlocked below).
 - OpenAPI regenerated, `docs/api/README.md` Menu table note.
 
 **Frontend — entry points**
@@ -162,8 +162,8 @@ UI (real API, two tabs): จัดการหมวด → drag ไฮบอล
 
 ## 7. Decision Points (Field Guard)
 - **Pre-decided (exact):** `MenuCategorySchema.itemCount: z.number().int().min(0)` required on every category response · route `/pos/menu/modifiers` · categories as a Modal on `/pos/menu` · drag via `useDragAndDrop` from `react-aria-components@^1.21.1` (no new package) + ↑ / ↓ buttons · reorder = full-list `PUT /menu/categories/order`, optimistic with revert · option Switch = omit / re-list the id in `PATCH` · group delete behind an AlertDialog · live refresh through the existing `menu.changed` / `useMenuLive` — no new WS event · DR-025 locks (index `uq_menu_category_name` on `lower(trim(name))`, migration file name `<timestamp>-CategoryNameUnique.ts`, fail-loud on existing duplicates, 409 `CATEGORY_NAME_TAKEN` mapped only for `23505` on that index).
-- **Q1 — category name unique? ✅ Field (2026-10-23): B — server-side → DR-025 (Pending).** *Was recommended:* A — client-side check only.
-- **Likely DRs:** DR-025 (raised, Pending — Ready needs it Approved) · any need for a new package for drag.
+- **Q1 — category name unique? ✅ Field (2026-10-23): B — server-side → DR-025 (Approved 2026-10-23).** *Was recommended:* A — client-side check only.
+- **Likely DRs:** any need for a new package for drag (DR-025 Approved).
 
 ## 8. Unlocked Protected Files
 - `docs/schema.sql`
@@ -173,12 +173,13 @@ UI (real API, two tabs): จัดการหมวด → drag ไฮบอล
 ## Ready Checklist
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions (all merged)
-- [ ] Size within workflow §2 — **~1.4–1.5k vs ~500; Field chose one brief (Selected 1)** — confirm at Ready
-- [ ] No unresolved decision blocking the main outcome — **DR-025 Pending** (needs Field's "approve DR-025")
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Size within workflow §2 — **over: ~1.4–1.5k vs ~500, accepted by Field (Selected 1, Ready 2026-10-23)**
+- [x] No unresolved decision blocking the main outcome — DR-025 Approved
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-23 | Initial Draft (Cowork) — categories + add-on screens from BRIEF-040 Out; `itemCount` added (Field interview, Selected 1–11) |
 | 1 | 2026-10-23 | Q1 = B (Field) → DR-025 raised (Pending, interview Selected 12); migration + 409 `CATEGORY_NAME_TAKEN` + `docs/schema.sql` unlock added; AC-11 |
+| 1 | 2026-10-23 | Ready — Field in session: "approve DR-025, approve BRIEF-045 Rev 1 Ready" |

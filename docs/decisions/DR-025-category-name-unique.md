@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Cowork · 2026-10-23 (BRIEF-045 Q1) |
 | **Brief** | BRIEF-045 |
 | **Category** | Data |
@@ -58,6 +58,6 @@ Clarified in the interview: hiding a category hides its items from every orderin
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: A · Rejected · Approved with change: …>
-**Why:** <one or two lines>
-**Date:** YYYY-MM-DD
+**Decision:** Approved: A (unique index `uq_menu_category_name` on `lower(trim(name))`, all rows; migration fails loudly on existing duplicates; `23505` on that index → 409 `CATEGORY_NAME_TAKEN`)
+**Why:** The database is the only race-free referee for every write path; same pattern as `uq_visit_live_per_seat`.
+**Date:** 2026-10-23 · recorded by Cowork on Field's explicit instruction (session: "approve DR-025")
