@@ -3,14 +3,14 @@ Updated: 2026-10-23 · Agent: Cowork (BRIEF-039 seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-039 **Draft** (menu photos, DR-020 + BRIEF-038 audit F3) on `feat/BRIEF-039-menu-photos-api` → Field review (Q1: modifier CRUD → BRIEF-044) → Ready → `execute BRIEF-039`. Also seeded (Draft, local): BRIEF-042 name snapshot + DR-022, BRIEF-043 DB `updated_at` trigger + DR-023 — both DRs Pending.
+BRIEF-039 **Ready** (menu photos, DR-020 + BRIEF-038 audit F3; Q1 = A → modifier CRUD = BRIEF-044) on `feat/BRIEF-039-menu-photos-api` → `execute BRIEF-039`. Also Ready on their own seed branches (local): BRIEF-042 name snapshot (DR-022 Approved), BRIEF-043 DB `updated_at` trigger (DR-023 Approved).
 
 ## Active
-- Brief: BRIEF-039 Rev 1 · Stage: Draft · Branch: `feat/BRIEF-039-menu-photos-api` (seed)
+- Brief: BRIEF-039 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-039-menu-photos-api` (seed)
 - Done 21–23 Oct: BRIEF-038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. Field: review BRIEF-039 Q1 · approve DR-022 / DR-023 · review BRIEF-042 / 043 → Ready (each on its own seed branch)
+1. Field approved 23 Oct: BRIEF-039 / 042 / 043 Ready, DR-022 / DR-023 Approved · Cowork drafts BRIEF-044 (modifier CRUD) next
 2. Before 8 Nov (Field 23 Oct): 039 → 042 (DR-022) → 043 (DR-023) → 044 modifier CRUD → menu UI 040 (rename confirm + listen `menu.changed`) / 041 photo UI; Mon afternoon update
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
@@ -36,5 +36,5 @@ BRIEF-039 **Draft** (menu photos, DR-020 + BRIEF-038 audit F3) on `feat/BRIEF-03
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-039 (Draft) → 042 → 043 → 044 modifier CRUD → menu UI 040 / 041
+1. BRIEF-039 (Ready) → 042 (Ready) → 043 (Ready) → 044 (to draft) modifier CRUD → menu UI 040 / 041
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-23 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -86,7 +86,7 @@ Run proof (real dev bucket `bar-app-dev`, keys from `app/backend/.env`): presign
   - Endpoint `POST /menu/items/image-upload-url`; content types `image/jpeg`, `image/png`, `image/webp` (DR-020 — the UI may offer fewer).
   - `?includeHidden=true` on `GET /menu/categories` and `GET /menu/items` + `MenuCategory.isActive` (Field, BRIEF-038 audit F3, 2026-10-23). The routes stay `menu:read`; requiring `menu:write` for `includeHidden` arrives with the IAM brief (permissions aren't enforced yet; no inline checks).
   - Paths `app/backend/src/common/storage/`, `app/backend/src/providers/config/storage/`; env keys `AWS_REGION`, `S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`.
-- **Q1 — Split the planned BRIEF-039.** The plan had modifier-group CRUD + photos in one brief (~1,300+ lines at the recent ~1.8× rate). *Cowork recommends:* **A — this brief = photos (DR-020) + F3; modifier groups / options CRUD → BRIEF-044** (next menu backend brief; needs its own Q on deleting a group whose options appear on past orders). *Alternative:* **B — keep both here** (one review, ~3× the size target).
+- **Q1 — Split the planned BRIEF-039. ✅ Decided (Field, 2026-10-23): A — photos + F3 here; modifier CRUD → BRIEF-044.** The plan had modifier-group CRUD + photos in one brief (~1,300+ lines at the recent ~1.8× rate). *Cowork recommends:* **A — this brief = photos (DR-020) + F3; modifier groups / options CRUD → BRIEF-044** (next menu backend brief; needs its own Q on deleting a group whose options appear on past orders). *Alternative:* **B — keep both here** (one review, ~3× the size target).
 - **Likely DRs:** none.
 
 ## 8. Unlocked Protected Files
@@ -95,13 +95,14 @@ Run proof (real dev bucket `bar-app-dev`, keys from `app/backend/.env`): presign
 ---
 
 ## Ready Checklist
-- [ ] Named implementer and auditor; scope/ACs/contracts/references complete
-- [ ] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
-- [ ] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
-- [ ] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Named implementer and auditor; scope/ACs/contracts/references complete
+- [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
+- [x] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
+- [x] No unresolved decision blocking the main outcome
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-23 | Initial Draft (Cowork) — photos (DR-020) + BRIEF-038 audit F3; modifier CRUD proposed as BRIEF-044 (Q1) |
+| 1 | 2026-10-23 | Ready — Field in session: "approve all" (039 Q1 = A: photos + F3 here, modifier CRUD → BRIEF-044) |
