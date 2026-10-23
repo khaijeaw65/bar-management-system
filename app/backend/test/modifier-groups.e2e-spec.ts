@@ -124,8 +124,8 @@ describe('Add-on groups API (e2e, BRIEF-044)', () => {
     expect(reread.variants[0]?.modifierGroups[0]?.options.find((o) => o.id === bacon?.id)).toMatchObject({ isAvailable: false });
 
     const refused = await order(visitId, variantId, [bacon?.id ?? '']);
-    expect(refused.status).toBe(400);
-    expect(refused.body.code).toBe('VALIDATION_ERROR');
+    expect(refused.status).toBe(409);
+    expect(refused.body.code).toBe('ITEM_UNAVAILABLE');
     const fresh = await place(visitId, variantId, [cheese?.id ?? '']);
     expect((await lines(fresh))[0]?.modifiers).toMatchObject([{ name: 'ชีสเยิ้ม', priceDelta: '25.00' }]);
 
