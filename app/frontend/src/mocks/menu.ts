@@ -1,4 +1,12 @@
-import type { MenuCategory, MenuItem, MenuModifierGroup, ModifierGroupAdmin, UpdateMenuItem } from "@bar/contracts";
+import type {
+  CreateModifierGroup,
+  MenuCategory,
+  MenuItem,
+  MenuModifierGroup,
+  ModifierGroupAdmin,
+  UpdateMenuItem,
+  UpdateModifierGroup,
+} from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 
 export const iceGroupId = "e1111111-1111-4111-8111-111111111111";
@@ -29,9 +37,59 @@ function state(): MenuItem[] {
   return items;
 }
 
+// Category and group state, rebuilt per test like the items.
+let categories: MenuCategory[] | null = null;
+let groups: ModifierGroupAdmin[] | null = null;
+let categorySeed: MenuCategory[] = [];
+
 export function resetMenu(): void {
   items = null;
+  categories = null;
+  groups = null;
   createdByKey.clear();
+}
+
+function categoryState(): MenuCategory[] {
+  categories ??= structuredClone(categorySeed);
+  return categories;
+}
+
+function groupState(): ModifierGroupAdmin[] {
+  groups ??= structuredClone(modifierGroups);
+  return groups;
+}
+
+// Like the API: itemCount counts every item, usedByItems the items linking the group.
+const withCounts = (list: MenuCategory[]) =>
+  list.map((category) => ({ ...category, itemCount: state().filter((item) => item.categoryId === category.id).length }));
+const withUsage = (list: ModifierGroupAdmin[]) =>
+  list.map((group) => ({
+    ...group,
+    usedByItems: state().filter((item) => item.variants.some((variant) => variant.modifierGroups.some((linked) => linked.id === group.id))).length,
+  }));
+
+const sameName = (left: string, right: string) => left.trim().toLowerCase() === right.trim().toLowerCase();
+const nameTaken = () => json(null, 409, "CATEGORY_NAME_TAKEN", "มีหมวดชื่อนี้แล้ว");
+const categoryNotFound = () => json(null, 404, "NOT_FOUND", "ไม่พบหมวด");
+const groupNotFound = () => json(null, 404, "NOT_FOUND", "ไม่พบกลุ่ม");
+
+function applyGroup(id: string, input: CreateModifierGroup | UpdateModifierGroup, current?: ModifierGroupAdmin): ModifierGroupAdmin {
+  const listed = new Set(input.options.flatMap((option) => ("id" in option && option.id ? [option.id] : [])));
+  const kept = (current?.options ?? []).map((option) => ({ ...option, isAvailable: listed.has(option.id) }));
+  const options = input.options.map((option) => {
+    const existing = "id" in option ? kept.find((candidate) => candidate.id === option.id) : undefined;
+    return { id: existing?.id ?? crypto.randomUUID(), name: option.name, priceDelta: option.priceDelta, isAvailable: true };
+  });
+  const switchedOff = kept.filter((option) => !listed.has(option.id));
+  return {
+    id,
+    name: input.name,
+    isRequired: input.isRequired,
+    minSelect: input.minSelect,
+    maxSelect: input.maxSelect,
+    options: [...options, ...switchedOff],
+    usedByItems: 0,
+  };
 }
 
 function json(data: unknown, status = 200, code = "", message = "success") {
@@ -79,10 +137,66 @@ function build(id: string, input: ItemInput, sortOrder: number, current: MenuIte
 
 export function createMenuHandlers(initialItems: MenuItem[], menuCategories: MenuCategory[]) {
   seed = initialItems;
+  categorySeed = menuCategories;
   return [
   http.get("*/api/menu/items", () => json({ items: state() })),
-  http.get("*/api/menu/categories", () => json({ items: menuCategories })),
-  http.get("*/api/menu/modifier-groups", () => json({ items: modifierGroups })),
+  http.get("*/api/menu/categories", ({ request }) => {
+    const hidden = new URL(request.url).searchParams.get("includeHidden") === "true";
+    const listed = categoryState().filter((category) => hidden || category.isActive);
+    return json({ items: withCounts(listed).sort((left, right) => left.sortOrder - right.sortOrder) });
+  }),
+  http.post("*/api/menu/categories", async ({ request }) => {
+    const { name } = (await request.json()) as { name: string };
+    if (categoryState().some((category) => sameName(category.name, name))) return nameTaken();
+    const created = { id: crypto.randomUUID(), name: name.trim(), sortOrder: categoryState().length, isActive: true, itemCount: 0 };
+    categories = [...categoryState(), created];
+    return json(created, 201);
+  }),
+  http.put("*/api/menu/categories/order", async ({ request }) => {
+    const { ids } = (await request.json()) as { ids: string[] };
+    const rest = categoryState().filter((category) => !ids.includes(category.id));
+    const ordered = [...ids.flatMap((id) => categoryState().filter((category) => category.id === id)), ...rest];
+    categories = ordered.map((category, index) => ({ ...category, sortOrder: index }));
+    return json({ items: withCounts(categories.filter((category) => category.isActive)) });
+  }),
+  http.patch("*/api/menu/categories/:id", async ({ request, params }) => {
+    const found = categoryState().find((category) => category.id === params.id);
+    if (!found) return categoryNotFound();
+    const body = (await request.json()) as { name?: string; isActive?: boolean };
+    if (body.name !== undefined && categoryState().some((category) => category.id !== found.id && sameName(category.name, body.name ?? ""))) {
+      return nameTaken();
+    }
+    const next = { ...found, ...(body.name === undefined ? {} : { name: body.name.trim() }), ...(body.isActive === undefined ? {} : { isActive: body.isActive }) };
+    categories = categoryState().map((category) => (category.id === found.id ? next : category));
+    return json(withCounts([next])[0]);
+  }),
+  http.delete("*/api/menu/categories/:id", ({ params }) => {
+    const found = withCounts(categoryState()).find((category) => category.id === params.id);
+    if (!found) return categoryNotFound();
+    if (found.itemCount > 0) return json(null, 409, "CATEGORY_NOT_EMPTY", "หมวดนี้ยังมีเมนูอยู่ ย้ายหรือซ่อนหมวดแทน");
+    categories = categoryState().filter((category) => category.id !== found.id);
+    return json({ ok: true });
+  }),
+  http.get("*/api/menu/modifier-groups", () => json({ items: withUsage(groupState()) })),
+  http.post("*/api/menu/modifier-groups", async ({ request }) => {
+    const created = applyGroup(crypto.randomUUID(), (await request.json()) as CreateModifierGroup);
+    groups = [...groupState(), created];
+    return json(created, 201);
+  }),
+  http.patch("*/api/menu/modifier-groups/:id", async ({ request, params }) => {
+    const found = groupState().find((group) => group.id === params.id);
+    if (!found) return groupNotFound();
+    const next = applyGroup(found.id, (await request.json()) as UpdateModifierGroup, found);
+    groups = groupState().map((group) => (group.id === found.id ? next : group));
+    return json(withUsage([next])[0]);
+  }),
+  http.delete("*/api/menu/modifier-groups/:id", ({ params }) => {
+    const found = withUsage(groupState()).find((group) => group.id === params.id);
+    if (!found) return groupNotFound();
+    if (found.usedByItems > 0) return json(null, 409, "MODIFIER_GROUP_IN_USE", "ยังมีเมนูใช้กลุ่มนี้อยู่");
+    groups = groupState().filter((group) => group.id !== found.id);
+    return json({ ok: true });
+  }),
   http.get("*/api/menu/items/:id", ({ params }) => {
     const found = state().find((item) => item.id === params.id);
     return found ? json(found) : json(null, 404, "NOT_FOUND", "ไม่พบเมนู");

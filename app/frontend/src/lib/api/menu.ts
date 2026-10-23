@@ -1,5 +1,11 @@
 import {
   ImageUploadUrlSchema,
+  MenuCategorySchema,
+  ModifierGroupAdminSchema,
+  OkSchema,
+  type CreateModifierGroup,
+  type UpdateMenuCategory,
+  type UpdateModifierGroup,
   MarkAvailabilityResultSchema,
   MenuCategoryListSchema,
   MenuItemListSchema,
@@ -11,7 +17,7 @@ import {
   type UpdateMenuItem,
 } from "@bar/contracts";
 import axios from "axios";
-import { apiGet, apiPatch, apiPost } from "./client";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "./client";
 
 export function getMenuItems() {
   return apiGet("/menu/items", MenuItemListSchema);
@@ -68,4 +74,32 @@ export async function uploadToS3(
     signal: opts.signal,
     onUploadProgress: (event) => opts.onProgress(Math.round((event.progress ?? 0) * 100)),
   });
+}
+
+export function createMenuCategory(name: string) {
+  return apiPost("/menu/categories", { name }, MenuCategorySchema);
+}
+
+export function updateMenuCategory(id: string, body: UpdateMenuCategory) {
+  return apiPatch(`/menu/categories/${id}`, body, MenuCategorySchema);
+}
+
+export function reorderMenuCategories(ids: string[]) {
+  return apiPut("/menu/categories/order", { ids }, MenuCategoryListSchema);
+}
+
+export function deleteMenuCategory(id: string) {
+  return apiDelete(`/menu/categories/${id}`, OkSchema);
+}
+
+export function createModifierGroup(body: CreateModifierGroup) {
+  return apiPost("/menu/modifier-groups", body, ModifierGroupAdminSchema);
+}
+
+export function updateModifierGroup(id: string, body: UpdateModifierGroup) {
+  return apiPatch(`/menu/modifier-groups/${id}`, body, ModifierGroupAdminSchema);
+}
+
+export function deleteModifierGroup(id: string) {
+  return apiDelete(`/menu/modifier-groups/${id}`, OkSchema);
 }

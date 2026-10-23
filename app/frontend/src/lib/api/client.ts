@@ -162,6 +162,16 @@ export async function apiPatch<T>(path: string, body: unknown, schema: z.ZodType
   return response.data;
 }
 
+export async function apiPut<T>(path: string, body: unknown, schema: z.ZodType<T>): Promise<T> {
+  const response = await http.put<T>(path, body, { schema });
+  return response.data;
+}
+
+export async function apiDelete<T>(path: string, schema: z.ZodType<T>): Promise<T> {
+  const response = await http.delete<T>(path, { schema });
+  return response.data;
+}
+
 export async function apiPost<T>(
   path: string,
   body: unknown,
