@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import type { EntityManager } from 'typeorm';
-import { businessDateLockKey } from '../../application/business-date.js';
+import { businessDateLockKey } from '../../../../common/business-date.js';
 import type { OrderRepository } from '../../domain/order.repository.js';
 import type {
   BillRow,

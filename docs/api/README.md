@@ -103,6 +103,7 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
 | GET | `/api/venue` | name, slug, kitchen display, business-day cut-off, counter QR — no payment fields | `venue:read` |
+| PATCH | `/api/venue/settings` | partial `{ name?, businessDayCutoff?, kitchenDisplayEnabled?, counterQrEnabled? }` → `VenueSettings`. One audit row per real change (only changed fields); same values → 200, no row. Applies to data created afterwards; a cut-off change applies from the next business day. Emits WS `venue.settings_changed` `{ settings, updatedAt }` to `staff` | `venue:update` |
 | GET | `/api/venue/payment-settings` | payment mode + masked PromptPay ID (`XXX-XXX-` + last 4). Full ID is never returned | `venue:read_payment` |
 | PATCH | `/api/venue/payment-settings` | set PromptPay ID `{ promptpayId, promptpayIdType }`. 409 `PAYMENT_IN_FLIGHT` while any QR is pending | `venue:update_payment` |
 
@@ -148,8 +149,20 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | POST | `/api/payments/:id/mark-paid` | `{ via: manual \| cash, reason?, note? }`. `manual` requires `webhook_missing` \| `direct_transfer` \| `other`; `other` requires `note`. `cash` needs no reason | `payments:mark_paid` |
 | POST | `/api/webhooks/payments/:provider` | gateway confirm — BRIEF-026. Slip scan — BRIEF-025 | signature |
 
+### Reports (owner dashboard, CD-05 — BRIEF-036)
+`from` / `to` are **business dates** `YYYY-MM-DD` (venue cut-off, Asia/Bangkok — DR-014 #4), inclusive, `from ≤ to`, at most 92 days. A bad query → 400 `VALIDATION_ERROR` (no field paths — DR-021 B; the shared `ReportsPeriodQuerySchema` / `ReportItemsQuerySchema` give them to the UI). No per-person fields (CD-05 D3).
+
+| Method | Path | Purpose | Permission |
+|---|---|---|---|
+| GET | `/api/reports/summary?from&to` | `revenue` (completed payments by `paidAt`), `bills` (visits closed), `averageBill` (revenue ÷ bills, ฿0 bills left out), `payments.{promptpay,cash}.{amount,count}`, `manualConfirmations`, `previous` = same length right before | `reports:read` |
+| GET | `/api/reports/daily?from&to` | `items[{ date, revenue, bills }]` — every date, zeros filled, ascending | `reports:read` |
+| GET | `/api/reports/items?from&to&sort=top\|bottom&limit=5` | `items[{ menuItemId, name, quantity, revenue }]`, limit 1–20. Active lines of orders in the period, revenue = `unitPriceSnapshot × quantity`, charge items excluded. `top` by revenue; `bottom` by quantity, includes 0 sales, skips unavailable items and items added < 7 days ago | `reports:read` |
+| GET | `/api/reports/today` | `businessDate`, `revenue`, `bills`, `hourly[24]` (first bucket = cut-off hour), `openSeats[{ seatLabel, openedAt, total }]` oldest first, `pendingTickets` (station queue), `escalatedIssues`, `generatedAt`. No WS event — refetch | `reports:read` |
+
+Comps / voids (`/api/reports/comps-voids`) → with BRIEF-018.
+
 ### Later in Phase 1 (catalogued when their CD/brief starts)
-Notifications feed (`/api/notifications`, DR-003) · guest profile + AI summary · bottle keep · restock requests · dashboard · IAM admin.
+Notifications feed (`/api/notifications`, DR-003) · guest profile + AI summary · bottle keep · restock requests · IAM admin.
 
 ---
 

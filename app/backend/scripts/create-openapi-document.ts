@@ -18,6 +18,8 @@ import { TicketsController } from '../dist/modules/order/infrastructure/http/tic
 import { BillService } from '../dist/modules/payment/application/bill.service.js';
 import { PaymentService } from '../dist/modules/payment/application/payment.service.js';
 import { PaymentsController } from '../dist/modules/payment/infrastructure/http/payments.controller.js';
+import { ReportsService } from '../dist/modules/reports/application/reports.service.js';
+import { ReportsController } from '../dist/modules/reports/infrastructure/http/reports.controller.js';
 import { TableSeatService } from '../dist/modules/venue/application/table-seat.service.js';
 import { VenueSettingsService } from '../dist/modules/venue/application/venue-settings.service.js';
 import { VisitService } from '../dist/modules/venue/application/visit.service.js';
@@ -41,6 +43,7 @@ const documentedControllers = [
   TicketsController,
   MenuAvailabilityController,
   PaymentsController,
+  ReportsController,
 ];
 
 export async function createOpenApiDocument(): Promise<OpenAPIObject> {
@@ -63,6 +66,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: IdempotencyService, useValue: {} },
       { provide: BillService, useValue: {} },
       { provide: PaymentService, useValue: {} },
+      { provide: ReportsService, useValue: {} },
       {
         provide: AppConfigService,
         useValue: { nodeEnv: 'test', frontendUrl: 'http://localhost:3000' },
