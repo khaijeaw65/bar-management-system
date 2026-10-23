@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Cowork · 2026-10-23 (BRIEF-038 audit Finding 2) |
 | **Brief** | BRIEF-043 |
 | **Category** | Data · Flow/Architecture |
@@ -30,6 +30,6 @@ C, as Field directed — one rule for every writer. Cowork's earlier timing conc
 ---
 
 ## Decision — Field only
-**Decision:**
-**Why:**
-**Date:**
+**Decision:** Approved: C (shared monotonic trigger on every table with `updated_at`; future tables attach it in their migration)
+**Why:** One rule for every writer; the stale-edit check needs one clock that only moves forward.
+**Date:** 2026-10-23 · recorded by Cowork on Field's explicit instruction (session: "approve all" on DR-022, DR-023, BRIEF-039 Q1 = A + Ready, BRIEF-042 Ready, BRIEF-043 Ready)
