@@ -16,7 +16,7 @@ export function priceLines(
   assertKnown(requested, lookup);
   const blocked = blockedLines(requested, lookup);
   if (blocked.length > 0) throw unavailable(blocked);
-  return requested.map((line) => priceOne(line, variantOf(lookup, line.variantId)));
+  return requested.map((line, index) => priceOne(line, index + 1, variantOf(lookup, line.variantId)));
 }
 
 export function bucketFor(
@@ -52,9 +52,10 @@ function blockReason(line: RequestedLine, variant: OrderableVariant): Unavailabl
   return null;
 }
 
-function priceOne(line: RequestedLine, variant: OrderableVariant): PricedLine {
+function priceOne(line: RequestedLine, lineNo: number, variant: OrderableVariant): PricedLine {
   const modifiers = requireChoices(line.modifierOptionIds, variant.modifierGroups);
   return {
+    lineNo,
     variantId: line.variantId,
     quantity: line.quantity,
     itemName: variant.itemName,

@@ -10,6 +10,16 @@ export class OrderItem extends BaseEntity {
   @Column({ type: COL.UUID })
   public menuItemVariantId!: string;
 
+  @Column({ type: COL.VARCHAR, length: 200 })
+  public itemNameSnapshot!: string;
+
+  @Column({ type: COL.VARCHAR, length: 200 })
+  public variantNameSnapshot!: string;
+
+  /** Position in the order, 1 … n in the request order. */
+  @Column({ type: COL.SMALLINT })
+  public lineNo!: number;
+
   @Column({ type: COL.SMALLINT, default: 1 })
   public quantity!: number;
 

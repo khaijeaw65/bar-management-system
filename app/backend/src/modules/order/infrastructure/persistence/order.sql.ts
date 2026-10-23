@@ -23,8 +23,8 @@ export const ORDER_ROWS_SQL = `
     s.kind AS seat_kind,
     i.id AS item_id,
     i.menu_item_variant_id AS variant_id,
-    mi.name AS item_name,
-    v.name AS variant_name,
+    i.item_name_snapshot AS item_name,
+    i.variant_name_snapshot AS variant_name,
     i.quantity,
     i.unit_price_snapshot AS unit_price,
     i.ordered_by_name,
@@ -33,17 +33,14 @@ export const ORDER_ROWS_SQL = `
     i.cancelled_by,
     i.cancel_reason,
     m.modifier_option_id AS option_id,
-    mo.name AS option_name,
+    m.option_name_snapshot AS option_name,
     m.price_delta_snapshot AS price_delta
   FROM order_record o
   JOIN visit vis ON vis.id = o.visit_id
   JOIN table_seat s ON s.id = vis.table_seat_id
   JOIN order_ticket t ON t.order_id = o.id
   JOIN order_item i ON i.ticket_id = t.id
-  JOIN menu_item_variant v ON v.id = i.menu_item_variant_id
-  JOIN menu_item mi ON mi.id = v.menu_item_id
   LEFT JOIN order_item_modifier m ON m.order_item_id = i.id
-  LEFT JOIN modifier_option mo ON mo.id = m.modifier_option_id
 `;
 
 export const BILL_SQL = `

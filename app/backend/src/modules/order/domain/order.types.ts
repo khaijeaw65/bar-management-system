@@ -7,6 +7,8 @@ export interface ChosenModifier {
 }
 
 export interface PricedLine {
+  /** 1 … n in the request order, kept across the split into tickets. */
+  lineNo: number;
   variantId: string;
   quantity: number;
   itemName: string;

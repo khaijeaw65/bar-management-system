@@ -70,6 +70,13 @@ describe('priceLines', () => {
     expect(priced?.modifiers.map((modifier) => modifier.priceDelta)).toEqual(['0.00', '20.00']);
   });
 
+  it('freezes the names and numbers the lines 1 … n in request order', () => {
+    const priced = priceLines([line([ICE, CHERRY]), line([ICE]), line([ICE])], lookup());
+    expect(priced.map((item) => item.lineNo)).toEqual([1, 2, 3]);
+    expect(priced[0]).toMatchObject({ itemName: 'โอลด์แฟชั่น', variantName: 'ปกติ' });
+    expect(priced[0]?.modifiers.map((modifier) => modifier.name)).toEqual(['ปกติ', 'เชอร์รี่']);
+  });
+
   it('rejects a required group that was skipped', () => {
     expect(() => priceLines([line([])], lookup())).toThrow(DomainException);
   });
