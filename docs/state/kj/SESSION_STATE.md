@@ -3,22 +3,22 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-037 dashboard UI **Audit PASS** (Cowork, `536b24b`) — PASS commit + PR on `feat/BRIEF-037-dashboard-ui`, merge when `ci` green (own PR, §7) → menu API / UI. Optional audit F2 (custom `to` ≤ today) + F3 (`order.created` test) at the next `/pos/reports` touch.
+BRIEF-038 menu write API **Implemented** — work `5e29d80` on `feat/BRIEF-038-menu-write-api` (pushed, no PR) → `audit BRIEF-038` (Cowork). After PASS: PASS commit + PR, merge on green `ci` (own PR, §7) → BRIEF-039 / menu UI.
 
 ## Active
-- Brief: BRIEF-037 Rev 1 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-037-dashboard-ui` (seed `13dbaef`, `main` merged `5480281`) · work `3c3dd32` + fix `536b24b`
-- Done 21–23 Oct: BRIEF-036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
+- Brief: BRIEF-038 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-038-menu-write-api` (seed `3c8be95`, `main` merged `8d642f9`) · work `5e29d80`
+- Done 21–23 Oct: BRIEF-037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. 037 PR → merge on green `ci` · weekend push to Sat night (Field 22 Oct): settings ✅ → reports API ✅ → dashboard → menu; Mon afternoon update
-2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
+1. 038 audit → PASS commit + PR → merge on green `ci` · weekend push (Field 22 Oct): settings ✅ → reports API ✅ → dashboard ✅ → menu API (038) → 039 / UI; Mon afternoon update
+2. For the menu UI brief (from 038 handoff): manager read of hidden categories · POS listen to `menu.changed` · item rename changes past line names (no name snapshot)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none (037 PASS)
-- e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations); frontend e2e needs no other `next dev` in `app/frontend`
-- Local DB `bar`: demo history 22 Sep–22 Oct (592 bills, re-seeded 23 Oct) · staff `Field (demo)` + **`Field` with Field's LINE sub** (LINE sign-in works) · T1 paid ฿240 cash, still open · backend 3001 (`dist` of this branch) + SonarQube 9000 running · untracked `DR-020` (Cowork's) left as is
+- Shared files: none · Review queue: BRIEF-038 (Cowork)
+- e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations); frontend e2e needs no other `next dev` in `app/frontend`; frontend unit tests time out under heavy machine load (038 handoff)
+- Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 3 × จินโทนิค (180/200/200), remaining ฿580 · backend 3001 (`dist` of `5e29d80`) + SonarQube 9000 running · untracked `DR-020` (Cowork's) left as is
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -36,5 +36,5 @@ BRIEF-037 dashboard UI **Audit PASS** (Cowork, `536b24b`) — PASS commit + PR o
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-037 (PASS, PR) → menu API / UI (Drafts)
+1. BRIEF-038 (Implemented, audit) → BRIEF-039 modifier groups + photos (DR-020) → menu UI 040 / 041
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
