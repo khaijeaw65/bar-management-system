@@ -5,10 +5,10 @@
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-23 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-043-db-updated-at` (seed `a79771b`, `main` merged; PR opens after audit PASS) |
+| **Branch** | `feat/BRIEF-043-db-updated-at` (seed `a79771b`, `main` merged `01d78b3`) |
 | **Commit** | Work SHA `f36b872` |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — waiting for `audit BRIEF-043` |
+| **Status** | Audit PASS (Cowork, 2026-10-23, S = `f36b872`) — PR opened with this commit |
 
 ## Summary
 - **Migration** `1762500000000-UpdatedAtTrigger.ts` (registered in `migrations.ts`): `set_updated_at()` = `NEW.updated_at := GREATEST(now(), OLD.updated_at + interval '1 millisecond')` + `BEFORE UPDATE … FOR EACH ROW` trigger `trg_<table>_updated_at` on the 14 tables DR-023 lists. `down` drops the 14 triggers, then the function. `INSERT` unchanged.
@@ -84,5 +84,6 @@ No UI is changed by this brief; no screen was exercised (the orders board consum
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-043`
+- Audit: **PASS** (`docs/audits/BRIEF-043.md`), zero Must fix; S = `f36b872`, S..H = audit / handoff / state only. Finding 1 (Suggestion, next backend brief): restore the migration in `finally` in the down/up tests of 042 and 043, or have `global-setup` recreate `bar_test` (it only runs pending migrations — corrects the 042 audit's note). Findings 2–4 info (Cowork shows the DR-023 rule-line + `erd.html` diffs after merge; BRIEF-044's `is_active` migration must not write `updated_at`; dev backend now `f36b872`)
+- Next command: merge on green `ci` (Field's own PR, §7)
 - Work SHA: `f36b872` · self-check: brief §2–§4 ↔ DR-023 locks ↔ `1762500000000-UpdatedAtTrigger.ts` ↔ `schema.sql` ↔ menu / venue / ticket `updatedAt` read paths ↔ `updated-at-trigger.e2e-spec.ts`; no API shape, contract or permission change
