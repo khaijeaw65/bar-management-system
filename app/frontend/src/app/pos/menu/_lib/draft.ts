@@ -56,7 +56,9 @@ export function emptyDraft(): MenuDraft {
 }
 
 export function draftOf(item: MenuItem): MenuDraft {
-  const groupIds = new Set(item.variants.flatMap((variant) => variant.modifierGroups.map((group) => group.id)));
+  // Switched-off options stay out of the form: a listed id would put them back on sale (BRIEF-038).
+  const active = item.variants.filter((variant) => variant.isAvailable);
+  const groupIds = new Set(active.flatMap((variant) => variant.modifierGroups.map((group) => group.id)));
   return {
     name: item.name,
     categoryId: item.categoryId,
@@ -64,7 +66,7 @@ export function draftOf(item: MenuItem): MenuDraft {
     itemType: item.itemType,
     station: item.station,
     isPromo: item.isPromo,
-    variants: item.variants.map((variant) => ({
+    variants: active.map((variant) => ({
       key: variant.id,
       id: variant.id,
       name: variant.name,

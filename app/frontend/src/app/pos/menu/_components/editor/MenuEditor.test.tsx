@@ -182,6 +182,41 @@ test("a stale save shows the conflict, keeps typed values and reloads the server
   expect(screen.queryByText("เมนูนี้ถูกแก้โดยคนอื่น")).not.toBeInTheDocument();
 });
 
+const withRemovedOption = {
+  ...mojito,
+  variants: [mojito.variants[0]!, { ...mojito.variants[1]!, isAvailable: false }],
+};
+
+test("a switched-off price option is not loaded, so saving never brings it back", async () => {
+  const user = userEvent.setup();
+  server.use(http.get("*/api/menu/items/:id", () => HttpResponse.json(apiEnvelope(withRemovedOption))));
+  renderEditor(mojito.id);
+  const price = await screen.findByDisplayValue("180.00");
+  expect(screen.getAllByRole("textbox", { name: "ชื่อตัวเลือก" })).toHaveLength(1);
+  await user.clear(price);
+  await user.type(price, "190");
+  await user.click(screen.getByRole("button", { name: "บันทึก" }));
+
+  await waitFor(() => expect(sent).toHaveLength(1));
+  expect(sent[0]?.body.variants).toEqual([{ id: mojito.variants[0]!.id, name: "ปกติ", price: "190.00" }]);
+});
+
+test("reloading the latest copy after a conflict also drops switched-off options", async () => {
+  const user = userEvent.setup();
+  server.use(
+    http.patch("*/api/menu/items/:id", () =>
+      HttpResponse.json(apiEnvelope({ details: withRemovedOption }, 409, "MENU_ITEM_STALE", "มีคนบันทึกก่อน"), {
+        status: 409,
+      }),
+    ),
+  );
+  renderEditor(mojito.id);
+  expect(await screen.findAllByRole("textbox", { name: "ชื่อตัวเลือก" })).toHaveLength(2);
+  await user.click(screen.getByRole("button", { name: "บันทึก" }));
+  await user.click(await screen.findByRole("button", { name: "โหลดฉบับล่าสุด" }));
+  expect(screen.getAllByRole("textbox", { name: "ชื่อตัวเลือก" })).toHaveLength(1);
+});
+
 test("leaving with changes asks first; without changes it just goes", async () => {
   const user = userEvent.setup();
   renderEditor(singha.id);
