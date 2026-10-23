@@ -16,6 +16,9 @@ export interface VariantDraft {
   price: string;
 }
 
+// keep = send no imageKey · remove = null · new = the tmp/ key of a finished upload (`preview` is a local blob URL).
+export type PhotoDraft = { kind: "keep" } | { kind: "remove" } | { kind: "new"; key: string; preview: string };
+
 export interface MenuDraft {
   name: string;
   categoryId: string;
@@ -25,6 +28,7 @@ export interface MenuDraft {
   isPromo: boolean;
   variants: VariantDraft[];
   modifierGroupIds: string[];
+  photo: PhotoDraft;
 }
 
 export type DraftErrors = Record<string, string>;
@@ -52,6 +56,7 @@ export function emptyDraft(): MenuDraft {
     isPromo: false,
     variants: [newVariant("ปกติ")],
     modifierGroupIds: [],
+    photo: { kind: "keep" },
   };
 }
 
@@ -73,6 +78,7 @@ export function draftOf(item: MenuItem): MenuDraft {
       price: variant.price,
     })),
     modifierGroupIds: [...groupIds],
+    photo: { kind: "keep" },
   };
 }
 
@@ -82,6 +88,11 @@ export function normalizePrice(raw: string): string {
   if (/^\d{1,8}$/.test(value)) return `${value}.00`;
   if (/^\d{1,8}\.\d$/.test(value)) return `${value}0`;
   return value;
+}
+
+function imageKeyOf(photo: PhotoDraft) {
+  if (photo.kind === "new") return { imageKey: photo.key };
+  return photo.kind === "remove" ? { imageKey: null } : {};
 }
 
 function payloadOf(draft: MenuDraft) {
@@ -100,6 +111,7 @@ function payloadOf(draft: MenuDraft) {
       price: normalizePrice(variant.price),
     })),
     modifierGroupIds: draft.modifierGroupIds,
+    ...imageKeyOf(draft.photo),
   };
 }
 

@@ -2,6 +2,7 @@
 
 import type { MenuItem } from "@bar/contracts";
 import { Chip, Label, Switch, Table } from "@heroui/react";
+import { ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatTHB } from "@/lib/utils/format";
 import { lowestMoney } from "@/lib/utils/money";
@@ -35,7 +36,14 @@ export function MenuItemRow({
   categoryName,
   categoryHidden,
   highlighted,
-}: Readonly<{ item: MenuItem; categoryName: string; categoryHidden: boolean; highlighted: boolean }>) {
+  onImageError,
+}: Readonly<{
+  item: MenuItem;
+  categoryName: string;
+  categoryHidden: boolean;
+  highlighted: boolean;
+  onImageError: () => void;
+}>) {
   const router = useRouter();
   const toggle = useAvailabilityToggle(item);
   const label = statusLabel(item);
@@ -47,7 +55,17 @@ export function MenuItemRow({
       onAction={() => router.push(`/pos/menu/${item.id}`)}
     >
       <Table.Cell className={item.unavailableReason === "sold_out" ? "text-text-faint line-through" : undefined}>
-        {item.name}
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-card bg-surface-input text-text-faint">
+            {item.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- signed S3 URL
+              <img src={item.imageUrl} alt="" className="size-full object-cover" onError={onImageError} />
+            ) : (
+              <ImageIcon aria-hidden className="size-5" />
+            )}
+          </div>
+          <span>{item.name}</span>
+        </div>
         {item.isPromo ? <Chip size="sm" className="ml-2">โปร</Chip> : null}
       </Table.Cell>
       <Table.Cell className="text-text-muted">

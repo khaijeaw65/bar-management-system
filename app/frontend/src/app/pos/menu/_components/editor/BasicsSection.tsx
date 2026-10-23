@@ -2,6 +2,7 @@
 
 import type { MenuCategory } from "@bar/contracts";
 import { FieldError, Input, Label, ListBox, Select, TextArea, TextField } from "@heroui/react";
+import type { ReactNode } from "react";
 import type { DraftErrors, MenuDraft } from "../../_lib/draft";
 import { EditorCard } from "./EditorCard";
 
@@ -9,15 +10,18 @@ export function BasicsSection({
   draft,
   errors,
   categories,
+  photo,
   onChange,
 }: Readonly<{
   draft: MenuDraft;
   errors: DraftErrors;
   categories: MenuCategory[];
+  photo: ReactNode;
   onChange: (changes: Partial<MenuDraft>) => void;
 }>) {
   return (
     <EditorCard title="ข้อมูลหลัก">
+      {photo}
       <TextField value={draft.name} isInvalid={errors.name !== undefined} onChange={(name) => onChange({ name })}>
         <Label>ชื่อเมนู</Label>
         <Input placeholder="เช่น โอลด์แฟชั่น" />
