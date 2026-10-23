@@ -15,9 +15,11 @@ import { MenuCategory } from './menu-category.entity.js';
 import { MenuItem } from './menu-item.entity.js';
 import { MenuItemVariant } from './menu-item-variant.entity.js';
 import { MenuVariantModifierGroup } from './menu-variant-modifier-group.entity.js';
-import { ModifierGroup } from './modifier-group.entity.js';
 
 const HOLD_CATEGORY = `SELECT id FROM menu_category WHERE id = $1 FOR KEY SHARE`;
+
+// Active groups only, held FOR KEY SHARE: an archive (FOR UPDATE) waits for this write to commit, and a write after it no longer sees the group (DR-024).
+const HOLD_GROUPS = `SELECT id FROM modifier_group WHERE id = ANY($1::uuid[]) AND is_active FOR KEY SHARE`;
 
 const LOCK_ITEM = `SELECT updated_at AS "updatedAt", image_key AS "imageKey" FROM menu_item WHERE id = $1 FOR UPDATE`;
 
@@ -62,11 +64,7 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
 
   public async missingModifierGroups(ids: readonly string[]): Promise<string[]> {
     if (ids.length === 0) return [];
-    const found = await this.txHost.tx.getRepository(ModifierGroup).find({
-      select: { id: true },
-      where: { id: In([...ids]) },
-    });
-    const known = new Set(found.map((group) => group.id));
+    const known = new Set((await this.query(HOLD_GROUPS, [[...ids]])).map((row) => String(row.id)));
     return ids.filter((id) => !known.has(id));
   }
 

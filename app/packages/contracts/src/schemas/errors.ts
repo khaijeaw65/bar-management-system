@@ -18,6 +18,7 @@ export const ErrorCodeSchema = z.enum([
   'PROMPTPAY_NOT_SET',
   'MENU_ITEM_STALE',
   'CATEGORY_NOT_EMPTY',
+  'MODIFIER_GROUP_IN_USE',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;

@@ -280,6 +280,7 @@ CREATE TABLE modifier_group (
   is_required BOOLEAN NOT NULL DEFAULT FALSE,
   min_select  SMALLINT NOT NULL DEFAULT 0,
   max_select  SMALLINT NOT NULL DEFAULT 1,
+  is_active   BOOLEAN NOT NULL DEFAULT TRUE,   -- DR-024: "delete group" archives; never a hard delete
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by  UUID REFERENCES staff_user(id),

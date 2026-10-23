@@ -33,6 +33,7 @@ export interface CategoryOrderRow {
 export interface MenuWriteRepository {
   /** Locks the category `FOR KEY SHARE`, so a concurrent delete waits for this write. */
   holdCategory(id: string): Promise<boolean>;
+  /** Ids that are unknown or archived; the active ones are held `FOR KEY SHARE` (DR-024). */
   missingModifierGroups(ids: readonly string[]): Promise<string[]>;
   /** The caller picks `id`, so the photo can be copied to `menu/<id>/…` before the row exists. */
   insertItem(

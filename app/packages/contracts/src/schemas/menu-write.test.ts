@@ -2,6 +2,8 @@ import { MenuCategorySchema, MenuCategoriesQuerySchema, MenuItemSchema, MenuItem
 import {
   CreateImageUploadUrlSchema,
   CreateMenuItemSchema,
+  CreateModifierGroupSchema,
+  UpdateModifierGroupSchema,
   ReorderMenuCategoriesSchema,
   UpdateMenuCategorySchema,
   UpdateMenuItemSchema,
@@ -162,5 +164,57 @@ describe('menu reads (BRIEF-039)', () => {
     expect(MenuItemsQuerySchema.parse({ includeHidden: 'true' }).includeHidden).toBe('true');
     expect(MenuCategoriesQuerySchema.parse({}).includeHidden).toBeUndefined();
     expect(MenuCategoriesQuerySchema.safeParse({ includeHidden: 'yes' }).success).toBe(false);
+  });
+});
+
+describe('modifier group schemas (CD-12 R7-4)', () => {
+  const ice = {
+    name: ' ระดับน้ำแข็ง ',
+    isRequired: true,
+    minSelect: 1,
+    maxSelect: 1,
+    options: [
+      { name: 'ปกติ', priceDelta: '0.00' },
+      { name: 'น้อย', priceDelta: '0.00' },
+      { name: 'ไม่ใส่', priceDelta: '0.00' },
+    ],
+  };
+  const OPTION = '33333333-3333-4333-8333-333333333333';
+
+  it('accepts a required single-choice group and trims the name', () => {
+    expect(CreateModifierGroupSchema.parse(ice).name).toBe('ระดับน้ำแข็ง');
+  });
+
+  it('accepts an optional multi-choice group', () => {
+    const toppings = { ...ice, isRequired: false, minSelect: 0, maxSelect: 2 };
+    expect(CreateModifierGroupSchema.safeParse(toppings).success).toBe(true);
+  });
+
+  it.each([
+    ['required with min 0', { minSelect: 0 }, 'minSelect'],
+    ['not required with min 1', { isRequired: false }, 'minSelect'],
+    ['max below min', { minSelect: 2, maxSelect: 1 }, 'maxSelect'],
+    ['max above the option count', { maxSelect: 4 }, 'maxSelect'],
+    ['max 0', { isRequired: false, minSelect: 0, maxSelect: 0 }, 'maxSelect'],
+    ['negative price', { options: [{ name: 'ปกติ', priceDelta: '-5.00' }] }, 'options.0.priceDelta'],
+    ['price without satang', { options: [{ name: 'ปกติ', priceDelta: '5' }] }, 'options.0.priceDelta'],
+    ['no options', { options: [] }, 'options'],
+    ['blank option name', { options: [{ name: ' ', priceDelta: '0.00' }] }, 'options.0.name'],
+    ['blank group name', { name: '  ' }, 'name'],
+  ])('rejects %s', (_label, patch, path) => {
+    const result = CreateModifierGroupSchema.safeParse({ ...ice, ...patch });
+    expect(issues(result)).toContain(path);
+  });
+
+  it('counts the options of the new active set, not the old ones', () => {
+    const patch = { ...ice, maxSelect: 2, options: [{ id: OPTION, name: 'ปกติ', priceDelta: '0.00' }] };
+    expect(issues(UpdateModifierGroupSchema.safeParse(patch))).toContain('maxSelect');
+  });
+
+  it('rejects a duplicate option id on update and an option id on create', () => {
+    const twice = { ...ice, options: [1, 2, 3].map(() => ({ id: OPTION, name: 'ปกติ', priceDelta: '0.00' })) };
+    expect(issues(UpdateModifierGroupSchema.safeParse(twice))).toContain('options');
+    const withId = { ...ice, options: [{ id: OPTION, name: 'ปกติ', priceDelta: '0.00' }], maxSelect: 1 };
+    expect(CreateModifierGroupSchema.parse(withId).options[0]).not.toHaveProperty('id');
   });
 });
