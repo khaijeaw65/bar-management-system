@@ -3,21 +3,20 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-036 reports API **Implemented** (`095e91b`) on `feat/BRIEF-036-reports-api` — next `audit BRIEF-036` (Cowork). Then PASS commit + PR, merge when `ci` green (own PR, §7) → 037 dashboard UI → menu API / UI.
+BRIEF-036 reports API **Audit PASS** (Cowork, `095e91b`) — PASS commit + PR on `feat/BRIEF-036-reports-api`, merge when `ci` green (own PR, §7) → `execute BRIEF-037` (merge `main` first; tile label ออเดอร์ค้าง, audit F2) → menu API / UI.
 
 ## Active
-- Brief: BRIEF-036 Rev 2 · Stage: Implemented · Branch: `feat/BRIEF-036-reports-api` (seed `eb3de28`, Rev 2 `341ebb5`, `main` merged `5136a83`) · work `095e91b`
-- Auditor please check: AC-5 field paths dropped per DR-021 B (handoff Deviations)
+- Brief: BRIEF-036 Rev 2 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-036-reports-api` (seed `eb3de28`, Rev 2 `341ebb5`, `main` merged `5136a83`) · work `095e91b`
 - Done 21–23 Oct: BRIEF-035 (#77) · 034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. audit 036 → PASS commit + PR → merge on green `ci` · weekend push to Sat night (Field 22 Oct): settings ✅ → reports API → dashboard → menu; Mon afternoon update
+1. 036 PR → merge on green `ci` · weekend push to Sat night (Field 22 Oct): settings ✅ → reports API → dashboard → menu; Mon afternoon update
 2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-036 (Cowork)
+- Shared files: none · Review queue: none (036 PASS)
 - e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — handoff Limitations)
 - Local DB `bar`: demo history 22 Sep–21 Oct (590 bills) · staff `Field (demo)` / `U-demo-owner` → Field's LINE sign-in needs `seed:staff` with his sub · menu `created_at` backdated 30 d · T1 open (2 × ช้างดราฟต์), T2 closed cash ฿240 · backend 3001 (`095e91b`) + SonarQube 9000 running · untracked `DR-020` (Cowork's) left as is
 
@@ -25,6 +24,7 @@ BRIEF-036 reports API **Implemented** (`095e91b`) on `feat/BRIEF-036-reports-api
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)
 - Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete branches: merged (#45, #46, #48–#52, #54–#72 + `feat/BRIEF-017-void-comp-issues`, `feat/BRIEF-027-sold-out-auto-void`, `feat/BRIEF-028-web-login-real-api`, `feat/BRIEF-029-pos-floor-open-table`, `feat/BRIEF-030-pos-session-panel-close`, `feat/BRIEF-031-pos-order-entry` + local `docs/workflow-rev19`, `docs/rules-class-helpers`) and stale `docs/state-1018` (#53 closed), `docs/planning-1017-evening`, `docs/schema-38-tables`; optional auto-delete head branches
+- Dev env isolation (Field 23 Oct — after 036–038): e2e still shares Redis with the dev backend (BullMQ payments queue steals test expiry jobs; e2e flushdb signs out dev sessions) → own Redis DB index / queue prefix for tests, together with BRIEF-013 S2 (BullMQ drops the DB index) · until then stop the dev backend before backend test:e2e · after any e2e/seed reset: re-run seed:staff with Field's LINE sub (dev DB staff is "Field (demo)" / U-demo-owner since BRIEF-036) · demo menu needs created_at ≥ 7 days for "ขายน้อย" (BRIEF-036 run proof backdated it by hand)
 - Before AWS (9 Nov): BRIEF-013 S2 — BullMQ connection drops `rediss://` TLS + DB index
 - Before >1 backend task: BRIEF-013 S1 — expiry job that fires early is a silent no-op → re-schedule
 - Follow-ups: before a real-bar pilot → IAM brief (incl. `venue:update_payment` owner-only, `PermissionsGuard` as APP_GUARD — BRIEF-027 AC-6) · BRIEF-027 S2 (`runAsSystem` CLS helper when a 2nd system job appears) · BRIEF-028 S4 (menu "from" price → satang helper in 031) · BRIEF-029 S1 (`guestLabel` field parse) · BRIEF-030 S2 (group chip from the station ticket once charge items exist) · Sonar: add a coverage report path to `sonar-project.properties` (gate shows 0 %) + 18 pre-existing issues (setup.ts, SessionDrawer, backend order / payment / menu / seed) — cleanup brief or fix when each module is next touched (BRIEF-031) · S2 tooling: `migration:run` / `start:dev` build `@bar/contracts` first + BRIEF-018 PIN on PromptPay ID change · BRIEF-011 audit S3 · BRIEF-021 S1 + auth rate limiting · BRIEF-011 S1/S4 + `FRONTEND_URL` note + old IAM names · BRIEF-015 S3/S4 · BRIEF-016 S3 · BRIEF-019 S2 · BRIEF-024 S1 (shared exception instance), S2 (table-wide `hasPending`) · stale docs: FRD §13/§15 PWA, `docs/briefs/ui/*.md` tokens · DR-005 follow-ups (protected, Field): `backend.md` Auth + CLAUDE.md Auth row "Bearer for mobile"
@@ -36,5 +36,5 @@ BRIEF-036 reports API **Implemented** (`095e91b`) on `feat/BRIEF-036-reports-api
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-036 (Implemented, audit) → 037 dashboard UI → menu API / UI (Drafts)
+1. BRIEF-036 (PASS, PR) → 037 dashboard UI → menu API / UI (Drafts)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway

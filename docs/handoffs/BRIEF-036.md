@@ -8,7 +8,7 @@
 | **Branch** | `feat/BRIEF-036-reports-api` (seed `eb3de28` + Rev 2 `341ebb5`; `main` merged in at `5136a83`; PR opens with the PASS commit) |
 | **Work SHA** | `095e91b` |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — waiting for `audit BRIEF-036` |
+| **Status** | Audit PASS (Cowork, 2026-10-23, reviewed `095e91b`) — PR opened with this commit |
 
 ## Summary
 - **Rev 2 — e2e on `bar_test` (done first).** `test/set-auth-env.ts` now *forces* `PGDATABASE` to `testDatabaseName()` = `PGDATABASE_TEST ?? 'bar_test'` (CI's `PGDATABASE: bar` is ignored on purpose). `test/test-database.ts` aborts when that name is `bar` or the `PGDATABASE` in `app/backend/.env`. `test/global-setup.ts` (Vitest `globalSetup` in `vitest.config.e2e.ts`) creates the database through the `postgres` maintenance DB if missing and runs all migrations on it. CI: same Postgres service, the `bar` superuser creates `bar_test` → **no workflow change** (the CI log line still prints `…/bar`; cosmetic, `.github/**` is protected).
@@ -77,6 +77,12 @@ Scanned `095e91b`. Gate ERROR: `new_coverage` 0 % (no coverage path — known) a
 - `seed:demo-history` does not backdate the menu → on a freshly seeded menu `bottom` stays empty for 7 days (Field: say if the seed should backdate its menu for the 037 demo — would touch rows it does not own).
 - Dev DB staff is now `Field (demo)` with LINE sub `U-demo-owner`; Field's own LINE sign-in will be `not_registered` until `seed:staff` runs with his sub (as after BRIEF-035).
 - Size: ~1,790 net lines (excl. `openapi.json`), tests ≈ 675 (38 %) — ~3× the 500–600 estimate (Rev 2 setup + two fixture-heavy e2e specs).
+
+## Audit outcome
+- Cowork PASS on `095e91b`, zero Must fix (`docs/audits/BRIEF-036.md`). AC-5 reading (DR-021 B supersedes field paths) confirmed.
+- Finding 1 (shared Redis between e2e and dev backend) → carried in KJ state, with BRIEF-013 S2, after 036–038 (Field, 23 Oct).
+- Finding 2 → BRIEF-037: keep `pendingTickets` as is, tile label **ออเดอร์ค้าง** (UI copy only).
+- Finding 4 → `seed:staff` with Field's LINE sub before the Monday update (in Carry over).
 
 ## AI usage
 High — Claude Code implemented the whole brief (Field = reviewer mode).
