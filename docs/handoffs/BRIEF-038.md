@@ -8,7 +8,7 @@
 | **Branch** | `feat/BRIEF-038-menu-write-api` (seed `3c8be95`; `main` merged in at `8d642f9` after #78/#79; PR opens after audit PASS) |
 | **Commit** | Work SHA `5e29d80` |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS (Cowork, 2026-10-23, reviewed `5e29d80`) — PR opened with this commit |
 
 ## Summary
 - **Items** (`MenuItemWriteController` → `MenuWriteService` → `MenuWriteTypeormRepository`, all on `txHost.tx`, `save()` only): `POST /menu/items` (optional `Idempotency-Key`, scope `menu-item`, same gate as orders/payments) and `PATCH /menu/items/:id` (whole form + `updatedAt`).
@@ -93,8 +93,12 @@ Scanned the working tree of `5e29d80` (before the commit). Gate ERROR on `new_co
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-038`
+- Audit: **PASS** (`docs/audits/BRIEF-038.md`, zero Must fix) · S = `5e29d80`, S..H = handoff / assets / state / audit only
+- Next command: merge on green `ci` (Field's own PR, §7)
 - Work SHA: `5e29d80` · self-check: brief §2–§4 ↔ `menu-write.ts` ↔ `menu-write.service.ts` / repository ↔ e2e; no schema/migration change (all columns exist, `chk_menu_item_station` mirrored in the contract)
+
+## Audit outcome
+PASS (Cowork). Findings 1–3 decided by Field in the audit session — all **new work outside this branch**: F1 name snapshot on order lines + rename confirm in the UI (DR-022, own brief right after BRIEF-039, before 8 Nov) · F2 DB-side monotonic `updated_at` trigger on all audited tables, app `clock.now()` stamp removed (DR-023, BRIEF-039) · F3 `?includeHidden=true` + `isActive` on category reads (Pre-decided in BRIEF-039). F4 (frontend timeouts under load) → re-run `ci` once if it hits; F5 size → count tests in estimates.
 
 ## Notes for Reviewer
 - Start at `menu-write.service.ts` (`saveItem`: lock → stale → own-variant check → references → write) and `menu-write.typeorm-repository.ts` (`saveVariantSet`, `replaceLinks`, `updatedAt` set by hand).

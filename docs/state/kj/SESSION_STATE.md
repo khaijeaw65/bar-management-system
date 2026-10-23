@@ -3,20 +3,20 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-038 menu write API **Implemented** — work `5e29d80` on `feat/BRIEF-038-menu-write-api` (pushed, no PR) → `audit BRIEF-038` (Cowork). After PASS: PASS commit + PR, merge on green `ci` (own PR, §7) → BRIEF-039 / menu UI.
+BRIEF-038 menu write API **Audit PASS** (Cowork, `5e29d80`) — PASS commit + PR on `feat/BRIEF-038-menu-write-api`, merge when `ci` green (own PR, §7) → BRIEF-039 (incl. F2 DR-023 trigger, F3 `includeHidden`) → F1 name snapshot (DR-022) before 8 Nov → menu UI.
 
 ## Active
-- Brief: BRIEF-038 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-038-menu-write-api` (seed `3c8be95`, `main` merged `8d642f9`) · work `5e29d80`
+- Brief: BRIEF-038 Rev 1 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-038-menu-write-api` (seed `3c8be95`, `main` merged `8d642f9`) · work `5e29d80`
 - Done 21–23 Oct: BRIEF-037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
 1. 038 audit → PASS commit + PR → merge on green `ci` · weekend push (Field 22 Oct): settings ✅ → reports API ✅ → dashboard ✅ → menu API (038) → 039 / UI; Mon afternoon update
-2. For the menu UI brief (from 038 handoff): manager read of hidden categories · POS listen to `menu.changed` · item rename changes past line names (no name snapshot)
+2. 038 audit decisions (Field 23 Oct): F1 name snapshot on order lines + rename confirm UI → DR-022 + own brief after 039 · F2 DB monotonic `updated_at` trigger, all audited tables → DR-023 in 039 · F3 `?includeHidden` + `isActive` → 039 Pre-decided · POS listen to `menu.changed` → UI brief
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-038 (Cowork)
+- Shared files: none · Review queue: none (038 PASS) · if `ci` hits frontend timeouts → re-run once (038 audit F4)
 - e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations); frontend e2e needs no other `next dev` in `app/frontend`; frontend unit tests time out under heavy machine load (038 handoff)
 - Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 3 × จินโทนิค (180/200/200), remaining ฿580 · backend 3001 (`dist` of `5e29d80`) + SonarQube 9000 running · untracked `DR-020` (Cowork's) left as is
 
@@ -36,5 +36,5 @@ BRIEF-038 menu write API **Implemented** — work `5e29d80` on `feat/BRIEF-038-m
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-038 (Implemented, audit) → BRIEF-039 modifier groups + photos (DR-020) → menu UI 040 / 041
+1. BRIEF-038 (PASS, PR) → BRIEF-039 modifier groups + photos (DR-020) → menu UI 040 / 041
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
