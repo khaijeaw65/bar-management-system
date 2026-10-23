@@ -4,7 +4,7 @@ import { ChartColumn } from "lucide-react";
 export function ReportSkeleton({ tiles = 4 }: Readonly<{ tiles?: number }>) {
   return (
     <div aria-busy="true" aria-label="กำลังโหลดรายงาน" className="flex flex-col gap-4">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {Array.from({ length: tiles }, (_, index) => (
           <Skeleton key={index} className="h-28 rounded-card" />
         ))}

@@ -26,7 +26,7 @@ function LinkTile({ label, value }: Readonly<{ label: string; value: number }>) 
 
 export function TodayTiles({ report }: Readonly<{ report: ReportToday }>) {
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <StatTile label="ยอดวันนี้" value={formatTHB(report.revenue)} />
       <StatTile label="บิลที่ปิดแล้ว" value={report.bills.toLocaleString("th-TH")} />
       {/* pending + accepted + ready tickets — the board the tile opens (BRIEF-036 audit F2) */}

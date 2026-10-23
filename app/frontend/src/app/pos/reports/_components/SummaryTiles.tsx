@@ -8,7 +8,7 @@ import { StatTile } from "./StatTile";
 export function SummaryTiles({ summary }: Readonly<{ summary: ReportSummary }>) {
   const { previous } = summary;
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <StatTile
         label="ยอดขาย"
         value={formatTHB(summary.revenue)}
