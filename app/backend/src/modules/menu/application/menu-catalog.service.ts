@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import type {
   MenuCategoryList,
   MenuItem,
@@ -48,6 +48,8 @@ export interface OrderableLookup {
 
 @Injectable()
 export class MenuCatalogService {
+  private readonly logger = new Logger(MenuCatalogService.name);
+
   public constructor(
     @Inject(MENU_CATALOG_REPOSITORY)
     private readonly catalog: MenuCatalogRepository,
@@ -149,7 +151,7 @@ export class MenuCatalogService {
       categoryId: record.categoryId,
       name: record.name,
       description: record.description,
-      imageUrl: record.imageKey ? await this.storage.presignRead(record.imageKey) : null,
+      imageUrl: await this.photoUrl(record.imageKey),
       itemType: record.itemType,
       station: record.kitchenTag,
       isPromo: record.isPromo,
@@ -171,6 +173,17 @@ export class MenuCatalogService {
       })),
       updatedAt: record.updatedAt.toISOString(),
     };
+  }
+
+  /** A photo is decoration: a signing failure shows "no photo" and never fails a menu read or an 86. */
+  private async photoUrl(imageKey: string | null): Promise<string | null> {
+    if (!imageKey) return null;
+    try {
+      return await this.storage.presignRead(imageKey);
+    } catch (error) {
+      this.logger.warn(`could not sign ${imageKey}: ${error instanceof Error ? error.name : 'error'}`);
+      return null;
+    }
   }
 
   private toOrderable(

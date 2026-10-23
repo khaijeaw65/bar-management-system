@@ -9,6 +9,7 @@ export class FakeStorage implements StorageApi {
   public readonly objects = new Map<string, StoredObject>();
   public failCopy = false;
   public failRemove = false;
+  public failRead = false;
 
   public async presignUpload(contentType: ImageContentType) {
     const key = `tmp/${randomUUID()}.${IMAGE_EXTENSION[contentType]}`;
@@ -37,6 +38,7 @@ export class FakeStorage implements StorageApi {
   }
 
   public async presignRead(key: string): Promise<string> {
+    if (this.failRead) throw new Error('credentials unavailable');
     return `https://fake-s3.test/bar-test/${key}?X-Amz-Signature=fake`;
   }
 

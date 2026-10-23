@@ -46,6 +46,7 @@ describe('Menu photos and hidden-category reads (e2e)', () => {
     storage.objects.clear();
     storage.failCopy = false;
     storage.failRemove = false;
+    storage.failRead = false;
     await clearStaffAndVenue(dataSource);
     await app.get(RedisService).client.flushdb();
     accessToken = (await staffSession(app, await insertStaff(dataSource, 'เอ'))).accessToken;
@@ -182,6 +183,22 @@ describe('Menu photos and hidden-category reads (e2e)', () => {
       storage.failRemove = true;
       await patch(item.id, edit(item, { imageKey: null })).expect(200);
       expect(await storedKey(item.id)).toBeNull();
+    });
+  });
+
+  describe('when signing the photo URL fails', () => {
+    it('keeps the menu readable and the 86 toggle working, with imageUrl null', async () => {
+      const item = await create({ imageKey: await upload() });
+      storage.failRead = true;
+      const listed = await get('/api/menu/items').expect(200);
+      const entry = (listed.body.data.items as MenuItem[]).find((candidate) => candidate.id === item.id);
+      expect(entry?.imageUrl).toBeNull();
+      expect((await get(`/api/menu/items/${item.id}`).expect(200)).body.data.imageUrl).toBeNull();
+      const toggled = await post(`/api/menu/items/${item.id}/mark-unavailable`).expect(200);
+      expect(toggled.body.data.item).toMatchObject({ availableNow: false, imageUrl: null });
+      expect(await one(`SELECT is_available FROM menu_item WHERE id = $1`, [item.id])).toEqual({ is_available: false });
+      storage.failRead = false;
+      expect((await get(`/api/menu/items/${item.id}`).expect(200)).body.data.imageUrl).toContain(await storedKey(item.id));
     });
   });
 

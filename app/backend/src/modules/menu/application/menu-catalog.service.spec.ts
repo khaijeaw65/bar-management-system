@@ -163,6 +163,24 @@ describe('MenuCatalogService reads (BRIEF-039)', () => {
     expect((await service.getItem(ITEM)).imageUrl).toBeNull();
   });
 
+  it('shows no photo, and still answers, when signing fails', async () => {
+    const storage = new FakeStorage();
+    storage.failRead = true;
+    const failing = new MenuCatalogService(
+      { ...catalog, lockItem: async () => record({ imageKey: `menu/${ITEM}/photo.jpg` }), saveAvailability: async () => undefined } as unknown as MenuCatalogRepository,
+      { now: () => NOON },
+      asStorage(storage),
+    );
+    findItem.mockResolvedValueOnce(record({ imageKey: `menu/${ITEM}/photo.jpg` }));
+    listItems.mockResolvedValueOnce([record({ imageKey: `menu/${ITEM}/photo.jpg` }), record({ id: MISSING })]);
+    expect((await failing.getItem(ITEM)).imageUrl).toBeNull();
+    const listed = await failing.listItems({ availableOnly: false });
+    expect(listed.items.map((entry) => entry.imageUrl)).toEqual([null, null]);
+    // The 86 toggle (SoldOutService runs it inside a transaction) must still produce its item.
+    const toggled = await failing.setAvailability(ITEM, false);
+    expect(toggled).toMatchObject({ changed: true, item: { imageUrl: null, availableNow: false } });
+  });
+
   it('lists items of a hidden category only for includeHidden, as not available', async () => {
     listItems.mockResolvedValue([record({ categoryActive: false })]);
     expect((await service.listItems({ availableOnly: false })).items).toEqual([]);
