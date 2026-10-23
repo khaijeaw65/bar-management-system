@@ -90,10 +90,10 @@ export class MenuCatalogService {
     if (locked.isAvailable === available) {
       return { changed: false, item: await this.toItem(locked, this.clock.now()) };
     }
-    await this.catalog.saveAvailability(itemId, available);
+    const updatedAt = await this.catalog.saveAvailability(itemId, available);
     return {
       changed: true,
-      item: await this.toItem({ ...locked, isAvailable: available }, this.clock.now()),
+      item: await this.toItem({ ...locked, isAvailable: available, updatedAt }, this.clock.now()),
     };
   }
 

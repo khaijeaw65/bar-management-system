@@ -63,7 +63,7 @@ describe('MenuCatalogService.getOrderable', () => {
     findVariants,
     shareItems,
     lockItem: async () => null,
-    saveAvailability: async () => undefined,
+    saveAvailability: async () => NOON,
   };
   const service = new MenuCatalogService(catalog, { now: () => NOON }, asStorage(new FakeStorage()));
 
@@ -167,7 +167,7 @@ describe('MenuCatalogService reads (BRIEF-039)', () => {
     const storage = new FakeStorage();
     storage.failRead = true;
     const failing = new MenuCatalogService(
-      { ...catalog, lockItem: async () => record({ imageKey: `menu/${ITEM}/photo.jpg` }), saveAvailability: async () => undefined } as unknown as MenuCatalogRepository,
+      { ...catalog, lockItem: async () => record({ imageKey: `menu/${ITEM}/photo.jpg` }), saveAvailability: async () => NOON } as unknown as MenuCatalogRepository,
       { now: () => NOON },
       asStorage(storage),
     );

@@ -148,12 +148,13 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
     return record;
   }
 
-  public async saveAvailability(id: string, available: boolean): Promise<void> {
+  public async saveAvailability(id: string, available: boolean): Promise<Date> {
     const items = this.txHost.tx.getRepository(MenuItem);
-    const item = await items.findOne({ where: { id } });
-    if (!item) return;
+    const item = await items.findOneByOrFail({ id });
     item.isAvailable = available;
     await items.save(item);
+    // Re-read in this transaction: the trigger sets updated_at (DR-023), so the saved entity's copy is not the stored value.
+    return (await items.findOneByOrFail({ id })).updatedAt;
   }
 
   public async findVariants(ids: readonly string[]): Promise<MenuItemRecord[]> {

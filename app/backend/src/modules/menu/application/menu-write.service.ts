@@ -133,7 +133,7 @@ export class MenuWriteService {
     const groupIds = input.modifierGroupIds ?? locked.groupIds;
     await this.requireReferences(input.categoryId, input.modifierGroupIds ?? []);
     const imageKey = this.nextImageKey(input.imageKey, locked.imageKey, photo);
-    await this.menu.updateItem(id, this.fields(input, imageKey), input.variants, groupIds, this.clock.now());
+    await this.menu.updateItem(id, this.fields(input, imageKey), input.variants, groupIds);
     return locked.imageKey !== null && locked.imageKey !== imageKey ? locked.imageKey : null;
   }
 

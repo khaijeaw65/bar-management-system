@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
+import { ClsService } from 'nestjs-cls';
 import { In } from 'typeorm';
 import type { MenuVariantInput } from '@bar/contracts';
 import type {
@@ -19,6 +20,9 @@ import { ModifierGroup } from './modifier-group.entity.js';
 const HOLD_CATEGORY = `SELECT id FROM menu_category WHERE id = $1 FOR KEY SHARE`;
 
 const LOCK_ITEM = `SELECT updated_at AS "updatedAt", image_key AS "imageKey" FROM menu_item WHERE id = $1 FOR UPDATE`;
+
+// A bare UPDATE: the trigger stamps updated_at (DR-023). updated_by keeps the editor of a variant-only edit.
+const TOUCH_ITEM = `UPDATE menu_item SET updated_by = COALESCE($2, updated_by) WHERE id = $1`;
 
 const ACTIVE_GROUPS = `
   SELECT DISTINCT l.modifier_group_id AS id
@@ -47,7 +51,10 @@ const LOCK_CATEGORY_ITEMS = `
 
 @Injectable()
 export class MenuWriteTypeormRepository implements MenuWriteRepository {
-  public constructor(private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>) {}
+  public constructor(
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
+    private readonly cls: ClsService,
+  ) {}
 
   public async holdCategory(id: string): Promise<boolean> {
     return (await this.query(HOLD_CATEGORY, [id])).length > 0;
@@ -102,14 +109,13 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
     fields: MenuItemFields,
     variants: readonly MenuVariantInput[],
     groupIds: readonly string[],
-    touchedAt: Date,
   ): Promise<void> {
     const items = this.txHost.tx.getRepository(MenuItem);
     const item = await items.findOneOrFail({ where: { id } });
     Object.assign(item, this.itemColumns(fields));
-    // Set by hand so a variant-only or link-only edit still moves the item's stamp (MENU_ITEM_STALE).
-    item.updatedAt = touchedAt;
     await items.save(item);
+    // A variant-only or link-only edit changes no item column, so touch the row to move its stamp (MENU_ITEM_STALE).
+    await this.query(TOUCH_ITEM, [id, this.cls.get('userId') ?? null]);
     const existing = await this.txHost.tx.getRepository(MenuItemVariant).find({ where: { menuItemId: id } });
     const active = await this.saveVariantSet(id, variants, existing);
     await this.replaceLinks(active, groupIds);

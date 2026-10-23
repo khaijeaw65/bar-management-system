@@ -1,7 +1,9 @@
 -- ============================================================
 -- Bar Management System — Initial Schema
--- Generated: 2026-09-13  |  Updated: 2026-10-17  |  10 domains, 38 tables
+-- Generated: 2026-09-13  |  Updated: 2026-10-23  |  10 domains, 38 tables
 -- ============================================================
+-- updated_at is owned by the database (DR-023): the trigger block above the seed data stamps every UPDATE.
+-- A table created later with an updated_at column attaches the same trigger in its own migration.
 
 -- ── Extensions ───────────────────────────────────────────────
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -589,6 +591,31 @@ CREATE INDEX idx_bottle_status       ON bottle_keep(status);
 -- Customer identity
 CREATE INDEX idx_cust_identity_cust  ON customer_identity(customer_id);
 CREATE INDEX idx_consent_customer    ON customer_consent(customer_id);
+
+-- ── updated_at trigger (DR-023, BRIEF-043) ───────────────────
+-- The database sets updated_at on every UPDATE, whoever writes the row: monotonic per row, so a
+-- transaction that started first but locks the row second still stamps later than the previous write.
+CREATE FUNCTION set_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.updated_at := GREATEST(now(), OLD.updated_at + interval '1 millisecond');
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_venue_updated_at                  BEFORE UPDATE ON venue                  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_table_seat_updated_at             BEFORE UPDATE ON table_seat             FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_visit_updated_at                  BEFORE UPDATE ON visit                  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_staff_user_updated_at             BEFORE UPDATE ON staff_user             FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_menu_category_updated_at          BEFORE UPDATE ON menu_category          FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_menu_item_updated_at              BEFORE UPDATE ON menu_item              FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_menu_item_availability_updated_at BEFORE UPDATE ON menu_item_availability FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_menu_item_variant_updated_at      BEFORE UPDATE ON menu_item_variant      FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_modifier_group_updated_at         BEFORE UPDATE ON modifier_group         FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_modifier_option_updated_at        BEFORE UPDATE ON modifier_option        FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_order_record_updated_at           BEFORE UPDATE ON order_record           FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_order_ticket_updated_at           BEFORE UPDATE ON order_ticket           FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_order_item_updated_at             BEFORE UPDATE ON order_item             FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_payment_updated_at                BEFORE UPDATE ON payment                FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- ============================================================
 -- SEED — permissions (atomic strings, seeded at boot)

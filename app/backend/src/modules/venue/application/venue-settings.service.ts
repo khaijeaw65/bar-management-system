@@ -62,10 +62,10 @@ export class VenueSettingsService {
     if (outcome.replacedCutoff !== null) {
       this.previousCutoff = { cutoff: outcome.replacedCutoff, changedAt: this.clock.now() };
     }
-    if (outcome.changed) {
+    if (outcome.updatedAt) {
       this.notifications.emitToStaff(VENUE_SETTINGS_CHANGED, {
         settings: outcome.settings,
-        updatedAt: this.clock.now().toISOString(),
+        updatedAt: outcome.updatedAt.toISOString(),
       });
     }
     return outcome.settings;
@@ -107,12 +107,12 @@ export class VenueSettingsService {
     if (!venue) throw new DomainException('NOT_FOUND', 'ไม่พบร้าน', 404);
     const patch = this.changesOf(venue, input);
     if (Object.keys(patch).length === 0) {
-      return { settings: await this.get(), changed: false, replacedCutoff: null };
+      return { settings: await this.get(), updatedAt: null, replacedCutoff: null };
     }
-    await this.venues.saveSettings(venue.id, patch);
+    const updatedAt = await this.venues.saveSettings(venue.id, patch);
     await this.auditLog.record(this.settingsChangeOf(venue, patch));
     const replacedCutoff = patch.businessDayCutoff === undefined ? null : venue.businessDayCutoff;
-    return { settings: await this.get(), changed: true, replacedCutoff };
+    return { settings: await this.get(), updatedAt, replacedCutoff };
   }
 
   private changesOf(venue: LockedVenueSettings, input: UpdateVenueSettings): VenueSettingsPatch {
@@ -189,7 +189,8 @@ export class VenueSettingsService {
 
 interface StoredSettings {
   settings: VenueSettings;
-  changed: boolean;
   /** The cut-off this save replaced, or null when the cut-off did not change. */
   replacedCutoff: string | null;
+  /** The `updated_at` the database stamped on the venue row (DR-023); null when nothing changed. */
+  updatedAt: Date | null;
 }
