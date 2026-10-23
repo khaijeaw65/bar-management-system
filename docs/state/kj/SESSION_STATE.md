@@ -3,22 +3,22 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-042 order-line name snapshot **Audit PASS** (Cowork, S `ef1151d`) — PR opened with the PASS commit → merge on green `ci` (own PR, §7) → BRIEF-043 `updated_at` trigger → menu UI 040 / 041 / 044.
+BRIEF-043 `updated_at` trigger **Implemented** (work `f36b872`, branch pushed, no PR) → `audit BRIEF-043` (Cowork) → PASS commit + PR → merge on green `ci` (own PR, §7) → menu UI 040 / 041 / 044.
 
 ## Active
-- Brief: BRIEF-042 Rev 2 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-042-order-name-snapshot` (seed `d25a4d0`, `main` merged `1007285`) · work `ef1151d`
-- Done 21–23 Oct: BRIEF-039 (#81) · 038 · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
+- Brief: BRIEF-043 Rev 1 · Stage: Implemented → audit · Branch: `feat/BRIEF-043-db-updated-at` (seed `a79771b`, `main` merged) · work `f36b872`
+- Done 21–23 Oct: BRIEF-042 (#83) · 039 (#81) · 038 · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. 042 PR → merge on green `ci` · then BRIEF-043 (merge `main` first; both touch `migrations.ts`) → UI 040 (rename confirm, Pre-decided) / 041 photos / 044 add-on CRUD
+1. `audit BRIEF-043` → PASS → PR → merge on green `ci` · then UI 040 (rename confirm, Pre-decided) / 041 photos / 044 add-on CRUD
 2. Open from 038 audit: POS listen to `menu.changed` → UI brief · `?includeHidden` IAM later
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none (042 PASS) · bucket `bar-app-dev` still needs the `tmp/` 1-day lifecycle + CORS `POST` from the web origin before the photo UI (041) · if `ci` hits frontend timeouts → re-run once (038 audit F4) · a `nest start --watch` backend (22 Oct) owns :3001 and restarts on `dist` rebuilds
+- Shared files: none · Review queue: 043 (Cowork) · bucket `bar-app-dev` still needs the `tmp/` 1-day lifecycle + CORS `POST` from the web origin before the photo UI (041) · if `ci` hits frontend timeouts → re-run once (038 audit F4) · a `nest start --watch` backend (22 Oct) owns :3001 and restarts on `dist` rebuilds
 - e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations; a `nest start --watch` respawns it, so stop that too); frontend e2e needs no other `next dev` in `app/frontend`; frontend unit tests time out under heavy machine load (038 handoff)
-- Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 3 × จินโทนิค (180/200/200), remaining ฿580 · migration `OrderLineSnapshots` applied on `bar` · backend 3001 = plain `node dist/main` of `ef1151d` (Field's `nest start --watch` stopped during the 042 run proof — restart it if wanted) · web `next dev` :3000 (another session) + SonarQube 9000 running · untracked `DR-020` (Cowork's) left as is
+- Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 3 × จินโทนิค (180/200/200), remaining ฿580 · migrations `OrderLineSnapshots` + `UpdatedAtTrigger` applied on `bar` · backend 3001 = plain `node dist/main` of `f36b872` (Field's `nest start --watch` stays stopped — restart it if wanted) · web `next dev` :3000 (another session) + SonarQube 9000 running · untracked `DR-020` (Cowork's) left as is
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -36,5 +36,5 @@ BRIEF-042 order-line name snapshot **Audit PASS** (Cowork, S `ef1151d`) — PR o
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-042 (PASS, PR) → BRIEF-043 `updated_at` trigger (DR-023) → menu UI 040 / 041 / 044
+1. BRIEF-043 `updated_at` trigger (Implemented, audit) → menu UI 040 / 041 / 044
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
