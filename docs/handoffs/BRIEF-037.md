@@ -8,7 +8,7 @@
 | **Branch** | `feat/BRIEF-037-dashboard-ui` (seed `13dbaef`; `main` merged in at `5480281` after BRIEF-036 #78; PR opens after audit PASS) |
 | **Commit** | Work SHA `536b24b` (work `3c3dd32` + fix `536b24b`) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS (Cowork, 2026-10-23, reviewed `536b24b`) — PR opened with this commit |
 
 ## Summary
 - **`/pos/reports`** (rail รายงาน now links there): title + Tabs **ภาพรวมรายได้ · วันนี้**. Default ภาพรวมรายได้, last tab kept in `localStorage` (`reports.tab`, every access in try/catch — Q1 = A). The POS renders only after the client session check, so reading storage on first render is safe (no SSR mismatch).
@@ -77,12 +77,18 @@ Scanned `536b24b`. Gate ERROR on `new_coverage` 0 % (no coverage path — known)
 - Previous-period delta on demo data is huge while the seed covers only 30 days (point 1) — optional: seed 60 days for the 10 Nov demo (seed change, not this brief).
 - Recharts animation is off (`isAnimationActive={false}`) for stable tests and screenshots.
 
+## Audit outcome
+- Cowork **PASS** on `536b24b`, zero Must fix (`docs/audits/BRIEF-037.md`).
+- Finding 1 → Field (23 Oct): long-open seat = open ≥ 3 h accepted as the UI-only threshold; no change.
+- Findings 2 (custom range `to` ≤ today) and 3 (`order.created` test) → optional, next frontend touch of `/pos/reports`; not done here.
+- Findings 4 (UI brief sizing) and 5 (seed 60 days for the 10 Nov demo) → planning notes for Cowork / Field.
+
 ## AI Usage
 High — Claude Code implemented the whole brief (Field = reviewer mode; Field signed in with LINE for the run proof).
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-037`
+- Next command: merge on green `ci` (Field's own PR, §7)
 - Work SHA: `536b24b` · self-check: brief §2–§6 ↔ contracts `schemas/reports.ts` ↔ `lib/api/reports.ts` ↔ components ↔ tests compared; no contract change.
 
 ## Notes for Reviewer

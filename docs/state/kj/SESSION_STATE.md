@@ -3,20 +3,20 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-037 dashboard UI **Implemented** — work `536b24b` on `feat/BRIEF-037-dashboard-ui` (pushed, no PR) → `audit BRIEF-037` (Cowork) → PASS commit + PR, merge on green `ci` (own PR, §7) → menu API / UI.
+BRIEF-037 dashboard UI **Audit PASS** (Cowork, `536b24b`) — PASS commit + PR on `feat/BRIEF-037-dashboard-ui`, merge when `ci` green (own PR, §7) → menu API / UI. Optional audit F2 (custom `to` ≤ today) + F3 (`order.created` test) at the next `/pos/reports` touch.
 
 ## Active
-- Brief: BRIEF-037 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-037-dashboard-ui` (seed `13dbaef`, `main` merged `5480281`) · work `3c3dd32` + fix `536b24b`
+- Brief: BRIEF-037 Rev 1 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-037-dashboard-ui` (seed `13dbaef`, `main` merged `5480281`) · work `3c3dd32` + fix `536b24b`
 - Done 21–23 Oct: BRIEF-036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 split deferred (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. 037 audit → PASS commit + PR → merge on green `ci` · weekend push to Sat night (Field 22 Oct): settings ✅ → reports API ✅ → dashboard → menu; Mon afternoon update
+1. 037 PR → merge on green `ci` · weekend push to Sat night (Field 22 Oct): settings ✅ → reports API ✅ → dashboard → menu; Mon afternoon update
 2. PASS commit lands on the branch **before** any conflict resolve / merge (#69 lesson)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-037 (Cowork)
+- Shared files: none · Review queue: none (037 PASS)
 - e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations); frontend e2e needs no other `next dev` in `app/frontend`
 - Local DB `bar`: demo history 22 Sep–22 Oct (592 bills, re-seeded 23 Oct) · staff `Field (demo)` + **`Field` with Field's LINE sub** (LINE sign-in works) · T1 paid ฿240 cash, still open · backend 3001 (`dist` of this branch) + SonarQube 9000 running · untracked `DR-020` (Cowork's) left as is
 
@@ -36,5 +36,5 @@ BRIEF-037 dashboard UI **Implemented** — work `536b24b` on `feat/BRIEF-037-das
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-037 (audit) → menu API / UI (Drafts)
+1. BRIEF-037 (PASS, PR) → menu API / UI (Drafts)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
