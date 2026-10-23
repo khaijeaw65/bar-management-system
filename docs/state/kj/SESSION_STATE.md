@@ -3,20 +3,20 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-039 **Implemented** (work `f2ed6cf` (handoff `e64b3dc`+), pushed, no PR) → `audit BRIEF-039` (Cowork). Real-bucket run proof ✅ (after Field's IAM fix). Ready on own seed branches (local): BRIEF-042 name snapshot (DR-022), BRIEF-043 DB `updated_at` trigger (DR-023).
+BRIEF-039 **Audit PASS** (Cowork, S `a8dabae`) — PASS commit + PR on `feat/BRIEF-039-menu-photos-api`, merge when `ci` green (own PR, §7). Real-bucket run proof ✅. Ready on own seed branches (local): BRIEF-042 name snapshot (DR-022), BRIEF-043 DB `updated_at` trigger (DR-023).
 
 ## Active
-- Brief: BRIEF-039 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-039-menu-photos-api` (seed `3cbc85a`) · work `f2ed6cf` (handoff `e64b3dc`+)
+- Brief: BRIEF-039 Rev 1 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-039-menu-photos-api` (seed `3cbc85a`) · work `a8dabae`
 - Done 21–23 Oct: BRIEF-038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. 039 audit → (IAM fix + proof re-run) → PASS commit + PR → merge on green `ci` · Field approved 23 Oct: 042 / 043 Ready, DR-022 / DR-023 Approved · Cowork drafts BRIEF-044 (modifier CRUD)
+1. 039 PR → merge on green `ci` → 042 (add `ORDER BY confirmed_via::text` in demo-history test, 039 audit F2) · tell Metee: `AWS_REGION` + `S3_BUCKET` now required in `app/backend/.env` (039 audit F5) · prod IAM needs `s3:ListBucket` (F3) · Field approved 23 Oct: 042 / 043 Ready, DR-022 / DR-023 Approved · Cowork drafts BRIEF-044 (modifier CRUD)
 2. Before 8 Nov (Field 23 Oct): 039 → 042 (DR-022) → 043 (DR-023) → 044 modifier CRUD → menu UI 040 (rename confirm + listen `menu.changed`) / 041 photo UI; Mon afternoon update
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: 039 (Cowork) · bucket `bar-app-dev` still needs the `tmp/` 1-day lifecycle + CORS `POST` from the web origin before the photo UI (041) · if `ci` hits frontend timeouts → re-run once (038 audit F4) · a `nest start --watch` backend (22 Oct) owns :3001 and restarts on `dist` rebuilds
+- Shared files: none · Review queue: none (039 PASS) · bucket `bar-app-dev` still needs the `tmp/` 1-day lifecycle + CORS `POST` from the web origin before the photo UI (041) · if `ci` hits frontend timeouts → re-run once (038 audit F4) · a `nest start --watch` backend (22 Oct) owns :3001 and restarts on `dist` rebuilds
 - e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations); frontend e2e needs no other `next dev` in `app/frontend`; frontend unit tests time out under heavy machine load (038 handoff)
 - Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 3 × จินโทนิค (180/200/200), remaining ฿580 · SonarQube 9000
 

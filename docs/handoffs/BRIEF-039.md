@@ -6,9 +6,9 @@
 | **Date** | 2026-10-23 |
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-039-menu-photos-api` (seed `3cbc85a`; PR opens after audit PASS) |
-| **Commit** | Work SHA `f2ed6cf` (gates ran on `ed1b45c`; the amend changed only the IAM note in `docs/api/README.md`) |
+| **Commit** | Audited work SHA `a8dabae` (first audit `f2ed6cf`, Must fix #1 fixed in `a8dabae`) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — awaiting audit · real-bucket run proof complete (re-run after the IAM fix) |
+| **Status** | Audit PASS (Cowork, 2026-10-23, S = `a8dabae`) — PR opened with this commit |
 
 ## Summary
 - **Storage:** `common/storage/StorageService` (the only S3 caller, DR-020) + `providers/config/storage/` (`AWS_REGION`, `S3_BUCKET` required; keys optional, passed only when both are set; blank = unset; the error message names the variable, never a value). Methods: `presignUpload` (presigned POST, 5 min, `eq $Content-Type` + `content-length-range 1 … 5,242,880`, key `tmp/<uuid>.<ext>`), `head` (null on 404), `copy`, `remove`, `presignRead` (1 h). `StorageModule` is imported by `MenuModule`.
@@ -29,7 +29,7 @@
 | AC-7 | ✅ | gates below · `openapi:check` exit 0 · README |
 
 ## Gate Evidence (G1)
-Run on `ed1b45c` (same tree as `f2ed6cf` except one README sentence). The older `dist/main` backend (another session) was stopped before e2e; Field's `nest start --watch` process (22 Oct) was left running. e2e used the `bar_test` DB.
+Run on `a8dabae` (the fix commit); the table below is the same set re-run there: contracts 65 · backend unit **129** · e2e **145** (22 files) · lint / typecheck / `openapi:check` exit 0. Earlier counts on `ed1b45c`: 128 unit · 144 e2e. The older `dist/main` backend (another session) was stopped before e2e; Field's `nest start --watch` process (22 Oct) was left running. e2e used the `bar_test` DB.
 
 | Command | Exit | Result |
 |---|---|---|
@@ -108,8 +108,12 @@ Earlier results on the unfixed IAM user (upload 403, create 500 on a missing obj
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-039`
-- Work SHA: `f2ed6cf` · self-check: brief §2–§4 ↔ `menu-write.ts` / `menu.ts` ↔ `menu-photo.service.ts` / `menu-write.service.ts` / `storage.service.ts` ↔ `menu-photos.e2e-spec.ts`; no schema or migration change (`image_key` exists); `PermissionsGuard` decorators on all new routes
+- Audit: **PASS** (`docs/audits/BRIEF-039.md`) — first pass CHANGES REQUIRED (Must fix #1: a photo-signing failure could 500 the POS menu and roll back an 86), fixed in `a8dabae` (`photoUrl()` → `imageUrl: null` + warn; unit + e2e with `FakeStorage.failRead`); re-check PASS, zero Must fix. S = `a8dabae`, S..H = audit / handoff / state only
+- Next command: merge on green `ci` (Field's own PR, §7)
+- Work SHA: `a8dabae` · self-check: brief §2–§4 ↔ `menu-write.ts` / `menu.ts` ↔ `menu-photo.service.ts` / `menu-write.service.ts` / `storage.service.ts` ↔ `menu-photos.e2e-spec.ts`; no schema or migration change (`image_key` exists); `PermissionsGuard` decorators on all new routes
+
+## Audit outcome
+Findings 2–5 are Suggestion / Info, no action on this branch: 2 → fold `ORDER BY confirmed_via::text` into BRIEF-042 · 3 → production IAM / Terraform grants `s3:ListBucket` + Get/Put/Delete (AWS sprint) · 4 → `backend.md` still lists `providers/infrastructures/storage/` (Field-approved edit) · 5 → an old `app/backend/.env` without `AWS_REGION` / `S3_BUCKET` stops the backend at boot (tell Metee).
 
 ## Notes for Reviewer
 - Start with `menu-write.service.ts` `createItem` / `updateItem` / `nextImageKey` and `menu-photo.service.ts` — the copy-before-write and cleanup order.
