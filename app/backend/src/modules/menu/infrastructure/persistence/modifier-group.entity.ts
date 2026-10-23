@@ -15,4 +15,8 @@ export class ModifierGroup extends BaseEntity {
 
   @Column({ type: COL.SMALLINT, default: 1 })
   public maxSelect!: number;
+
+  /** DR-024: false = archived — hidden from the list and from linking, rows kept for old orders. */
+  @Column({ type: COL.BOOLEAN, default: true })
+  public isActive!: boolean;
 }

@@ -40,16 +40,13 @@ function blockedLines(
   lookup: OrderableLookup,
 ): UnavailableLine[] {
   return requested.flatMap((line) => {
-    const reason = blockReason(line, variantOf(lookup, line.variantId));
+    const reason = blockReason(variantOf(lookup, line.variantId));
     return reason ? [{ variantId: line.variantId, reason }] : [];
   });
 }
 
-function blockReason(line: RequestedLine, variant: OrderableVariant): UnavailableReason | null {
-  if (!variant.availableNow) return variant.unavailableReason ?? 'sold_out';
-  const chosen = findChoices(line.modifierOptionIds, variant.modifierGroups);
-  if (chosen.some((choice) => !choice.available)) return 'sold_out';
-  return null;
+function blockReason(variant: OrderableVariant): UnavailableReason | null {
+  return variant.availableNow ? null : (variant.unavailableReason ?? 'sold_out');
 }
 
 function priceOne(line: RequestedLine, lineNo: number, variant: OrderableVariant): PricedLine {
@@ -85,7 +82,6 @@ function requireChoices(
 
 interface FoundChoice extends ChosenModifier {
   groupId: string;
-  available: boolean;
 }
 
 function findChoices(
@@ -98,7 +94,8 @@ function findChoices(
 
 function locate(optionId: string, groups: readonly MenuModifierGroup[]): FoundChoice[] {
   for (const group of groups) {
-    const option = group.options.find((item) => item.id === optionId);
+    // A switched-off option is unknown to new orders (BRIEF-044); old lines keep their snapshot.
+    const option = group.options.find((item) => item.id === optionId && item.isAvailable);
     if (!option) continue;
     return [toChoice(group.id, option)];
   }
@@ -114,7 +111,6 @@ function toChoice(
     optionId: option.id,
     name: option.name,
     priceDelta: option.priceDelta,
-    available: option.isAvailable,
   };
 }
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { IsoDateTimeSchema, UuidSchema } from './common.js';
 import { ItemTypeSchema, KitchenStationSchema } from './enums.js';
+import { MenuModifierGroupSchema } from './menu.js';
 
 const nameField = (label: string) =>
   z.string().trim().min(1, `กรุณากรอก${label}`).max(200, `${label}ยาวเกิน 200 ตัวอักษร`);
@@ -112,6 +113,71 @@ export const ReorderMenuCategoriesSchema = z
     message: 'หมวดซ้ำกัน',
   });
 export type ReorderMenuCategories = z.infer<typeof ReorderMenuCategoriesSchema>;
+
+// Add-on groups (BRIEF-044). The option list of a write is the new active set (like variants).
+const modifierOptionInput = z.object({
+  // PATCH only: an existing option of this group. Omitted → a new option.
+  id: UuidSchema.optional(),
+  name: nameField('ชื่อตัวเลือก'),
+  priceDelta: MenuPriceSchema,
+});
+
+const modifierGroupFields = {
+  name: nameField('ชื่อกลุ่ม'),
+  isRequired: z.boolean(),
+  minSelect: z.number().int().min(0).max(20),
+  maxSelect: z.number().int().min(1).max(20),
+};
+
+const optionList = <T extends z.ZodType>(option: T) =>
+  z.array(option).min(1, 'ต้องมีตัวเลือกอย่างน้อย 1 ตัว').max(50);
+
+interface GroupShape {
+  isRequired: boolean;
+  minSelect: number;
+  maxSelect: number;
+  options: Array<z.infer<typeof modifierOptionInput>>;
+}
+
+// CD-12 R7-4. `options` is the active set, so max is bounded by its length.
+function checkGroupShape(value: GroupShape, ctx: z.RefinementCtx): void {
+  if (value.isRequired && value.minSelect < 1) {
+    ctx.addIssue({ code: 'custom', path: ['minSelect'], message: 'กลุ่มที่บังคับเลือกต้องเลือกอย่างน้อย 1' });
+  }
+  if (!value.isRequired && value.minSelect !== 0) {
+    ctx.addIssue({ code: 'custom', path: ['minSelect'], message: 'กลุ่มที่ไม่บังคับต้องเลือกขั้นต่ำ 0' });
+  }
+  if (value.maxSelect < value.minSelect) {
+    ctx.addIssue({ code: 'custom', path: ['maxSelect'], message: 'เลือกสูงสุดต้องไม่น้อยกว่าขั้นต่ำ' });
+  }
+  if (value.maxSelect > value.options.length) {
+    ctx.addIssue({ code: 'custom', path: ['maxSelect'], message: 'เลือกสูงสุดต้องไม่เกินจำนวนตัวเลือก' });
+  }
+  const ids = value.options.flatMap((option) => (option.id ? [option.id] : []));
+  if (new Set(ids).size !== ids.length) {
+    ctx.addIssue({ code: 'custom', path: ['options'], message: 'ตัวเลือกซ้ำกัน' });
+  }
+}
+
+export const CreateModifierGroupSchema = z
+  .object({ ...modifierGroupFields, options: optionList(modifierOptionInput.omit({ id: true })) })
+  .superRefine(checkGroupShape);
+export type CreateModifierGroup = z.infer<typeof CreateModifierGroupSchema>;
+
+export const UpdateModifierGroupSchema = z
+  .object({ ...modifierGroupFields, options: optionList(modifierOptionInput) })
+  .superRefine(checkGroupShape);
+export type UpdateModifierGroup = z.infer<typeof UpdateModifierGroupSchema>;
+
+// Back-office view: options include switched-off ones (`isAvailable: false`).
+export const ModifierGroupAdminSchema = MenuModifierGroupSchema.extend({
+  // Menu items whose active variants link the group (CD-12 "ใช้กับ n เมนู").
+  usedByItems: z.number().int().min(0),
+});
+export type ModifierGroupAdmin = z.infer<typeof ModifierGroupAdminSchema>;
+
+export const ModifierGroupAdminListSchema = z.object({ items: z.array(ModifierGroupAdminSchema) });
+export type ModifierGroupAdminList = z.infer<typeof ModifierGroupAdminListSchema>;
 
 export const OkSchema = z.object({ ok: z.literal(true) });
 export type Ok = z.infer<typeof OkSchema>;

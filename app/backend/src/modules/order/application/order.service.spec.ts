@@ -86,17 +86,21 @@ describe('priceLines', () => {
     expect(() => priceLines([line([ICE, foreign])], lookup())).toThrow(DomainException);
   });
 
-  it('rejects an unavailable modifier as sold out', () => {
+  it('rejects a switched-off option like an unknown one (BRIEF-044)', () => {
     try {
       priceLines([line([OTHER])], lookup());
-      throw new Error('expected ITEM_UNAVAILABLE');
+      throw new Error('expected VALIDATION_ERROR');
     } catch (error) {
       expect(error).toBeInstanceOf(DomainException);
-      expect((error as DomainException).code).toBe('ITEM_UNAVAILABLE');
-      expect((error as DomainException).errorData).toEqual({
-        details: [{ variantId: VARIANT, reason: 'sold_out' }],
-      });
+      expect((error as DomainException).code).toBe('VALIDATION_ERROR');
     }
+  });
+
+  it('blocks a required group whose options are all switched off', () => {
+    const [group] = groups;
+    if (!group) throw new Error('fixture');
+    const dead = { ...group, options: group.options.map((option) => ({ ...option, isAvailable: false })) };
+    expect(() => priceLines([line([])], lookup([variant({ modifierGroups: [dead] })]))).toThrow(DomainException);
   });
 
   it('reports an item outside its window', () => {
