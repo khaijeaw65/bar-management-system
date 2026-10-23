@@ -59,7 +59,7 @@ Run on `ed1b45c` (same tree as `f2ed6cf` except one README sentence). The older 
 | `POST /menu/items` with a `tmp/` key that is not in the bucket | **500**: `HeadObject` on a missing key returns **403** (not 404) because the same user also lacks `s3:ListBucket`. No item row created (count 0). With `ListBucket` this is the designed 400 |
 | `GET /menu/categories?includeHidden=true` | 200, `isActive` on all 6 |
 
-**Re-run after Field's IAM fix (2026-10-23, fresh `PORT=3002` backend on `e64b3dc`, `/api/health` 200)** — the first run (and the re-run right after the first grant) got 403 `AccessDenied`; the policy was then corrected (it still had the template's placeholder bucket name) and attached to `bar-app-local`, after which everything below passed:
+**Re-run after Field's IAM fix (2026-10-23, fresh `PORT=3002` backend on `e64b3dc`, `/api/health` 200)** — the first run (and the re-run right after the first grant) got 403 `AccessDenied`; Field then fixed the policy on `bar-app-local` (cause not reported), after which everything below passed:
 
 | Step | Result |
 |---|---|
