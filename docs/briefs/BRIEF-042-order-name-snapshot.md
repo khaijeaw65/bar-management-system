@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-23 |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-23 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | DR-022 Approved · BRIEF-039 merged (queue order; no code dependency) |
 | **References** | DR-022 · BRIEF-038 audit F1 + re-check F6 (Field 2026-10-23) · `docs/schema.sql` §6 `order_item`, `order_item_modifier` · `order.sql.ts` `ORDER_ROWS_SQL` |
 | **Audit depth** | Full (order path, migration with backfill) |
@@ -24,6 +24,7 @@ A past order, ticket or bill reads exactly as it did when it was placed — rena
 - **Order create** fills the snapshots and `line_no` (1 … n in request order) in the same transaction that already reads the variant / option prices. Entities updated.
 - **Order read:** `ORDER_ROWS_SQL` returns names from the snapshots; lines ordered by `line_no` (tickets of one order by `created_at, station` — a stable tie-break); response shapes unchanged.
 - **CLI:** `demo-history` and any seed that inserts `order_item` / `order_item_modifier` write the snapshots and `line_no`.
+- **Test stability (Field, 2026-10-23, from BRIEF-039 `ci`):** `app/backend/test/demo-history-seed.e2e-spec.ts` — the two tests that run the full 30-day seed get a per-test timeout of `120_000` ms (a slow GitHub runner took 99 s for the e2e step vs 42 s normally; the 30 s limit fired and left a `payment_order` FK error in cleanup). Test-only: no seed or app change, `vitest.config.e2e.ts` defaults unchanged. `ORDER BY 1::text` already fixed in BRIEF-039 (`3853a4b`).
 - `docs/schema.sql` §6 updated (unlocked below). `docs/erd.html` is updated by Cowork after merge (Field-approved edit — not brief-unlockable).
 
 ### Out (do NOT build here)
@@ -39,7 +40,7 @@ A past order, ticket or bill reads exactly as it did when it was placed — rena
 - **AC-1** — Order a variant with an add-on, then rename the item, the variant and the add-on option → the old order, its tickets and the bill read the **old** names; a new order reads the new names.
 - **AC-2** — Migration on a DB with existing orders: every row gets non-null snapshots equal to the names at migration time and a `line_no`; `down` then `up` again succeeds.
 - **AC-3** — A 5-line order read 20 times returns the lines in request order every time (BRIEF-038 F6).
-- **AC-4** — `seed:demo-history` and the order e2e suites pass with the new NOT NULL columns.
+- **AC-4** — `seed:demo-history` and the order e2e suites pass with the new NOT NULL columns; the demo-history suite passes with the new timeouts.
 - **AC-5** — Gates + run proof.
 
 ## 5. Test Gate
@@ -84,3 +85,4 @@ Run proof: on the dev DB (`bar`, with demo history + T1's จินโทนิ�
 |---|---|---|
 | 1 | 2026-10-23 | Initial Draft (Cowork) — BRIEF-038 audit F1 (Field: option B + UI confirm) + F6 line order |
 | 1 | 2026-10-23 | Ready — Field in session: "approve all" (DR-022 Approved) |
+| 2 | 2026-10-23 | + demo-history seed test timeout (BRIEF-039 ci) — Field-approved ("approve BRIEF-042 Rev 2") |
