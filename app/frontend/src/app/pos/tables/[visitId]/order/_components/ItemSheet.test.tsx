@@ -22,6 +22,7 @@ const item: MenuItem = {
   availableNow: true,
   unavailableReason: null,
   windows: [],
+  updatedAt: "2026-10-01T00:00:00.000Z",
   variants: [
     {
       id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc1",

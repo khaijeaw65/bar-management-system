@@ -9,6 +9,7 @@ export * from './schemas/common.js';
 export * from './schemas/enums.js';
 export * from './schemas/errors.js';
 export * from './schemas/menu.js';
+export * from './schemas/menu-write.js';
 export * from './schemas/orders.js';
 export * from './schemas/payments.js';
 export * from './schemas/reports.js';

@@ -79,6 +79,7 @@ describe('MenuItemListResponseSchema', () => {
                 modifierGroups: [],
               },
             ],
+            updatedAt: '2026-10-23T04:00:00.000Z',
           },
         ],
       },

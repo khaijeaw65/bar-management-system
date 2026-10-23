@@ -1,0 +1,57 @@
+import type { ItemType, KitchenStation, MenuVariantInput } from '@bar/contracts';
+import type { MenuCategoryRecord } from './menu.types.js';
+
+export interface MenuItemFields {
+  categoryId: string;
+  name: string;
+  description: string | null;
+  itemType: ItemType;
+  kitchenTag: KitchenStation | null;
+  isPromo: boolean;
+  /** Lowest active variant price (the "from" price on menu tiles). */
+  basePrice: string;
+}
+
+/** The row a PATCH checks under `FOR UPDATE`. */
+export interface LockedMenuItem {
+  updatedAt: Date;
+  variantIds: string[];
+  /** Union of the groups linked to the item's active variants. */
+  groupIds: string[];
+}
+
+export interface CategoryOrderRow {
+  id: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+/** Every method runs on the caller's transaction. */
+export interface MenuWriteRepository {
+  /** Locks the category `FOR KEY SHARE`, so a concurrent delete waits for this write. */
+  holdCategory(id: string): Promise<boolean>;
+  missingModifierGroups(ids: readonly string[]): Promise<string[]>;
+  insertItem(fields: MenuItemFields, variants: readonly MenuVariantInput[], groupIds: readonly string[]): Promise<string>;
+  lockItem(id: string): Promise<LockedMenuItem | null>;
+  /**
+   * Saves the item and its variant set: listed ids are updated and re-activated, new ones inserted,
+   * the rest deactivated. Links of every active variant become `groupIds`.
+   */
+  updateItem(
+    id: string,
+    fields: MenuItemFields,
+    variants: readonly MenuVariantInput[],
+    groupIds: readonly string[],
+    touchedAt: Date,
+  ): Promise<void>;
+  insertCategory(name: string): Promise<MenuCategoryRecord>;
+  saveCategory(id: string, patch: { name?: string; isActive?: boolean }): Promise<MenuCategoryRecord | null>;
+  /** All categories, active and hidden, locked `FOR UPDATE`, in the current order. */
+  lockCategoryOrder(): Promise<CategoryOrderRow[]>;
+  saveCategoryOrder(ids: readonly string[]): Promise<void>;
+  /** Locks the category `FOR UPDATE`; null when it does not exist. */
+  lockCategoryItemCount(id: string): Promise<number | null>;
+  deleteCategory(id: string): Promise<void>;
+}
+
+export const MENU_WRITE_REPOSITORY = Symbol('MENU_WRITE_REPOSITORY');

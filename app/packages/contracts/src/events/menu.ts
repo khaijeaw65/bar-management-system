@@ -13,3 +13,13 @@ export const MenuAvailabilityChangedPayloadSchema = z.object({
 });
 
 export type MenuAvailabilityChangedPayload = z.infer<typeof MenuAvailabilityChangedPayloadSchema>;
+
+// Every menu write (BRIEF-038) → POS / staff app refetch the menu. Mark-(un)available keeps the event above.
+export const MENU_CHANGED = 'menu.changed';
+
+export const MenuChangedPayloadSchema = z.object({
+  itemIds: z.array(UuidSchema).optional(),
+  categoryIds: z.array(UuidSchema).optional(),
+});
+
+export type MenuChangedPayload = z.infer<typeof MenuChangedPayloadSchema>;
