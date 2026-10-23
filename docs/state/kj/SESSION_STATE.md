@@ -10,8 +10,8 @@ BRIEF-040 **Draft** (menu item list + editor + live menu) on `feat/BRIEF-040-men
 - Done 21–23 Oct: BRIEF-044 (#87) · DR-023 docs (#86) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
-1. 044 PR → merge on green `ci` · then menu UI 040 (rename confirm Pre-decided, listen `menu.changed`) / 041 photos · Cowork: DR-023 rule line + `erd.html` diffs for Field
-2. Open from 038 audit: POS listen to `menu.changed` → UI brief · `?includeHidden` IAM later
+1. Field: 040 Q1 implementer / Q2 phone 390 → Ready · 041 needs bucket CORS `POST` from :3000 + `tmp/` lifecycle (Field, AWS console) · Cowork drafts 045 · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
+2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
@@ -36,5 +36,5 @@ BRIEF-040 **Draft** (menu item list + editor + live menu) on `feat/BRIEF-040-men
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-044 (PASS, PR) → menu UI 040 / 041
+1. BRIEF-040 (Draft) → 041 (Draft) → 045 categories + add-on screens (to draft) → phone 390 shell (after 8 Nov)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-025 slip (week of 26 Oct) · BRIEF-026 gateway
