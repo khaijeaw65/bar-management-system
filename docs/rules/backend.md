@@ -28,6 +28,7 @@ src/
 │   ├── persistence/row-values.ts     ← raw-row readers
 │   ├── clock.ts + system-clock.ts    ← `CLOCK` port + `SystemClock`; each module registers `useClass`
 │   ├── money.ts · time-label.ts      ← NUMERIC(10,2) format · TIME labels / clockSeconds
+│   ├── storage/                      ← StorageService — the only S3 caller (DR-020): presigned POST / GET, head, copy, delete
 │   └── domain-exception.ts
 │
 ├── providers/                        ← infra wiring only — no domain logic, no controllers
@@ -43,7 +44,7 @@ src/
 │   │   ├── jwt/                      (planned — auth brief)
 │   │   ├── gen-ai/                   (planned — AI brief, OpenAI)
 │   │   ├── queue/                    (planned — payment brief; Redis for BullMQ)
-│   │   └── storage/                  (planned — first upload brief, S3)
+│   │   └── storage/                  ← AWS_REGION, S3_BUCKET (+ local-only access keys) — StorageConfigService
 │   ├── database/
 │   │   ├── database.module.ts        ← TypeOrmModule.forRootAsync (via DatabaseConfigService) + CLS transactional plugin
 │   │   ├── data-source.ts            ← standalone DataSource for the TypeORM CLI
@@ -55,9 +56,7 @@ src/
 │   └── infrastructures/              ← vendor adapters that implement a module's port
 │       ├── gen-ai/
 │       │   └── openai-llm-client.service.ts      (planned)
-│       ├── queue/                                (planned — adapter chosen by the payment brief)
-│       └── storage/
-│           └── aws-s3-storage.service.ts         (planned)
+│       └── queue/                                (planned — adapter chosen by the payment brief)
 │
 ├── modules/                          ← domain modules (hexagonal per module)
 │   ├── health/                       ← infra-only (controller + service, no domain/ports)
@@ -96,8 +95,9 @@ src/
 - `AuditSubscriber`: Nest provider that pushes itself onto the `DataSource` — **no `@EventSubscriber()`** (double registration) and not in TypeORM `subscribers`.
 
 ### infrastructures/<domain>/
-- One file per vendor adapter: `<vendor>-<purpose>.service.ts` (e.g. `aws-s3-storage.service.ts`), `@Injectable()`, **implements the port interface** from the owning module (`modules/<m>/domain/ports/…`), injects its `<Domain>ConfigService`.
+- One file per vendor adapter: `<vendor>-<purpose>.service.ts` (e.g. `openai-llm-client.service.ts`), `@Injectable()`, **implements the port interface** from the owning module (`modules/<m>/domain/ports/…`), injects its `<Domain>ConfigService`.
 - Cloud credentials: pass access keys only when both are set (local dev); otherwise use the default chain (ECS task role).
+- Exception (DR-020): object storage is `common/storage/StorageService` — one shared technical service, no module port, no `infrastructures/storage/` adapter.
 - No business logic — translate between the port and the SDK only.
 
 ### Differences from the reference project (don't copy these)
@@ -321,7 +321,7 @@ export type CreateOrderDto = z.infer<typeof CreateOrderSchema>;
 
 ## Config
 
-See **providers/ Rules → config/<domain>/**. Domains now: `app`, `database`. Planned: `jwt`, `gen-ai`, `queue`, `storage` (plus `line`, `payment` when those briefs land) — each added with its three files by the brief that needs it.
+See **providers/ Rules → config/<domain>/**. Domains now: `app`, `database`, `storage`. Planned: `jwt`, `gen-ai`, `queue` (plus `line`, `payment` when those briefs land) — each added with its three files by the brief that needs it.
 
 ---
 
