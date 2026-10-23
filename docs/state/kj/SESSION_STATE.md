@@ -3,7 +3,7 @@ Updated: 2026-10-23 · Agent: Claude Code (BRIEF-041 Ready seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-041 **Implemented** (work `f1d25e1`, branch pushed, no PR) — run proof on the real API + `bar-app-dev` still open: needs Field signed in at :3000 → then `audit BRIEF-041` (Cowork).
+BRIEF-041 **Implemented** (work `f1d25e1`, branch pushed, no PR) — run proof done on the real API + `bar-app-dev` → next `audit BRIEF-041` (Cowork).
 
 ## Active
 - Brief: BRIEF-041 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-041-menu-photo-ui` · handoff `docs/handoffs/BRIEF-041.md`
