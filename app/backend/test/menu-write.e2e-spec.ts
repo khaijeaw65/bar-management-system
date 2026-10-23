@@ -152,10 +152,14 @@ describe('Menu write API (e2e)', () => {
 
     expect(await bill(visitId)).toBe(before);
     const kept = await lines(first);
-    expect(kept.map((line) => [line.variantName, line.unitPrice])).toEqual([
-      ['แก้ว', '180.00'],
-      ['ดับเบิล', '260.00'],
-    ]);
+    // Lines placed together share created_at, so the read returns them in either order.
+    expect(kept.map((line) => [line.variantName, line.unitPrice])).toEqual(
+      expect.arrayContaining([
+        ['แก้ว', '180.00'],
+        ['ดับเบิล', '260.00'],
+      ]),
+    );
+    expect(kept).toHaveLength(2);
     expect(kept.every((line) => line.name === 'จินโทนิค')).toBe(true);
 
     const refused = await post(`/api/visits/${visitId}/orders`).send({ items: [{ variantId: double.id, quantity: 1 }] });
