@@ -2,6 +2,7 @@
 
 import { Table } from "@heroui/react";
 import { useSearchParams } from "next/navigation";
+import { useRef } from "react";
 import { useMenuLive } from "@/hooks/useMenuLive";
 import { useMenuList } from "../_hooks/useMenuList";
 import { MenuEmpty } from "./MenuEmpty";
@@ -14,6 +15,13 @@ export function MenuList() {
   const list = useMenuList();
   const highlight = useSearchParams().get("highlight");
   useMenuLive();
+  // A signed imageUrl lasts 1 h: a broken thumbnail refetches the list once, not per image.
+  const refetched = useRef(false);
+  const onImageError = () => {
+    if (refetched.current) return;
+    refetched.current = true;
+    list.refetch();
+  };
 
   if (list.items.isPending || list.categories.isPending) return <MenuListSkeleton />;
   if (list.items.isError || list.categories.isError) return <MenuListError onRetry={list.refetch} />;
@@ -50,6 +58,7 @@ export function MenuList() {
                     categoryName={byId.get(item.categoryId)?.name ?? "ไม่มีหมวด"}
                     categoryHidden={byId.get(item.categoryId)?.isActive === false}
                     highlighted={item.id === highlight}
+                    onImageError={onImageError}
                   />
                 )}
               </Table.Body>

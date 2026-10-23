@@ -1,13 +1,13 @@
 # State — KJ
-Updated: 2026-10-23 · Agent: Claude Code
+Updated: 2026-10-23 · Agent: Claude Code (BRIEF-041 Ready seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-040 menu editor UI **Audit PASS** (Cowork, S `fbaee5b`) — PR opened with the PASS commit → merge on green `ci` (own PR, §7) → 041 photos / 045.
+BRIEF-041 **Audit PASS** (Cowork, S `a57debf`; Rev 2 switch fix included) — PR opened with the PASS commit → merge on green `ci` (own PR, §7) → 045.
 
 ## Active
-- Brief: BRIEF-040 Rev 1 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-040-menu-editor-ui` (seed `2ee875c`) · handoff `docs/handoffs/BRIEF-040.md`
-- Done 21–23 Oct: BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
+- Brief: BRIEF-041 Rev 2 · Stage: Audit PASS → PR · Branch: `feat/BRIEF-041-menu-photo-ui` · handoff `docs/handoffs/BRIEF-041.md`
+- Done 21–23 Oct: BRIEF-040 (#90) · BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
 
 ## Next steps
 1. 040 Ready (Field 23 Oct) · 041: bucket CORS `POST` :3000 + `tmp/` 1-day lifecycle set (Field 23 Oct) · Cowork drafts 045 · docs PR `docs/dr-024-erd` (`1a6078c` + `e33caa3`) → push + Field merge
