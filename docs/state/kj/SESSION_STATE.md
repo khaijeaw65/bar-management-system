@@ -1,12 +1,12 @@
 # State — KJ
-Updated: 2026-10-23 · Agent: Cowork (BRIEF-041 Ready seed)
+Updated: 2026-10-23 · Agent: Claude Code (BRIEF-041 Ready seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-041 **Ready** (menu photo upload + list thumbnails) on `feat/BRIEF-041-menu-photo-ui` → `execute BRIEF-041` (merge `main` first). Next: Cowork drafts BRIEF-045 (categories + add-on screens).
+BRIEF-041 **Implemented** (work `f1d25e1`, branch pushed, no PR) — run proof on the real API + `bar-app-dev` still open: needs Field signed in at :3000 → then `audit BRIEF-041` (Cowork).
 
 ## Active
-- Brief: BRIEF-041 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-041-menu-photo-ui` (seed)
+- Brief: BRIEF-041 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-041-menu-photo-ui` · handoff `docs/handoffs/BRIEF-041.md`
 - Done 21–23 Oct: BRIEF-040 (#90) · BRIEF-044 (#87) · 043 (#85) · DR-022 docs (#84) · 042 (#83) · backend.md storage (#82) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72)
 
 ## Next steps
