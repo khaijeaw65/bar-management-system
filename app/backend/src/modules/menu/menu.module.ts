@@ -3,8 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CLOCK } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
+import { StorageModule } from '../../common/storage/storage.module.js';
 import { RedisModule } from '../../providers/redis/redis.module.js';
 import { MenuCatalogService } from './application/menu-catalog.service.js';
+import { MenuPhotoService } from './application/menu-photo.service.js';
 import { MenuWriteService } from './application/menu-write.service.js';
 import { MENU_CATALOG_REPOSITORY } from './domain/menu-catalog.repository.js';
 import { MENU_WRITE_REPOSITORY } from './domain/menu-write.repository.js';
@@ -15,7 +17,7 @@ import { MenuCatalogTypeormRepository } from './infrastructure/persistence/menu-
 import { MenuWriteTypeormRepository } from './infrastructure/persistence/menu-write.typeorm-repository.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature(menuEntities), RedisModule],
+  imports: [TypeOrmModule.forFeature(menuEntities), RedisModule, StorageModule],
   controllers: [MenuController, MenuItemWriteController],
   providers: [
     MenuCatalogTypeormRepository,
@@ -25,6 +27,7 @@ import { MenuWriteTypeormRepository } from './infrastructure/persistence/menu-wr
     { provide: CLOCK, useClass: SystemClock },
     IdempotencyService,
     MenuCatalogService,
+    MenuPhotoService,
     MenuWriteService,
   ],
   exports: [MenuCatalogService],

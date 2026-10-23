@@ -18,6 +18,25 @@ export const MenuVariantInputSchema = z.object({
 });
 export type MenuVariantInput = z.infer<typeof MenuVariantInputSchema>;
 
+// Presigned POST (DR-020): S3 itself enforces the type and the 1 byte … 5 MB range.
+export const ImageContentTypeSchema = z.enum(['image/jpeg', 'image/png', 'image/webp'], 'รองรับเฉพาะรูป JPG, PNG หรือ WebP');
+export type ImageContentType = z.infer<typeof ImageContentTypeSchema>;
+
+export const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+
+export const CreateImageUploadUrlSchema = z.object({ contentType: ImageContentTypeSchema });
+export type CreateImageUploadUrl = z.infer<typeof CreateImageUploadUrlSchema>;
+
+export const ImageUploadUrlSchema = z.object({
+  url: z.url(),
+  // Form fields to send before the file, in this order; the file field comes last.
+  fields: z.record(z.string(), z.string()),
+  // `tmp/<uuid>.<ext>` — pass it as `imageKey` when saving the item.
+  key: z.string(),
+  expiresAt: IsoDateTimeSchema,
+});
+export type ImageUploadUrl = z.infer<typeof ImageUploadUrlSchema>;
+
 const itemFields = {
   categoryId: UuidSchema,
   name: nameField('ชื่อเมนู'),
@@ -27,6 +46,9 @@ const itemFields = {
   isPromo: z.boolean(),
   variants: z.array(MenuVariantInputSchema).min(1, 'ต้องมีราคาอย่างน้อย 1 แบบ').max(20),
   modifierGroupIds: z.array(UuidSchema).max(20).optional(),
+  // Create: omitted / null = no photo; a `tmp/…` key from image-upload-url attaches it.
+  // PATCH: omitted = keep, null = remove, `tmp/…` = replace, the current key = keep (BRIEF-039).
+  imageKey: z.string().max(500).nullable().optional(),
 };
 
 interface ItemShape {
