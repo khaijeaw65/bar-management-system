@@ -2,6 +2,7 @@ import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod
 import { UpdateVenuePaymentSettingsSchema, UpdateVenueSettingsSchema } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 import { scaleMoney, sumMoney } from "@/lib/utils/money";
+import { createMenuHandlers } from "./menu";
 import { reportHandlers } from "./reports";
 
 export const staffMe = {
@@ -530,8 +531,6 @@ export const handlers = [
   http.get("*/api/auth/me", () => json(staffMe)),
   http.post("*/api/auth/refresh", () => json({ ok: true })),
   http.post("*/api/auth/logout", () => json({ ok: true })),
-  http.get("*/api/menu/items", () => json({ items: menuItems })),
-  http.get("*/api/menu/categories", () => json({ items: menuCategories })),
   http.get("*/api/tables", () => json({ items: seats })),
   http.post("*/api/visits", async ({ request }) => {
     const body = (await request.json()) as { tableSeatId?: string; guestLabel?: string | null };
@@ -560,6 +559,7 @@ export const handlers = [
     return json({ visit, attached: false }, 201);
   }),
   ...reportHandlers,
+  ...createMenuHandlers(menuItems, menuCategories),
   http.get("*/api/venue", () => json(venueSettings)),
   http.patch("*/api/venue/settings", async ({ request }) => patchVenue(await request.json())),
   http.get("*/api/venue/payment-settings", () => json(paymentSettings)),

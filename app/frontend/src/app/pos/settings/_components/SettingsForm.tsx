@@ -4,10 +4,10 @@ import type { VenueSettings } from "@bar/contracts";
 import { Alert, Button, FieldError, Input, Label, TextField } from "@heroui/react";
 import type { ReactNode } from "react";
 import { CutoffField } from "./CutoffField";
-import { LeaveDialog } from "./LeaveDialog";
+import { LeaveDialog } from "@/components/ui/LeaveDialog";
 import { SettingsSection } from "./SettingsSection";
 import { SettingSwitch } from "./SettingSwitch";
-import { useLeaveGuard } from "./useLeaveGuard";
+import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import { useSettingsForm } from "./useSettingsForm";
 
 // `payment` sits between ร้าน and การทำงาน (CD-13 order) but saves on its own form.
