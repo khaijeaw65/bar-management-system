@@ -8,7 +8,7 @@
 | **Branch** | `feat/BRIEF-039-menu-photos-api` (seed `3cbc85a`; PR opens after audit PASS) |
 | **Commit** | Work SHA `f2ed6cf` (gates ran on `ed1b45c`; the amend changed only the IAM note in `docs/api/README.md`) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — awaiting audit · **run proof against the real bucket is partial (IAM, see below)** |
+| **Status** | Implemented — awaiting audit · real-bucket run proof complete (re-run after the IAM fix) |
 
 ## Summary
 - **Storage:** `common/storage/StorageService` (the only S3 caller, DR-020) + `providers/config/storage/` (`AWS_REGION`, `S3_BUCKET` required; keys optional, passed only when both are set; blank = unset; the error message names the variable, never a value). Methods: `presignUpload` (presigned POST, 5 min, `eq $Content-Type` + `content-length-range 1 … 5,242,880`, key `tmp/<uuid>.<ext>`), `head` (null on 404), `copy`, `remove`, `presignRead` (1 h). `StorageModule` is imported by `MenuModule`.
@@ -21,7 +21,7 @@
 | AC | Result | Test |
 |---|---|---|
 | AC-1 | ✅ | `storage.service.spec.ts` (policy decoded for each type: exact `$Content-Type`, `content-length-range 1 5242880`, key; 5-min expiry) · `menu-photos.e2e-spec.ts` "presigns … into tmp/" ×3 + "rejects another type" (gif, text/plain, missing → 400) · run proof 1 (real bucket: 200, S3 rejects a mismatching `Content-Type` against the policy) |
-| AC-2 | ✅ (fake storage) · ⚠ real bucket | e2e "copies the upload to menu/<itemId>/…" (image_key, presigned `imageUrl` on POST / GET / list, only the `menu/` object left) · "rejects a missing, oversized, wrong-type or foreign key" (400 ×4, no item row) · `menu-write.service.spec.ts` (empty object, 5 MB + 1, shape check) |
+| AC-2 | ✅ (fake storage + real bucket, run proof 2–5) | e2e "copies the upload to menu/<itemId>/…" (image_key, presigned `imageUrl` on POST / GET / list, only the `menu/` object left) · "rejects a missing, oversized, wrong-type or foreign key" (400 ×4, no item row) · `menu-write.service.spec.ts` (empty object, 5 MB + 1, shape check) |
 | AC-3 | ✅ | e2e "PATCH imageKey" ×7 (keep omitted / current key, null removes, tmp replaces + old deleted, first photo, other key 400, stale drops the copy and `details.imageUrl`, cleanup failure still 200) · unit spec mirrors them |
 | AC-4 | ✅ | `menu-write.service.spec.ts` "deletes the copied object when the DB write fails" · e2e "removes the copied object when the DB write is refused" (unknown modifier group → 400, `menu/` empty) |
 | AC-5 | ✅ | e2e "includeHidden" ×3 (hidden category + its item, default and `false` unchanged, `categoryId` / `available` combos, 400 on `yes` / `1`, `isActive` on list / create / reorder / rename) · `menu-catalog.service.spec.ts` |
@@ -42,7 +42,7 @@ Run on `ed1b45c` (same tree as `f2ed6cf` except one README sentence). The older 
 | `pnpm --filter @bar/backend test:e2e` | 0 | 144 passed (22 files) |
 | `pnpm --filter @bar/backend openapi:check` | 0 | committed `openapi.json` = regenerated |
 | `pnpm --filter @bar/frontend typecheck` · `lint` (not in brief — fixtures) | 0 · 0 | pass |
-| run proof (below) | — | **PARTIAL** |
+| run proof (below) | 0 | health 200 on the work tree; real bucket end-to-end ✅ |
 
 `demo-history-seed.e2e-spec.ts` failed once in my first full e2e run (`ORDER BY 1::text` orders by a constant, so the payment-method order is arbitrary) and passed alone ×2 and in the final full run. Pre-existing, not touched here — worth a one-word fix (`ORDER BY confirmed_via::text`) in a later brief.
 
@@ -59,12 +59,23 @@ Run on `ed1b45c` (same tree as `f2ed6cf` except one README sentence). The older 
 | `POST /menu/items` with a `tmp/` key that is not in the bucket | **500**: `HeadObject` on a missing key returns **403** (not 404) because the same user also lacks `s3:ListBucket`. No item row created (count 0). With `ListBucket` this is the designed 400 |
 | `GET /menu/categories?includeHidden=true` | 200, `isActive` on all 6 |
 
-**Re-run after Field's IAM grant (2026-10-23, fresh `PORT=3002` backend on `a7d412a`):** unchanged — the JPG upload still gets S3 **403 AccessDenied** "`bar-app-local` is not authorized to perform: s3:PutObject … no identity-based policy allows", the 6 MB upload the same 403, `HeadObject` on the tmp key 403, create with a tmp key → 500; the `text/plain` policy rejection and presign 200 behave as before. The grant is not taking effect for this user/resource (not debugged — IAM is Field's). No item row was created.
+**Re-run after Field's IAM fix (2026-10-23, fresh `PORT=3002` backend on `e64b3dc`, `/api/health` 200)** — the first run (and the re-run right after the first grant) got 403 `AccessDenied`; the policy was then corrected (it still had the template's placeholder bucket name) and attached to `bar-app-local`, after which everything below passed:
 
-**Not proven on the real bucket:** upload → create with the key → `GET` → `curl imageUrl` = 200 `image/jpeg`; the 6 MB `EntityTooLarge`; `PATCH imageKey:null` → HeadObject 404. All of that logic is covered with the in-memory fake (AC-2/3/4) and the `StorageService` calls are unit-tested against the SDK client, but the end-to-end S3 behaviour is unverified until the IAM user can write.
-**Needs Field:** attach to `bar-app-local` (or its group) `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject` on `arn:aws:s3:::bar-app-dev/*` and `s3:ListBucket` on `arn:aws:s3:::bar-app-dev`, plus the `tmp/` 1-day lifecycle and a CORS rule allowing `POST` from the web origin on the bucket. Then I re-run the table above (≈ 10 min). I changed nothing in AWS.
+| Step | Result |
+|---|---|
+| presign `image/jpeg` → `curl -F` a real 64×64 JPG | presign **200**; S3 **204** · `HEAD tmp/<uuid>.jpg` → 200 `image/jpeg` 1349 bytes |
+| `POST /menu/items` `{ …, imageKey: tmp/… }` | **201**; `imageUrl` host `bar-app-dev.s3.ap-southeast-1.amazonaws.com`, path `/menu/<itemId>/<uuid>.jpg`, `X-Amz-Expires=3600` |
+| `GET /menu/items/:id` → `curl imageUrl` | **200 `image/jpeg`, 1349 bytes, identical to the uploaded file** (`cmp`) |
+| after the save | `HEAD tmp/…` → **404** (deleted) · `HEAD menu/<itemId>/…` → 200 |
+| 6 MB file on a JPEG policy | S3 **400 `EntityTooLarge`** (proposed 5,245,149 > max 5,242,880) |
+| `text/plain` on a JPEG policy | S3 **403** "Policy Condition failed: [\"eq\", \"$Content-Type\", \"image/jpeg\"]" |
+| create with a `tmp/` key not in the bucket | **400** `VALIDATION_ERROR` "ไม่พบรูปที่อัปโหลด หรือหมดอายุแล้ว…" (with `ListBucket` S3 answers 404, so the 500 seen before the grant is gone) |
+| `PATCH imageKey: null` | **200**, `imageUrl: null` · `HEAD menu/<itemId>/…` → **404** (deleted) |
+| backend log | no key text (grep 0) |
 
-**Local data touched:** none left (no item created). Scratch files only in the session scratchpad. My :3002 backend stopped.
+Earlier results on the unfixed IAM user (upload 403, create 500 on a missing object) are superseded.
+
+**Local data touched:** the proof item `รูปทดสอบ 039` was created and then deleted from dev DB `bar` (no orders); its S3 objects are gone (tmp deleted on save, `menu/` deleted by the PATCH). Scratch files only in the session scratchpad. My :3002 backend stopped.
 
 ## Sonar (local scan)
 - Scanned commit: `f2ed6cf` (working tree of the same code) · Quality Gate: **ERROR** — `new_coverage` 0.0 % (no coverage path, known) and `new_violations` 16.
@@ -86,9 +97,8 @@ Run on `ed1b45c` (same tree as `f2ed6cf` except one README sentence). The older 
   - Test helper `test/fake-storage.ts` is imported by two `src/**/*.spec.ts`.
 
 ## Known Gaps / Follow-ups
-- **Real-bucket proof blocked on IAM** (above) — blocks Done for G1, not the code review.
 - **Size:** ~1,250 net lines in `app/` (tests ≈ 790, ≈ 63 %) vs ~700 estimated — 1.8× again (race/IO-heavy backend ≈ 1.7×).
-- 403-on-missing-object means a bucket without `ListBucket` turns "upload expired" into a 500; documented in `docs/api/README.md`. Not mapped to 400 on purpose (a real permission error should stay loud).
+- 403-on-missing-object means a bucket without `ListBucket` turns "upload expired" into a 500; documented in `docs/api/README.md`. Not mapped to 400 on purpose (a real permission error should stay loud). Confirmed: with `ListBucket` granted, a missing tmp object is a 400.
 - `imageUrl` is re-signed on every read (URL changes between requests; a client that caches the menu keeps a working URL for an hour). Per-item signing is local crypto, no network.
 - Orphans: an abandoned `menu/<itemId>/` copy after a crash between copy and commit is possible (no cleanup job — brief out of scope).
 - BRIEF-044 modifier CRUD, BRIEF-041 photo UI, IAM enforcement of `includeHidden` (still `menu:read`).

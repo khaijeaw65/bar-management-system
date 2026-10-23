@@ -3,10 +3,10 @@ Updated: 2026-10-23 · Agent: Claude Code
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-039 **Implemented** (work `f2ed6cf`, pushed, no PR) → `audit BRIEF-039` (Cowork). **Real-bucket run proof partial: IAM user `bar-app-local` lacks `s3:PutObject`/`ListBucket` — Field to grant, then re-run the handoff's proof table.** Ready on own seed branches (local): BRIEF-042 name snapshot (DR-022), BRIEF-043 DB `updated_at` trigger (DR-023).
+BRIEF-039 **Implemented** (work `f2ed6cf` (handoff `e64b3dc`+), pushed, no PR) → `audit BRIEF-039` (Cowork). Real-bucket run proof ✅ (after Field's IAM fix). Ready on own seed branches (local): BRIEF-042 name snapshot (DR-022), BRIEF-043 DB `updated_at` trigger (DR-023).
 
 ## Active
-- Brief: BRIEF-039 Rev 1 · Stage: Implemented (run proof partial) · Branch: `feat/BRIEF-039-menu-photos-api` (seed `3cbc85a`) · work `f2ed6cf`
+- Brief: BRIEF-039 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-039-menu-photos-api` (seed `3cbc85a`) · work `f2ed6cf` (handoff `e64b3dc`+)
 - Done 21–23 Oct: BRIEF-038 (#80) · 037 (#79) · 036 (#78) · 035 (#77) · 034 (#76) · 032 (#75) · DR-019 (#74) · 033 (#73) · 031 (#72) · 030 (#71) · 029 (#70) · 028 (#69) · 027 (#68)
 
 ## Next steps
@@ -16,7 +16,7 @@ BRIEF-039 **Implemented** (work `f2ed6cf`, pushed, no PR) → `audit BRIEF-039` 
 4. **Week of 26 Oct:** PromptPay bank scan (BRIEF-013 AC-12 manual half) · BRIEF-025 EasySlip
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: 039 (Cowork) · **039 blocked on AWS IAM (Field):** `bar-app-local` needs `s3:PutObject/GetObject/DeleteObject` on `bar-app-dev/*` + `s3:ListBucket` on the bucket, `tmp/` 1-day lifecycle, CORS `POST` from the web origin · if `ci` hits frontend timeouts → re-run once (038 audit F4) · a `nest start --watch` backend (22 Oct) owns :3001 and restarts on `dist` rebuilds
+- Shared files: none · Review queue: 039 (Cowork) · bucket `bar-app-dev` still needs the `tmp/` 1-day lifecycle + CORS `POST` from the web origin before the photo UI (041) · if `ci` hits frontend timeouts → re-run once (038 audit F4) · a `nest start --watch` backend (22 Oct) owns :3001 and restarts on `dist` rebuilds
 - e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations); frontend e2e needs no other `next dev` in `app/frontend`; frontend unit tests time out under heavy machine load (038 handoff)
 - Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 3 × จินโทนิค (180/200/200), remaining ฿580 · SonarQube 9000
 
