@@ -26,8 +26,13 @@ vi.mock("barcode-detector/ponyfill", () => ({
   },
 }));
 
+const frames = { fail: false };
+
 vi.mock("./resize-slip-image", () => ({
-  resizeSlipImage: vi.fn(async () => "SU1BR0U="),
+  resizeSlipImage: vi.fn(async () => {
+    if (frames.fail) throw new Error("empty frame");
+    return "SU1BR0U=";
+  }),
 }));
 
 const paymentId = "70000000-0000-4000-8000-0000000000b1";
@@ -98,19 +103,43 @@ function renderScanner(onManual = vi.fn()) {
   return { onManual, verified };
 }
 
-test("a failed decode keeps the photo buttons and says the scan did not work", async () => {
+test("one missed frame stays quiet, and five in a row keep the photo buttons", async () => {
   detected.codes = [];
   detected.fail = true;
+  frames.fail = false;
   allowCamera();
   render(
     <QueryClientProvider client={new QueryClient()}>
       <SlipScanner payment={payment()} onVerified={() => undefined} onManual={() => undefined} />
     </QueryClientProvider>,
   );
-  expect(await screen.findByText("สแกนไม่ได้ — ถ่ายรูปหรือเลือกรูปแทน")).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "ถ่ายรูปแทน" })).toBeEnabled();
+  const shoot = await screen.findByRole("button", { name: "ถ่ายรูปแทน" });
+  await waitFor(() => expect(shoot).toBeEnabled());
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(screen.queryByText("สแกนไม่ได้ — ถ่ายรูปหรือเลือกรูปแทน")).not.toBeInTheDocument();
+  expect(await screen.findByText("สแกนไม่ได้ — ถ่ายรูปหรือเลือกรูปแทน", {}, { timeout: 3000 })).toBeInTheDocument();
+  expect(shoot).toBeEnabled();
   expect(screen.getByLabelText("เลือกรูป")).toBeInTheDocument();
   detected.fail = false;
+});
+
+test("an unreadable photo shows the invalid-slip copy", async () => {
+  const user = userEvent.setup();
+  detected.codes = [];
+  detected.fail = false;
+  frames.fail = true;
+  allowCamera();
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <SlipScanner payment={payment()} onVerified={() => undefined} onManual={() => undefined} />
+    </QueryClientProvider>,
+  );
+  const shoot = await screen.findByRole("button", { name: "ถ่ายรูปแทน" });
+  await waitFor(() => expect(shoot).toBeEnabled());
+  await user.click(shoot);
+  expect(await screen.findByRole("alert")).toHaveTextContent(SLIP_COPY.SLIP_INVALID);
+  expect(screen.getByRole("button", { name: "สแกนใหม่" })).toBeInTheDocument();
+  frames.fail = false;
 });
 
 test("a decoded QR is sent once, the camera stops, and the wasm url stays on our origin", async () => {

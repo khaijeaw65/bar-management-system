@@ -39,7 +39,9 @@ export function SlipScanner({
       <h2 className="text-heading">สแกนสลิป</h2>
       {busy ? <p>กำลังตรวจสลิป</p> : null}
       {fault ? <p role="alert">{fault}</p> : null}
-      {fault === null && !busy ? <LiveScan key={attempt} onSubmit={(body) => void submit(body)} /> : null}
+      {fault === null && !busy ? (
+        <LiveScan key={attempt} onSubmit={(body) => void submit(body)} onUnreadable={() => setFault(SLIP_COPY.SLIP_INVALID)} />
+      ) : null}
       <div className="flex flex-wrap gap-2">
         {fault ? (
           <Button
@@ -57,8 +59,18 @@ export function SlipScanner({
   );
 }
 
-function LiveScan({ onSubmit }: Readonly<{ onSubmit: (body: { payload: string } | { image: string }) => void }>) {
+function LiveScan({
+  onSubmit,
+  onUnreadable,
+}: Readonly<{
+  onSubmit: (body: { payload: string } | { image: string }) => void;
+  onUnreadable: () => void;
+}>) {
   const { videoRef, camera, scanFault } = useSlipScanner(true, (payload) => onSubmit({ payload }));
+
+  function sendFrame(source: HTMLVideoElement | Blob) {
+    void resizeSlipImage(source).then((image) => onSubmit({ image })).catch(() => onUnreadable());
+  }
 
   return (
     <>
@@ -73,7 +85,7 @@ function LiveScan({ onSubmit }: Readonly<{ onSubmit: (body: { payload: string } 
           onPress={() => {
             const video = videoRef.current;
             if (!video) return;
-            void resizeSlipImage(video).then((image) => onSubmit({ image }));
+            sendFrame(video);
           }}
         >
           ถ่ายรูปแทน
@@ -88,7 +100,7 @@ function LiveScan({ onSubmit }: Readonly<{ onSubmit: (body: { payload: string } 
             onChange={(event) => {
               const file = event.target.files?.[0];
               if (!file) return;
-              void resizeSlipImage(file).then((image) => onSubmit({ image }));
+              sendFrame(file);
             }}
           />
         </label>

@@ -71,11 +71,16 @@ export function useSlipScanner(active: boolean, onPayload: (payload: string) => 
         }
         const detector = new BarcodeDetector({ formats: ["qr_code"] });
         let sent = false;
+        let reading = false;
+        let misses = 0;
         timer = window.setInterval(() => {
-          if (sent) return;
+          if (sent || reading) return;
+          reading = true;
           void detector
             .detect(video)
             .then((codes) => {
+              misses = 0;
+              if (!cancelled) setScanFault(false);
               const text = codes[0]?.rawValue;
               if (!text || sent) return;
               sent = true;
@@ -83,7 +88,11 @@ export function useSlipScanner(active: boolean, onPayload: (payload: string) => 
               onPayloadRef.current(text);
             })
             .catch(() => {
-              if (!cancelled) setScanFault(true);
+              misses += 1;
+              if (!cancelled && misses >= 5) setScanFault(true);
+            })
+            .finally(() => {
+              reading = false;
             });
         }, 250);
       } catch {
