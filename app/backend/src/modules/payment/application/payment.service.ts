@@ -9,6 +9,8 @@ import {
   type PaymentAttempt,
   type PaymentMethod,
 } from '@bar/contracts';
+import { AuditLogService } from '../../../common/audit/audit-log.service.js';
+import type { AuditFieldChange } from '../../../common/audit/audit-log.types.js';
 import { CLOCK, type Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { toSatang } from '../../../common/money.js';
@@ -21,12 +23,24 @@ import {
   PAYMENT_REPOSITORY,
   type PaymentRepository,
 } from '../domain/ports/payment.repository.port.js';
+import {
+  SLIP_VERIFIER,
+  type SlipVerifier,
+  type SlipVerifyResult,
+} from '../domain/ports/slip-verifier.port.js';
 import type { NewPayment, PaymentRecord } from '../domain/payment.types.js';
 import { BillService } from './bill.service.js';
-import type { BillSnapshot, CreatePaymentInput, MarkPaidInput, PaymentExpiryJob } from './payment.types.js';
+import type { BillSnapshot, CreatePaymentInput, MarkPaidInput, PaymentExpiryJob, VerifySlipInput } from './payment.types.js';
 import { PAYMENT_EXPIRY_QUEUE } from './payment.types.js';
 import { promptPayPayload } from './promptpay-payload.js';
 import { groupAttempts, statusChanged, toAttempt, toPayment } from './present-payment.js';
+
+const REJECTION_CODES = new Set([
+  'SLIP_WRONG_RECEIVER',
+  'SLIP_RECEIVER_UNCLEAR',
+  'SLIP_AMOUNT_SHORT',
+  'SLIP_ALREADY_USED',
+]);
 
 @Injectable()
 export class PaymentService {
@@ -41,6 +55,8 @@ export class PaymentService {
     private readonly venues: VenueSettingsService,
     private readonly notifications: NotificationsService,
     private readonly ttl: PaymentConfigService,
+    @Inject(SLIP_VERIFIER) private readonly slips: SlipVerifier,
+    private readonly audit: AuditLogService,
   ) {}
 
   public async create(input: CreatePaymentInput): Promise<PaymentAttempt> {
@@ -74,6 +90,30 @@ export class PaymentService {
     return payment;
   }
 
+  public async verifySlip(input: VerifySlipInput): Promise<Payment> {
+    const current = await this.payments.findById(input.paymentId);
+    if (!current) throw new DomainException('NOT_FOUND', 'ไม่พบการชำระเงิน', 404);
+    if (current.method !== 'promptpay' || current.status !== 'pending') {
+      throw new DomainException('INVALID_STATE_TRANSITION', 'สถานะการชำระเงินไม่ถูกต้อง', 409);
+    }
+    const result = await this.slips.verify(input.slip, { expectedAmount: current.amount });
+    if (result.kind !== 'verified') {
+      const rejected = this.providerRejection(result);
+      await this.recordRejection(current.id, rejected.code, {});
+      throw rejected;
+    }
+    try {
+      const payment = await this.completeFromSlip(current.id, result);
+      await this.removeExpiry(payment.id);
+      this.emitChanged(payment);
+      return payment;
+    } catch (error) {
+      if (!(error instanceof DomainException) || !REJECTION_CODES.has(error.code)) throw error;
+      await this.recordRejection(current.id, error.code, { transRef: result.transRef, amount: result.amount });
+      throw error;
+    }
+  }
+
   public async expire(paymentId: string): Promise<void> {
     const payment = await this.expirePending(paymentId);
     if (!payment) return;
@@ -104,6 +144,46 @@ export class PaymentService {
   private async completePending(input: MarkPaidInput): Promise<Payment> {
     const locked = await this.requirePending(input.paymentId);
     return toPayment(await this.payments.save(this.completed(locked, input)));
+  }
+
+  @Transactional()
+  private async completeFromSlip(
+    paymentId: string,
+    result: Extract<SlipVerifyResult, { kind: 'verified' }>,
+  ): Promise<Payment> {
+    const locked = await this.requirePending(paymentId);
+    if (locked.method !== 'promptpay') {
+      throw new DomainException('INVALID_STATE_TRANSITION', 'สถานะการชำระเงินไม่ถูกต้อง', 409);
+    }
+    if (result.receiverMatch === 'not_matched') {
+      throw new DomainException('SLIP_WRONG_RECEIVER', 'โอนเข้าบัญชีอื่น', 422);
+    }
+    if (result.receiverMatch === 'unknown') {
+      throw new DomainException('SLIP_RECEIVER_UNCLEAR', 'ตรวจบัญชีรับไม่ชัด — ยืนยันด้วยตนเอง', 422);
+    }
+    if (toSatang(result.amount) < toSatang(locked.amount)) {
+      throw new DomainException('SLIP_AMOUNT_SHORT', 'ยอดในสลิปน้อยกว่าบิล', 422);
+    }
+    return toPayment(await this.payments.save(this.verified(locked, result)));
+  }
+
+  @Transactional()
+  private async recordRejection(
+    paymentId: string,
+    reason: string,
+    evidence: { transRef?: string; amount?: string },
+  ): Promise<void> {
+    const changedFields: Record<string, AuditFieldChange> = {
+      reason: { from: null, to: reason },
+    };
+    if (evidence.transRef) changedFields.transRef = { from: null, to: evidence.transRef };
+    if (evidence.amount) changedFields.amount = { from: null, to: evidence.amount };
+    await this.audit.record({
+      entity: 'payment',
+      entityId: paymentId,
+      action: 'REJECT',
+      changedFields,
+    });
   }
 
   @Transactional()
@@ -164,6 +244,32 @@ export class PaymentService {
       expiresAt: promptpay ? this.expiresAt(now) : null,
       paidAt: promptpay ? null : now,
     };
+  }
+
+  private verified(
+    locked: PaymentRecord,
+    result: Extract<SlipVerifyResult, { kind: 'verified' }>,
+  ): PaymentRecord {
+    return {
+      ...locked,
+      status: 'completed',
+      confirmedVia: 'slip_verify',
+      slipTransRef: result.transRef,
+      slipAmount: result.amount,
+      paidAt: this.clock.now(),
+      statusReason: null,
+      statusNote: null,
+    };
+  }
+
+  private providerRejection(result: Exclude<SlipVerifyResult, { kind: 'verified' }>): DomainException {
+    if (result.kind === 'invalid') {
+      return new DomainException('SLIP_INVALID', 'อ่านสลิปไม่ได้ — สแกนใหม่หรือถ่ายรูป', 422);
+    }
+    if (result.kind === 'pending') {
+      return new DomainException('SLIP_PENDING', 'สลิปกรุงเทพฯ ยังไม่พร้อม — รอ 5 นาทีแล้วสแกนใหม่', 409);
+    }
+    return new DomainException('SLIP_SERVICE_UNAVAILABLE', 'ตรวจสลิปไม่ได้ชั่วคราว', 503);
   }
 
   private completed(locked: PaymentRecord, input: MarkPaidInput): PaymentRecord {

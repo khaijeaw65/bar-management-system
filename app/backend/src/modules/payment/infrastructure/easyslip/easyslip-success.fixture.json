@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "data": {
+    "isDuplicate": false,
+    "matchedAccount": {
+      "bank": { "nameTh": "กสิกรไทย", "nameEn": "KASIKORNBANK", "code": "004", "shortCode": "KBANK" },
+      "nameTh": "บริษัท ตัวอย่าง จำกัด",
+      "nameEn": "EXAMPLE CO., LTD.",
+      "type": "JURISTIC",
+      "bankNumber": "123-4-56789-0"
+    },
+    "amountInOrder": 1305,
+    "amountInSlip": 1305,
+    "isAmountMatched": true,
+    "rawSlip": {
+      "payload": "000201010212",
+      "transRef": "68370160657749I376388B35",
+      "date": "2024-01-15T14:30:00+07:00",
+      "countryCode": "TH",
+      "amount": { "amount": 1305, "local": { "amount": 1305, "currency": "THB" } },
+      "fee": 0,
+      "ref1": "",
+      "ref2": "",
+      "ref3": "",
+      "sender": {
+        "bank": { "id": "004", "name": "กสิกรไทย", "short": "KBANK" },
+        "account": { "name": { "th": "นาย ผู้โอน ทดสอบ", "en": "MR. SENDER TEST" } }
+      },
+      "receiver": {
+        "bank": { "id": "014", "name": "ไทยพาณิชย์", "short": "SCB" },
+        "account": { "name": { "th": "บริษัท ตัวอย่าง จำกัด" } }
+      }
+    }
+  },
+  "message": "Bank slip verified successfully"
+}

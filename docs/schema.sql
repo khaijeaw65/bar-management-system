@@ -25,7 +25,7 @@ CREATE TYPE payment_confirmed_via AS ENUM ('webhook', 'manual', 'cash', 'slip_ve
 CREATE TYPE ai_insight_kind     AS ENUM ('sales_summary', 'anomaly', 'menu');  -- DR-014 #11
 CREATE TYPE inv_category        AS ENUM ('A', 'B', 'C');
 CREATE TYPE inv_tx_type         AS ENUM ('purchase', 'usage', 'adjustment', 'void');
-CREATE TYPE audit_action        AS ENUM ('CREATE', 'UPDATE');
+CREATE TYPE audit_action        AS ENUM ('CREATE', 'UPDATE', 'REJECT');
 CREATE TYPE actor_type          AS ENUM ('user', 'system');
 
 -- ============================================================

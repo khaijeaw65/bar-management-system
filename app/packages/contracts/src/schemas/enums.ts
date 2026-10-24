@@ -95,7 +95,7 @@ export const InvTxTypeSchema = z.enum([
 ]);
 export type InvTxType = z.infer<typeof InvTxTypeSchema>;
 
-export const AuditActionSchema = z.enum(['CREATE', 'UPDATE']);
+export const AuditActionSchema = z.enum(['CREATE', 'UPDATE', 'REJECT']);
 export type AuditAction = z.infer<typeof AuditActionSchema>;
 
 export const ActorTypeSchema = z.enum(['user', 'system']);

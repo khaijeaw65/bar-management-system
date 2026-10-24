@@ -13,6 +13,8 @@ export function toPayment(record: PaymentRecord): Payment {
     method: record.method,
     status: record.status,
     confirmedVia: record.confirmedVia,
+    slipTransRef: record.slipTransRef,
+    slipAmount: record.slipAmount === null ? null : money(record.slipAmount),
     statusReason: record.statusReason,
     statusNote: record.statusNote,
     qrPayload: record.qrPayload,

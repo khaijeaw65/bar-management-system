@@ -23,7 +23,14 @@
               "MENU_ITEM_STALE",
               "CATEGORY_NOT_EMPTY",
               "CATEGORY_NAME_TAKEN",
-              "MODIFIER_GROUP_IN_USE"
+              "MODIFIER_GROUP_IN_USE",
+              "SLIP_INVALID",
+              "SLIP_PENDING",
+              "SLIP_SERVICE_UNAVAILABLE",
+              "SLIP_WRONG_RECEIVER",
+              "SLIP_RECEIVER_UNCLEAR",
+              "SLIP_AMOUNT_SHORT",
+              "SLIP_ALREADY_USED"
             ],
             "type": "string"
           },
@@ -161,6 +168,15 @@
                               "nullable": true,
                               "type": "string"
                             },
+                            "slipAmount": {
+                              "nullable": true,
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "slipTransRef": {
+                              "nullable": true,
+                              "type": "string"
+                            },
                             "status": {
                               "enum": [
                                 "pending",
@@ -208,6 +224,8 @@
                             "method",
                             "status",
                             "confirmedVia",
+                            "slipTransRef",
+                            "slipAmount",
                             "statusReason",
                             "statusNote",
                             "qrPayload",
@@ -6114,6 +6132,15 @@
                           "nullable": true,
                           "type": "string"
                         },
+                        "slipAmount": {
+                          "nullable": true,
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "slipTransRef": {
+                          "nullable": true,
+                          "type": "string"
+                        },
                         "status": {
                           "enum": [
                             "pending",
@@ -6161,6 +6188,8 @@
                         "method",
                         "status",
                         "confirmedVia",
+                        "slipTransRef",
+                        "slipAmount",
                         "statusReason",
                         "statusNote",
                         "qrPayload",
@@ -6355,6 +6384,15 @@
                           "nullable": true,
                           "type": "string"
                         },
+                        "slipAmount": {
+                          "nullable": true,
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "slipTransRef": {
+                          "nullable": true,
+                          "type": "string"
+                        },
                         "status": {
                           "enum": [
                             "pending",
@@ -6402,6 +6440,8 @@
                         "method",
                         "status",
                         "confirmedVia",
+                        "slipTransRef",
+                        "slipAmount",
                         "statusReason",
                         "statusNote",
                         "qrPayload",
@@ -6631,6 +6671,15 @@
                           "nullable": true,
                           "type": "string"
                         },
+                        "slipAmount": {
+                          "nullable": true,
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "slipTransRef": {
+                          "nullable": true,
+                          "type": "string"
+                        },
                         "status": {
                           "enum": [
                             "pending",
@@ -6678,6 +6727,8 @@
                         "method",
                         "status",
                         "confirmedVia",
+                        "slipTransRef",
+                        "slipAmount",
                         "statusReason",
                         "statusNote",
                         "qrPayload",
@@ -6765,6 +6816,299 @@
           }
         },
         "summary": "Confirm a pending payment manually or as cash",
+        "tags": [
+          "payment"
+        ]
+      }
+    },
+    "/api/payments/{id}/verify-slip": {
+      "post": {
+        "description": "Permission: payments:create. Access token from the access_token cookie, or Authorization: Bearer. Errors: SLIP_INVALID, SLIP_PENDING, SLIP_SERVICE_UNAVAILABLE, SLIP_WRONG_RECEIVER, SLIP_RECEIVER_UNCLEAR, SLIP_AMOUNT_SHORT, SLIP_ALREADY_USED, INVALID_STATE_TRANSITION.",
+        "operationId": "PaymentsController_verifySlip",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "image": {
+                    "type": "string"
+                  },
+                  "payload": {
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "amount": {
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "attemptId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "confirmedVia": {
+                          "enum": [
+                            "webhook",
+                            "manual",
+                            "cash",
+                            "slip_verify"
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "createdBy": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "expiresAt": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "method": {
+                          "enum": [
+                            "promptpay",
+                            "cash"
+                          ],
+                          "type": "string"
+                        },
+                        "paidAt": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "partCount": {
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "partNo": {
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "qrPayload": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "slipAmount": {
+                          "nullable": true,
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "slipTransRef": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "pending",
+                            "completed",
+                            "failed",
+                            "refunded",
+                            "cancelled"
+                          ],
+                          "type": "string"
+                        },
+                        "statusNote": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "statusReason": {
+                          "enum": [
+                            "staff_cancel",
+                            "expired",
+                            "webhook_missing",
+                            "direct_transfer",
+                            "other"
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "updatedBy": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "visitId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "attemptId",
+                        "visitId",
+                        "partNo",
+                        "partCount",
+                        "amount",
+                        "method",
+                        "status",
+                        "confirmedVia",
+                        "slipTransRef",
+                        "slipAmount",
+                        "statusReason",
+                        "statusNote",
+                        "qrPayload",
+                        "expiresAt",
+                        "paidAt",
+                        "createdBy",
+                        "updatedBy",
+                        "createdAt"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Slip rejected"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Slip service unavailable"
+          }
+        },
+        "summary": "Verify a PromptPay slip and complete the pending payment",
         "tags": [
           "payment"
         ]
@@ -12000,6 +12344,15 @@
                                       "nullable": true,
                                       "type": "string"
                                     },
+                                    "slipAmount": {
+                                      "nullable": true,
+                                      "pattern": "^\\d+\\.\\d{2}$",
+                                      "type": "string"
+                                    },
+                                    "slipTransRef": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
                                     "status": {
                                       "enum": [
                                         "pending",
@@ -12047,6 +12400,8 @@
                                     "method",
                                     "status",
                                     "confirmedVia",
+                                    "slipTransRef",
+                                    "slipAmount",
                                     "statusReason",
                                     "statusNote",
                                     "qrPayload",
@@ -13098,6 +13453,15 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "slipAmount": {
+                                "nullable": true,
+                                "pattern": "^\\d+\\.\\d{2}$",
+                                "type": "string"
+                              },
+                              "slipTransRef": {
+                                "nullable": true,
+                                "type": "string"
+                              },
                               "status": {
                                 "enum": [
                                   "pending",
@@ -13145,6 +13509,8 @@
                               "method",
                               "status",
                               "confirmedVia",
+                              "slipTransRef",
+                              "slipAmount",
                               "statusReason",
                               "statusNote",
                               "qrPayload",
