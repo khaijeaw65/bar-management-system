@@ -1,24 +1,24 @@
 # State — KJ
-Updated: 2026-10-24 · Agent: Cowork (BRIEF-025 Ready seed)
+Updated: 2026-10-24 · Agent: Cursor (BRIEF-025 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-025 **Ready** Rev 1 (slip verify: API + POS live scan, photo backup; DR-026 + DR-027 B Approved) → `execute BRIEF-025` (run proof waits for Field's EasySlip key).
+BRIEF-025 **Implemented** Rev 1 (slip verify API + POS scan). Work SHA `29c5c48`. Run proof blocked on Field's EasySlip key. Next: `audit BRIEF-025`.
 
 ## Active
-- Brief: BRIEF-025 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-025-promptpay-slip-verify` (seed, local)
+- Brief: BRIEF-025 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-025-promptpay-slip-verify` · S `29c5c48` (`dc5da44` API, `29c5c48` POS) · Auditor: Cowork · no PR
 - Done 21–23 Oct: BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
-1. `execute BRIEF-025` · Field: sign up EasySlip (Start ฿99) + register the bar account (run proof blocked on it)
+1. `audit BRIEF-025` (Cowork) · Field: EasySlip Start + register the bar account, then the run proof (also BRIEF-013 AC-12)
 2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
-4. **Week of 26 Oct:** BRIEF-025 run proof = real bank scan (also BRIEF-013 AC-12 manual half) · on hold (Field 24 Oct): real-use bootstrap (first-owner DR, staff requests, tables/QR — no menu import) · then AI owner insight
+4. **Week of 26 Oct:** BRIEF-025 run proof on hold until the key · on hold (Field 24 Oct): real-use bootstrap · then AI owner insight
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4) · `nest start --watch` respawns a backend on :3001 after any `src` edit (it stole a payment-expiry job in 044's first e2e run) — the two in `app/backend` were stopped 23 Oct
-- e2e now on `bar_test`; **stop the dev backend before `test:e2e`** (shared BullMQ queue — 036 handoff Limitations; a `nest start --watch` respawns it, so stop that too); frontend e2e needs no other `next dev` in `app/frontend`; frontend unit tests time out under heavy machine load (038 handoff)
-- Local DB `bar`: demo history 22 Sep–22 Oct · staff `Field (demo)` + `Field` (LINE) · T1 open: ฿240 paid + 5 × จินโทนิค (180/200/200/220+ชีส/220+ชีสเยิ้ม), bill ฿1,305 · migrations `OrderLineSnapshots` + `UpdatedAtTrigger` + `ModifierGroupArchive` applied on `bar` · backend 3001 = plain `node dist/main` of `b000e4e` (no `nest start --watch` — restart it if wanted, stop it before `test:e2e`) · web `next dev` :3000 (another session) + SonarQube 9000 running
+- Shared files: none · Review queue: BRIEF-025 awaiting Cowork · if `ci` hits frontend timeouts → re-run once (038 audit F4)
+- e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e · frontend unit tests time out under heavy load
+- :3001 was not running (old `node dist/main` of `b000e4e` already gone) and was not restarted · no `next dev` on :3000 · SonarQube :9000 up · dev `bar` migration `AuditRejectAction` not applied (run proof blocked)
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -36,5 +36,5 @@ BRIEF-025 **Ready** Rev 1 (slip verify: API + POS live scan, photo backup; DR-02
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
 
 ## Queue
-1. BRIEF-025 slip verify (Ready) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell (after 8 Nov)
+1. BRIEF-025 slip verify (Implemented, audit next) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell (after 8 Nov)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)
