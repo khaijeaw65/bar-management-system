@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Cowork · 2026-10-24 (BRIEF-025) |
 | **Brief** | BRIEF-025 |
 | **Category** | Dependency |
@@ -51,6 +51,6 @@ npm, checked 2026-10-24: `barcode-detector` 3.2.3 (MIT, 9 releases in 2026, late
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: A · Rejected · Approved with change: …>
-**Why:** <one or two lines>
-**Date:** YYYY-MM-DD
+**Decision:** Approved: A (`barcode-detector@^3.2.3`, standard `BarcodeDetector` API in one hook, `.wasm` from our own origin, camera always stopped)
+**Why:** Fast, glare-tolerant live scan on any tablet with a web-standard API; photo path stays as backup.
+**Date:** 2026-10-24 · recorded by Cowork on Field's explicit instruction (session: "approve DR-026")

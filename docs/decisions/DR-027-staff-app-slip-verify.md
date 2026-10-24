@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | Cowork · 2026-10-24 (BRIEF-025 interview) |
 | **Brief** | BRIEF-025 (decision only — built in a later mobile brief) |
 | **Category** | Flow/Architecture |
@@ -40,6 +40,6 @@ DR-009 keeps money actions (payments, close) on the POS; CD-03 Q1 (Field, 2026-1
 ---
 
 ## Decision — Field only
-**Decision:** <Approved: B · Rejected · Approved with change: …>
-**Why:** <one or two lines>
-**Date:** YYYY-MM-DD
+**Decision:** Approved: B (staff app may call `verify-slip`; manual confirm, create, cancel and close stay on the POS)
+**Why:** Confirm transfers at the table with no new backend work, while unverified money stays on the POS.
+**Date:** 2026-10-24 · recorded by Cowork on Field's explicit instruction (session: "approve DR-027 B")

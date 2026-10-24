@@ -2,14 +2,14 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-24 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts · frontend |
 | **Revision** | 1 |
 | **Depends on** | BRIEF-013 ✅ (payments core, lock, expiry job, `payment.status_changed`) · BRIEF-024 ✅ (venue PromptPay ID) · BRIEF-033 ✅ (POS checkout modal, `PromptPayPending`, `ManualConfirm`) |
-| **References** | **DR-026 (Pending — web QR scanner package)** · **DR-027 (Pending — slip check on the staff app; not built here)** · DR-014 #6 (own-PromptPay mode, slip verify, manual fallback) · CD-03 boards `promptpay-slip` (1–4), `promptpay-slip-errors` (5–8), Q1 (POS tablet camera), Q2 (receiver) · FRD §7 · `docs/schema.sql` §7 `payment` (`slip_trans_ref` UNIQUE, `slip_amount`, `confirmed_via = slip_verify`) · EasySlip API v2 `POST /verify/bank` (payload / base64) |
+| **References** | **DR-026 (Approved — web QR scanner package)** · **DR-027 (Approved B — slip check on the staff app; not built here)** · DR-014 #6 (own-PromptPay mode, slip verify, manual fallback) · CD-03 boards `promptpay-slip` (1–4), `promptpay-slip-errors` (5–8), Q1 (POS tablet camera), Q2 (receiver) · FRD §7 · `docs/schema.sql` §7 `payment` (`slip_trans_ref` UNIQUE, `slip_amount`, `confirmed_via = slip_verify`) · EasySlip API v2 `POST /verify/bank` (payload / base64) |
 | **Audit depth** | Full (payment confirmation path; external service; new dependency) |
 | **Size** | ~2.5 days · est. **~1.2k** net-new lines incl. tests (backend ~500, frontend ~700) — **above the ~500 target by Field's choice (one brief, see Selected 3)**. Suggested commits: 1) backend + contracts · 2) POS scan UI |
 
@@ -30,6 +30,7 @@
 | 9 | Evidence | **Existing columns + `audit_log`** — verified: `slip_trans_ref`, `slip_amount`, `confirmed_via`; rejected tries logged; no guest name stored (PDPA) |
 | 10 | Slip amount above the bill | **Accept, show "โอนเกิน ฿n"**; short amount rejected (CD-03 slip·7) |
 | 11 | QR expired / cancelled | **Verify against a pending payment only** — staff start a new payment for the same bill and scan the same slip |
+| 12 | Q1 — `audit_log.action` for a rejected slip | **A — new enum value `REJECT`** (migration + `docs/schema.sql`) |
 
 ## 1. Goal
 At checkout in own-PromptPay mode, the cashier points the POS tablet at the guest's slip; the bank confirms it through EasySlip, and the payment completes as **verified** (`slip_verify`) — a fake, reused, short or wrong-account slip is refused with a clear reason, and manual confirm stays one tap away.
@@ -41,7 +42,8 @@ At checkout in own-PromptPay mode, the cashier points the POS tablet at the gues
 - **Config** `providers/config/easyslip/` (pattern of `line/`): `EASYSLIP_API_KEY` (required only when a verify is attempted — missing key → `unavailable`, app still boots), `EASYSLIP_BASE_URL` (default `https://api.easyslip.com/v2`). Both added to `app/backend/.env.example` with comments.
 - **Endpoint** `POST /payments/:id/verify-slip` (`payments:create`) body = exactly one of `{ payload: string 1–128 }` | `{ image: base64 JPEG/PNG, ≤ 1 MB decoded }` → `Payment`.
 - **Rules** (in order): payment exists → own-PromptPay `promptpay` method and **pending** (else 409 `INVALID_STATE_TRANSITION`); provider result → `invalid` 422 `SLIP_INVALID` · `pending` 409 `SLIP_PENDING` ("สลิปกรุงเทพฯ ยังไม่พร้อม — รอ 5 นาทีแล้วสแกนใหม่") · `unavailable` 503 `SLIP_SERVICE_UNAVAILABLE`; receiver `not_matched` → 422 `SLIP_WRONG_RECEIVER` · `unknown` → 422 `SLIP_RECEIVER_UNCLEAR`; `slip amount < payment.amount` → 422 `SLIP_AMOUNT_SHORT`; reused `transRef` → 409 `SLIP_ALREADY_USED` (UNIQUE `slip_trans_ref`, `23505` mapped like DR-025). Success → `completed`, `confirmed_via = 'slip_verify'`, `slip_trans_ref`, `slip_amount`, `paid_at = now()`; expiry job removed; `payment.status_changed` emitted (same as `markPaid`).
-- **Rejected tries** → one `audit_log` row each (entity `payment`, the payment id; fields: reason, `transRef` / amount when known — **no sender or receiver name**), written in its **own** transaction so the rejection's rollback doesn't remove it — see Q1 for the action value.
+- **Rejected tries** → one `audit_log` row each (entity `payment`, the payment id; fields: reason, `transRef` / amount when known — **no sender or receiver name**), written in its **own** transaction so the rejection's rollback doesn't remove it, with `action = 'REJECT'` (Q1 = A).
+- **Migration** `app/backend/src/providers/database/migrations/<timestamp>-AuditRejectAction.ts`: `ALTER TYPE audit_action ADD VALUE 'REJECT'` (`down`: no-op with a comment — Postgres can't drop an enum value); `docs/schema.sql` enum line updated; `AuditRecord.action` type extended.
 - JSON body limit raised to **1 MB** (`configure-app`, proposed) — the client resizes photos to ~150 KB; the API rejects a larger image with 400.
 - Contracts: `VerifySlipSchema`, `PaymentSchema.slipAmount: MoneySchema.nullable()` (additive), error codes above; OpenAPI; `docs/api/README.md` Payments table.
 
@@ -80,7 +82,7 @@ At checkout in own-PromptPay mode, the cashier points the POS tablet at the gues
   3. Map `invalid` / `pending` / `unavailable` → error (+ audit row, own tx).
   4. **Transaction start:** lock the payment `FOR UPDATE` (`requirePending` — it may have expired during step 2 → 409) → receiver match → amount ≥ bill → `save()` completed with `slip_trans_ref` / `slip_amount` → `23505` on `slip_trans_ref` → `SLIP_ALREADY_USED` → **commit**.
   5. After commit: remove expiry job, emit `payment.status_changed`.
-- **Data:** `payment.confirmed_via`, `slip_trans_ref`, `slip_amount`, `paid_at`, `status` · `audit_log` for rejects · no new column.
+- **Data:** `payment.confirmed_via`, `slip_trans_ref`, `slip_amount`, `paid_at`, `status` · `audit_log` rows with `action = 'REJECT'` · no new column; one enum value.
 - **Failure:** EasySlip down / timeout / quota → nothing written, payment still pending → staff retry or manual confirm. Payment expired mid-check → 409, slip still unused → new payment, rescan (one more check). Two tablets scan the same slip → the UNIQUE index lets one win; the other gets `SLIP_ALREADY_USED`.
 - **Why:** the bank (via EasySlip) is the only source that knows a slip is real; our DB is the only race-free referee for "used once".
 
@@ -136,25 +138,25 @@ UI (real API + real EasySlip key, Field signed in, iPad or tablet over the tunne
 - Camera stream always stopped (tracks `stop()`) on result, close and unmount.
 
 ## 7. Decision Points (Field Guard)
-- **Pre-decided (exact, once DR-026 is Approved):** `barcode-detector@^3.2.3` in `app/frontend/package.json` (lockfile updated) · endpoint `POST /payments/:id/verify-slip` · error codes listed in §3 · `PaymentSchema.slipAmount` · env `EASYSLIP_API_KEY`, `EASYSLIP_BASE_URL` (default `https://api.easyslip.com/v2`) · EasySlip v2 `POST /verify/bank` with `matchAccount: true`, `matchAmount`, `checkDuplicate: false` · JSON body limit 1 MB (proposed) · no slip image / raw JSON / names stored.
-- **Q1 — `audit_log.action` for a rejected slip?** `audit_action` is `('CREATE','UPDATE')`; a rejection changes nothing. *Cowork recommends:* **A — add enum value `REJECT`** (one migration `<timestamp>-AuditRejectAction.ts`, `docs/schema.sql` unlocked, schema change approved by this Pre-decided item once you pick it) — honest meaning, filterable for owner insight. *Alternatives:* **B — `UPDATE` with `changed_fields { slipCheck: { from: null, to: '<reason>' } }`** (no schema change; misleading "update" rows) · **C — no log** (owner insight can't count failed / reused slips — DR-014 core 2).
+- **Pre-decided (exact, once DR-026 is Approved):** `barcode-detector@^3.2.3` in `app/frontend/package.json` (lockfile updated) · endpoint `POST /payments/:id/verify-slip` · error codes listed in §3 · `PaymentSchema.slipAmount` · env `EASYSLIP_API_KEY`, `EASYSLIP_BASE_URL` (default `https://api.easyslip.com/v2`) · EasySlip v2 `POST /verify/bank` with `matchAccount: true`, `matchAmount`, `checkDuplicate: false` · JSON body limit 1 MB · no slip image / raw JSON / names stored · `audit_action` += `'REJECT'` via `<timestamp>-AuditRejectAction.ts` (Q1 = A).
+- **Q1 — `audit_log.action` for a rejected slip? ✅ Decided (Field, 2026-10-24): A — new enum value `REJECT`.**
 - **Q2 — `matchAccount` with a PromptPay-phone receiver.** EasySlip's docs don't say whether a registered bank account matches a slip paid to the bar's **PromptPay phone / ID**. *Cowork recommends:* build as Selected 2 with `unknown` → `SLIP_RECEIVER_UNCLEAR` (manual confirm); the run proof records the real answer; if it never matches, a follow-up adds our own name + visible-digits check (CD-03 Q2) as the `unknown` fallback.
-- **Likely DRs:** a backend HTTP package (not expected — `fetch`) · storing slip images (out).
+- **Likely DRs:** a backend HTTP package (not expected — `fetch`) · storing slip images (out) · Q2 outcome needing our own receiver check (follow-up).
 
 ## 8. Unlocked Protected Files
-- `docs/schema.sql` — only if Q1 = A
-- `none` otherwise
+- `docs/schema.sql` (the `audit_action` enum line only — Q1 = A)
 
 ---
 
 ## Ready Checklist
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
-- [ ] Exact gates (incl. run proof) and evidence; dependencies have completion conditions — run proof BLOCKED on Field's EasySlip key + account registration
-- [ ] Size within workflow §2 — ~1.2k vs ~500; Field chose one brief (Selected 3) — confirm at Ready
-- [ ] No unresolved decision blocking the main outcome — DR-026 Pending, Q1 open
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact gates (incl. run proof) and evidence; dependencies merged — **run proof BLOCKED until Field's EasySlip key + account registration** (executor stops at the run proof and reports)
+- [x] Size within workflow §2 — **over: ~1.2k vs ~500, accepted by Field (Selected 3, Ready 2026-10-24)**
+- [x] No unresolved decision blocking the main outcome — DR-026 / DR-027 Approved, Q1 = A; Q2 settled by the run proof
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-24 | Initial Draft (Cowork) — interview Selected 1–11; DR-026 (scanner) + DR-027 (staff app) raised |
+| 1 | 2026-10-24 | Ready — Field in session: "approve DR-026, approve DR-027 B, 025 Q1 = A, approve BRIEF-025 Rev 1 Ready" |
