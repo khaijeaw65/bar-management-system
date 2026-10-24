@@ -38,6 +38,7 @@ function CheckoutBody({ checkout, onClose }: Readonly<{ checkout: CheckoutContro
         onCancel={checkout.cancelQr}
         onManual={checkout.openManual}
         onNew={checkout.newQr}
+        onVerified={checkout.slipPaid}
       />
     );
   }

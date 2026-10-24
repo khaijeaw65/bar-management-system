@@ -317,6 +317,8 @@ test("an order placed after the QR sits under the divider", async () => {
         method: "promptpay",
         status: "pending",
         confirmedVia: null,
+        slipTransRef: null,
+        slipAmount: null,
         statusReason: null,
         statusNote: null,
         qrPayload: "payload",

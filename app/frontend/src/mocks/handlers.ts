@@ -1,7 +1,7 @@
 import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod, PlaceOrderRequest, TableSummary, Ticket, Visit, VisitDetail } from "@bar/contracts";
 import { UpdateVenuePaymentSettingsSchema, UpdateVenueSettingsSchema } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
-import { scaleMoney, sumMoney } from "@/lib/utils/money";
+import { fromSatang, scaleMoney, sumMoney, toSatang } from "@/lib/utils/money";
 import { createMenuHandlers } from "./menu";
 import { reportHandlers } from "./reports";
 
@@ -507,6 +507,8 @@ function buildPayment(visitId: string, method: PaymentMethod, amount: string): P
     method,
     status: cash ? "completed" : "pending",
     confirmedVia: cash ? "cash" : null,
+    slipTransRef: null,
+    slipAmount: null,
     statusReason: null,
     statusNote: null,
     qrPayload: cash ? null : "00020101021229370016A000000677010111",
@@ -677,4 +679,28 @@ export const handlers = [
     settle(payment.visitId, payment.amount, "0.00", false);
     return json(next);
   }),
+  http.post("*/api/payments/:id/verify-slip", async ({ request, params }) => {
+    const payment = paymentById.get(String(params.id));
+    if (!payment) return json(null, 404, "NOT_FOUND", "ไม่พบการชำระเงิน");
+    if (payment.status !== "pending" || payment.method !== "promptpay") {
+      return json(null, 409, "INVALID_STATE_TRANSITION", "สถานะการชำระเงินไม่ถูกต้อง");
+    }
+    const body = (await request.json()) as { payload?: string; image?: string };
+    if (body.payload === "USED") return json(null, 409, "SLIP_ALREADY_USED", "สลิปนี้ใช้แล้ว");
+    const next: Payment = {
+      ...payment,
+      status: "completed",
+      confirmedVia: "slip_verify",
+      slipTransRef: "REF-E2E",
+      slipAmount: body.image ? addBaht(payment.amount, 20) : payment.amount,
+      paidAt: new Date().toISOString(),
+    };
+    paymentById.set(payment.id, next);
+    settle(payment.visitId, payment.amount, "0.00", false);
+    return json(next);
+  }),
 ];
+
+function addBaht(amount: string, extra: number): string {
+  return fromSatang(toSatang(amount) + extra * 100);
+}

@@ -66,6 +66,8 @@ function payment(extra: Partial<Payment> = {}): Payment {
     method: "promptpay",
     status: "pending",
     confirmedVia: null,
+    slipTransRef: null,
+    slipAmount: null,
     statusReason: null,
     statusNote: null,
     qrPayload: "00020101021229370016A000000677010111",

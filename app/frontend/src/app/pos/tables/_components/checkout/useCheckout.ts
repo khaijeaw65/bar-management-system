@@ -203,6 +203,10 @@ export function useCheckout(visitId: string, onDone: () => void) {
     setReason: (reason: ManualConfirmReason) => dispatch({ type: "reason", reason }),
     setNote: (note: string) => dispatch({ type: "note", note }),
     confirmManual,
+    slipPaid: (payment: Payment) => {
+      client.setQueryData(["payments", payment.id], payment);
+      dispatch({ type: "paid", payment });
+    },
   };
 }
 
