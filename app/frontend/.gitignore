@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# copied from zxing-wasm by predev / prebuild (DR-026)
+/public/zxing/
+
 # production
 /build
 

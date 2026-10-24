@@ -61,11 +61,11 @@ describe('EasySlipSlipVerifier', () => {
     expect(JSON.parse(String(calls[0]?.init.body))).toMatchObject({ base64: 'QUJD', checkDuplicate: false });
   });
 
-  it('treats a missing or null matchedAccount as unknown', async () => {
+  it('treats a null matchedAccount as not matched and a missing one as unknown', async () => {
     const data = fixture.data as Record<string, unknown>;
     vi.stubGlobal('fetch', () => Promise.resolve(jsonResponse(200, { ...fixture, data: { ...data, matchedAccount: null } })));
     expect(await verifier().verify({ payload: 'QR' }, { expectedAmount: '10.00' })).toMatchObject({
-      receiverMatch: 'unknown',
+      receiverMatch: 'not_matched',
     });
     vi.stubGlobal('fetch', () => {
       const { matchedAccount: _ignored, ...rest } = data;
@@ -74,6 +74,13 @@ describe('EasySlipSlipVerifier', () => {
     expect(await verifier().verify({ payload: 'QR' }, { expectedAmount: '10.00' })).toMatchObject({
       receiverMatch: 'unknown',
     });
+  });
+
+  it('maps a bad QR or image to invalid', async () => {
+    for (const code of ['VALIDATION_ERROR', 'INVALID_IMAGE_FORMAT', 'IMAGE_SIZE_TOO_LARGE', 'INVALID_IMAGE_TYPE']) {
+      vi.stubGlobal('fetch', () => Promise.resolve(jsonResponse(400, { success: false, error: { code, message: 'bad' } })));
+      expect(await verifier().verify({ payload: 'QR' }, { expectedAmount: '10.00' })).toEqual({ kind: 'invalid' });
+    }
   });
 
   it('maps slip-not-found and slip-pending', async () => {

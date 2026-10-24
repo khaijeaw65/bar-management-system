@@ -87,14 +87,24 @@ export class EasySlipSlipVerifier implements SlipVerifier {
   }
 
   private failure(code: string): SlipVerifyResult {
-    if (code === 'SLIP_NOT_FOUND') return { kind: 'invalid' };
+    if (code === 'SLIP_NOT_FOUND' || this.unreadable(code)) return { kind: 'invalid' };
     if (code === 'SLIP_PENDING') return { kind: 'pending' };
     return { kind: 'unavailable' };
   }
 
-  /** AC-7: a missing or null matchedAccount is unclear, not a proven mismatch. */
+  private unreadable(code: string): boolean {
+    return (
+      code === 'VALIDATION_ERROR' ||
+      code === 'INVALID_IMAGE_FORMAT' ||
+      code === 'IMAGE_SIZE_TOO_LARGE' ||
+      code === 'INVALID_IMAGE_TYPE'
+    );
+  }
+
+  /** Rev 2: null is a confirmed non-match. A missing field is an unexpected shape. */
   private receiver(value: unknown): ReceiverMatch {
-    if (value !== null && value !== undefined && typeof value === 'object') return 'matched';
+    if (value === null) return 'not_matched';
+    if (typeof value === 'object') return 'matched';
     return 'unknown';
   }
 }

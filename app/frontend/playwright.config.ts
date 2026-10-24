@@ -14,7 +14,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "./node_modules/.bin/next dev --port 3100",
+    command: "node scripts/copy-zxing-wasm.mjs && ./node_modules/.bin/next dev --port 3100",
     url: "http://localhost:3100",
     reuseExistingServer: false,
     timeout: 120_000,

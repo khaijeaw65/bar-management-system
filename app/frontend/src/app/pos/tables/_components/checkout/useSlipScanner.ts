@@ -9,6 +9,7 @@ export function useSlipScanner(active: boolean, onPayload: (payload: string) => 
   const videoRef = useRef<HTMLVideoElement>(null);
   const onPayloadRef = useRef(onPayload);
   const [camera, setCamera] = useState<CameraState>("starting");
+  const [scanFault, setScanFault] = useState(false);
 
   useEffect(() => {
     onPayloadRef.current = onPayload;
@@ -32,6 +33,7 @@ export function useSlipScanner(active: boolean, onPayload: (payload: string) => 
         setCamera("denied");
         return;
       }
+      const video = videoRef.current;
       try {
         const stream = await devices.getUserMedia({ video: { facingMode: "environment" } });
         if (cancelled) {
@@ -39,7 +41,6 @@ export function useSlipScanner(active: boolean, onPayload: (payload: string) => 
           return;
         }
         tracks.push(...stream.getTracks());
-        const video = videoRef.current;
         if (!video) {
           stop();
           setCamera("denied");
@@ -52,6 +53,12 @@ export function useSlipScanner(active: boolean, onPayload: (payload: string) => 
           return;
         }
         setCamera("live");
+      } catch {
+        if (!cancelled) setCamera("denied");
+        return;
+      }
+      if (!video) return;
+      try {
         const { BarcodeDetector, prepareZXingModule } = await import("barcode-detector/ponyfill");
         await prepareZXingModule({
           overrides: {
@@ -75,10 +82,12 @@ export function useSlipScanner(active: boolean, onPayload: (payload: string) => 
               stop();
               onPayloadRef.current(text);
             })
-            .catch(() => undefined);
+            .catch(() => {
+              if (!cancelled) setScanFault(true);
+            });
         }, 250);
       } catch {
-        if (!cancelled) setCamera("denied");
+        if (!cancelled) setScanFault(true);
       }
     }
 
@@ -89,5 +98,5 @@ export function useSlipScanner(active: boolean, onPayload: (payload: string) => 
     };
   }, [active]);
 
-  return { videoRef, camera };
+  return { videoRef, camera, scanFault };
 }

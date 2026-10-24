@@ -58,12 +58,13 @@ export function SlipScanner({
 }
 
 function LiveScan({ onSubmit }: Readonly<{ onSubmit: (body: { payload: string } | { image: string }) => void }>) {
-  const { videoRef, camera } = useSlipScanner(true, (payload) => onSubmit({ payload }));
+  const { videoRef, camera, scanFault } = useSlipScanner(true, (payload) => onSubmit({ payload }));
 
   return (
     <>
       <video ref={videoRef} muted playsInline className={camera === "live" ? "w-full rounded-lg" : "hidden"} />
       {camera === "denied" ? <p>ใช้กล้องไม่ได้ — ถ่ายรูปหรือเลือกรูปแทน</p> : null}
+      {scanFault ? <p>สแกนไม่ได้ — ถ่ายรูปหรือเลือกรูปแทน</p> : null}
       {camera === "starting" ? <p>กำลังเปิดกล้อง</p> : null}
       <div className="flex flex-wrap gap-2">
         <Button

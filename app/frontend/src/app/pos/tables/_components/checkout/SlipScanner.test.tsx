@@ -13,7 +13,7 @@ import { SLIP_COPY } from "./slip-copy";
 
 const wasmUrls: string[] = [];
 const stops: Array<ReturnType<typeof vi.fn>> = [];
-const detected = { codes: [] as Array<{ rawValue: string }> };
+const detected = { codes: [] as Array<{ rawValue: string }>, fail: false };
 
 vi.mock("barcode-detector/ponyfill", () => ({
   prepareZXingModule: async (options: { overrides: { locateFile: (path: string, prefix: string) => string } }) => {
@@ -21,7 +21,7 @@ vi.mock("barcode-detector/ponyfill", () => ({
   },
   BarcodeDetector: class {
     detect() {
-      return Promise.resolve(detected.codes);
+      return detected.fail ? Promise.reject(new Error("decode")) : Promise.resolve(detected.codes);
     }
   },
 }));
@@ -98,7 +98,23 @@ function renderScanner(onManual = vi.fn()) {
   return { onManual, verified };
 }
 
+test("a failed decode keeps the photo buttons and says the scan did not work", async () => {
+  detected.codes = [];
+  detected.fail = true;
+  allowCamera();
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <SlipScanner payment={payment()} onVerified={() => undefined} onManual={() => undefined} />
+    </QueryClientProvider>,
+  );
+  expect(await screen.findByText("สแกนไม่ได้ — ถ่ายรูปหรือเลือกรูปแทน")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "ถ่ายรูปแทน" })).toBeEnabled();
+  expect(screen.getByLabelText("เลือกรูป")).toBeInTheDocument();
+  detected.fail = false;
+});
+
 test("a decoded QR is sent once, the camera stops, and the wasm url stays on our origin", async () => {
+  detected.fail = false;
   detected.codes = [{ rawValue: "QR-1" }];
   allowCamera();
   const bodies: unknown[] = [];
@@ -171,7 +187,8 @@ test("each slip error offers a rescan and manual confirm", async () => {
   renderScanner(onManual);
   expect(await screen.findByLabelText("เลือกรูป")).toBeInTheDocument();
   for (const [code, copy] of Object.entries(SLIP_COPY)) {
-    server.use(http.post("*/api/payments/:id/verify-slip", () => reply(null, code === "SLIP_PENDING" || code === "SLIP_ALREADY_USED" ? 409 : code === "SLIP_SERVICE_UNAVAILABLE" ? 503 : 422, code, copy)));
+    const status = code === "SLIP_PENDING" || code === "SLIP_ALREADY_USED" ? 409 : code === "SLIP_SERVICE_UNAVAILABLE" ? 503 : code === "VALIDATION_ERROR" ? 400 : 422;
+    server.use(http.post("*/api/payments/:id/verify-slip", () => reply(null, status, code, copy)));
     const input = screen.getByLabelText("เลือกรูป");
     await user.upload(input, new File(["slip"], "slip.jpg", { type: "image/jpeg" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(copy);
