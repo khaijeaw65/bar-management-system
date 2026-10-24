@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-24 |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-24 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | backend · contracts · frontend |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | BRIEF-013 ✅ (payments core, lock, expiry job, `payment.status_changed`) · BRIEF-024 ✅ (venue PromptPay ID) · BRIEF-033 ✅ (POS checkout modal, `PromptPayPending`, `ManualConfirm`) |
 | **References** | **DR-026 (Approved — web QR scanner package)** · **DR-027 (Approved B — slip check on the staff app; not built here)** · DR-014 #6 (own-PromptPay mode, slip verify, manual fallback) · CD-03 boards `promptpay-slip` (1–4), `promptpay-slip-errors` (5–8), Q1 (POS tablet camera), Q2 (receiver) · FRD §7 · `docs/schema.sql` §7 `payment` (`slip_trans_ref` UNIQUE, `slip_amount`, `confirmed_via = slip_verify`) · EasySlip API v2 `POST /verify/bank` (payload / base64) |
 | **Audit depth** | Full (payment confirmation path; external service; new dependency) |
@@ -44,8 +44,8 @@ At checkout in own-PromptPay mode, the cashier points the POS tablet at the gues
 - **Rules** (in order): payment exists → own-PromptPay `promptpay` method and **pending** (else 409 `INVALID_STATE_TRANSITION`); provider result → `invalid` 422 `SLIP_INVALID` · `pending` 409 `SLIP_PENDING` ("สลิปกรุงเทพฯ ยังไม่พร้อม — รอ 5 นาทีแล้วสแกนใหม่") · `unavailable` 503 `SLIP_SERVICE_UNAVAILABLE`; receiver `not_matched` → 422 `SLIP_WRONG_RECEIVER` · `unknown` → 422 `SLIP_RECEIVER_UNCLEAR`; `slip amount < payment.amount` → 422 `SLIP_AMOUNT_SHORT`; reused `transRef` → 409 `SLIP_ALREADY_USED` (UNIQUE `slip_trans_ref`, `23505` mapped like DR-025). Success → `completed`, `confirmed_via = 'slip_verify'`, `slip_trans_ref`, `slip_amount`, `paid_at = now()`; expiry job removed; `payment.status_changed` emitted (same as `markPaid`).
 - **Rejected tries** → one `audit_log` row each (entity `payment`, the payment id; fields: reason, `transRef` / amount when known — **no sender or receiver name**), written in its **own** transaction so the rejection's rollback doesn't remove it, with `action = 'REJECT'` (Q1 = A).
 - **Migration** `app/backend/src/providers/database/migrations/<timestamp>-AuditRejectAction.ts`: `ALTER TYPE audit_action ADD VALUE 'REJECT'` (`down`: no-op with a comment — Postgres can't drop an enum value); `docs/schema.sql` enum line updated; `AuditRecord.action` type extended.
-- JSON body limit raised to **1 MB** (`configure-app`, proposed) — the client resizes photos to ~150 KB; the API rejects a larger image with 400.
-- Contracts: `VerifySlipSchema`, `PaymentSchema.slipAmount: MoneySchema.nullable()` (additive), error codes above; OpenAPI; `docs/api/README.md` Payments table.
+- JSON body limit **2 MB** (decoded image ≤ 1 MB enforced by `VerifySlipSchema`) — the client resizes photos to ~150 KB; a larger decoded image is 400.
+- Contracts: `VerifySlipSchema`, `PaymentSchema.slipAmount: MoneySchema.nullable()` (additive), `PaymentSchema.slipTransRef` (nullable string, existing column), error codes above; OpenAPI; `docs/api/README.md` Payments table.
 
 **Frontend (POS checkout — `pos/tables/_components/checkout/`)**
 - `PromptPayPending`: primary **"สแกนสลิป"** (CD-03 slip·1) → in-modal **SlipScanner** panel (slip·2): live camera (`getUserMedia`, rear camera) + `BarcodeDetector({ formats: ['qr_code'] })` from `barcode-detector` (DR-026) polling the video frame; first decoded QR → `verify-slip { payload }`; camera stops on result / close / unmount.
@@ -93,7 +93,7 @@ At checkout in own-PromptPay mode, the cashier points the POS tablet at the gues
 - **AC-4** — A `transRef` already on another completed payment → 409 `SLIP_ALREADY_USED`; two concurrent verifies with the same slip on two pending payments → exactly one completes.
 - **AC-5** — Receiver `not_matched` → 422 `SLIP_WRONG_RECEIVER`; `unknown` → 422 `SLIP_RECEIVER_UNCLEAR`; `invalid` → 422 `SLIP_INVALID`; `pending` → 409 `SLIP_PENDING`; `unavailable` / timeout / missing key → 503 `SLIP_SERVICE_UNAVAILABLE` — each leaves the payment pending and writes one `audit_log` row without names.
 - **AC-6** — Payment completed / cancelled / expired, or method cash → 409 `INVALID_STATE_TRANSITION`; no verifier call.
-- **AC-7** — EasySlip adapter: maps a recorded v2 success JSON (fixture) to `verified`, `matchedAccount` absent / null → `unknown`, 404 `SLIP_NOT_FOUND` → `invalid`, `SLIP_PENDING` → `pending`, 401 / 403 / 429 / 5xx / timeout → `unavailable`; sends `matchAmount`, `matchAccount: true`, `checkDuplicate: false`, bearer key.
+- **AC-7** — EasySlip adapter: maps a recorded v2 success JSON (fixture) to `verified`, `matchedAccount` object → `matched`, `null` → `not_matched`, field absent → `unknown`, 404 `SLIP_NOT_FOUND` → `invalid`, `SLIP_PENDING` → `pending`, 401 / 403 / 429 / 5xx / timeout → `unavailable`; sends `matchAmount`, `matchAccount: true`, `checkDuplicate: false`, bearer key.
 - **AC-8** — POS: "สแกนสลิป" opens the live scanner; a decoded QR sends `{ payload }` once and stops the camera; "ถ่ายรูปแทน" and "เลือกรูป" send a resized `{ image }`; camera denied → photo buttons only.
 - **AC-9** — POS states: verified (with "โอนเกิน ฿n" when over) → done; each error code shows its CD-03 copy with "สแกนใหม่" + "ยืนยันด้วยตนเอง".
 - **AC-10** — The decoder `.wasm` loads from our origin (network request host = the web app), not a CDN.
@@ -138,7 +138,7 @@ UI (real API + real EasySlip key, Field signed in, iPad or tablet over the tunne
 - Camera stream always stopped (tracks `stop()`) on result, close and unmount.
 
 ## 7. Decision Points (Field Guard)
-- **Pre-decided (exact, once DR-026 is Approved):** `barcode-detector@^3.2.3` in `app/frontend/package.json` (lockfile updated) · endpoint `POST /payments/:id/verify-slip` · error codes listed in §3 · `PaymentSchema.slipAmount` · env `EASYSLIP_API_KEY`, `EASYSLIP_BASE_URL` (default `https://api.easyslip.com/v2`) · EasySlip v2 `POST /verify/bank` with `matchAccount: true`, `matchAmount`, `checkDuplicate: false` · JSON body limit 1 MB · no slip image / raw JSON / names stored · `audit_action` += `'REJECT'` via `<timestamp>-AuditRejectAction.ts` (Q1 = A).
+- **Pre-decided (exact, once DR-026 is Approved):** `barcode-detector@^3.2.3` in `app/frontend/package.json` (lockfile updated) · endpoint `POST /payments/:id/verify-slip` · error codes listed in §3 · `PaymentSchema.slipAmount` · env `EASYSLIP_API_KEY`, `EASYSLIP_BASE_URL` (default `https://api.easyslip.com/v2`) · EasySlip v2 `POST /verify/bank` with `matchAccount: true`, `matchAmount`, `checkDuplicate: false` · JSON body limit 2 MB (decoded image ≤ 1 MB enforced by `VerifySlipSchema`) · `PaymentSchema.slipTransRef` · no slip image / raw JSON / names stored · `audit_action` += `'REJECT'` via `<timestamp>-AuditRejectAction.ts` (Q1 = A).
 - **Q1 — `audit_log.action` for a rejected slip? ✅ Decided (Field, 2026-10-24): A — new enum value `REJECT`.**
 - **Q2 — `matchAccount` with a PromptPay-phone receiver.** EasySlip's docs don't say whether a registered bank account matches a slip paid to the bar's **PromptPay phone / ID**. *Cowork recommends:* build as Selected 2 with `unknown` → `SLIP_RECEIVER_UNCLEAR` (manual confirm); the run proof records the real answer; if it never matches, a follow-up adds our own name + visible-digits check (CD-03 Q2) as the `unknown` fallback.
 - **Likely DRs:** a backend HTTP package (not expected — `fetch`) · storing slip images (out) · Q2 outcome needing our own receiver check (follow-up).
@@ -160,3 +160,4 @@ UI (real API + real EasySlip key, Field signed in, iPad or tablet over the tunne
 |---|---|---|
 | 1 | 2026-10-24 | Initial Draft (Cowork) — interview Selected 1–11; DR-026 (scanner) + DR-027 (staff app) raised |
 | 1 | 2026-10-24 | Ready — Field in session: "approve DR-026, approve DR-027 B, 025 Q1 = A, approve BRIEF-025 Rev 1 Ready" |
+| 2 | 2026-10-24 | Field-approved (audit Findings 1 and 4): `matchedAccount` null → `not_matched`; JSON body limit 2 MB (decoded image ≤ 1 MB enforced by `VerifySlipSchema`); `PaymentSchema.slipTransRef` |
