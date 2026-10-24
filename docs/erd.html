@@ -602,7 +602,6 @@ erDiagram
     }
     table_seat {
         uuid id PK
-        uuid venue_id FK
         string label
         string qr_token
         int capacity
@@ -653,7 +652,6 @@ erDiagram
     }
     staff_group {
         uuid id PK
-        uuid venue_id FK
         string name
         text description
     }
@@ -666,7 +664,6 @@ erDiagram
     }
     policy {
         uuid id PK
-        uuid venue_id FK
         string name
         text description
     }
@@ -698,7 +695,6 @@ erDiagram
     }
     menu_category {
         uuid id PK
-        uuid venue_id FK
         string name
         int sort_order
         boolean is_active
@@ -751,7 +747,6 @@ erDiagram
     }
     inventory_item {
         uuid id PK
-        uuid venue_id FK
         string name
         string category
         string unit_type
@@ -896,11 +891,6 @@ erDiagram
         timestamp changed_at
     }
 
-    venue ||--o{ table_seat : has
-    venue ||--o{ menu_category : has
-    venue ||--o{ staff_group : has
-    venue ||--o{ policy : has
-    venue ||--o{ inventory_item : tracks
 
     table_seat ||--o{ visit : receives
 
@@ -1000,7 +990,6 @@ erDiagram
           </div>
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
-            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">label</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">qr_token</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">capacity</span><span class="field-type">smallint</span></div>
@@ -1121,7 +1110,6 @@ erDiagram
           </div>
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
-            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">description</span><span class="field-type">text</span></div>
           </div>
@@ -1150,7 +1138,6 @@ erDiagram
           </div>
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
-            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">description</span><span class="field-type">text</span></div>
           </div>
@@ -1242,11 +1229,11 @@ erDiagram
           </div>
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
-            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">sort_order</span><span class="field-type">smallint</span></div>
             <div class="field-row"><span class="field-name">is_active</span><span class="field-type">boolean</span></div>
           </div>
+          <div class="field-note">Name unique on lower(trim(name)), hidden categories included — index uq_menu_category_name (DR-025). Delete only when empty (CATEGORY_NOT_EMPTY).</div>
         </div>
 
         <div class="entity-card">
@@ -1361,7 +1348,6 @@ erDiagram
           </div>
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
-            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> venue_id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">name</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">category</span><span class="field-type">enum</span></div>
             <div class="field-row"><span class="field-name">unit_type</span><span class="field-type">enum</span></div>
