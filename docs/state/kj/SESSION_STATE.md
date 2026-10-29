@@ -1,22 +1,22 @@
 # State — KJ
-Updated: 2026-10-29 · Agent: Claude Code (BRIEF-025 run proof recorded)
+Updated: 2026-10-29 · Agent: Cowork (BRIEF-046 Draft seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-025 **Implemented** Rev 2, full run proof recorded in the handoff (MacBook webcam; Android / iPad not tested). Audit **PASS** (S `4ff0644`). PR open; merge on green `ci`, then close in the next seed.
+BRIEF-046 **Draft** (dev ports web 3010 · API 3011) — Field reviews → Ready → `execute BRIEF-046`. BRIEF-025 Done (#94).
 
 ## Active
-- Brief: BRIEF-025 Rev 2 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-025-promptpay-slip-verify` · Auditor: Cowork · Sonar: gate ERROR (19 new, all pre-existing)
-- Done 21–23 Oct: BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
+- Brief: BRIEF-046 Rev 1 · Stage: Draft · Branch: `feat/BRIEF-046-dev-ports` (seed, local)
+- Done 21–29 Oct: BRIEF-025 (#94) · BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
-1. Cowork re-checks BRIEF-025 run proof → PASS · decide: fix the 4 LOW Sonar issues in this brief's files before PASS?
+1. Field: review BRIEF-046 · add `http://localhost:3011/api/auth/line/callback` in the LINE console · after 046 merges: Cowork docs branch — `docs/rules/core.md` ports (Field-approved) + CD-03 handoff §9 (receiver = EasySlip `matchAccount`, BRIEF-025)
 2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
-3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
+3. **Overdue (was 25 Oct):** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. **Week of 26 Oct:** on hold (Field 24 Oct): real-use bootstrap · then AI owner insight
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-025 awaiting Cowork · if `ci` hits frontend timeouts → re-run once (038 audit F4)
+- Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4)
 - e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e · frontend unit tests time out under heavy load
 - :3001 was not running (old `node dist/main` of `b000e4e` already gone) and was not restarted · no `next dev` on :3000 · SonarQube :9000 up · dev `bar` migration `AuditRejectAction` not applied (run proof blocked)
 
@@ -36,5 +36,5 @@ BRIEF-025 **Implemented** Rev 2, full run proof recorded in the handoff (MacBook
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-025 slip verify (Implemented, audit next) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell (after 8 Nov)
+1. BRIEF-046 dev ports (Draft) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell (after 8 Nov)
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)
