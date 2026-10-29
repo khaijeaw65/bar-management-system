@@ -1,19 +1,19 @@
 # State — KJ
-Updated: 2026-10-24 · Agent: Cursor (BRIEF-025 Implemented)
-> Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
-
-## Resume
-BRIEF-025 **Implemented** Rev 1 (slip verify API + POS scan). Work SHA `29c5c48`. Run proof blocked on Field's EasySlip key. Next: `audit BRIEF-025`.
+Updated: 2026-10-29 · Agent: Claude Code (BRIEF-025 run proof recorded)
+> Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is auth## Resume
+BRIEF-025 **Implemented** Rev 2, full run proof recorded in the handoff (MacBook webcam; Android / iPad not tested). Code S `259b81f` (handoff `44bbef0`+). Next: Cowork compact re-check → PASS → `execute BRIEF-025` (PASS commit + PR).
 
 ## Active
-- Brief: BRIEF-025 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-025-promptpay-slip-verify` · S `29c5c48` (`dc5da44` API, `29c5c48` POS) · Auditor: Cowork · no PR
+- Brief: BRIEF-025 Rev 2 · Stage: Implemented, awaiting re-check · Branch: `feat/BRIEF-025-promptpay-slip-verify` · Auditor: Cowork · no PR · Sonar on `44bbef0`: gate ERROR (22 new, 4 LOW in this brief's files, unfixed)
 - Done 21–23 Oct: BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
+ 036 (#78)
+
 ## Next steps
-1. `audit BRIEF-025` (Cowork) · Field: EasySlip Start + register the bar account, then the run proof (also BRIEF-013 AC-12)
+1. Cowork re-checks BRIEF-025 run proof → PASS · decide: fix the 4 LOW Sonar issues in this brief's files before PASS?
 2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
 3. **Decide by 25 Oct:** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
-4. **Week of 26 Oct:** BRIEF-025 run proof on hold until the key · on hold (Field 24 Oct): real-use bootstrap · then AI owner insight
+4. **Week of 26 Oct:** on hold (Field 24 Oct): real-use bootstrap · then AI owner insight
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: BRIEF-025 awaiting Cowork · if `ci` hits frontend timeouts → re-run once (038 audit F4)

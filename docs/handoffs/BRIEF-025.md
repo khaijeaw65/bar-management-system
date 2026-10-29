@@ -3,12 +3,12 @@
 | | |
 |---|---|
 | **Implementer** | kj (Cursor) |
-| **Date** | 2026-10-24 |
+| **Date** | 2026-10-24 · run proof 2026-10-29 |
 | **Brief revision** | 2 (wording committed in `eb5755b`; Field confirmation of that commit is audit Finding 10) |
 | **Branch** | `feat/BRIEF-025-promptpay-slip-verify` (seed `82244be`, merged `origin/main` at `3725ee1`) |
 | **Commit** | Work SHA `259b81f` (API `dc5da44`, POS `29c5c48`, receiver + static wasm `4ffa344`, scanner `259b81f`) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — no PR until audit PASS. EasySlip-key half of the run proof is still blocked |
+| **Status** | Implemented — full run proof recorded below on `44bbef0` (no code change since `259b81f`); awaiting Cowork's compact re-check → PASS. No PR until PASS |
 
 ## Summary
 - **`POST /api/payments/:id/verify-slip`** (`payments:create`). Body is exactly one of `{ payload }` (1–128) or `{ image }` (base64 JPEG/PNG, decoded ≤ 1 MB). Pending own-PromptPay only. EasySlip v2 `POST /verify/bank` runs **outside** any DB transaction (`fetch`, no new backend package). Then one transaction locks the payment `FOR UPDATE`, checks receiver and amount, and `save()`s `completed` / `confirmed_via = slip_verify` / `slip_trans_ref` / `slip_amount` / `paid_at`. Expiry job removed; `payment.status_changed` uses the existing payload.
@@ -30,8 +30,8 @@
 | AC-7 | ✅ | `easyslip-slip-verifier.spec.ts` — object → `matched`; **null → `not_matched`**; field absent → `unknown`; the four 400 codes → `invalid`; 401/403/429/5xx/timeout/weird body/missing key (no fetch) |
 | AC-8 | ✅ | `SlipScanner.test.tsx` (5) — one `{ payload }`, tracks stopped, wasm URL `/zxing/zxing_reader.wasm` (no jsDelivr); one miss stays quiet and five misses keep the photo buttons; a failed resize shows `SLIP_INVALID`; denied camera has no `capture` |
 | AC-9 | ✅ | same component test (each error code + **โอนเกิน**) · e2e `payment-slip.spec.ts` photo path → ยืนยันสลิปแล้ว, REF-E2E, โอนเกิน |
-| AC-10 | ⏸ | `next start` on :3101 served `GET /zxing/zxing_reader.wasm` HTTP 200, 946860 bytes, WebAssembly module. Not an iPad network panel |
-| AC-11 | ⏸ | Gates and the key-less half below are on `259b81f`. The EasySlip-key half (real bank scan, second scan, photo buttons on a signed-in iPad, Q2 phone match) was not run |
+| AC-10 | ✅ | `next start` served the wasm 200, 946,860 bytes · browser network panel (MacBook, `next dev` :3010): `GET http://localhost:3010/zxing/zxing_reader.wasm` 200 `application/wasm`, then 304 on the second scan — own origin, no CDN |
+| AC-11 | ✅ | Gates on `259b81f` (code identical on `44bbef0`); key-less half and live half below · device = **MacBook webcam; Android Chrome and iPad Safari not tested** |
 
 ## Gate Evidence (G1)
 Re-run on work SHA `259b81f` (2026-10-24). Postgres, Redis, and SonarQube were already up. Backend e2e used `bar_test`. Frontend e2e used the machine Playwright browser cache. Dev ports :3001 and :3101 were free before the run proof and free again after it.
@@ -68,10 +68,25 @@ The payment was then cancelled (200, `cancelled`, `staff_cancel`). The staff ses
 
 Not done, and not claimed: an iPad or tunnel camera scan, **ถ่ายรูปแทน** / **เลือกรูป** as UI gestures against this API, a browser network panel, a real EasySlip response, or a second scan of the same bank slip.
 
+## Run proof (EasySlip key, live — 2026-10-29, code `259b81f` = `44bbef0` for `app/`)
+Run by Field by hand on the MacBook (dev backend :3011, `next dev` :3010, real EasySlip key; camera = MacBook webcam on localhost). Rows read from dev `bar` with psql after the run. **Device: MacBook webcam only. Android Chrome and iPad Safari were not tested** (no tunnel scan was run; the camera needs HTTPS off localhost).
+
+| Check | Evidence |
+|---|---|
+| Happy path (live webcam scan of a real bank slip, paid in a mobile bank app) | payment `15cac4d6-c98e-4940-a5b6-e65b1cc1304b`: `promptpay`, `completed`, `confirmed_via = slip_verify`, amount 10.00, `slip_amount` 10.00, `slip_trans_ref` `261029154702274603`, `paid_at` 2026-10-29 08:51:23 UTC. Three earlier `SLIP_INVALID` REJECT rows (08:47–08:48) are Field's first attempts before it completed |
+| Q2 — `matchAccount` with the bar's PromptPay | venue `promptpay_id_type = mobile`. Since Rev 2 a null `matchedAccount` is `SLIP_WRONG_RECEIVER`, so the payment completing means EasySlip returned a matched account for a PromptPay-**mobile** receiver. Not stored directly (no raw JSON by design). A slip to another account was **not** tried |
+| Same slip, new ฿10 payment, live camera | payment `de25f1a9-e714-41ad-b567-ab6fbed8b3ec` (฿10.00) stays `pending`; `SLIP_ALREADY_USED` REJECT rows at 13:31:38, 13:31:54, 13:32:41, 13:44:48, 13:45:19 UTC |
+| ถ่ายรูปแทน and เลือกรูป with the same slip | same result — rows above; each `changed_fields` = `reason`, `transRef` `261029154702274603`, `amount` `10.00` only, no names |
+| Wasm origin (AC-10) | two DevTools screenshots: `http://localhost:3010/zxing/zxing_reader.wasm` 200 (camera path) then 304 (picture path), `Remote Address [::1]:3010` |
+| Laptop POS live flip | **not run** — covered only by the e2e socket test; no second-window check by hand |
+
+Leftover local data: payment `de25f1a9…` is still `pending` (฿10); the two earlier 24 Oct proof payments are cancelled; the `15cac4d6…` slip ref is now consumed in the dev DB.
+
 ## Sonar (local scan)
-- Last scan is still commit `29c5c48`. This fix round did not rescan. Quality Gate on that scan: **ERROR** — `new_coverage` 0.0 % (no coverage path, known) and `new_violations` 22.
-- Issues by severity on that scan: BLOCKER 0 · HIGH 5 · MEDIUM 7 · LOW 10 · INFO 1. Top 10 were the pre-existing set. `typescript:S6772` on the file label in `SlipScanner.tsx` was fixed before that scan. No exclusions, won't-fix, or gate change.
-- Who fixed: Cursor (Field, reviewer mode).
+- Scan on **`44bbef0`** (2026-10-29; `app/` identical to `259b81f`). Quality Gate: **ERROR** — `new_coverage` 0.0 % (no coverage report path, known) and `new_violations` 22. Same totals as the `29c5c48` scan.
+- By severity: BLOCKER 0 · HIGH 5 · MEDIUM 7 · LOW 10 · INFO 1. Top 10 are the pre-existing set (`setup.ts`, `order-query.service.ts`, `request-hash.ts`, menu components, …).
+- **Four LOW issues sit in files this branch changed** (open, not fixed — no code change in this round; line-level authorship not checked): `easyslip-slip-verifier.ts:17` S1874 deprecated `ZodNumber` param · `resize-slip-image.ts:22` S7758 `fromCharCode` → `fromCodePoint` · `contracts/schemas/payments.ts:123` S7758 `charCodeAt` → `codePointAt` · `payment.service.ts:192` S6582 optional chain. The earlier handoff called the remainder "pre-existing"; these four may not be. A small cleanup commit would be a new S.
+- No exclusions, won't-fix, or gate change. Who fixed: nobody this round (Field, reviewer mode).
 
 ## Decisions Raised
 - None. Pre-decided items used: `barcode-detector@^3.2.3`, `POST /payments/:id/verify-slip`, the seven slip error codes, `PaymentSchema.slipAmount` and `slipTransRef`, `EASYSLIP_API_KEY` / `EASYSLIP_BASE_URL`, EasySlip v2 body flags, no slip image / raw JSON / names stored, `audit_action` `REJECT` (Q1 = A). DR-027 B: the staff app is not built here.
@@ -83,8 +98,8 @@ Not done, and not claimed: an iPad or tunnel camera scan, **ถ่ายรู�
   - **`matchedAccount` null is `not_matched`** (Rev 2). A missing field stays `unknown`. If the bar account is not registered in EasySlip, a real slip can say wrong receiver; **ยืนยันด้วยตนเอง** remains. No name or digit fallback.
 
 ## Known Gaps / Follow-ups
-- EasySlip-key half of the run proof, plus BRIEF-013 AC-12's manual half and CD-03 Q2, still wait on Field's key and account registration.
-- Audit Finding 10: the Rev 2 brief text is already `eb5755b`. This round did not edit the brief. Field still confirms that commit for Cowork to record.
+- Not covered: Android Chrome / iPad Safari device runs, the wrong-account slip case, a by-hand second-window live flip. BRIEF-013 AC-12's manual half is the happy path above (MacBook).
+- Audit Finding 10 closed: Field confirmed Rev 2 (`eb5755b`) in the 2026-10-29 session; recorded in the audit.
 - Suggestions 6, 7, and 11 are in `259b81f` (in-flight detect, resize failures show the unreadable-slip copy, scan warning after five misses or a failed module load).
 - **Dev server:** :3001 and :3101 are free. The proof processes were stopped after the checks above.
 - **Local data:** T1 is still `active`. The proof payment is `cancelled` / `staff_cancel`. The two `REJECT` rows stay (append-only). Venue PromptPay id and type are NULL again.
