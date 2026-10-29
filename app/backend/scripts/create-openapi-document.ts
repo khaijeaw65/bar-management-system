@@ -3,6 +3,13 @@ import { Test } from '@nestjs/testing';
 import { buildOpenApiDocument } from '../dist/common/openapi/document.js';
 import { AuthController } from '../dist/modules/auth/infrastructure/http/auth.controller.js';
 import { AuthService } from '../dist/modules/auth/application/auth.service.js';
+import { CustomerMenuService } from '../dist/modules/customer/application/customer-menu.service.js';
+import { GuestSessionService } from '../dist/modules/customer/application/guest-session.service.js';
+import { CustomerMenuController } from '../dist/modules/customer/infrastructure/http/customer-menu.controller.js';
+import {
+  CustomerScanController,
+  CustomerSessionController,
+} from '../dist/modules/customer/infrastructure/http/customer-session.controller.js';
 import { HealthController } from '../dist/modules/health/health.controller.js';
 import { HealthService } from '../dist/modules/health/health.service.js';
 import { MenuCatalogService } from '../dist/modules/menu/application/menu-catalog.service.js';
@@ -50,6 +57,9 @@ const documentedControllers = [
   MenuAvailabilityController,
   PaymentsController,
   ReportsController,
+  CustomerScanController,
+  CustomerSessionController,
+  CustomerMenuController,
 ];
 
 export async function createOpenApiDocument(): Promise<OpenAPIObject> {
@@ -75,6 +85,8 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: BillService, useValue: {} },
       { provide: PaymentService, useValue: {} },
       { provide: ReportsService, useValue: {} },
+      { provide: GuestSessionService, useValue: {} },
+      { provide: CustomerMenuService, useValue: {} },
       {
         provide: AppConfigService,
         useValue: { nodeEnv: 'test', frontendUrl: 'http://localhost:3000' },

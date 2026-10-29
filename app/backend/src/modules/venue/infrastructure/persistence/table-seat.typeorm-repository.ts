@@ -43,6 +43,11 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
     return seat ? this.toIdentity(seat) : null;
   }
 
+  public async findActiveByQrToken(qrToken: string): Promise<SeatIdentity | null> {
+    const seat = await this.tableSeatOrmRepository.findOne({ where: { qrToken, isActive: true } });
+    return seat ? this.toIdentity(seat) : null;
+  }
+
   public async replaceQrToken(id: string, qrToken: string): Promise<void> {
     const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
     if (!seat) return;

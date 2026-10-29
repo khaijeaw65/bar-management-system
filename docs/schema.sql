@@ -1,6 +1,6 @@
 -- ============================================================
 -- Bar Management System — Initial Schema
--- Generated: 2026-09-13  |  Updated: 2026-10-23  |  10 domains, 38 tables
+-- Generated: 2026-09-13  |  Updated: 2026-10-29  |  10 domains, 39 tables
 -- ============================================================
 -- updated_at is owned by the database (DR-023): the trigger block above the seed data stamps every UPDATE.
 -- A table created later with an updated_at column attaches the same trigger in its own migration.
@@ -100,6 +100,21 @@ CREATE TABLE visit (
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Guest QR session (DR-028, BRIEF-047). Opaque cookie token; only its SHA-256 is stored.
+-- visit_id NULL = seat-only (expires 2 h sliding); bound to a visit = lives until the visit closes.
+CREATE TABLE guest_session (
+  id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  token_hash     CHAR(64) NOT NULL UNIQUE,
+  table_seat_id  UUID NOT NULL REFERENCES table_seat(id),
+  visit_id       UUID REFERENCES visit(id),
+  display_name   VARCHAR(30),                 -- guest nickname (CD-06 R3), snapshot to order lines at send
+  expires_at     TIMESTAMPTZ NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()   -- trg_guest_session_updated_at (DR-023)
+);
+CREATE INDEX idx_guest_session_seat ON guest_session(table_seat_id);
+CREATE INDEX idx_guest_session_seat_only_expiry ON guest_session(expires_at) WHERE visit_id IS NULL;
 
 CREATE TABLE customer_consent (
   id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

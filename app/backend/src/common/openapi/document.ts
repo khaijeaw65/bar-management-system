@@ -24,11 +24,13 @@ export function openApiConfig(
     .setTitle('The Loft Bar API')
     .setVersion(version)
     .addCookieAuth('access_token')
+    .addCookieAuth('guest_session')
     .addBearerAuth()
     .addTag('health')
     .addTag('auth')
     .addTag('venue')
     .addTag('menu')
+    .addTag('customer')
     .build();
 }
 
