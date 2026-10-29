@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-046-dev-ports` (PR opens after audit PASS) |
 | **Commit** | Work SHA `5d1ee70` (seed `3c85699`) |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Implemented — awaiting audit (run proof recorded 2026-10-29, no code change) |
 
 > Created at `Implemented`. Updated once in the PASS commit. Frozen at merge.
 
@@ -19,7 +19,7 @@ Repo defaults moved to web **3010** / API **3011**: backend `PORT` fallback, bot
 |---|---|---|
 | AC-1 | ✅ | `configuration.spec.ts::defaults PORT to 3011 when it is not set` (new — the spec had no default assertion before) |
 | AC-2 | ✅ | `login/page.test.tsx` expects `http://localhost:3011/api/auth/line/login` |
-| AC-3 | ◐ | Health 200 on :3011, web 200 on :3010, `/api/auth/line/login` → 302 to LINE with `redirect_uri=http://localhost:3011/api/auth/line/callback`, CORS echoes `Origin: http://localhost:3010`. **Full LINE round-trip and POS floor not exercised** — needs Field to add the 3011 callback in the LINE console and log in. |
+| AC-3 | ✅ | Health 200 on :3011, web 200 on :3010. **LINE login round-trip run 2026-10-29 21:37 in the built-in browser** (Field signed in to LINE): `localhost:3010/login` → LINE (`redirect_uri=…localhost:3011/api/auth/line/callback`) → back on `http://localhost:3010/pos/tables`, floor loaded with live data (header "Field", 2 in use / 12 free, T1 7 items ฿1,305.00, T2 1 item ฿10.00, 8 pending-order badge). Network, all to :3011 and 200: `/api/auth/me`, `/api/tables`, `/api/tickets?status=…`, `socket.io` polling. |
 | AC-4 | ✅ | Playwright MSW e2e on 3100: 22 passed (incl. `menu-editor.spec.ts` with the 3011 base) |
 | AC-5 | ✅ | Gates + run proof below |
 
@@ -36,7 +36,7 @@ Run on work SHA `5d1ee70`.
 | `pnpm --filter @bar/frontend build` | 0 | pass |
 | run proof: `migration:run` → `start:dev` → `curl localhost:3011/api/health` | 0 | no migrations pending · health **200** · `next dev` (new `-p 3010`) → `/login` **200** · :3001 → 404 |
 
-UI exercised: web served on :3010 only by HTTP check; LINE login and POS floor not clicked through (see AC-3).
+UI exercised: `/login` → LINE login → `/pos/tables` on :3010 with the API on :3011 (AC-3). Servers started fresh on `5d1ee70`.
 
 ## Sonar (local scan)
 - Not run — optional for this brief (config / docs only).
@@ -50,7 +50,7 @@ UI exercised: web served on :3010 only by HTTP check; LINE login and POS floor n
 ## Known Gaps / Follow-ups
 - `.claude/launch.json` still launches the frontend on `--port 3000` (not in the brief's file list; protected-adjacent tooling) — Cowork/Field to decide.
 - Backend e2e / `set-auth-env.ts` / `ci.yml` keep 3000 / 3001 literals by design (self-contained).
-- Field: add `http://localhost:3011/api/auth/line/callback` in the LINE console. Env gap (names only): `app/backend/.env` lacks `EASYSLIP_BASE_URL`, `app/frontend/.env.local` lacks `NEXT_PUBLIC_API_MOCKING` (both optional defaults).
+- LINE console already accepted the 3011 callback (login completed). Env gap (names only): `app/backend/.env` lacks `EASYSLIP_BASE_URL`, `app/frontend/.env.local` lacks `NEXT_PUBLIC_API_MOCKING` (both optional defaults).
 - Dev servers for the run proof are left running on :3010 / :3011.
 
 ## AI Usage
