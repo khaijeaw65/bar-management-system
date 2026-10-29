@@ -21,8 +21,8 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 ```
 /
 ├── app/
-│   ├── backend/        @bar/backend  — NestJS API (port 3001)
-│   ├── frontend/       @bar/frontend — Next.js 16 web app (port 3000)
+│   ├── backend/        @bar/backend  — NestJS API (port 3011)
+│   ├── frontend/       @bar/frontend — Next.js 16 web app (port 3010)
 │   └── packages/
 │       └── contracts/  @bar/contracts — shared enums & types (source of truth)
 ├── docs/               project documentation (FRD, schema, handoff, rules)
