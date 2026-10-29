@@ -1,9 +1,11 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
+  AcknowledgeCallResultSchema,
   RegenerateQrResponseSchema,
   TableListSchema,
   UuidSchema,
+  type AcknowledgeCallResult,
   type RegenerateQrResponse,
   type TableList,
 } from '@bar/contracts';
@@ -43,5 +45,19 @@ export class TablesController {
   ): Promise<RegenerateQrResponse> {
     const qrToken = await this.tableSeatService.regenerateQr(requireUuid(id, 'ไม่พบโต๊ะ'));
     return { qrToken };
+  }
+
+  @Post(':seatId/acknowledge-call')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermissions('tables:read')
+  @ApiOperation({
+    summary: 'Clear the call-staff bell on a seat',
+    description: `${staffAccess('tables:read')} Idempotent: a seat with no bell answers 200 as well.`,
+  })
+  @ApiParam({ name: 'seatId', schema: zodToOpenApi(UuidSchema) })
+  @ApiEnvelopedOk(AcknowledgeCallResultSchema)
+  public async acknowledgeCall(@Param('seatId') seatId: string): Promise<AcknowledgeCallResult> {
+    await this.tableSeatService.acknowledgeCall(requireUuid(seatId, 'ไม่พบโต๊ะ'));
+    return { ok: true };
   }
 }

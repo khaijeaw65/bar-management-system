@@ -8,8 +8,7 @@ import {
 import { OrderSchema } from './orders.js';
 import { BillSchema, PaymentAttemptSchema } from './payments.js';
 
-// Card on GET /tables. total, itemCount, and staffCalled stay empty until
-// BRIEF-012, BRIEF-013, and the customer QR brief fill them.
+// Card on GET /tables. staffCalled mirrors the seat's bell (BRIEF-048).
 export const CurrentVisitSchema = z.object({
   id: UuidSchema,
   state: VisitStateSchema,
@@ -23,12 +22,24 @@ export const CurrentVisitSchema = z.object({
 
 export type CurrentVisit = z.infer<typeof CurrentVisitSchema>;
 
+// The bell lives on the seat so a guest at a free table can ring it too (BRIEF-048).
+export const CallStaffReasonSchema = z.enum(['bill', 'other'], 'เหตุผลไม่ถูกต้อง');
+export type CallStaffReason = z.infer<typeof CallStaffReasonSchema>;
+
+export const StaffCallSchema = z.object({
+  reason: CallStaffReasonSchema.nullable(),
+  note: z.string().nullable(),
+  calledAt: IsoDateTimeSchema,
+});
+export type StaffCall = z.infer<typeof StaffCallSchema>;
+
 export const TableSummarySchema = z.object({
   id: UuidSchema,
   label: z.string(),
   kind: TableSeatKindSchema,
   sortOrder: z.number().int(),
   currentVisit: CurrentVisitSchema.nullable(),
+  staffCall: StaffCallSchema.nullable(),
 });
 
 export type TableSummary = z.infer<typeof TableSummarySchema>;

@@ -31,6 +31,7 @@ import { orderWhere, rowList } from './order-query.js';
 import {
   ACTIVE_LINE_COUNT_SQL,
   BILL_SQL,
+  GUEST_SESSION_IDS_SQL,
   LINE_ON_TICKET_SQL,
   LOCK_TICKET_SQL,
   ORDER_ROWS_SQL,
@@ -117,6 +118,11 @@ export class OrderTypeormRepository implements OrderRepository {
     return rowList(result).map((row) => this.toOrderTotal(row));
   }
 
+  public async guestSessionIds(visitId: string): Promise<Map<string, string>> {
+    const result: unknown = await this.manager.query(GUEST_SESSION_IDS_SQL, [visitId]);
+    return new Map(rowList(result).map((row) => [this.required(row.id), this.required(row.guest_session_id)]));
+  }
+
   public async pendingLinesForItem(menuItemId: string): Promise<PendingItemLine[]> {
     const result: unknown = await this.manager.query(PENDING_ITEM_LINES_SQL, [menuItemId]);
     return rowList(result).map((row) => this.toPendingLine(row));
@@ -153,6 +159,7 @@ export class OrderTypeormRepository implements OrderRepository {
       visitId: order.visitId,
       orderNumber: order.orderNumber,
       businessDate: order.businessDate,
+      guestSessionId: order.guestSessionId ?? null,
     });
   }
 

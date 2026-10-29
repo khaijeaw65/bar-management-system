@@ -1,6 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { TableSummary } from '@bar/contracts';
+import {
+  TABLE_STAFF_CALLED,
+  TABLE_STAFF_CALL_CLEARED,
+  type CallStaffReason,
+  type TableStaffCalledPayload,
+  type TableSummary,
+} from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
+import { CLOCK, type Clock } from '../../../common/clock.js';
+import { NotificationsService } from '../../notifications/notifications.service.js';
 import { BillService } from '../../payment/application/bill.service.js';
 import { OrderQueryService } from '../../order/application/order-query.service.js';
 import {
@@ -26,6 +34,8 @@ export class TableSeatService {
     @Inject(VISIT_REPOSITORY) private readonly visitRepository: VisitRepository,
     private readonly orders: OrderQueryService,
     private readonly bills: BillService,
+    private readonly notifications: NotificationsService,
+    @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   public async list(): Promise<TableSummary[]> {
@@ -44,6 +54,28 @@ export class TableSeatService {
     if (!seat) return null;
     const live = await this.visitRepository.findLiveBySeat(seat.id);
     return { seat, liveVisitId: live?.id ?? null };
+  }
+
+  /** Rings the bell on a seat (a newer call overwrites an older one) and tells the staff screens. */
+  public async callStaff(
+    tableSeatId: string,
+    input: { reason: CallStaffReason | null; note: string | null },
+  ): Promise<Date> {
+    const calledAt = this.clock.now();
+    await this.tableSeatRepository.setStaffCall(tableSeatId, { ...input, calledAt });
+    const payload: TableStaffCalledPayload = { tableSeatId, ...input, calledAt: calledAt.toISOString() };
+    this.notifications.emitToStaff(TABLE_STAFF_CALLED, payload);
+    return calledAt;
+  }
+
+  /** Idempotent: no bell → nothing to clear, nothing emitted. */
+  public async acknowledgeCall(tableSeatId: string): Promise<void> {
+    if (!(await this.tableSeatRepository.findById(tableSeatId))) {
+      throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
+    }
+    if (await this.tableSeatRepository.clearStaffCall(tableSeatId)) {
+      this.notifications.emitToStaff(TABLE_STAFF_CALL_CLEARED, { tableSeatId });
+    }
   }
 
   public async regenerateQr(id: string): Promise<string> {

@@ -38,6 +38,14 @@ class FakeSessions implements GuestSessionRepository {
     if (row) row.expiresAt = expiresAt;
   }
 
+  public async bindVisit(id: string, visitId: string): Promise<void> {
+    const row = this.rows.get(id);
+    if (row && !row.visitId) {
+      row.visitId = visitId;
+      row.visitState = 'open';
+    }
+  }
+
   public async setDisplayName(id: string, displayName: string | null): Promise<void> {
     const row = this.rows.get(id);
     if (row) row.displayName = displayName;

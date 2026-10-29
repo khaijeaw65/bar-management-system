@@ -15,3 +15,13 @@ export interface VisitBill {
   total: string;
   itemCount: number;
 }
+
+/** A guest's order (BRIEF-048). `bindVisit` runs inside the order transaction, right after the visit is resolved. */
+export interface GuestOrderInput {
+  guestSessionId: string;
+  tableSeatId: string;
+  /** The session's visit, or null for a seat-only session — the order then opens (or joins) the seat's visit. */
+  visitId: string | null;
+  items: RequestedLine[];
+  bindVisit: (visitId: string) => Promise<void>;
+}

@@ -125,3 +125,8 @@ export const ACTIVE_LINE_COUNT_SQL = `
   FROM order_item
   WHERE ticket_id = $1 AND cancelled_at IS NULL
 `;
+
+export const GUEST_SESSION_IDS_SQL = `
+  SELECT id, guest_session_id FROM order_record
+  WHERE visit_id = $1::uuid AND guest_session_id IS NOT NULL
+`;

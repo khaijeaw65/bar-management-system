@@ -1,7 +1,10 @@
 import {
+  CustomerCallStaffSchema,
   CustomerMenuItemSchema,
   CustomerMenuSchema,
+  CustomerPlaceOrderSchema,
   CustomerSessionSchema,
+  CustomerTabSchema,
   StartCustomerSessionSchema,
   UpdateCustomerSessionSchema,
 } from './customer.js';
@@ -69,5 +72,31 @@ describe('customer error codes', () => {
   it('lists QR_INVALID and GUEST_SESSION_INVALID', () => {
     expect(ErrorCodeSchema.safeParse('QR_INVALID').success).toBe(true);
     expect(ErrorCodeSchema.safeParse('GUEST_SESSION_INVALID').success).toBe(true);
+  });
+});
+
+describe('customer order, tab and call staff (BRIEF-048)', () => {
+  it('drops a smuggled orderedByName from the order body', () => {
+    const parsed = CustomerPlaceOrderSchema.parse({
+      items: [{ variantId: ID, quantity: 1, orderedByName: 'เจ้าของร้าน' }],
+    });
+    expect(parsed.items[0]).not.toHaveProperty('orderedByName');
+  });
+
+  it('needs at least one line', () => {
+    expect(CustomerPlaceOrderSchema.safeParse({ items: [] }).success).toBe(false);
+  });
+
+  it('refuses extra fields in the tab (no staff or session ids can ride along)', () => {
+    const tab = { visitId: null, orders: [], total: '0.00', asOf: '2026-10-30T10:00:00.000Z' };
+    expect(CustomerTabSchema.safeParse(tab).success).toBe(true);
+    expect(CustomerTabSchema.safeParse({ ...tab, staffId: ID }).success).toBe(false);
+  });
+
+  it('accepts an empty call, a reason and a short note, but not a bad reason or a long note', () => {
+    expect(CustomerCallStaffSchema.safeParse({}).success).toBe(true);
+    expect(CustomerCallStaffSchema.safeParse({ reason: 'bill', note: 'เช็คบิล' }).success).toBe(true);
+    expect(CustomerCallStaffSchema.safeParse({ reason: 'cash' }).success).toBe(false);
+    expect(CustomerCallStaffSchema.safeParse({ note: 'ก'.repeat(101) }).success).toBe(false);
   });
 });

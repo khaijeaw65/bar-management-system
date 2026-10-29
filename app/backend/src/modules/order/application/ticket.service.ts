@@ -151,6 +151,7 @@ export class TicketService {
     kind: TicketEvent,
     written?: TicketIssueWrite,
   ): void {
+    this.notifications.emitTabChanged(ticket.visitId);
     if (kind === 'escalated') {
       this.notifications.emitToStaff(
         TICKET_ISSUE_ESCALATED,

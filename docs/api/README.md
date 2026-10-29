@@ -65,8 +65,9 @@ Query params, camelCase: `GET /api/orders?status=pending,accepted&visitId=…`. 
 Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_paid`) via `@RequirePermissions` + `PermissionsGuard`. Each endpoint's permission is listed in its OpenAPI description.
 
 ### Realtime (socket.io)
-- Namespaces: `/staff` (auth = same access token), `/customer` (visit session).
-- Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`, `notification.created`. `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, and `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu) go to room `staff`. `visit.*` stays on room `pos`.
+- Namespaces: `/staff` (auth = same access token), `/customer` (auth = the `guest_session` cookie; its own socket.io path `/api/customer/socket.io` so the `Path=/api/customer` cookie reaches the handshake).
+- Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`, `notification.created`. `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, and `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu) go to room `staff`. `visit.*` stays on room `pos`. `table.staff_called` `{ tableSeatId, reason, note, calledAt }` and `table.staff_call_cleared` `{ tableSeatId }` go to room `staff` (BRIEF-048).
+- `/customer` sends **one** event, `tab.changed` `{ visitId, sessionEnded? }` (order placed, ticket status, item cancelled, visit closed → `sessionEnded: true`). It is a ping — the phone refetches `GET /api/customer/tab`. No staff payload is ever mirrored there.
 - Payload = the **same contracts schema** as the REST resource (or a documented slice). Events notify; clients refetch via React Query when unsure (no event-sourced client state).
 - Event schemas live in `contracts/src/events/<domain>.ts`.
 
@@ -74,7 +75,7 @@ Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_
 Server re-validates state on every transition and returns `409` with a `code` + Thai message; the client refetches. No ETags in Phase 1.
 
 ### Idempotency (D3)
-`POST /api/visits/:visitId/orders`, `POST /api/public/visits/:id/orders` and `POST /api/visits/:visitId/payments` accept an `Idempotency-Key` header (UUID, generated per user action on the client). Same key + same body within 24 h → the original response is replayed; same key + different body → `409 IDEMPOTENCY_KEY_REUSED`. Stored in Redis. Other endpoints ignore the header.
+`POST /api/visits/:visitId/orders`, `POST /api/customer/orders` and `POST /api/visits/:visitId/payments` accept an `Idempotency-Key` header (UUID, generated per user action on the client). Same key + same body within 24 h → the original response is replayed; same key + different body → `409 IDEMPOTENCY_KEY_REUSED`. Stored in Redis. Other endpoints ignore the header.
 
 ### Versioning (D2)
 No URL version in Phase 1 (`/api/...`). Breaking changes go through a DR; add `/api/v2` only once real installs depend on the old shape.
@@ -137,18 +138,24 @@ Prefix `/api/customer`. Auth = cookie `guest_session`, set by the scan; staff to
 | GET | `/api/customer/session` | cookie | current session (seat, visit, nickname, expiry) — restores a reload | BRIEF-047 |
 | PATCH | `/api/customer/session` | cookie | `{ displayName: string or null }` — trimmed, ≤ 30, empty → null | BRIEF-047 |
 | GET | `/api/customer/menu` | cookie | `{ categories, items }` — active categories, no charge items, sold-out / out-of-window greyed (`availableNow`) | BRIEF-047 |
-Seat-only sessions live 2 h (sliding); once bound to a visit they live as long as the visit. Order, running tab and call-staff: BRIEF-048.
+Seat-only sessions live 2 h (sliding); once bound to a visit they live as long as the visit.
+
+| Method | Path | Auth | Purpose | Brief |
+|---|---|---|---|---|
+| POST | `/api/customer/orders` | cookie | `{ items: [{ variantId, quantity, modifierOptionIds?, notes? }] }` (no `orderedByName` — the nickname is taken from the session) + optional `Idempotency-Key` (scoped to the session) → `{ orderId, orderNumber, visitId }` 201. First order on a free seat opens the visit (`opened_via = qr`, no staff). 1 order / 10 s / session → `429 RATE_LIMITED` (a refused order gives the slot back). `409 ITEM_UNAVAILABLE`, `400` for a charge line | BRIEF-048 |
+| GET | `/api/customer/tab` | cookie | whole table's running tab: orders newest first, `mine` per order, tickets `{ station, status }`, lines from snapshots (cancelled lines kept, `cancelled: true`, excluded from `total`), `asOf`. Seat-only session → empty tab | BRIEF-048 |
+| POST | `/api/customer/call-staff` | cookie | `{ reason?: 'bill' \| 'other', note? ≤ 100 }` → `{ calledAt }`. Flag on the seat; 1 call / 60 s / session → `429` | BRIEF-048 |
 
 ### Tables & visits
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
 | GET | `/api/tables` | floor: seats (`kind`: table \| counter) + current visit summary (state, total, `paymentPending`) | `tables:read` |
+| POST | `/api/tables/:seatId/acknowledge-call` | clear the call-staff bell on a seat (POS + staff app); idempotent. Cards on `GET /api/tables` carry `staffCall: { reason, note, calledAt } \| null` and `currentVisit.staffCalled` | `tables:read` |
 | POST | `/api/tables/:id/qr/regenerate` | new signed QR token, old one invalid (FRD §3); reprint = same token, client-only | `tables:manage` |
 | POST | `/api/visits` | open visit `{ tableSeatId }` — first write wins, second attaches (FRD §3) | `visits:open` |
 | GET | `/api/visits/:id` | visit detail: orders, `bill` (`total`, `paid`, `remaining`, `locked`), `payments[]` grouped by attempt | `visits:read` |
 | POST | `/api/visits/:id/close` | close (409 if payment in flight) | `visits:close` |
 | GET | `/api/public/qr/:token` | resolve table QR → table + visit session | public, rate-limited |
-| POST | `/api/public/visits/:id/call-staff` | customer bell | visit session |
 
 ### Orders
 | Method | Path | Purpose | Permission |
@@ -160,7 +167,6 @@ Seat-only sessions live 2 h (sliding); once bound to a visit they live as long a
 | POST | `/api/tickets/:id/flag-issue` | `{ reason: out_of_stock \| equipment \| other, itemId?, note? }` from `pending`, `accepted`, or `ready` → `issue`. `other` requires `note`. `itemId` must be an active line of this ticket. Emits `ticket.status_changed`. | `orders:update_status` |
 | POST | `/api/tickets/:id/resolve` | `{ resolution: substitute \| escalate, note? }`. `escalate` keeps `issue` and emits `ticket.issue_escalated` once. `substitute` returns to `accepted` and clears the issue. | `orders:update_status` |
 | POST | `/api/order-items/:id/cancel` | cancel item (stays visible, struck through) — BRIEF-018 | `orders:void` |
-| POST | `/api/public/visits/:id/orders` | customer QR order | visit session |
 
 ### Payments
 | Method | Path | Purpose | Permission |
