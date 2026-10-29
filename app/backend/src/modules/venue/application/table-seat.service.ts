@@ -8,6 +8,11 @@ import {
   type TableSeatRepository,
 } from '../domain/table-seat.repository.js';
 import type { SeatWithLiveVisit } from '../domain/table-seat.types.js';
+import {
+  VISIT_REPOSITORY,
+  type VisitRepository,
+} from '../domain/visit.repository.js';
+import type { SeatIdentity } from '../domain/table-seat.types.js';
 import { newQrToken } from './qr-token.js';
 import { money } from '../../../common/money.js';
 import { toTableSummary } from './table-summary.js';
@@ -18,6 +23,7 @@ export class TableSeatService {
   public constructor(
     @Inject(TABLE_SEAT_REPOSITORY)
     private readonly tableSeatRepository: TableSeatRepository,
+    @Inject(VISIT_REPOSITORY) private readonly visitRepository: VisitRepository,
     private readonly orders: OrderQueryService,
     private readonly bills: BillService,
   ) {}
@@ -28,6 +34,16 @@ export class TableSeatService {
     const bills = await this.orders.billsFor(ids);
     const pending = await this.bills.pendingVisitIds(ids);
     return active.map((seat) => this.applyBill(toTableSummary(seat), bills, pending));
+  }
+
+  /** Customer QR scan (BRIEF-047): an inactive seat or an unknown token is simply not found. */
+  public async findActiveSeatByQrToken(
+    qrToken: string,
+  ): Promise<{ seat: SeatIdentity; liveVisitId: string | null } | null> {
+    const seat = await this.tableSeatRepository.findActiveByQrToken(qrToken);
+    if (!seat) return null;
+    const live = await this.visitRepository.findLiveBySeat(seat.id);
+    return { seat, liveVisitId: live?.id ?? null };
   }
 
   public async regenerateQr(id: string): Promise<string> {

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ClsUserInterceptor } from './common/interceptors/cls-user.interceptor.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { CustomerModule } from './modules/customer/customer.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { MenuModule } from './modules/menu/menu.module.js';
 import { OrderModule } from './modules/order/order.module.js';
@@ -33,6 +34,7 @@ import { RedisModule } from './providers/redis/redis.module.js';
     OrderModule,
     PaymentModule,
     ReportsModule,
+    CustomerModule,
     HealthModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: ClsUserInterceptor }],
