@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-046-dev-ports` (PR opens after audit PASS) |
 | **Commit** | Work SHA `5d1ee70` (seed `3c85699`) |
-| **Status** | Implemented — awaiting audit (run proof recorded 2026-10-29, no code change) |
+| **Status** | Audit PASS (Re-audit, S `5d1ee70`) — PR opened at the PASS commit; merged PR determines Done |
 
 > Created at `Implemented`. Updated once in the PASS commit. Frozen at merge.
 
@@ -48,7 +48,7 @@ UI exercised: `/login` → LINE login → `/pos/tables` on :3010 with the API on
 - None. Brief says "`configuration.spec.ts` if it asserts the default" — it did not, so a default-port test was added to meet AC-1.
 
 ## Known Gaps / Follow-ups
-- `.claude/launch.json` still launches the frontend on `--port 3000` (not in the brief's file list; protected-adjacent tooling) — Cowork/Field to decide.
+- `.claude/launch.json` is untracked (local file); updated on this machine to port 3010, not committed.
 - Backend e2e / `set-auth-env.ts` / `ci.yml` keep 3000 / 3001 literals by design (self-contained).
 - LINE console already accepted the 3011 callback (login completed). Env gap (names only): `app/backend/.env` lacks `EASYSLIP_BASE_URL`, `app/frontend/.env.local` lacks `NEXT_PUBLIC_API_MOCKING` (both optional defaults).
 - Dev servers for the run proof are left running on :3010 / :3011.
@@ -58,7 +58,7 @@ UI exercised: `/login` → LINE login → `/pos/tables` on :3010 with the API on
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-046`
+- Audit: CHANGES REQUIRED (evidence only) → PASS after the LINE run proof; next: merge on green `ci`
 - Work SHA: `5d1ee70` · self-check: brief §2 file list ↔ `git diff main...` (12 files, all listed); `grep` shows no remaining 3000/3001 in the changed files.
 
 ## Notes for Reviewer
