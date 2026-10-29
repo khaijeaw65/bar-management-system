@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-047-customer-qr-session` (PR opens after audit PASS) |
 | **Commit** | Work SHA `70ee421` (seed `7c747d9`) |
-| **Status** | Implemented — waiting for audit (Cowork) |
+| **Status** | Audit PASS (Cowork, S `70ee421`) — PR opened at the PASS commit; merged PR determines Done |
 
 > Created at `Implemented`. Updated once in the PASS commit. Frozen at merge.
 
@@ -34,7 +34,7 @@ A guest scans a table QR and gets an HttpOnly `guest_session` cookie (opaque tok
 | AC-7 | ✅ | contracts strict parse; e2e `lists the customer menu without hidden, charge or POS-only data` |
 | AC-8 | ✅ | e2e `purges expired seat-only rows on a scan…` |
 | AC-9 | ✅ | unit `customer-throttle.spec.ts` (failing Redis); e2e `keeps scanning when Redis fails` |
-| AC-10 | ⚠️ | Gates + run proof below; OpenAPI + README done; **`docs/schema.sql` / ERD note not edited** (see Deviations) |
+| AC-10 | ✅ | Gates + run proof below; OpenAPI + README done; `docs/schema.sql` `guest_session` block added at PASS (Field-approved edit, audit Finding 1); `docs/erd.html` goes with BRIEF-048's schema change |
 
 ## Gate Evidence (G1)
 Run on work SHA `70ee421` (e2e on `bar_test`).
@@ -67,7 +67,7 @@ UI change: n/a.
 - none
 
 ## Deviations from Brief
-- **`docs/schema.sql` + ERD note not updated.** Scope says "Update `docs/schema.sql` + ERD note" but §8 Unlocked Protected Files is `none`, and schema.sql is brief-unlockable only by exact path. The migration is the source of truth for now. Needs a Field-approved edit by Cowork (`Approved-by: Field (session)`) or a Rev 2 unlock — Field to choose.
+- **`docs/schema.sql`** was not edited at Implemented (§8 unlocks nothing). Resolved: Field approved Cowork's edit in session; committed in the PASS commit with `Approved-by: Field (session)`. ERD page → BRIEF-048.
 - **Scan is its own controller** (`CustomerScanController`) beside the brief's `CustomerSessionController` / `CustomerMenuController`, so the §6 rule "guard on the class, never per method" holds for the other two.
 - **Contracts:** `UpdateCustomerSessionSchema` trims and caps at 30 but does not turn `''` into `null` — a Zod transform cannot be converted to OpenAPI (`zodToOpenApi` throws), so the controller applies `blankToNull`. Wire behaviour matches AC-6.
 - **Throttle** is `SET key 0 EX n NX` + `INCR` in one MULTI (a counter), not a bare `SET NX EX` (which only gives 1 hit per window).
@@ -89,4 +89,4 @@ UI change: n/a.
 
 ## Notes for Reviewer
 - Start with `guest-session.service.ts` (start / resolve), then `guest-session.guard.ts`, the migration, and `customer-session.e2e-spec.ts`.
-- Confirm the schema.sql deviation: add it via a Field-approved edit or unlock it in Rev 2.
+- Audit suggestions 2–4 (visit-bound `expiresAt`, unavailable variants, slide write rate) are notes for BRIEF-049 / later; not in this PR.
