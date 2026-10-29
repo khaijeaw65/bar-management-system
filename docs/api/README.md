@@ -60,7 +60,7 @@ Query params, camelCase: `GET /api/orders?status=pending,accepted&visitId=…`. 
 |---|---|---|
 | Staff web (POS) | HttpOnly `access_token` cookie + refresh cookie | BRIEF-007 |
 | Staff app (Expo) | `Authorization: Bearer <access>` | DR-005 (one-time code + PKCE) |
-| Customer (QR) | signed table QR token → short-lived visit session | designed in the customer-QR brief |
+| Customer (QR) | HttpOnly cookie `guest_session` (opaque token, `Path=/api/customer`) — no login; never accepts the staff token | DR-028, BRIEF-047 |
 | Payment gateway | webhook signature | `/api/webhooks/payments/:provider`, exempt from envelope |
 Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_paid`) via `@RequirePermissions` + `PermissionsGuard`. Each endpoint's permission is listed in its OpenAPI description.
 
@@ -128,6 +128,16 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | GET | `/api/public/menu` | customer QR menu (available only) | visit session |
 
 **Photo storage env (DR-020):** `AWS_REGION` and `S3_BUCKET` are required to boot; `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` are for local dev only — leave them unset on ECS (task role). The `tmp/` prefix needs a 1-day lifecycle rule (abandoned uploads); the bucket CORS must allow `POST` from the web origin. The key / task role needs `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject` on `<bucket>/*` and `s3:ListBucket` on the bucket (without `ListBucket` S3 answers 403, not 404, for a missing object, and attaching a photo fails with 500). Values are never logged.
+
+### Customer (guest QR — DR-028, BRIEF-047)
+Prefix `/api/customer`. Auth = cookie `guest_session`, set by the scan; staff tokens are not accepted here and the guest cookie is not accepted on staff routes. Errors: `401 GUEST_SESSION_INVALID` (missing, expired, seat inactive or visit closed), `404 QR_INVALID`, `429 RATE_LIMITED` (scan: 30 / min / IP).
+| Method | Path | Auth | Purpose | Brief |
+|---|---|---|---|---|
+| POST | `/api/customer/sessions` | none (throttled) | `{ qrToken }` → `CustomerSession` + `Set-Cookie`; 201 created / 200 cookie already on this seat. POST so link previews never create sessions | BRIEF-047 |
+| GET | `/api/customer/session` | cookie | current session (seat, visit, nickname, expiry) — restores a reload | BRIEF-047 |
+| PATCH | `/api/customer/session` | cookie | `{ displayName: string or null }` — trimmed, ≤ 30, empty → null | BRIEF-047 |
+| GET | `/api/customer/menu` | cookie | `{ categories, items }` — active categories, no charge items, sold-out / out-of-window greyed (`availableNow`) | BRIEF-047 |
+Seat-only sessions live 2 h (sliding); once bound to a visit they live as long as the visit. Order, running tab and call-staff: BRIEF-048.
 
 ### Tables & visits
 | Method | Path | Purpose | Permission |

@@ -24,6 +24,7 @@ export function staffSession(
 }
 
 export async function clearStaffAndVenue(dataSource: DataSource): Promise<void> {
+  await dataSource.query('DELETE FROM guest_session');
   await dataSource.query('DELETE FROM payment_charge_item');
   await dataSource.query('DELETE FROM payment_order');
   await dataSource.query('DELETE FROM payment');

@@ -4,6 +4,7 @@ export interface TableSeatRepository {
   listActive(): Promise<SeatWithLiveVisit[]>;
   findById(id: string): Promise<SeatIdentity | null>;
   findActiveById(id: string): Promise<SeatIdentity | null>;
+  findActiveByQrToken(qrToken: string): Promise<SeatIdentity | null>;
   replaceQrToken(id: string, qrToken: string): Promise<void>;
 }
 
