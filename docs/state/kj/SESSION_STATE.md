@@ -1,12 +1,12 @@
 # State — KJ
-Updated: 2026-10-29 · Agent: Cowork (BRIEF-047 Ready seed)
+Updated: 2026-10-29 · Agent: Claude Code (BRIEF-047 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-047 Ready** (customer QR session + menu, C1; DR-028 Approved A) on `feat/BRIEF-047-customer-qr-session` → next `execute BRIEF-047`. 046 Done (#95), docs ports/CD-03 (#96).
+**BRIEF-047 Implemented** (work SHA `70ee421`, branch pushed, no PR) → next `audit BRIEF-047` (Cowork). Open for Field/Cowork: `docs/schema.sql` + ERD `guest_session` (brief scope lists it, no unlock). 046 Done (#95).
 
 ## Active
-- Brief: BRIEF-047 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-047-customer-qr-session` (seeded, not pushed)
+- Brief: BRIEF-047 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-047-customer-qr-session` (pushed, PR after audit PASS)
 - Done 21–29 Oct: BRIEF-046 (#95) · BRIEF-025 (#94) · BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
