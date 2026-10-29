@@ -8,7 +8,7 @@
 | **Branch** | `feat/BRIEF-025-promptpay-slip-verify` (seed `82244be`, merged `origin/main` at `3725ee1`) |
 | **Commit** | Work SHA `4ff0644` (Sonar fixes; `259b81f` scanner, API `dc5da44`, POS `29c5c48`, receiver + static wasm `4ffa344`, scanner `259b81f`) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — full run proof recorded below on `259b81f` (identical `app/`); `4ff0644` only drops `.finite()` and switches to `fromCodePoint`/`codePointAt`; awaiting Cowork's compact re-check → PASS. No PR until PASS |
+| **Status** | Implemented — full run proof recorded below on `259b81f` (identical `app/`); `4ff0644` only drops `.finite()` and switches to `fromCodePoint`/`codePointAt`; **audit PASS** (Re-audit 4, S `4ff0644`); PR opened at the PASS commit |
 
 ## Summary
 - **`POST /api/payments/:id/verify-slip`** (`payments:create`). Body is exactly one of `{ payload }` (1–128) or `{ image }` (base64 JPEG/PNG, decoded ≤ 1 MB). Pending own-PromptPay only. EasySlip v2 `POST /verify/bank` runs **outside** any DB transaction (`fetch`, no new backend package). Then one transaction locks the payment `FOR UPDATE`, checks receiver and amount, and `save()`s `completed` / `confirmed_via = slip_verify` / `slip_trans_ref` / `slip_amount` / `paid_at`. Expiry job removed; `payment.status_changed` uses the existing payload.
@@ -112,5 +112,6 @@ Leftover local data: payment `de25f1a9…` is still `pending` (฿10); the two e
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-025`
-- Work SHA: `259b81f` · self-check: brief Rev 2 ↔ DR-026 / DR-027 B ↔ `1762800000000-AuditRejectAction.ts` ↔ `schema.sql` `audit_action` ↔ contracts `payments.ts` / `errors.ts` / `enums.ts` ↔ EasySlip adapter (null → `not_matched`) ↔ POS `SlipScanner` / `useSlipScanner` ↔ static wasm copy ↔ no new backend dependency
+- Audit: **PASS** — `docs/audits/BRIEF-025.md` (Re-audit 4, S `4ff0644`)
+- Next: merge on green `ci` (Field's own PR, workflow §7); Cowork updates CD-03 handoff §9 after merge
+- Work SHA: `4ff0644` · self-check: brief Rev 2 ↔ DR-026 / DR-027 B ↔ `1762800000000-AuditRejectAction.ts` ↔ `schema.sql` `audit_action` ↔ contracts `payments.ts` / `errors.ts` / `enums.ts` ↔ EasySlip adapter (null → `not_matched`) ↔ POS `SlipScanner` / `useSlipScanner` ↔ static wasm copy ↔ no new backend dependency

@@ -3,10 +3,10 @@ Updated: 2026-10-29 · Agent: Claude Code (BRIEF-025 run proof recorded)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-025 **Implemented** Rev 2, full run proof recorded in the handoff (MacBook webcam; Android / iPad not tested). Sonar fixes on top (audit #13/#14). Next: Cowork compact re-check → PASS → `execute BRIEF-025` (PASS commit + PR).
+BRIEF-025 **Implemented** Rev 2, full run proof recorded in the handoff (MacBook webcam; Android / iPad not tested). Audit **PASS** (S `4ff0644`). PR open; merge on green `ci`, then close in the next seed.
 
 ## Active
-- Brief: BRIEF-025 Rev 2 · Stage: Implemented, awaiting re-check · Branch: `feat/BRIEF-025-promptpay-slip-verify` · Auditor: Cowork · no PR · Sonar: gate ERROR (19 new, all pre-existing)
+- Brief: BRIEF-025 Rev 2 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-025-promptpay-slip-verify` · Auditor: Cowork · Sonar: gate ERROR (19 new, all pre-existing)
 - Done 21–23 Oct: BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
