@@ -5,9 +5,9 @@
   "scripts": {
     "predev": "node scripts/copy-zxing-wasm.mjs",
     "prebuild": "node scripts/copy-zxing-wasm.mjs",
-    "dev": "next dev",
+    "dev": "next dev -p 3010",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3010",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",

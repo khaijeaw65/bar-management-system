@@ -11,7 +11,7 @@ declare module "axios" {
   }
 }
 
-const baseURL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api").replace(/\/$/, "");
+const baseURL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3011/api").replace(/\/$/, "");
 
 const http = axios.create({
   baseURL,

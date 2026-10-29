@@ -10,7 +10,7 @@ const AppEnvSchema = z.object({
 function parseAppEnv(source: Record<string, unknown>) {
   const result = AppEnvSchema.safeParse({
     NODE_ENV: source.NODE_ENV,
-    PORT: source.PORT === undefined || source.PORT === '' ? 3001 : source.PORT,
+    PORT: source.PORT === undefined || source.PORT === '' ? 3011 : source.PORT,
     FRONTEND_URL: source.FRONTEND_URL,
   });
   if (!result.success) {

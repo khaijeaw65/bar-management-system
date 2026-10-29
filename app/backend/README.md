@@ -9,7 +9,7 @@ pnpm --filter @bar/backend migration:run
 pnpm --filter @bar/backend start:dev
 ```
 
-Health: `GET http://localhost:3001/api/health`
+Health: `GET http://localhost:3011/api/health`
 
 Migration scripts compile with `nest build`, then the TypeORM CLI loads `dist/providers/database/data-source.js` (`node --env-file=.env`). That file is the ESM data source; Node cannot resolve the `.js` imports in the `.ts` source without an extra loader, so the CLI runs the compiled output.
 
@@ -38,7 +38,7 @@ Running it again for the same LINE user id prints `already registered`.
 A phone on another network, LINE's login redirect, and later the payment webhook all reach this API through one stable HTTPS URL. Nothing in Compose or `package.json` starts the tunnel.
 
 1. Create a free ngrok account and one static domain. The domain stays the same across restarts, so LINE and the phone do not need a new URL each time.
-2. Start the API on port 3001, then run `ngrok http --url=<static-domain> 3001`.
+2. Start the API on port 3011, then run `ngrok http --url=<static-domain> 3011`.
 3. Set `LINE_CALLBACK_URL=https://<static-domain>/api/auth/line/callback` in `.env`. Add that same URL in the LINE Developers console → LINE Login channel → Callback URL. Keep the localhost callback for web login on this machine.
 4. The Expo app (BRIEF-022) uses `EXPO_PUBLIC_API_URL=https://<static-domain>/api`.
 5. The payment webhook (BRIEF-013) will use `https://<static-domain>/api/...` on this same tunnel. Nothing else is set up here.

@@ -12,4 +12,12 @@ describe('appConfiguration', () => {
 
     expect(() => appConfiguration()).toThrow(/FRONTEND_URL/);
   });
+
+  it('defaults PORT to 3011 when it is not set', () => {
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('PORT', '');
+    vi.stubEnv('FRONTEND_URL', 'http://localhost:3010');
+
+    expect(appConfiguration().port).toBe(3011);
+  });
 });

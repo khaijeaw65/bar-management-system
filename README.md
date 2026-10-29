@@ -63,18 +63,19 @@ docker compose -f infra/docker-compose.yml up -d
 cp app/backend/.env.example app/backend/.env     # fill LINE_* values
 pnpm --filter @bar/backend migration:run
 pnpm --filter @bar/backend seed:staff -- --line-user-id <LINE sub> --name "<name>"
-pnpm --filter @bar/backend start:dev             # http://localhost:3001/api
+pnpm --filter @bar/backend start:dev             # http://localhost:3011/api
 
 # Frontend
 cp app/frontend/.env.example app/frontend/.env.local
-pnpm --filter @bar/frontend dev                  # http://localhost:3000
+pnpm --filter @bar/frontend dev                  # http://localhost:3010
 
 # Mobile (dev build)
 pnpm --filter @bar/mobile start
 ```
 
-- Health check: `GET http://localhost:3001/api/health`
-- OpenAPI UI (local): `http://localhost:3001/api/docs`
+- Ports: web **3010** · API **3011** · Playwright MSW e2e **3100** · reserved for a future real-API e2e **3110 / 3111**. An older `.env` / `.env.local` keeps 3001 / 3000 until you copy the new `.env.example` values.
+- Health check: `GET http://localhost:3011/api/health`
+- OpenAPI UI (local): `http://localhost:3011/api/docs`
 - Phone / LINE callback / webhooks over a tunnel (ngrok): see [`app/backend/README.md`](app/backend/README.md#phone--webhooks-via-tunnel)
 
 ---
