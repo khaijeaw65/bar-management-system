@@ -32,7 +32,7 @@ test("a stale save shows the conflict and loads the latest copy", async ({ page 
 
   // Someone else saves first (same in-page mock server).
   await page.evaluate(async () => {
-    const base = "http://localhost:3001/api/menu/items/11111111-1111-4111-8111-111111111111";
+    const base = "http://localhost:3011/api/menu/items/11111111-1111-4111-8111-111111111111";
     const current = (await (await fetch(base)).json()).data;
     await fetch(base, {
       method: "PATCH",

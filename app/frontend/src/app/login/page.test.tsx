@@ -24,7 +24,7 @@ test("LINE button shows the pending label and leaves for the API login", async (
   await userEvent.click(screen.getByRole("button", { name: "เข้าสู่ระบบด้วย LINE" }));
   expect(screen.getByRole("button", { name: "กำลังเปลี่ยนเส้นทาง..." })).toBeDisabled();
   await vi.waitFor(() =>
-    expect(assign).toHaveBeenCalledWith("http://localhost:3001/api/auth/line/login"),
+    expect(assign).toHaveBeenCalledWith("http://localhost:3011/api/auth/line/login"),
   );
 });
 

@@ -11,7 +11,7 @@ let authTried = false;
 const statusListeners = new Set<StatusListener>();
 
 function staffSocketUrl(): string {
-  const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+  const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3011/api";
   return `${new URL(api).origin}/staff`;
 }
 
