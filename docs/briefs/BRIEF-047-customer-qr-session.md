@@ -38,7 +38,7 @@ A guest scans a table QR and gets a guest session on that phone (HttpOnly cookie
   - `GuestSessionGuard`: reads cookie `guest_session` → SHA-256 → lookup joined with seat + visit → attaches `request.guestSession`. Rejects (401 `GUEST_SESSION_INVALID`) when missing, unknown, expired (seat-only), seat inactive, or bound visit not live. Seat-only session that passes → `expires_at = now() + 2 h` (sliding, DR-028).
   - Controllers: `CustomerSessionController`, `CustomerMenuController` — all routes `@Public()` (skip the staff `JwtAuthGuard`) **and** `@UseGuards(GuestSessionGuard)` except the scan.
   - `CustomerThrottle` helper on the existing `RedisService`: `SET key NX EX`; Redis error → allow + `warn` log (fail open, DR-028).
-- **Scan:** `GET /customer/qr/:qrToken`
+- **Scan (start session):** `POST /customer/sessions` `{ qrToken }` — POST because it creates a row and sets a cookie (link previews / prefetch / retries must not create sessions). The printed QR is a web page URL (`/t/:qrToken`, C3); the page calls this.
   1. Per-IP throttle 30 / min → 429 `RATE_LIMITED`.
   2. Seat by `qr_token` (active only) → none → 404 `QR_INVALID` (CD-06 welcome·4).
   3. Cookie present and resolves to a session on **this seat** → reuse it (no new row). Otherwise: new token (32 random bytes, base64url) → insert row `{ token_hash, table_seat_id, visit_id: live visit on the seat or NULL, expires_at: now + 2 h }` → `Set-Cookie`.
@@ -48,7 +48,7 @@ A guest scans a table QR and gets a guest session on that phone (HttpOnly cookie
 - **Session:** `GET /customer/session` → `CustomerSession` · `PATCH /customer/session` `{ displayName: string | null }` (trimmed, 1–30 chars, empty → null) → `CustomerSession` (CD-06 R3: welcome + cart "เปลี่ยนชื่อ").
 - **Menu:** `GET /customer/menu` → `{ categories, items }` from `MenuCatalogService` (active categories only, `itemType = 'charge'` excluded — CD-06 §9, promo items included with windows, sold-out/out-of-window included with `availableNow=false` + reason — greyed, not hidden, FRD §9).
 - **Venue lookup:** `VenueModule` exports a read method `findActiveSeatByQrToken(qrToken)` (+ live visit id) used by `CustomerModule`.
-- **Contracts:** `schemas/customer.ts` — `CustomerSessionSchema { seat: { id, label, kind }, visitId: uuid|null, displayName: string|null, expiresAt }` · `UpdateCustomerSessionSchema` · `CustomerMenuItemSchema` (id, categoryId, name, description, imageUrl, isPromo, basePrice, availableNow, unavailableReason, windows, variants: { id, name, price, isAvailable, modifierGroups }) · `CustomerMenuCategorySchema` (id, name, sortOrder) · `CustomerMenuSchema` · response wrappers · error codes `QR_INVALID`, `GUEST_SESSION_INVALID` in `ErrorCodeSchema`.
+- **Contracts:** `schemas/customer.ts` — `CustomerSessionSchema { seat: { id, label, kind }, visitId: uuid|null, displayName: string|null, expiresAt }` · `StartCustomerSessionSchema { qrToken: string 1–64 }` · `UpdateCustomerSessionSchema` · `CustomerMenuItemSchema` (id, categoryId, name, description, imageUrl, isPromo, basePrice, availableNow, unavailableReason, windows, variants: { id, name, price, isAvailable, modifierGroups }) · `CustomerMenuCategorySchema` (id, name, sortOrder) · `CustomerMenuSchema` · response wrappers · error codes `QR_INVALID`, `GUEST_SESSION_INVALID` in `ErrorCodeSchema`.
 - OpenAPI for every route (cookie auth described) · `docs/api/README.md`: Customer section + auth row "Customer QR → cookie `guest_session` (DR-028)".
 
 ### Out (do NOT build here)
@@ -57,7 +57,7 @@ A guest scans a table QR and gets a guest session on that phone (HttpOnly cookie
 ## 3. Contract
 | Method | Path | Auth | Request → Response |
 |---|---|---|---|
-| GET | `/customer/qr/:qrToken` | none (throttled per IP) | → `CustomerSession` + `Set-Cookie guest_session` |
+| POST | `/customer/sessions` | none (throttled per IP) | `StartCustomerSession { qrToken }` → `CustomerSession` + `Set-Cookie guest_session` (200 when reused, 201 when created) |
 | GET | `/customer/session` | `guest_session` cookie | → `CustomerSession` |
 | PATCH | `/customer/session` | `guest_session` cookie | `UpdateCustomerSession` → `CustomerSession` |
 | GET | `/customer/menu` | `guest_session` cookie | → `CustomerMenu` |
@@ -67,9 +67,9 @@ A guest scans a table QR and gets a guest session on that phone (HttpOnly cookie
 - **Business rules:** session life 2 h sliding while seat-only, then the visit's life (DR-028) · second phone on an open visit gets its own session on the same visit (FRD §3) · charge items never on the customer menu (CD-06 §9) · promo price shown as-is, no "was" price (DR-014 #10) · only the token hash is stored.
 
 ## 4. Acceptance Criteria
-- **AC-1** — Active seat, no visit: scan → 200 `CustomerSession` with `visitId: null`, `Set-Cookie` with HttpOnly / SameSite=Lax / Path=/api/customer; DB has one row with a 64-char hash and **no raw token** anywhere in the row.
-- **AC-2** — Seat with a live visit: scan from phone A and phone B → two sessions, both `visitId` = that visit. Phone A rescans with its cookie → same session id, no new row.
-- **AC-3** — Unknown or inactive-seat `qrToken` → 404 `QR_INVALID`; 31st scan in a minute from one IP → 429 `RATE_LIMITED`.
+- **AC-1** — Active seat, no visit: `POST /customer/sessions` → 201 `CustomerSession` with `visitId: null`, `Set-Cookie` with HttpOnly / SameSite=Lax / Path=/api/customer; DB has one row with a 64-char hash and **no raw token** anywhere in the row.
+- **AC-2** — Seat with a live visit: scan from phone A and phone B → two sessions, both `visitId` = that visit. Phone A rescans with its cookie → 200, same session id, no new row. `GET` on `/customer/sessions` → 404/405 (no GET creates a session).
+- **AC-3** — Missing `qrToken` → 400; unknown or inactive-seat `qrToken` → 404 `QR_INVALID`; 31st scan in a minute from one IP → 429 `RATE_LIMITED`.
 - **AC-4** — Guard: no cookie / garbage cookie / expired seat-only session / session on a closed visit / seat deactivated → 401 `GUEST_SESSION_INVALID`. A staff access-token cookie or `Bearer` on `/customer/*` does not authenticate; the `guest_session` cookie on a staff route (`GET /menu/items`) → 401 (staff auth unchanged).
 - **AC-5** — Sliding expiry: seat-only session used at t + 1h50 → `expiresAt` moves to t + 3h50 (fake clock).
 - **AC-6** — `PATCH /customer/session` `"  ต้น  "` → `"ต้น"`; `""` → `null`; 31 chars → 400.
@@ -98,7 +98,7 @@ docker compose -f infra/docker-compose.yml up -d postgres redis
 pnpm --filter @bar/backend migration:run
 pnpm --filter @bar/backend start:dev   # :3011
 QR=$(psql … -tAc "select qr_token from table_seat where label='T3'")
-curl -si -c jar localhost:3011/api/customer/qr/$QR | head -20      # Set-Cookie guest_session
+curl -si -c jar -X POST -H 'content-type: application/json' -d "{\"qrToken\":\"$QR\"}" localhost:3011/api/customer/sessions | head -20   # 201 + Set-Cookie
 curl -s -b jar -X PATCH -H 'content-type: application/json' -d '{"displayName":"ต้น"}' localhost:3011/api/customer/session
 curl -s -b jar localhost:3011/api/customer/menu | head -c 600
 curl -si localhost:3011/api/customer/menu | head -1                # 401
@@ -117,7 +117,7 @@ Output trimmed in the handoff. UI change: n/a.
 - Thai messages: `QR_INVALID` "QR ไม่ถูกต้อง กรุณาติดต่อพนักงาน" · `GUEST_SESSION_INVALID` "เซสชันหมดอายุ กรุณาสแกน QR ที่โต๊ะอีกครั้ง" · `RATE_LIMITED` existing.
 
 ## 7. Decision Points (Field Guard)
-- **Pre-decided (exact):** DR-028 A (all locks) · prefix `/customer`, cookie path `/api/customer` · new module `app/backend/src/modules/customer/` · imports `VenueModule`, `MenuModule` · new table `guest_session` (columns above) · no new dependency (`node:crypto`, existing `RedisService`, `cookie-parser` already used by auth) · lazy purge on scan · throttle 30 scans / min / IP.
+- **Pre-decided (exact):** DR-028 A (all locks) · prefix `/customer`, cookie path `/api/customer`, session start = `POST /customer/sessions` · new module `app/backend/src/modules/customer/` · imports `VenueModule`, `MenuModule` · new table `guest_session` (columns above) · no new dependency (`node:crypto`, existing `RedisService`, `cookie-parser` already used by auth) · lazy purge on scan · throttle 30 scans / min / IP.
 - **Behind a proxy (note, not a DR):** IP for the throttle = `req.ip`; Express `trust proxy` is set when the AWS/Cloudflare front is built (before AWS, Carry over). Locally `req.ip` is the client.
 - **Likely DRs:** none. If `MenuCatalogService` can't produce the customer view without a new repository query → allowed inside `modules/menu` (read-only); a schema change beyond `guest_session` → stop, raise a DR.
 
@@ -137,3 +137,4 @@ Output trimmed in the handoff. UI change: n/a.
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-29 | Initial Draft (Cowork) — customer side C1; DR-028 Approved A (+ `/customer` prefix amend) |
+| 1 | 2026-10-29 | Draft edit (Field in session): scan `GET /customer/qr/:qrToken` → `POST /customer/sessions { qrToken }` |

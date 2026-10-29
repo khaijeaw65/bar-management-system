@@ -28,7 +28,7 @@ The customer QR web (CD-06/07) has no login: the guest scans the table QR and or
 ## Options
 
 **A) Opaque token, `guest_session` row in Postgres, Redis for throttles only** *(recommended — selected)*
-1. Scan → `GET /customer/qr/:qrToken` → seat active? → insert `guest_session {token_hash, table_seat_id, visit_id = current open visit or NULL, expires_at = now + 2 h}` → `Set-Cookie guest_session` (HttpOnly, Secure, SameSite=Lax, path `/api/customer`).
+1. Scan → page `/t/:qrToken` → `POST /customer/sessions { qrToken }` → seat active? → insert `guest_session {token_hash, table_seat_id, visit_id = current open visit or NULL, expires_at = now + 2 h}` → `Set-Cookie guest_session` (HttpOnly, Secure, SameSite=Lax, path `/api/customer`).
 2. Every `/customer` request → `GuestSessionGuard`: hash cookie → PK lookup joined with visit → reject if expired, seat inactive, or bound visit closed. Seat-only sessions slide `expires_at` (+2 h).
 3. First order → **one DB transaction:** lock seat → attach to open visit or open one (`opened_via = 'qr'`, first-write-wins with the POS, BRIEF-011) → set `guest_session.visit_id` → insert order with `guest_session_id` + `ordered_by_name` snapshot. Idempotency-Key as BRIEF-012.
 4. Staff close the visit → every session bound to it fails step 2 at once (no revoke list, no TTL wait).
@@ -46,12 +46,12 @@ The customer QR web (CD-06/07) has no login: the guest scans the table QR and or
 **A.** One source of truth, instant cut-off on close, a stable id for "ของฉัน", and a PK lookup is trivial at bar scale (20–50 guests). Redis holds only data that is fine to lose (throttles). The guest-session repository hides storage, so B stays possible later without touching controllers/services.
 
 ## Abuse guard (S1)
-- Redis `SET NX EX`, no new dependency: order ≤ 1 per 10 s per session · call-staff 60 s lock per session (CD-06) · `GET /customer/qr/:qrToken` ≤ 30 / min per IP. Over limit → `429 RATE_LIMITED` (DR-021 shape).
+- Redis `SET NX EX`, no new dependency: order ≤ 1 per 10 s per session · call-staff 60 s lock per session (CD-06) · `POST /customer/sessions` ≤ 30 / min per IP. Over limit → `429 RATE_LIMITED` (DR-021 shape).
 - New QR orders already reach the POS live (sound/badge = C6); staff cancel a fake order (cancel flow, BRIEF-017).
 - Optional "staff must open the table first" venue setting: **not in S1**.
 
 ## QR regenerate (effect only — button in the tables/QR admin brief)
-- Old `qr_token` → `GET /customer/qr/:old` → 404 → CD-06 welcome·4 "QR ไม่ถูกต้อง".
+- Old `qr_token` → `POST /customer/sessions` → 404 `QR_INVALID` → CD-06 welcome·4 "QR ไม่ถูกต้อง".
 - Seat-only sessions on that seat are deleted; sessions bound to an open visit live until staff close it.
 - Seat deactivated → its sessions fail the guard (CD-13 R5: a seat with guests can't be deactivated).
 
@@ -69,5 +69,5 @@ The customer QR web (CD-06/07) has no login: the guest scans the table QR and or
 ## Decision — Field only
 **Decision:** Approved: A (opaque token, `guest_session` row in Postgres, Redis for throttles only)
 **Why:** One source of truth, instant cut-off on visit close, stable per-phone id for "ของฉัน"; Redis only for data that is fine to lose.
-**Amended 2026-10-29 (Field, BRIEF-047 interview):** route prefix `/customer` (was `/public`, CD-06 action table) — matches DR-009 surface name and the WS `/customer` room; cookie path `/api/customer`. Code lives in a new `CustomerModule` (BRIEF-047).
+**Amended 2026-10-29 (Field, BRIEF-047 interview):** route prefix `/customer` (was `/public`, CD-06 action table) — matches DR-009 surface name and the WS `/customer` room; cookie path `/api/customer`. Code lives in a new `CustomerModule` (BRIEF-047). Session start is `POST /customer/sessions { qrToken }` (not a GET — it creates a row and sets a cookie; link previews / prefetch must not create sessions).
 **Date:** 2026-10-29 · recorded by Cowork on Field's explicit instruction (session: "approve DR-028 A")
