@@ -1,4 +1,5 @@
 import type { Bill, ManualConfirmReason, PaymentMethod } from '@bar/contracts';
+import type { SlipCheck } from '../domain/ports/slip-verifier.port.js';
 
 export interface CreatePaymentInput {
   visitId: string;
@@ -10,6 +11,11 @@ export interface MarkPaidInput {
   via: 'manual' | 'cash';
   reason: ManualConfirmReason | null;
   note: string | null;
+}
+
+export interface VerifySlipInput {
+  paymentId: string;
+  slip: SlipCheck;
 }
 
 export interface BillSnapshot {

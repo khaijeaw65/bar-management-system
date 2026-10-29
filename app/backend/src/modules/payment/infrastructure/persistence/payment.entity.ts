@@ -44,6 +44,12 @@ export class Payment extends BaseEntity {
   })
   public confirmedVia!: PaymentConfirmedVia | null;
 
+  @Column({ type: COL.VARCHAR, length: 100, nullable: true })
+  public slipTransRef!: string | null;
+
+  @Column({ type: COL.DECIMAL, precision: 12, scale: 2, nullable: true })
+  public slipAmount!: string | null;
+
   @Column({ type: COL.VARCHAR, length: 30, nullable: true })
   public statusReason!: PaymentStatusReason | null;
 

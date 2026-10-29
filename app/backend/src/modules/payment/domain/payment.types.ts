@@ -15,6 +15,8 @@ export interface PaymentRecord {
   method: PaymentMethod;
   status: PaymentStatus;
   confirmedVia: PaymentConfirmedVia | null;
+  slipTransRef: string | null;
+  slipAmount: string | null;
   statusReason: PaymentStatusReason | null;
   statusNote: string | null;
   qrPayload: string | null;

@@ -23,3 +23,7 @@ export function cancelPayment(paymentId: string): Promise<Payment> {
 export function markPaymentPaid(paymentId: string, body: MarkPaid): Promise<Payment> {
   return apiPost(`/payments/${paymentId}/mark-paid`, body, PaymentSchema);
 }
+
+export function verifySlip(paymentId: string, body: { payload: string } | { image: string }): Promise<Payment> {
+  return apiPost(`/payments/${paymentId}/verify-slip`, body, PaymentSchema);
+}

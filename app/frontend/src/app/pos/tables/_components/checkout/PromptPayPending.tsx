@@ -3,8 +3,10 @@
 import { Alert, Button, Chip } from "@heroui/react";
 import type { Payment } from "@bar/contracts";
 import { formatTHB } from "@/lib/utils/format";
+import { useState } from "react";
 import { CheckoutNotice } from "./CheckoutNotice";
 import { PromptPayQr } from "./PromptPayQr";
+import { SlipScanner } from "./SlipScanner";
 import { useQrClock } from "./useQrClock";
 import type { CheckoutFault } from "./useCheckout";
 
@@ -14,6 +16,7 @@ function LiveQr({
   pending,
   fault,
   onCancel,
+  onScan,
   onManual,
 }: Readonly<{
   payment: Payment;
@@ -21,6 +24,7 @@ function LiveQr({
   pending: boolean;
   fault: CheckoutFault;
   onCancel: () => void;
+  onScan: () => void;
   onManual: () => void;
 }>) {
   const { clock, minute } = useQrClock(payment.expiresAt);
@@ -41,6 +45,7 @@ function LiveQr({
         </Alert>
       ) : null}
       <CheckoutNotice fault={fault} />
+      <Button onPress={onScan}>สแกนสลิป</Button>
       <Button variant="ghost" onPress={onManual}>ยืนยันด้วยตนเอง</Button>
       <Button variant="secondary" isPending={pending} onPress={onCancel}>ยกเลิก QR</Button>
     </>
@@ -67,6 +72,7 @@ export function PromptPayPending({
   onCancel,
   onManual,
   onNew,
+  onVerified,
 }: Readonly<{
   payment: Payment;
   socketDown: boolean;
@@ -76,12 +82,28 @@ export function PromptPayPending({
   onCancel: () => void;
   onManual: () => void;
   onNew: () => void;
+  onVerified: (payment: Payment) => void;
 }>) {
+  const [scanning, setScanning] = useState(false);
   return (
     <div className="flex flex-col items-start gap-4">
-      <h2 className="text-heading">PromptPay QR</h2>
-      {expired ? <ExpiredQr payment={payment} pending={pending} onNew={onNew} /> : (
-        <LiveQr payment={payment} socketDown={socketDown} pending={pending} fault={fault} onCancel={onCancel} onManual={onManual} />
+      {scanning && !expired ? (
+        <SlipScanner payment={payment} onVerified={onVerified} onManual={onManual} />
+      ) : (
+        <>
+          <h2 className="text-heading">PromptPay QR</h2>
+          {expired ? <ExpiredQr payment={payment} pending={pending} onNew={onNew} /> : (
+            <LiveQr
+              payment={payment}
+              socketDown={socketDown}
+              pending={pending}
+              fault={fault}
+              onCancel={onCancel}
+              onScan={() => setScanning(true)}
+              onManual={onManual}
+            />
+          )}
+        </>
       )}
     </div>
   );

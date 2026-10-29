@@ -159,7 +159,8 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | GET | `/api/payments/:id` | one payment (poll fallback to `payment.status_changed`) | `payments:read` |
 | POST | `/api/payments/:id/cancel` | pending → cancelled, `statusReason: staff_cancel` | `payments:create` |
 | POST | `/api/payments/:id/mark-paid` | `{ via: manual \| cash, reason?, note? }`. `manual` requires `webhook_missing` \| `direct_transfer` \| `other`; `other` requires `note`. `cash` needs no reason | `payments:mark_paid` |
-| POST | `/api/webhooks/payments/:provider` | gateway confirm — BRIEF-026. Slip scan — BRIEF-025 | signature |
+| POST | `/api/payments/:id/verify-slip` | exactly one of `{ payload }` (1–128) or `{ image }` (base64 JPEG/PNG, ≤ 1 MB decoded). Pending own-PromptPay only → `completed`, `confirmedVia: slip_verify`, `slipAmount`, `slipTransRef`. Short / wrong / reused / unreadable slips stay pending | `payments:create` |
+| POST | `/api/webhooks/payments/:provider` | gateway confirm — BRIEF-026 | signature |
 
 ### Reports (owner dashboard, CD-05 — BRIEF-036)
 `from` / `to` are **business dates** `YYYY-MM-DD` (venue cut-off, Asia/Bangkok — DR-014 #4), inclusive, `from ≤ to`, at most 92 days. A bad query → 400 `VALIDATION_ERROR` (no field paths — DR-021 B; the shared `ReportsPeriodQuerySchema` / `ReportItemsQuerySchema` give them to the UI). No per-person fields (CD-05 D3).

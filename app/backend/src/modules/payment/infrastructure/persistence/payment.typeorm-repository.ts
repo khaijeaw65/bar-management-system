@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
-import type { EntityManager } from 'typeorm';
+import { QueryFailedError, type EntityManager } from 'typeorm';
+import { DomainException } from '../../../../common/domain-exception.js';
 import { readText } from '../../../../common/persistence/row-values.js';
 import type { PaymentRepository } from '../../domain/ports/payment.repository.port.js';
 import type { NewPayment, PaymentRecord } from '../../domain/payment.types.js';
@@ -41,7 +42,12 @@ export class PaymentTypeormRepository implements PaymentRepository {
     const entity = await this.payments.findOneBy({ id: payment.id });
     if (!entity) throw new Error('payment row missing');
     this.apply(entity, payment);
-    return this.toRecord(await this.payments.save(entity));
+    try {
+      return this.toRecord(await this.payments.save(entity));
+    } catch (error) {
+      if (this.reusedSlip(error)) throw new DomainException('SLIP_ALREADY_USED', 'สลิปนี้ใช้แล้ว', 409);
+      throw error;
+    }
   }
 
   public async findById(id: string): Promise<PaymentRecord | null> {
@@ -86,6 +92,8 @@ export class PaymentTypeormRepository implements PaymentRepository {
     entity.statusReason = payment.statusReason;
     entity.statusNote = payment.statusNote;
     entity.paidAt = payment.paidAt;
+    entity.slipTransRef = payment.slipTransRef;
+    entity.slipAmount = payment.slipAmount;
   }
 
   private toRecord(entity: Payment): PaymentRecord {
@@ -99,6 +107,8 @@ export class PaymentTypeormRepository implements PaymentRepository {
       method: entity.method,
       status: entity.status,
       confirmedVia: entity.confirmedVia,
+      slipTransRef: entity.slipTransRef,
+      slipAmount: entity.slipAmount,
       statusReason: entity.statusReason,
       statusNote: entity.statusNote,
       qrPayload: entity.qrPayload,
@@ -113,6 +123,13 @@ export class PaymentTypeormRepository implements PaymentRepository {
   private ids(rows: unknown, column: string): string[] {
     if (!Array.isArray(rows)) return [];
     return rows.map((row) => readText((row as Record<string, unknown>)[column]));
+  }
+
+  /** DR-025 style: only the slip reference unique index is this conflict. */
+  private reusedSlip(error: unknown): boolean {
+    if (!(error instanceof QueryFailedError)) return false;
+    const driver = error.driverError as { code?: string; constraint?: string };
+    return driver.code === '23505' && driver.constraint === 'payment_slip_trans_ref_key';
   }
 
   private firstId(rows: unknown): string | null {

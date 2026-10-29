@@ -20,6 +20,13 @@ export const ErrorCodeSchema = z.enum([
   'CATEGORY_NOT_EMPTY',
   'CATEGORY_NAME_TAKEN',
   'MODIFIER_GROUP_IN_USE',
+  'SLIP_INVALID',
+  'SLIP_PENDING',
+  'SLIP_SERVICE_UNAVAILABLE',
+  'SLIP_WRONG_RECEIVER',
+  'SLIP_RECEIVER_UNCLEAR',
+  'SLIP_AMOUNT_SHORT',
+  'SLIP_ALREADY_USED',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;

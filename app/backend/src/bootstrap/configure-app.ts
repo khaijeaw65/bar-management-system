@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from '../common/filters/http-exception/http-exception.filter.js';
 import { TransformResponseInterceptor } from '../common/interceptors/transform-response/transform-response.interceptor.js';
@@ -9,6 +10,8 @@ import { OpenApiConfigService } from '../providers/config/openapi/config.service
 import { RedisService } from '../providers/redis/redis.service.js';
 
 export function configureApp(app: INestApplication): void {
+  // 2mb so a decoded image just over 1MB (base64 is ~4/3) still reaches VerifySlipSchema and returns 400.
+  (app as NestExpressApplication).useBodyParser('json', { limit: '2mb' });
   app.setGlobalPrefix('api');
   app.enableShutdownHooks();
   app.use(cookieParser());

@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post, Res } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   CreatePaymentSchema,
   MarkPaidSchema,
   PaymentSchema,
   UuidSchema,
+  VerifySlipSchema,
   type Payment,
   type PaymentAttempt,
 } from '@bar/contracts';
@@ -85,6 +86,25 @@ export class PaymentsController {
     return this.payments.markPaid(this.markPaidInput(requireUuid(id, 'ไม่พบการชำระเงิน'), body));
   }
 
+  @Post('payments/:id/verify-slip')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermissions('payments:create')
+  @ApiOperation({
+    summary: 'Verify a PromptPay slip and complete the pending payment',
+    description: `${staffAccess('payments:create')} Errors: SLIP_INVALID, SLIP_PENDING, SLIP_SERVICE_UNAVAILABLE, SLIP_WRONG_RECEIVER, SLIP_RECEIVER_UNCLEAR, SLIP_AMOUNT_SHORT, SLIP_ALREADY_USED, INVALID_STATE_TRANSITION.`,
+  })
+  @ApiParam({ name: 'id', schema: zodToOpenApi(UuidSchema) })
+  @ApiBody({ schema: zodToOpenApi(VerifySlipSchema) })
+  @ApiEnvelopedOk(PaymentSchema)
+  @ApiResponse({ status: 422, description: 'Slip rejected', schema: { $ref: '#/components/schemas/ApiError' } })
+  @ApiResponse({ status: 503, description: 'Slip service unavailable', schema: { $ref: '#/components/schemas/ApiError' } })
+  public verifySlip(@Param('id') id: string, @Body() body: unknown): Promise<Payment> {
+    return this.payments.verifySlip({
+      paymentId: requireUuid(id, 'ไม่พบการชำระเงิน'),
+      slip: this.slipOf(body),
+    });
+  }
+
   private async createParsed(input: CreatePaymentHttp): Promise<PaymentAttempt> {
     const parsed = CreatePaymentSchema.parse(input.body);
     const key = idempotencyKey(input.header);
@@ -103,6 +123,12 @@ export class PaymentsController {
       await this.idempotency.cancel('payment', input.key);
       throw error;
     }
+  }
+
+  private slipOf(body: unknown): { payload: string } | { image: string } {
+    const parsed = VerifySlipSchema.parse(body);
+    if (parsed.payload !== undefined) return { payload: parsed.payload };
+    return { image: parsed.image ?? '' };
   }
 
   private markPaidInput(paymentId: string, body: unknown): MarkPaidInput {
