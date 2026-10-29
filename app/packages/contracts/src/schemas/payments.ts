@@ -120,7 +120,7 @@ function decodeSlip(value: string): Uint8Array | null {
   try {
     const binary = atob(value);
     const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.codePointAt(i) ?? 0;
     return bytes;
   } catch {
     return null;

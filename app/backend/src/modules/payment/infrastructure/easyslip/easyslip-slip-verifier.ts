@@ -14,7 +14,7 @@ const SuccessSchema = z.object({
   success: z.literal(true),
   data: z.object({
     matchedAccount: z.unknown().optional(),
-    amountInSlip: z.number().finite(),
+    amountInSlip: z.number(),
     rawSlip: z.object({
       transRef: z.string().min(1).max(100),
     }),
