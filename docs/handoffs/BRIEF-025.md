@@ -6,9 +6,9 @@
 | **Date** | 2026-10-24 · run proof 2026-10-29 |
 | **Brief revision** | 2 (wording committed in `eb5755b`; Field confirmation of that commit is audit Finding 10) |
 | **Branch** | `feat/BRIEF-025-promptpay-slip-verify` (seed `82244be`, merged `origin/main` at `3725ee1`) |
-| **Commit** | Work SHA `259b81f` (API `dc5da44`, POS `29c5c48`, receiver + static wasm `4ffa344`, scanner `259b81f`) |
+| **Commit** | Work SHA `4ff0644` (Sonar fixes; `259b81f` scanner, API `dc5da44`, POS `29c5c48`, receiver + static wasm `4ffa344`, scanner `259b81f`) |
 | **Assigned auditor** | Cowork |
-| **Status** | Implemented — full run proof recorded below on `44bbef0` (no code change since `259b81f`); awaiting Cowork's compact re-check → PASS. No PR until PASS |
+| **Status** | Implemented — full run proof recorded below on `259b81f` (identical `app/`); `4ff0644` only drops `.finite()` and switches to `fromCodePoint`/`codePointAt`; awaiting Cowork's compact re-check → PASS. No PR until PASS |
 
 ## Summary
 - **`POST /api/payments/:id/verify-slip`** (`payments:create`). Body is exactly one of `{ payload }` (1–128) or `{ image }` (base64 JPEG/PNG, decoded ≤ 1 MB). Pending own-PromptPay only. EasySlip v2 `POST /verify/bank` runs **outside** any DB transaction (`fetch`, no new backend package). Then one transaction locks the payment `FOR UPDATE`, checks receiver and amount, and `save()`s `completed` / `confirmed_via = slip_verify` / `slip_trans_ref` / `slip_amount` / `paid_at`. Expiry job removed; `payment.status_changed` uses the existing payload.
@@ -34,7 +34,7 @@
 | AC-11 | ✅ | Gates on `259b81f` (code identical on `44bbef0`); key-less half and live half below · device = **MacBook webcam; Android Chrome and iPad Safari not tested** |
 
 ## Gate Evidence (G1)
-Re-run on work SHA `259b81f` (2026-10-24). Postgres, Redis, and SonarQube were already up. Backend e2e used `bar_test`. Frontend e2e used the machine Playwright browser cache. Dev ports :3001 and :3101 were free before the run proof and free again after it.
+Re-run on work SHA `259b81f` (2026-10-24). **On `4ff0644` (2026-10-29), re-run: contracts build / lint / typecheck / test (80) · backend lint / typecheck / unit (148) · frontend lint / typecheck / unit (182) — all exit 0. Backend e2e, frontend e2e and build were not re-run (a type-level `.finite()` drop and a byte-exact char API swap; dev backend and `next dev` were running — not run is not pass).** Postgres, Redis, and SonarQube were already up. Backend e2e used `bar_test`. Frontend e2e used the machine Playwright browser cache. Dev ports :3001 and :3101 were free before the run proof and free again after it.
 
 | Command | Exit | Result |
 |---|---|---|
@@ -83,10 +83,11 @@ Run by Field by hand on the MacBook (dev backend :3011, `next dev` :3010, real E
 Leftover local data: payment `de25f1a9…` is still `pending` (฿10); the two earlier 24 Oct proof payments are cancelled; the `15cac4d6…` slip ref is now consumed in the dev DB.
 
 ## Sonar (local scan)
-- Scan on **`44bbef0`** (2026-10-29; `app/` identical to `259b81f`). Quality Gate: **ERROR** — `new_coverage` 0.0 % (no coverage report path, known) and `new_violations` 22. Same totals as the `29c5c48` scan.
-- By severity: BLOCKER 0 · HIGH 5 · MEDIUM 7 · LOW 10 · INFO 1. Top 10 are the pre-existing set (`setup.ts`, `order-query.service.ts`, `request-hash.ts`, menu components, …).
-- **Four LOW issues sit in files this branch changed** (open, not fixed — no code change in this round; line-level authorship not checked): `easyslip-slip-verifier.ts:17` S1874 deprecated `ZodNumber` param · `resize-slip-image.ts:22` S7758 `fromCharCode` → `fromCodePoint` · `contracts/schemas/payments.ts:123` S7758 `charCodeAt` → `codePointAt` · `payment.service.ts:192` S6582 optional chain. The earlier handoff called the remainder "pre-existing"; these four may not be. A small cleanup commit would be a new S.
-- No exclusions, won't-fix, or gate change. Who fixed: nobody this round (Field, reviewer mode).
+- Scan on **`4ff0644`** (2026-10-29, audit Finding 13 fix). Quality Gate: **ERROR** — `new_coverage` 0.0 % (no coverage report path, known) and `new_violations` 19 (was 22 on `44bbef0`).
+- By severity: BLOCKER 0 · HIGH 5 · MEDIUM 7 · LOW 7 · INFO 1. All remaining are pre-existing (`setup.ts`, `order-query.service.ts`, `request-hash.ts`, menu components, …).
+- Fixed in `4ff0644`: `easyslip-slip-verifier.ts` S1874 (dropped deprecated `.finite()` — Zod 4 numbers are already finite) · `resize-slip-image.ts` S7758 (`String.fromCodePoint`) · `contracts/schemas/payments.ts` S7758 (`codePointAt`) — identical for byte values 0–255.
+- Left open, **pre-existing, out of scope**: `payment.service.ts:192` S6582 (optional chain) — the BRIEF-013 `expirePending` line, unchanged by this brief.
+- No exclusions, won't-fix, or gate change. Who fixed: Claude Code (Field, reviewer mode).
 
 ## Decisions Raised
 - None. Pre-decided items used: `barcode-detector@^3.2.3`, `POST /payments/:id/verify-slip`, the seven slip error codes, `PaymentSchema.slipAmount` and `slipTransRef`, `EASYSLIP_API_KEY` / `EASYSLIP_BASE_URL`, EasySlip v2 body flags, no slip image / raw JSON / names stored, `audit_action` `REJECT` (Q1 = A). DR-027 B: the staff app is not built here.

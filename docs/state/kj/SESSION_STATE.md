@@ -1,13 +1,13 @@
 # State — KJ
 Updated: 2026-10-29 · Agent: Claude Code (BRIEF-025 run proof recorded)
-> Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is auth## Resume
-BRIEF-025 **Implemented** Rev 2, full run proof recorded in the handoff (MacBook webcam; Android / iPad not tested). Code S `259b81f` (handoff `44bbef0`+). Next: Cowork compact re-check → PASS → `execute BRIEF-025` (PASS commit + PR).
+> Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
+
+## Resume
+BRIEF-025 **Implemented** Rev 2, full run proof recorded in the handoff (MacBook webcam; Android / iPad not tested). Sonar fixes on top (audit #13/#14). Next: Cowork compact re-check → PASS → `execute BRIEF-025` (PASS commit + PR).
 
 ## Active
-- Brief: BRIEF-025 Rev 2 · Stage: Implemented, awaiting re-check · Branch: `feat/BRIEF-025-promptpay-slip-verify` · Auditor: Cowork · no PR · Sonar on `44bbef0`: gate ERROR (22 new, 4 LOW in this brief's files, unfixed)
+- Brief: BRIEF-025 Rev 2 · Stage: Implemented, awaiting re-check · Branch: `feat/BRIEF-025-promptpay-slip-verify` · Auditor: Cowork · no PR · Sonar: gate ERROR (19 new, all pre-existing)
 - Done 21–23 Oct: BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
-
- 036 (#78)
 
 ## Next steps
 1. Cowork re-checks BRIEF-025 run proof → PASS · decide: fix the 4 LOW Sonar issues in this brief's files before PASS?
@@ -33,7 +33,7 @@ BRIEF-025 **Implemented** Rev 2, full run proof recorded in the handoff (MacBook
 - Design: CD-11 re-copy (R1 + R5) before the 8 Nov export · CD-02 "แจ้งโอนแล้ว" alert variant next revision · canvas index/recipe → `docs/design/README.md`
 - BRIEF-018 (void/comp + PIN, after IAM): DR-016 draft text in commit `0406c18` (was `e9e8c88` before the 20 Oct rebase) · add AC: void after a completed payment (`paid > total`, BRIEF-013 S5)
 - Printed bill with PromptPay QR (ใบแจ้งยอด, field visit — Field 21 Oct): print = create payment (lock); decide expiry for printed bills + re-print after new orders; QR from `qrPayload` (ESC/POS) → own CD + brief after 8 Nov
-- Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1)
+- Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
 1. BRIEF-025 slip verify (Implemented, audit next) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell (after 8 Nov)
