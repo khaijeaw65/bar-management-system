@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-29 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -135,11 +135,12 @@ Output trimmed in the handoff (curl + a short socket.io client script). UI chang
 ## Ready Checklist
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
-- [ ] Size within workflow §2 — **over the line guide by Field's choice (one brief)**; ~2 days
+- [x] Size within workflow §2 — **over the line guide by Field's choice (one brief)**; ~2 days, ≤ 3 working days
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-29 | Initial Draft (Cowork) — customer side C2 |
+| 1 | 2026-10-29 | Ready — Field in session: "approve BRIEF-048 Rev 1 Ready" (incl. the three *(proposed)* rows) |
