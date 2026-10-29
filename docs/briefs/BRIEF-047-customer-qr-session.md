@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-29 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -131,10 +131,11 @@ Output trimmed in the handoff. UI change: n/a.
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
 - [x] Size within workflow §2
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-29 | Initial Draft (Cowork) — customer side C1; DR-028 Approved A (+ `/customer` prefix amend) |
 | 1 | 2026-10-29 | Draft edit (Field in session): scan `GET /customer/qr/:qrToken` → `POST /customer/sessions { qrToken }` |
+| 1 | 2026-10-29 | Ready — Field in session: "approve BRIEF-047 Rev 1 Ready" |

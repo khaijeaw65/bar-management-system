@@ -1,19 +1,19 @@
 # State — KJ
-Updated: 2026-10-29 · Agent: Claude Code (BRIEF-046 audit PASS, PR open)
+Updated: 2026-10-29 · Agent: Cowork (BRIEF-047 Ready seed)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-BRIEF-046 **audit PASS** (S `5d1ee70`) → PR open, merge on green `ci`. BRIEF-025 Done (#94).
+**BRIEF-047 Ready** (customer QR session + menu, C1; DR-028 Approved A) on `feat/BRIEF-047-customer-qr-session` → next `execute BRIEF-047`. 046 Done (#95), docs ports/CD-03 (#96).
 
 ## Active
-- Brief: BRIEF-046 Rev 1 · Stage: Audit PASS · Branch: `feat/BRIEF-046-dev-ports` (PR open)
-- Done 21–29 Oct: BRIEF-025 (#94) · BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
+- Brief: BRIEF-047 Rev 1 · Stage: Ready · Branch: `feat/BRIEF-047-customer-qr-session` (seeded, not pushed)
+- Done 21–29 Oct: BRIEF-046 (#95) · BRIEF-025 (#94) · BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
-1. Merge 046 on green `ci` · Field: add `http://localhost:3011/api/auth/line/callback` in the LINE console · after 046 merges: Cowork docs branch — `docs/rules/core.md` ports (Field-approved) + CD-03 handoff §9 (receiver = EasySlip `matchAccount`, BRIEF-025)
+1. Plan to 8 Nov (Field 29 Oct): customer C1–C6 (047 → 048 order/tab/call-staff → UI → pay merge → POS badge) → IAM → AI owner insight (+ tuning) → rest of POS/admin · 2 Nov update: mobile briefs to Metee (010, 022, + new order) · Field: LINE console callback `http://localhost:3011/api/auth/line/callback` if not done
 2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
 3. **Overdue (was 25 Oct):** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
-4. **Week of 26 Oct:** on hold (Field 24 Oct): real-use bootstrap · then AI owner insight
+4. Real-use bootstrap batch: after the 8 Nov plan items, before AWS
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4)
@@ -36,5 +36,5 @@ BRIEF-046 **audit PASS** (S `5d1ee70`) → PR open, merge on green `ci`. BRIEF-0
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-046 dev ports (audit PASS, PR open) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell (after 8 Nov)
+1. BRIEF-047 C1 (Ready) → 048 C2 → customer UI C3–C4 → C5 pay merge → C6 POS badge → IAM → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)
