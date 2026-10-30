@@ -64,6 +64,19 @@ Query params, camelCase: `GET /api/orders?status=pending,accepted&visitId=…`. 
 | Payment gateway | webhook signature | `/api/webhooks/payments/:provider`, exempt from envelope |
 Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_paid`) via `@RequirePermissions` + `PermissionsGuard`. Each endpoint's permission is listed in its OpenAPI description.
 
+### Permissions (BRIEF-053)
+`PermissionsGuard` runs after the auth guard on every staff route. Caller's set = policies of their live groups ∪ their own policies; most permissive wins, no explicit deny. A group membership counts only inside `[valid_from, valid_until)`. The set is cached in Redis (`perms:{userId}:v{iamVersion}`, ≤ 15 min, never past the next membership change); Redis down → read from the DB. A route needs `@RequirePermissions(...)` (all listed codes), `@AnyStaff()` or `@Public()` — a test fails otherwise.
+
+- **Catalog (20):** `menu:read` `menu:write` `menu:toggle_availability` · `orders:read` `orders:create` `orders:update_status` · `payments:read` `payments:create` `payments:mark_paid` · `reports:read` · `tables:read` `tables:manage` · `visits:read` `visits:open` `visits:close` · `venue:read` `venue:update` `venue:read_payment` `venue:update_payment` · `staff:manage`.
+- **Default groups:** เจ้าของ = all · ผู้จัดการ = all except `staff:manage`, `venue:update_payment` · พนักงาน = `menu:read`, `menu:toggle_availability`, `orders:read|create|update_status`, `tables:read`, `visits:read|open|close`, `payments:read|create`, `venue:read` (no manual payment confirm).
+- **403:** `{ status: 403, code: "FORBIDDEN", message: "ไม่มีสิทธิ์ใช้งานส่วนนี้", data: { missing: ["payments:mark_paid"] } }`.
+- **Safety net:** while no active staff member holds a live เจ้าของ membership the guard does not enforce (it logs each would-be denial and warns once a minute), so a fresh database never locks everyone out. Seed an owner with `pnpm seed:staff` / `pnpm seed:roster`.
+- **Inactive staff** with a still-valid session: `GET /api/me/permissions` → empty `permissions` / `groups`; every permissioned route → 403.
+
+| Method | Path | Purpose | Permission |
+|---|---|---|---|
+| GET | `/api/me/permissions` | `{ permissions: PermissionCode[], groups: { id, name, validUntil }[] }` — for hiding UI | any staff |
+
 ### Realtime (socket.io)
 - Namespaces: `/staff` (auth = same access token), `/customer` (auth = the `guest_session` cookie; its own socket.io path `/api/customer/socket.io` so the `Path=/api/customer` cookie reaches the handshake).
 - Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`, `notification.created`. `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, and `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu) go to room `staff`. `visit.*` stays on room `pos`. `table.staff_called` `{ tableSeatId, reason, note, calledAt }` and `table.staff_call_cleared` `{ tableSeatId }` go to room `staff` (BRIEF-048).
@@ -97,7 +110,7 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | GET | `/api/auth/line/callback` | LINE callback → cookies → redirect | BRIEF-007 |
 | POST | `/api/auth/refresh` | rotate refresh token | BRIEF-007 |
 | POST | `/api/auth/logout` | revoke family, clear cookies | BRIEF-007 |
-| GET | `/api/auth/me` | current staff + effective permissions | BRIEF-007 |
+| GET | `/api/auth/me` | current staff (permissions: `GET /api/me/permissions`) | BRIEF-007 |
 | POST | `/api/auth/mobile/token` | Expo: exchange one-time code (PKCE) → tokens | mobile auth (DR-005) |
 
 ### Venue

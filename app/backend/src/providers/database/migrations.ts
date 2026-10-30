@@ -7,6 +7,7 @@ import { CategoryNameUnique1762700000000 } from './migrations/1762700000000-Cate
 import { OrderLineSnapshots1762400000000 } from './migrations/1762400000000-OrderLineSnapshots.js';
 import { GuestSession1762900000000 } from './migrations/1762900000000-GuestSession.js';
 import { CustomerOrderCallStaff1763000000000 } from './migrations/1763000000000-CustomerOrderCallStaff.js';
+import { IamCore1763200000000 } from './migrations/1763200000000-IamCore.js';
 import { CustomerPayment1763100000000 } from './migrations/1763100000000-CustomerPayment.js';
 import { Orders1762100000000 } from './migrations/1762100000000-Orders.js';
 import { UpdatedAtTrigger1762500000000 } from './migrations/1762500000000-UpdatedAtTrigger.js';
@@ -30,5 +31,6 @@ export const migrations = [
   GuestSession1762900000000,
   CustomerOrderCallStaff1763000000000,
   CustomerPayment1763100000000,
+  IamCore1763200000000,
 ];
 

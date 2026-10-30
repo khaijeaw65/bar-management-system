@@ -1,11 +1,13 @@
 import type { INestApplication } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
 import type { IssuedSession } from '../src/modules/auth/application/token.types.js';
+import { GROUP_ID_BY_NAME } from '../src/modules/iam/domain/default-groups.js';
 import { TokenService } from '../src/modules/auth/application/token.service.js';
 
 export async function insertStaff(
   dataSource: DataSource,
   displayName: string,
+  group: keyof typeof GROUP_ID_BY_NAME | null = 'เจ้าของ',
 ): Promise<string> {
   const inserted: Array<{ id: string }> = await dataSource.query(
     `INSERT INTO staff_user (display_name) VALUES ($1) RETURNING id`,
@@ -13,6 +15,12 @@ export async function insertStaff(
   );
   const id = inserted[0]?.id;
   if (!id) throw new Error('staff insert failed');
+  if (group) {
+    await dataSource.query(`INSERT INTO user_group_membership (user_id, group_id) VALUES ($1, $2)`, [
+      id,
+      GROUP_ID_BY_NAME[group],
+    ]);
+  }
   return id;
 }
 
@@ -44,6 +52,8 @@ export async function clearStaffAndVenue(dataSource: DataSource): Promise<void> 
   await dataSource.query('DELETE FROM visit');
   await dataSource.query('DELETE FROM table_seat');
   await dataSource.query('DELETE FROM staff_access_request');
+  await dataSource.query('DELETE FROM user_policy');
+  await dataSource.query('DELETE FROM user_group_membership');
   await dataSource.query('DELETE FROM staff_user_identity');
   await dataSource.query('DELETE FROM staff_user');
 }
