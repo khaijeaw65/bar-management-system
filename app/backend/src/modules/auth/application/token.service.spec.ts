@@ -5,6 +5,7 @@ import { Test } from '@nestjs/testing';
 import { Redis } from 'ioredis';
 import { JwtConfigService } from '../../../providers/config/jwt/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
+import { StaffActivity } from '../../iam/application/staff-activity.service.js';
 import { TokenService } from './token.service.js';
 import type { RotateResult } from './token.types.js';
 
@@ -36,6 +37,7 @@ describe('TokenService', () => {
       ],
       providers: [
         TokenService,
+        { provide: StaffActivity, useValue: { isActive: () => Promise.resolve(true) } },
         { provide: RedisService, useValue: { client: redis } },
         {
           provide: JwtConfigService,
@@ -157,6 +159,7 @@ describe('TokenService concurrent rotation (real Redis)', () => {
       ],
       providers: [
         TokenService,
+        { provide: StaffActivity, useValue: { isActive: () => Promise.resolve(true) } },
         { provide: RedisService, useValue: { client: redis } },
         {
           provide: JwtConfigService,

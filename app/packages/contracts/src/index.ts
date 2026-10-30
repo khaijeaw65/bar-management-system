@@ -17,6 +17,7 @@ export * from './schemas/orders.js';
 export * from './schemas/permissions.js';
 export * from './schemas/payments.js';
 export * from './schemas/reports.js';
+export * from './schemas/staff.js';
 export * from './schemas/venue-payment.js';
 export * from './schemas/venue-settings.js';
 export * from './schemas/visits.js';
