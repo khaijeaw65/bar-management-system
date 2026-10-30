@@ -60,7 +60,7 @@
 
 ## Audit round 1 fixes
 - **Must fix 3** (`5269a86`): safety net = `everHadOwner()` only (any เจ้าของ membership row, whatever dates / `is_active`); e2e "expired or deactivated owner never switches enforcement off". Supersedes deviation 4's "live owner" wording.
-- **Must fix 2:** done, see run proof. **Must fix 1:** full `test:e2e` with dev backends stopped — pending.
+- **Must fix 2:** done, see run proof. **Must fix 1 (done):** dev backends stopped (Field's OK), `pnpm --filter @bar/backend test:e2e` on default Redis, work commit `5269a86` → exit 0, **35 files · 236 passed, 0 failed** (the earlier `payment.e2e` / `menu-photos` failures were the dev workers).
 
 ## Deviations from Brief
 1. **AC-2 manager/owner "mark-paid 200"** is tested against a real pending payment (`pendingPayment()` helper) — no deviation; noted because the cash flow in the brief text is `via: 'cash'`.
