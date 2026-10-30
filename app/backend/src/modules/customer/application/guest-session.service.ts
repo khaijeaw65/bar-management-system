@@ -74,6 +74,10 @@ export class GuestSessionService {
     return session;
   }
 
+  public async bindVisit(sessionId: string, visitId: string): Promise<void> {
+    await this.sessions.bindVisit(sessionId, visitId);
+  }
+
   public async rename(session: GuestSessionView, displayName: string | null): Promise<GuestSessionView> {
     await this.sessions.setDisplayName(session.id, displayName);
     return { ...session, displayName };

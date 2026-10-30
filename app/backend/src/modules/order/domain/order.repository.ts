@@ -20,6 +20,8 @@ export interface OrderRepository {
   rows(query: OrderQuery): Promise<OrderRow[]>;
   bills(visitIds: readonly string[]): Promise<BillRow[]>;
   orderTotals(visitId: string): Promise<OrderTotal[]>;
+  /** order id → guest session id, only for guest orders on this visit. */
+  guestSessionIds(visitId: string): Promise<Map<string, string>>;
   pendingLinesForItem(menuItemId: string): Promise<PendingItemLine[]>;
   /** `payment.status = 'pending'` for this visit. Same fact as `findPendingByVisit`, read here so Order does not import Payment. */
   hasPendingPayment(visitId: string): Promise<boolean>;

@@ -9,4 +9,7 @@ export interface SeatVisitRow {
   state: VisitState | null;
   opened_at: Date | string | null;
   guest_label: string | null;
+  staff_called_at: Date | string | null;
+  staff_call_reason: 'bill' | 'other' | null;
+  staff_call_note: string | null;
 }

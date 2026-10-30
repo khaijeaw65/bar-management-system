@@ -117,7 +117,7 @@ const seat = (
   kind: TableSummary["kind"],
   sortOrder: number,
   currentVisit: TableSummary["currentVisit"],
-): TableSummary => ({ id, label, kind, sortOrder, currentVisit });
+): TableSummary => ({ id, label, kind, sortOrder, currentVisit, staffCall: null });
 
 const visitOn = (
   id: string,

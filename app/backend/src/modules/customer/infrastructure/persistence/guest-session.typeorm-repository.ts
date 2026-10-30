@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { TableSeatKind, VisitState } from '@bar/contracts';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Repository } from 'typeorm';
 import { readDate, readOptionalText, readText } from '../../../../common/persistence/row-values.js';
 import type { GuestSessionRepository } from '../../domain/guest-session.repository.js';
@@ -15,6 +17,8 @@ const FIND_BY_HASH = `
   LEFT JOIN visit v ON v.id = g.visit_id
   WHERE g.token_hash = $1
 `;
+
+const BIND_VISIT = `UPDATE guest_session SET visit_id = $2 WHERE id = $1 AND visit_id IS NULL`;
 
 const PURGE_EXPIRED = `
   DELETE FROM guest_session
@@ -41,6 +45,7 @@ export class GuestSessionTypeormRepository implements GuestSessionRepository {
   public constructor(
     @InjectRepository(GuestSession)
     private readonly ormRepository: Repository<GuestSession>,
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
 
   public async insert(input: NewGuestSession): Promise<string> {
@@ -58,6 +63,11 @@ export class GuestSessionTypeormRepository implements GuestSessionRepository {
     await this.mutate(id, (session) => {
       session.expiresAt = expiresAt;
     });
+  }
+
+  // Through the transaction handle: the visit row it points at is not committed yet.
+  public async bindVisit(id: string, visitId: string): Promise<void> {
+    await this.txHost.tx.query(BIND_VISIT, [id, visitId]);
   }
 
   public async setDisplayName(id: string, displayName: string | null): Promise<void> {
