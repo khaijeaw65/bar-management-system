@@ -46,3 +46,17 @@ export function usePendingTicketCount(): number {
   const board = useTicketBoard();
   return board.data?.items.filter((ticket) => ticket.status === "pending").length ?? 0;
 }
+
+// "ออเดอร์ใหม่ n" on a table card: same board data as the rail Badge (BRIEF-051).
+export function pendingBySeat(tickets: readonly TicketList["items"][number][]): ReadonlyMap<string, number> {
+  const counts = new Map<string, number>();
+  for (const ticket of tickets) {
+    if (ticket.status === "pending") counts.set(ticket.seat.id, (counts.get(ticket.seat.id) ?? 0) + 1);
+  }
+  return counts;
+}
+
+export function usePendingBySeat(): ReadonlyMap<string, number> {
+  const board = useTicketBoard();
+  return pendingBySeat(board.data?.items ?? []);
+}

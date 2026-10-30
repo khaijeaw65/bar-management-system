@@ -6,6 +6,7 @@ import { pendingPayment } from "./checkout/payment";
 import { BillFooter } from "./BillFooter";
 import { OrderEntryButton } from "./OrderEntryButton";
 import { OrderGroup } from "./OrderGroup";
+import { SessionCallRow } from "./SessionCallRow";
 import { SessionHeader } from "./SessionHeader";
 import { hasMoney, splitLate, type SessionGroup } from "./session-groups";
 
@@ -30,6 +31,7 @@ export function SessionBody({
   const late = splitLate(groups, paying ? pendingPayment(visit)?.createdAt ?? null : null);
   return (
     <>
+      <SessionCallRow seatId={visit.tableSeatId} label={visit.seatLabel} />
       <SessionHeader titleId={titleId} visit={visit} hasOrders={groups.length > 0} onClose={onClose} />
       {paying ? <InFlight onPay={onPay} /> : null}
       {settled ? <Settled /> : null}
