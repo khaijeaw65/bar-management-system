@@ -3,10 +3,10 @@ Updated: 2026-10-30 · Agent: Claude Code (BRIEF-053 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-053 Implemented, pushed, no PR** → `audit BRIEF-053` (Cowork). Re-run backend `test:e2e` with the dev backends stopped (I ran it on Redis DB 1; `payment.e2e` expiry test failed on the shared BullMQ queue). 051 (#101) and 052 (#102) merged.
+**BRIEF-053 audit PASS, PR open** → `ci` green → merge (Field's own PR, §7). Audit note for I2: IAM time is wall-clock; "ถึงสิ้นกะคืนนี้" must use the venue cut-off, not `CLOCK`. 051 (#101), 052 (#102) merged.
 
 ## Active
-- Brief: BRIEF-053 Rev 1 · Stage: Implemented, waiting audit · Branch: `feat/BRIEF-053-iam-core`
+- Brief: BRIEF-053 Rev 1 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-053-iam-core`
 - Done 21–30 Oct: BRIEF-052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps

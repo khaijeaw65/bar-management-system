@@ -5,9 +5,9 @@
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-30 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-053-iam-core` (pushed, no PR until audit PASS) |
+| **Branch** | `feat/BRIEF-053-iam-core` (PR open after audit PASS) |
 | **Commit** | Work SHA: see chat |
-| **Status** | Implemented — waiting for `audit BRIEF-053` |
+| **Status** | Audit PASS (Cowork, re-audit 1, S = `5269a86`) — PR open |
 
 ## Summary
 - **Migration** `1763200000000-IamCore`: the 7 Staff IAM tables from `schema.sql` §3 (+ `updated_at` triggers on `staff_group`, `policy`), the 20-code catalog, 3 policies / 3 groups with fixed ids (`DEFAULT_GROUP_IDS`). No people.
