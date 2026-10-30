@@ -272,8 +272,8 @@ export class IamAdminTypeormRepository implements IamAdminRepository {
   private async nameTaken(manager: EntityManager, table: 'staff_group' | 'policy', name: string, exceptId: string | null): Promise<boolean> {
     // Same name ignoring case and surrounding / repeated spaces.
     const rows: unknown[] = await manager.query(
-      `SELECT 1 FROM ${table} t
-        WHERE lower(regexp_replace(btrim(t.name), '\\s+', ' ', 'g')) = $1 AND ($2::uuid IS NULL OR t.id <> $2)
+      String.raw`SELECT 1 FROM ${table} t
+        WHERE lower(regexp_replace(btrim(t.name), '\s+', ' ', 'g')) = $1 AND ($2::uuid IS NULL OR t.id <> $2)
         LIMIT 1`,
       [name.trim().replace(/\s+/g, ' ').toLowerCase(), exceptId],
     );

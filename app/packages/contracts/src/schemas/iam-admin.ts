@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { UuidSchema } from './common.js';
-import { PERMISSION_CODES, PermissionCodeSchema, type PermissionCode } from './permissions.js';
+import { PermissionCodeSchema, type PermissionCode } from './permissions.js';
 
 /** BRIEF-055 §3. The matrix rows CD-13 draws: one entry per resource, Thai labels in this one place. */
 export const PERMISSION_CATALOG: ReadonlyArray<{
