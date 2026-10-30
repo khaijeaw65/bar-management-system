@@ -2,7 +2,7 @@
 
 import { toast } from "@heroui/react";
 import type { MenuCategory, MenuItem } from "@bar/contracts";
-import type { CartAction, CartState } from "../cart";
+import type { CartAction, CartState } from "@/lib/order/cart";
 import { CartPanel } from "./CartPanel";
 import { MenuPanel } from "./MenuPanel";
 

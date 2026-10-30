@@ -1,7 +1,7 @@
 import type { MenuItem, UnavailableReason } from "@bar/contracts";
 import { expect, test } from "vitest";
 import { menuItems } from "@/mocks/handlers";
-import { cartReducer, createCart, previewOf, sendFailure, type NewLine } from "../cart";
+import { cartReducer, createCart, previewOf, sendFailure, type NewLine } from "./cart";
 import { ApiError } from "@/lib/api/errors";
 
 function line(price = "120.00", quantity = 1, extra: Partial<NewLine> = {}): NewLine {
@@ -87,4 +87,11 @@ test("maps send failures onto cart actions", () => {
   expect(sendFailure(new ApiError(409, "IDEMPOTENCY_KEY_REUSED", "ซ้ำ", null)).type).toBe("reused");
   expect(sendFailure(new ApiError(403, "FORBIDDEN", "ไม่มีสิทธิ์", null)).type).toBe("forbidden");
   expect(sendFailure(new ApiError(0, "NETWORK_ERROR", "หลุด", null)).type).toBe("network");
+});
+
+test("reset starts a new cart with a new idempotency key", () => {
+  const sent = cartReducer(createCart(), { type: "add", line: line() });
+  const fresh = cartReducer(sent, { type: "reset" });
+  expect(fresh.lines).toEqual([]);
+  expect(fresh.idempotencyKey).not.toBe(sent.idempotencyKey);
 });

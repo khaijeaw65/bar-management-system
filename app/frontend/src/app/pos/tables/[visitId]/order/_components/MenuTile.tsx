@@ -2,7 +2,8 @@
 
 import type { MenuItem } from "@bar/contracts";
 import { cn } from "@/lib/utils/cn";
-import { tilePrice, unavailableLabel } from "../catalog";
+import { tilePrice } from "@/lib/order/catalog";
+import { unavailableLabel } from "../catalog";
 
 export function MenuTile({
   item,
