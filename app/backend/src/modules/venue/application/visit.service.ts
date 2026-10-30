@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
-import { VISIT_OPENED, VISIT_STATE_CHANGED, type TableSummary } from '@bar/contracts';
+import { TABLE_STAFF_CALL_CLEARED, VISIT_OPENED, VISIT_STATE_CHANGED, type TableSummary } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
@@ -18,6 +18,7 @@ import { toTableSummary } from './table-summary.js';
 import type {
   OpenVisitInput,
   OpenVisitResult,
+  GuestVisit,
   OrderClaim,
   VisitOpenerView,
   VisitView,
@@ -39,6 +40,19 @@ export class VisitService {
     const result = await this.insertOrAttach(input);
     await this.emitOpened(result);
     return result;
+  }
+
+  /** Inside the order transaction: the guest's first order opens the visit (`qr`, no staff) or joins the live one. */
+  public async openForGuest(tableSeatId: string): Promise<GuestVisit> {
+    const opened = await this.visitRepository.openForGuest(tableSeatId);
+    if (!opened) throw new DomainException('CONFLICT', 'สถานะโต๊ะไม่ถูกต้อง', 409);
+    return { visitId: opened.id, tableSeatId, created: opened.created };
+  }
+
+  /** After commit: the POS learns a new table is occupied. */
+  public async announceOpened(tableSeatId: string): Promise<void> {
+    const summary = await this.summaryFor(tableSeatId);
+    if (summary) this.notificationsService.emitToPos(VISIT_OPENED, summary);
   }
 
   public async getById(id: string): Promise<VisitView> {
@@ -98,15 +112,21 @@ export class VisitService {
 
   private async emitOpened(result: OpenVisitResult): Promise<void> {
     if (result.attached) return;
-    const summary = await this.summaryFor(result.visit.tableSeatId);
-    if (!summary) return;
-    this.notificationsService.emitToPos(VISIT_OPENED, summary);
+    await this.announceOpened(result.visit.tableSeatId);
   }
 
   private async finishClose(closed: VisitRecord): Promise<VisitView> {
     const view = await this.toView(closed);
+    await this.clearBell(view.tableSeatId);
     this.emitClosed(view);
     return view;
+  }
+
+  // The bell belongs to the seat; a closed visit leaves nothing for staff to answer.
+  private async clearBell(tableSeatId: string): Promise<void> {
+    if (await this.tableSeatRepository.clearStaffCall(tableSeatId)) {
+      this.notificationsService.emitToStaff(TABLE_STAFF_CALL_CLEARED, { tableSeatId });
+    }
   }
 
   private async rejectClose(id: string): Promise<never> {
@@ -125,6 +145,7 @@ export class VisitService {
       tableSeatId: visit.tableSeatId,
       state: visit.state,
     });
+    this.notificationsService.emitTabChanged(visit.id, true);
   }
 
   private async summaryFor(tableSeatId: string): Promise<TableSummary | null> {

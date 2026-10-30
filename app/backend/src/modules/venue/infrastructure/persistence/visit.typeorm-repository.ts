@@ -38,6 +38,16 @@ const ACTIVATE_VISIT = `
   RETURNING id, table_seat_id, state, opened_at, closed_at, guest_label, opened_by, opened_via
 `;
 
+const OPEN_FOR_GUEST = `
+  INSERT INTO visit (table_seat_id, state, opened_via)
+  VALUES ($1, 'open', 'qr')
+  ON CONFLICT (table_seat_id) WHERE state IN ('open', 'active', 'idle') DO NOTHING
+  RETURNING id
+`;
+const LIVE_BY_SEAT = `
+  SELECT id FROM visit WHERE table_seat_id = $1 AND state IN ('open', 'active', 'idle')
+`;
+
 @Injectable()
 export class VisitTypeormRepository implements VisitRepository {
   public constructor(
@@ -80,6 +90,13 @@ export class VisitTypeormRepository implements VisitRepository {
     const result: unknown = await this.txHost.tx.query(ACTIVATE_VISIT, [id]);
     const row = this.firstRow(result);
     return row ? this.toAnyRecord(row) : null;
+  }
+
+  public async openForGuest(tableSeatId: string): Promise<{ id: string; created: boolean } | null> {
+    const inserted = this.firstRow(await this.txHost.tx.query(OPEN_FOR_GUEST, [tableSeatId]));
+    if (inserted) return { id: readText(inserted.id), created: true };
+    const live = this.firstRow(await this.txHost.tx.query(LIVE_BY_SEAT, [tableSeatId]));
+    return live ? { id: readText(live.id), created: false } : null;
   }
 
   public async closeIfLive(id: string): Promise<VisitRecord | null> {

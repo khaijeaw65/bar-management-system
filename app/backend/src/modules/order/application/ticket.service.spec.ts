@@ -84,7 +84,10 @@ describe('TicketService escalate event', () => {
       { get: async () => ({ kitchenDisplayEnabled: false }) } as never,
       query as unknown as OrderQueryService,
       { findById: async () => ({ displayName: 'เอ' }) } as never,
-      { emitToStaff: (event: string, payload: unknown) => events.push({ event, payload }) } as never,
+      {
+        emitToStaff: (event: string, payload: unknown) => events.push({ event, payload }),
+        emitTabChanged: () => undefined,
+      } as never,
     );
 
     await expect(service.resolveIssue(ticketId, staffId, { resolution: 'escalate' })).resolves.toMatchObject({

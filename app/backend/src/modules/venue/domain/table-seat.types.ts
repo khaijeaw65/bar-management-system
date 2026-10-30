@@ -14,6 +14,13 @@ export interface LiveVisitCard {
   guestLabel: string | null;
 }
 
+export interface StaffCallRecord {
+  reason: 'bill' | 'other' | null;
+  note: string | null;
+  calledAt: Date;
+}
+
 export interface SeatWithLiveVisit extends SeatIdentity {
   currentVisit: LiveVisitCard | null;
+  staffCall: StaffCallRecord | null;
 }

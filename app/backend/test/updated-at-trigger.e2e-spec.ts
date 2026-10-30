@@ -11,6 +11,7 @@ import { seedMenu } from '../src/cli/seed-menu-catalog.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
 import { MenuCategory } from '../src/modules/menu/infrastructure/persistence/menu-category.entity.js';
 import { NotificationsService } from '../src/modules/notifications/notifications.service.js';
+import { CustomerOrderCallStaff1763000000000 } from '../src/providers/database/migrations/1763000000000-CustomerOrderCallStaff.js';
 import { GuestSession1762900000000 } from '../src/providers/database/migrations/1762900000000-GuestSession.js';
 import { UpdatedAtTrigger1762500000000 } from '../src/providers/database/migrations/1762500000000-UpdatedAtTrigger.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
@@ -188,9 +189,11 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
   it('AC-5: revert drops the 15 triggers and the function, run brings them back', async () => {
     const migration = new UpdatedAtTrigger1762500000000();
     const guestSession = new GuestSession1762900000000();
+    const customerOrder = new CustomerOrderCallStaff1763000000000();
     const runner = dataSource.createQueryRunner();
     try {
       // guest_session's trigger depends on the function, so it goes first and comes back last.
+      await customerOrder.down(runner); // order_record points at guest_session
       await guestSession.down(runner);
       await migration.down(runner);
       expect(await triggerCount()).toBe(0);
@@ -198,6 +201,7 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
 
       await migration.up(runner);
       await guestSession.up(runner);
+      await customerOrder.up(runner);
       expect(await triggerCount()).toBe(TRIGGERED_TABLES.length);
     } finally {
       await runner.release();

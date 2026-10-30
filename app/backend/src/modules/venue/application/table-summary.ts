@@ -2,12 +2,12 @@ import type { TableSummary } from '@bar/contracts';
 import type {
   LiveVisitCard,
   SeatWithLiveVisit,
+  StaffCallRecord,
 } from '../domain/table-seat.types.js';
 
 const EMPTY_BILL = {
   total: '0.00',
   itemCount: 0,
-  staffCalled: false,
   paymentPending: false,
 } as const;
 
@@ -17,16 +17,22 @@ export function toTableSummary(seat: SeatWithLiveVisit): TableSummary {
     label: seat.label,
     kind: seat.kind,
     sortOrder: seat.sortOrder,
-    currentVisit: seat.currentVisit ? toCurrentVisit(seat.currentVisit) : null,
+    currentVisit: seat.currentVisit ? toCurrentVisit(seat.currentVisit, seat.staffCall !== null) : null,
+    staffCall: seat.staffCall ? toStaffCall(seat.staffCall) : null,
   };
 }
 
-function toCurrentVisit(visit: LiveVisitCard): TableSummary['currentVisit'] {
+function toStaffCall(call: StaffCallRecord): NonNullable<TableSummary['staffCall']> {
+  return { reason: call.reason, note: call.note, calledAt: call.calledAt.toISOString() };
+}
+
+function toCurrentVisit(visit: LiveVisitCard, staffCalled: boolean): TableSummary['currentVisit'] {
   return {
     id: visit.id,
     state: visit.state,
     openedAt: visit.openedAt.toISOString(),
     guestLabel: visit.guestLabel,
+    staffCalled,
     ...EMPTY_BILL,
   };
 }

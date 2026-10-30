@@ -5,7 +5,7 @@ import type { MenuModifierGroup } from "@bar/contracts";
 import { useId } from "react";
 import { formatTHB } from "@/lib/utils/format";
 import { toSatang } from "@/lib/utils/money";
-import { groupCount, groupMinimum, selectRadio, toggleOption } from "../catalog";
+import { groupCount, groupMinimum, selectRadio, toggleOption } from "@/lib/order/catalog";
 
 function delta(price: string): string {
   return toSatang(price) > 0 ? ` +${formatTHB(price)}` : "";

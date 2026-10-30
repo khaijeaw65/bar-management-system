@@ -1,6 +1,5 @@
 import {
   UnavailableLineSchema,
-  type MenuItem,
   type PlaceOrderRequest,
   type UnavailableLine,
   type UnavailableReason,
@@ -8,6 +7,7 @@ import {
 import { z } from "zod";
 import { ApiError } from "@/lib/api/errors";
 import { scaleMoney, sumMoney } from "@/lib/utils/money";
+import type { OrderableItem } from "./orderable";
 
 export interface NewLine {
   itemId: string;
@@ -47,11 +47,12 @@ export type CartAction =
   | { type: "rememberName"; name: string }
   | { type: "pending"; value: boolean }
   | { type: "unavailable"; details: UnavailableLine[] }
-  | { type: "sync"; items: readonly MenuItem[] }
+  | { type: "sync"; items: readonly OrderableItem[] }
   | { type: "closed" }
   | { type: "forbidden" }
   | { type: "network" }
-  | { type: "reused" };
+  | { type: "reused" }
+  | { type: "reset" };
 
 const detailsSchema = z.object({ details: z.array(UnavailableLineSchema) });
 
@@ -74,7 +75,7 @@ function signature(line: NewLine): string {
   return [line.variantId, options, line.orderedByName ?? "", line.notes ?? ""].join("|");
 }
 
-export function lineReason(line: CartLine, items: readonly MenuItem[]): UnavailableReason | null {
+export function lineReason(line: CartLine, items: readonly OrderableItem[]): UnavailableReason | null {
   const item = items.find((entry) => entry.id === line.itemId);
   if (!item) return null;
   if (!item.availableNow) return item.unavailableReason ?? "sold_out";
@@ -205,7 +206,7 @@ function flagUnavailable(state: CartState, details: UnavailableLine[]): CartStat
   };
 }
 
-function syncMenu(state: CartState, items: readonly MenuItem[]): CartState {
+function syncMenu(state: CartState, items: readonly OrderableItem[]): CartState {
   let changed = false;
   const lines = state.lines.map((line) => {
     if (line.unavailable) return line;
@@ -247,6 +248,8 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, notice: "network", pending: false };
     case "reused":
       return { ...state, notice: "reused", pending: false };
+    case "reset":
+      return createCart();
     default:
       return state;
   }

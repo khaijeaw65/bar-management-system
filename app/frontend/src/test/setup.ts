@@ -2,6 +2,7 @@ import { cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { resetApiSession } from "../lib/api/client";
+import { resetCustomer } from "../mocks/customer";
 import { resetFloor } from "../mocks/handlers";
 import { resetMenu } from "../mocks/menu";
 import { server } from "../mocks/node";
@@ -40,6 +41,7 @@ afterEach(() => {
   server.resetHandlers();
   resetApiSession();
   resetFloor();
+  resetCustomer();
   resetMenu();
 });
 

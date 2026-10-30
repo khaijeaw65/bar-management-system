@@ -26,6 +26,7 @@ describe('visit contracts', () => {
           staffCalled: false,
           paymentPending: false,
         },
+        staffCall: { reason: 'bill', note: null, calledAt: '2026-10-17T12:05:00.000Z' },
       }).label,
     ).toBe('C1');
 

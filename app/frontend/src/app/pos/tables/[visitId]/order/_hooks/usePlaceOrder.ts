@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { placeOrder } from "@/lib/api/orders";
-import { placeBody, previewOf, sendFailure, type CartAction, type CartState } from "../cart";
+import { placeBody, previewOf, sendFailure, type CartAction, type CartState } from "@/lib/order/cart";
 
 export function usePlaceOrder(
   visitId: string,
