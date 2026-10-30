@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-051-pos-bell-qr-cues` (PR opens after audit PASS) |
 | **Commit** | Work SHA: see chat |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS (Cowork, S = `9d7d09a`) — PR open |
 
 ## Summary
 - `lib/sound/chime.ts`: Web Audio order chime (2 notes) + bell chime (3 notes), no files; mute flag in `localStorage` `bar.pos.sound` (try/catch, default on); unlock on first `pointerdown`; 2 s throttle per kind; locked/muted → silent, no error.
@@ -57,6 +57,7 @@ UI exercised (real API :3011 + `next dev` :3010, dev `bar`, T3, POS 1280×800, p
 - None. Note: on `/pos/orders` the QR Toast is skipped (duplicate of the board's own Toast); chime still plays.
 
 ## Known Gaps / Follow-ups
+- Audit suggestions, not taken (no code change after PASS): (1) show "ออเดอร์ใหม่" only when `seat.currentVisit !== null` — a free seat showed a stale count from closed-visit dev tickets; (2) re-arm the unlock listener when the `AudioContext` suspends again; (3) also gate `window.__staffSocket` on `NODE_ENV !== "production"`.
 - Staff-entered orders on other pages are silent by design; the pending count counts every pending ticket on the seat (accepting it clears the badge).
 - Sound audibility needs one real-speaker check at the bar.
 - The call chip's age ("3 นาทีที่แล้ว") refreshes each minute.

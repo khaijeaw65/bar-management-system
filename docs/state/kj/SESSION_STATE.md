@@ -1,12 +1,12 @@
 # State — KJ
-Updated: 2026-10-30 · Agent: Claude Code (BRIEF-051 Implemented)
+Updated: 2026-10-30 · Agent: Claude Code (BRIEF-051 audit PASS, PR open)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-051 Implemented, awaiting audit** (`audit BRIEF-051`, Cowork) → PR after PASS. 050 merged (#100). Sound not heard on a real speaker (headless pane).
+**BRIEF-051 audit PASS, PR open** → `ci` green → merge (Field's own PR, §7). Audit suggestions 1–3 in the handoff (free-seat badge guard first). 050 merged (#100). Sound not heard on a real speaker (headless pane).
 
 ## Active
-- Brief: BRIEF-051 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-051-pos-bell-qr-cues`
+- Brief: BRIEF-051 Rev 1 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-051-pos-bell-qr-cues`
 - Done 21–30 Oct: BRIEF-050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
@@ -36,5 +36,5 @@ Updated: 2026-10-30 · Agent: Claude Code (BRIEF-051 Implemented)
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-051 C6 (audit) → C5 pay merge → IAM → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
+1. BRIEF-051 C6 (PR open) → C5 pay merge → IAM → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)
