@@ -88,3 +88,14 @@ test("R2: an item already in the cart reopens at its quantity and qty 0 removes 
   await user.click(within(sheet).getByRole("button", { name: "ลบออกจากตะกร้า" }));
   await waitFor(() => expect(screen.queryByText("ตะกร้า 1 รายการ")).not.toBeInTheDocument());
 });
+
+test("a full sheet and a half sheet both close with ปิด and leave the cart unchanged", async () => {
+  const user = userEvent.setup();
+  await renderMenu();
+  for (const name of ["เพิ่ม โอลด์แฟชั่น", "เพิ่ม ช้างดราฟต์"]) {
+    await user.click(screen.getByRole("button", { name }));
+    await user.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "ปิด" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  }
+  expect(screen.queryByText(/ตะกร้า \d+ รายการ/)).not.toBeInTheDocument();
+});
