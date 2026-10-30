@@ -4,10 +4,10 @@
 |---|---|
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-30 |
-| **Brief revision** | 1 |
+| **Brief revision** | 2 |
 | **Branch** | `feat/BRIEF-050-customer-tab-bell-live` |
 | **Commit** | Work SHA: see chat |
-| **Status** | Implemented — awaiting `audit BRIEF-050` (Cowork) |
+| **Status** | Audit PASS (Cowork, re-audit 1 on S = `9b6ec82`) — PR open |
 
 ## Summary
 **Backend**
@@ -17,6 +17,7 @@
 **Frontend**
 - `/customer/tab` (filter ทั้งหมด/ของฉัน, cards newest first, chips per station, struck cancelled lines, total + "อัปเดต"), header with bell + "บิลโต๊ะ ฿…", `CallStaffSheet` (Drawer, 60 s lock, 429 → locked with server message), `lib/socket/customer-socket.ts` + `useCustomerLive` (tab.changed → refetch, `sessionEnded` → closed screen, lost → banner, reconnect → refetch, refused handshake → expired), `GuestClosed`, RATE_LIMITED cart notice (`cart.rateLimited`, cart stays editable), send → `/customer/tab` with the Toast raised on the tab screen, Toasts cleared on route change.
 - Closed = `cart.closed` (socket `sessionEnded` or 409 at send); `saveCart` drops the stored cart when closed.
+- **Rev 2 (Field, audit Finding 3):** seat-only session invalid once `now > created_at + 60 min` (`GuestSessionService.isValid`, before bind-on-read); `created_at` added to the session read. DR-028 amended by Field.
 - ~1.9k lines incl. tests.
 
 ## Acceptance Criteria
@@ -31,24 +32,25 @@
 | AC-7 | ✅ | `CustomerShell.test`, e2e (mock socket handlers) |
 | AC-8 | ✅ | `CartScreen.test` |
 | AC-9 | ✅ | `CustomerFrame` effect cleanup clears Toasts; e2e 360 no sideways scroll |
+| AC-11 | ✅ | unit `guest-session.service.spec` (59/61 min) · e2e `customer-session` (61 min → 401, never bound) |
 | AC-10 | ✅ | below |
 
 ## Gate Evidence (G1)
 | Command | Exit | Result |
 |---|---|---|
 | contracts build · backend lint · typecheck | 0 | clean |
-| backend `test` | 0 | 176 passed |
-| backend `test:e2e` | 0 | 204 passed (dev backend stopped first; an earlier run with it up failed 2 unrelated tests) |
+| backend `test` | 0 | 178 passed |
+| backend `test:e2e` | 0 | 205 passed (dev backend stopped first; an earlier run with it up failed 2 unrelated tests) |
 | frontend lint · typecheck | 0 | clean |
-| frontend `test` | 0 | 220 passed |
+| frontend `test` | 0 | 220 passed (with `--testTimeout=30000`; at the default 5 s the POS/customer tests time out while machine load was ~30 — known flake) |
 | frontend `test:e2e` | 0 | 34 passed (customer-tab ×5) |
 | frontend `build` | 0 | `/customer/tab` listed |
 
 Run proof (real API :3011 + `next dev` :3010, dev `bar`, T3, 390×844, work SHA): B scanned free T3 (seat-only) → POS opened T3 (API, minted staff token) → A (curl cookie jar, second phone) scanned + ordered 2× ช้างดราฟต์ → B's header showed "บิลโต๊ะ ฿240.00" without reload, tab showed A's order → POS accepted the ticket → chip "ส่งแล้ว" → "ร้านกำลังเตรียม" live → B bell เช็คบิล → sent + locked 60 s, `GET /api/tables` T3 `staffCall.reason = 'bill'` → POS closed T3 → closed screen. Screenshots: `docs/handoffs/assets/BRIEF-050/` (1 tab before, 2 live chip, 3 bell sent, 4 closed).
-Not captured on the real stack: tab "ของฉัน" screenshot, disconnected banner, 86-void strike (covered by unit + e2e with mock socket). Phone A was curl, not a second browser window (cookies are shared per origin in one pane).
+Screenshots 5 `tab-mine` and 6 `disconnected` added after the audit. Not captured on the real stack: 86-void strike (unit + e2e). Phone A was curl, not a second browser window (cookies are shared per origin in one pane).
 
 ## Sonar
-Not run — SonarQube stopped; required by the brief → run before the PR if wanted.
+Gate: ERROR — `new_coverage` 0 % (no coverage report path, known follow-up) + pre-existing issues. After fixes: 0 BLOCKER · 6 HIGH · 7 MEDIUM · 8 LOW · 1 INFO overall. BRIEF-050 files: fixed S6819 ×2 (`LiveBanner`, `CallStaffSheet` → `<output>`) and S7776 (`LIVE_VISIT_STATES` Set). Remaining in touched files, not from this brief: S4123 `customer.gateway.ts:53` (BRIEF-048 `await` on `socketsJoin`, left as is) · S3863 ×2 `table-seat.service.ts` duplicate imports (pre-existing).
 
 ## Decisions Raised
 - none
