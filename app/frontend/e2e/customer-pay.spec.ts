@@ -29,20 +29,32 @@ const ping = (page: Page) =>
 test.describe("phone", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("AC-10: tab → pay → QR → แจ้งโอนแล้ว → paid live → back to the bill", async ({ page }) => {
+  test("AC-10: tab → pay → QR (timer, download) → แจ้งโอนแล้ว → paid live → back to the bill", async ({ page }) => {
+    await page.clock.install();
     await orderOne(page);
     await page.getByRole("button", { name: "ชำระเงิน" }).click();
     await expect(page).toHaveURL(/\/customer\/pay$/);
     await expect(page.getByText(/ยอดทั้งโต๊ะ ฿/)).toBeVisible();
 
     await page.getByRole("button", { name: "สร้าง QR พร้อมเพย์" }).click();
-    await expect(page.getByRole("img", { name: /QR พร้อมเพย์ ฿.+ โต๊ะ T3/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: "บันทึก QR" })).toBeVisible();
+    await expect(page.getByRole("img", { name: /^QR พร้อมเพย์ ฿[\d,]+\.\d{2} โต๊ะ T3$/ })).toBeVisible();
     await expect(page.getByText(/เปิดแอปธนาคาร/)).toBeVisible();
-    await expect(page.getByText(/\d{1,2}:\d{2}/).first()).toBeVisible();
+
+    const timer = page.getByRole("timer");
+    await expect(timer).toHaveText(/^1[45]:\d{2}$/);
+    const startedAt = (await timer.textContent()) ?? "";
+    await page.clock.fastForward("01:00");
+    await expect(timer).not.toHaveText(startedAt);
+    const [startMin] = startedAt.split(":").map(Number);
+    const [laterMin] = ((await timer.textContent()) ?? "").split(":").map(Number);
+    expect(laterMin).toBeLessThan(startMin ?? 0);
+
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "บันทึก QR" }).click();
+    expect((await download).suggestedFilename()).toBe("promptpay-T3.png");
 
     await page.getByRole("button", { name: "แจ้งโอนแล้ว" }).click();
-    await expect(page.getByRole("button", { name: /แจ้งพนักงานแล้ว/ })).toBeDisabled();
+    await expect(page.getByRole("button", { name: /^แจ้งพนักงานแล้ว · \d{2}:\d{2}$/ })).toBeDisabled();
 
     await page.evaluate(() => (window as unknown as CustomerWindow).__customerMock.markPaid());
     await ping(page);
@@ -52,7 +64,7 @@ test.describe("phone", () => {
     await expect(page.getByRole("button", { name: "ชำระเงิน" })).toHaveCount(0);
   });
 
-  test("AC-11: someone else's pending QR is view-only; my own can be changed", async ({ page }) => {
+  test("AC-11: a pending QR someone else created is view-only", async ({ page }) => {
     await orderOne(page);
     await page.evaluate(() => (window as unknown as CustomerWindow).__customerMock.posPending());
     await ping(page);
@@ -63,7 +75,7 @@ test.describe("phone", () => {
     await expect(page.getByRole("button", { name: "เปลี่ยนวิธีจ่าย" })).toHaveCount(0);
   });
 
-  test("AC-11: changing method on my own QR goes back to the intent", async ({ page }) => {
+  test("AC-12: changing method on my own QR goes back to the intent", async ({ page }) => {
     await orderOne(page);
     await page.getByRole("button", { name: "ชำระเงิน" }).click();
     await page.getByRole("button", { name: "สร้าง QR พร้อมเพย์" }).click();
@@ -71,7 +83,7 @@ test.describe("phone", () => {
     await expect(page.getByRole("button", { name: "สร้าง QR พร้อมเพย์" })).toBeVisible();
   });
 
-  test("AC-12: an expired QR offers a new one; cash opens the bell preset to เช็คบิล", async ({ page }) => {
+  test("AC-13: an expired QR offers a new one; cash opens the bell preset to เช็คบิล", async ({ page }) => {
     await orderOne(page);
     await page.getByRole("button", { name: "ชำระเงิน" }).click();
     await page.getByRole("button", { name: "สร้าง QR พร้อมเพย์" }).click();
@@ -88,7 +100,7 @@ test.describe("phone", () => {
   });
 });
 
-test("AC-13: a transfer bell reads แจ้งโอนแล้ว with the amount on the POS card", async ({ page }) => {
+test("AC-14: a transfer bell reads แจ้งโอนแล้ว with the formatted amount on the POS card", async ({ page }) => {
   await page.goto("/pos/tables");
   await expect(page.getByRole("button", { name: /T3/ }).first()).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as Partial<PosWindow>).__staffSocket));

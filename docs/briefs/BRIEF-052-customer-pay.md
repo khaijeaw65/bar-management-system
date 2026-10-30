@@ -68,6 +68,7 @@ NotifyTransferResult = { notifiedAt: IsoDateTime }
 - `pending` = the visit's `pending` PromptPay payment whoever created it; `mine` = created by this session.
 - **Errors:** 400 `VALIDATION_ERROR` · 401 `GUEST_SESSION_INVALID` · 403 `PAYMENT_NOT_YOURS` · 404 `NOT_FOUND` (payment not on this visit) · 409 `NOTHING_TO_PAY` · 409 `PAYMENT_IN_FLIGHT` · 409 `PROMPTPAY_NOT_SET` · 409 `PAYMENT_MODE_UNAVAILABLE` · 409 `INVALID_STATE_TRANSITION` · 409 idempotency (DR-017) · 429 `RATE_LIMITED`.
 - **WS:** `/customer` `tab.changed { visitId }` on every payment status change · `/staff` `table.staff_called` (reason `transfer`), `table.staff_call_cleared`, existing `payment.status_changed`.
+- **Transfer bell format:** `staffCall.reason = 'transfer'`, `staffCall.note` = the pending payment's `amount` as a Money string (e.g. `"1240.00"`); the POS formats it "แจ้งโอนแล้ว ฿1,240.00".
 - **Business rules:** one attempt at a time per visit (CD-07 D3) · lock + 15-min expiry as CD-03 · the guest never confirms; staff scan the slip / mark paid (DR-014 #6) · paid ≠ closed (R5) · nickname / identity never exposed.
 
 ## 4. Acceptance Criteria
@@ -77,14 +78,15 @@ NotifyTransferResult = { notifiedAt: IsoDateTime }
 - **AC-4** — Refusals: seat-only or zero balance → 409 `NOTHING_TO_PAY`; venue without PromptPay ID → 409 `PROMPTPAY_NOT_SET`.
 - **AC-5** — Cancel: own pending → 200, status `cancelled`, bill unlocked, `pending: null`; another phone's or the POS's pending → 403 `PAYMENT_NOT_YOURS`; already paid → 409 `INVALID_STATE_TRANSITION`.
 - **AC-6** — แจ้งโอนแล้ว: → 200; seat `staffCall` = `{ reason: 'transfer', note: <amount> }` on `GET /tables`; staff get `table.staff_called`; payment still `pending`; second tap within 60 s → 429; for a non-pending payment → 409 `INVALID_STATE_TRANSITION`. Works for a POS-created pending payment too.
-- **AC-7** — Auto-clear: the transfer bell clears (+ `table.staff_call_cleared`) when staff mark the payment paid, when it is cancelled; a `bill` bell is not cleared by a payment change.
+- **AC-7** — Auto-clear: the transfer bell clears (+ `table.staff_call_cleared`) when staff mark the payment paid, when the guest cancels it, and when it expires (15-min job); a `bill` bell is not cleared by a payment change.
 - **AC-8** — Live: a guest socket on the visit receives `tab.changed` when the payment is created and when staff mark it paid; afterwards `GET /customer/payment` → `remaining: '0.00'`, `pending: null`.
 - **AC-9** — Isolation: staff token on `/customer/payment(s)` → 401; guest cookie on `POST /payments/:id/mark-paid` → 401; guest `POST /customer/call-staff { reason: 'transfer' }` → 400.
-- **AC-10 (UI)** — Phone J1: tab → ชำระเงิน → สร้าง QR พร้อมเพย์ → QR + amount + countdown + บันทึก QR → แจ้งโอนแล้ว → "แจ้งพนักงานแล้ว" → (staff pays) → "ชำระเรียบร้อย" live → กลับไปที่บิล.
-- **AC-11 (UI)** — A pending payment the guest didn't create → intent shows "ดู QR" only; QR view has no "เปลี่ยนวิธีจ่าย"; own pending → เปลี่ยนวิธีจ่าย → back to intent with "สร้าง QR พร้อมเพย์".
-- **AC-12 (UI)** — Expired QR → "QR หมดอายุ" + "สร้าง QR ใหม่"; จ่ายเงินสด opens the bell sheet with เช็คบิล selected.
-- **AC-13 (UI, POS)** — Bell reason `transfer` shows "แจ้งโอนแล้ว ฿…" on the table card.
-- **AC-14** — Gates + run proof pass.
+- **AC-10 (UI)** — Phone J1: tab → ชำระเงิน → `/customer/pay` "ยอดทั้งโต๊ะ ฿…" → สร้าง QR พร้อมเพย์ → QR image labelled "QR พร้อมเพย์ ฿{amount} โต๊ะ {seat}" + a countdown (`role="timer"`, text `mm:ss`, starts between 14:00 and 15:00 and goes down as time passes) + "บันทึก QR" downloads `promptpay-{seat}.png` + hint "เปิดแอปธนาคาร …" → แจ้งโอนแล้ว → button disabled "แจ้งพนักงานแล้ว · HH:MM" → (staff pays) → "ชำระเรียบร้อย" live → กลับไปที่บิล → tab without "ชำระเงิน".
+- **AC-11 (UI)** — A pending payment someone else created (POS or another phone) → intent shows only "ดู QR" (no "สร้าง QR พร้อมเพย์"); its QR view has no "เปลี่ยนวิธีจ่าย".
+- **AC-12 (UI)** — My own pending QR → "เปลี่ยนวิธีจ่าย" → back to the intent with "สร้าง QR พร้อมเพย์".
+- **AC-13 (UI)** — Expired QR → "QR หมดอายุ" + "สร้าง QR ใหม่"; "จ่ายเงินสด" opens the bell sheet with เช็คบิล selected (`aria-pressed="true"`).
+- **AC-14 (UI, POS)** — Bell reason `transfer` with `note: "1240.00"` reads "แจ้งโอนแล้ว ฿1,240.00" on the table card (amount formatted from the Money string, §3).
+- **AC-15** — Gates + run proof pass.
 
 ## 5. Test Gate
 **AC tests by planner (trial #36)** — written against §3 before implementation; they fail until the brief is built. The executor makes them pass **without editing their assertions** (fixing a wrong selector / helper wiring is allowed and listed in the handoff); unit tests are the executor's.
@@ -92,7 +94,7 @@ NotifyTransferResult = { notifiedAt: IsoDateTime }
 | AC | Test type | Location |
 |---|---|---|
 | AC-1 – AC-9 | API e2e (supertest + socket.io client, real Postgres + Redis) | `app/backend/test/customer-payment.e2e-spec.ts` |
-| AC-10 – AC-13 | UI e2e (Playwright, MSW) | `app/frontend/e2e/customer-pay.spec.ts` |
+| AC-10 – AC-14 | UI e2e (Playwright, MSW, Playwright clock for the countdown) | `app/frontend/e2e/customer-pay.spec.ts` |
 
 **Test-harness contract for the UI e2e (executor adds these to the existing mock layer, same pattern as BRIEF-050):** `window.__customerMock` gains `posPending()` (a pending PromptPay payment created by the POS, `mine: false`), `markPaid()` (pending → paid, remaining 0), `expirePending()` (pending → cancelled/expired); `window.__staffSocket.fire` (BRIEF-051) drives the POS card. MSW `/customer/payment(s)` handlers follow §3; the default venue has a PromptPay ID; the tab after `orderOne` has `remaining > 0`.
 
@@ -135,4 +137,5 @@ Run proof (real stack, ports BRIEF-046; dev venue has a test PromptPay ID): phon
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-30 | Initial Draft (Cowork) — customer side C5 |
-| 1 | 2026-10-30 | AC tests by planner (trial #36) — `app/backend/test/customer-payment.e2e-spec.ts` (AC-1–9), `app/frontend/e2e/customer-pay.spec.ts` (AC-10–13) |
+| 1 | 2026-10-30 | AC tests by planner (trial #36) — `app/backend/test/customer-payment.e2e-spec.ts` (AC-1–9), `app/frontend/e2e/customer-pay.spec.ts` (AC-10–14) |
+| 1 | 2026-10-30 | Draft edit (Field: tighten vague ACs): AC-10 countdown `role="timer"` mm:ss + download `promptpay-{seat}.png`; AC-11 split into AC-11 / AC-12; AC-7 adds expiry; transfer bell `note` = Money string (§3); ACs renumbered to AC-15 |

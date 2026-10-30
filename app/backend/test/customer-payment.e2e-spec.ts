@@ -17,6 +17,7 @@ import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
 import { seedMenu } from '../src/cli/seed-menu-catalog.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
+import { PaymentService } from '../src/modules/payment/application/payment.service.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 import { asGuest, openVisit, seatByLabel, startGuest, variantByName, waitFor } from './customer-fixtures.js';
 import { clearStaffAndVenue, httpPort, insertStaff, staffSession } from './staff-session.js';
@@ -185,7 +186,7 @@ describe('Customer pay: PromptPay merge, แจ้งโอนแล้ว (e2e,
     expect((await notify(payer, paid.id).expect(409)).body.code).toBe('INVALID_STATE_TRANSITION');
   });
 
-  it('AC-7: the transfer bell clears when the payment leaves pending; a bill bell stays', async () => {
+  it('AC-7: the transfer bell clears when the payment is paid, cancelled or expires; a bill bell stays', async () => {
     const seat = await seatByLabel(dataSource, 'T1');
     const guest = await startGuest(app, seat.qr);
     await order(guest);
@@ -204,6 +205,17 @@ describe('Customer pay: PromptPay merge, แจ้งโอนแล้ว (e2e,
     await notify(other, cancelled.id).expect(200);
     await cancel(other, cancelled.id).expect(200);
     expect((await tables()).find((row) => row.id === second.id)?.staffCall).toBeNull();
+
+    const fourth = await seatByLabel(dataSource, 'T4');
+    const late = await startGuest(app, fourth.qr);
+    await order(late);
+    const expiring = CustomerPendingPaymentSchema.parse((await pay(late).expect(201)).body.data);
+    await notify(late, expiring.id).expect(200);
+    // The 15-min job only acts on a payment that is due, so make it due and run the same entry point.
+    await dataSource.query(`UPDATE payment SET expires_at = now() - interval '1 second' WHERE id = $1`, [expiring.id]);
+    await app.get(PaymentService).expire(expiring.id);
+    expect(await statusOf(expiring.id)).toBe('cancelled');
+    expect((await tables()).find((row) => row.id === fourth.id)?.staffCall).toBeNull();
 
     const third = await seatByLabel(dataSource, 'T3');
     const caller = await startGuest(app, third.qr);
