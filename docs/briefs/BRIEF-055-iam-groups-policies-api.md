@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-30 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -119,9 +119,10 @@ Run proof (real stack): as Field (LINE) — Job 1 and Job 2 via `curl` with your
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
 - [x] Size within workflow §2
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-30 | Initial Draft (Cowork) — IAM I3 groups & policies API |
+| 1 | 2026-10-30 | Ready — Field in session: "approve BRIEF-055 Rev 1 Ready" (incl. the three *(proposed)* rows) |
