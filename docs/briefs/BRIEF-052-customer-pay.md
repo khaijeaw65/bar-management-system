@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-30 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -131,7 +131,7 @@ Run proof (real stack, ports BRIEF-046; dev venue has a test PromptPay ID): phon
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
 - [x] Size within workflow §2 (≤ 3 working days; over the line guide by Field's one-brief choice)
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
@@ -139,3 +139,4 @@ Run proof (real stack, ports BRIEF-046; dev venue has a test PromptPay ID): phon
 | 1 | 2026-10-30 | Initial Draft (Cowork) — customer side C5 |
 | 1 | 2026-10-30 | AC tests by planner (trial #36) — `app/backend/test/customer-payment.e2e-spec.ts` (AC-1–9), `app/frontend/e2e/customer-pay.spec.ts` (AC-10–14) |
 | 1 | 2026-10-30 | Draft edit (Field: tighten vague ACs): AC-10 countdown `role="timer"` mm:ss + download `promptpay-{seat}.png`; AC-11 split into AC-11 / AC-12; AC-7 adds expiry; transfer bell `note` = Money string (§3); ACs renumbered to AC-15 |
+| 1 | 2026-10-30 | Ready — Field in session: "approve BRIEF-052 Rev 1 Ready" (incl. the three *(proposed)* rows; AC tests ride in this seed, trial #36) |
