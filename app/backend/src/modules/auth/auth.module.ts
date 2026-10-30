@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { AppConfigModule } from '../../providers/config/app/config.module.js';
 import { JwtConfigModule } from '../../providers/config/jwt/config.module.js';
 import { JwtConfigService } from '../../providers/config/jwt/config.service.js';
@@ -42,7 +40,6 @@ import { LineClientHttp } from './infrastructure/line/line-client.http.js';
     TokenService,
     JwtStrategy,
     { provide: LINE_CLIENT, useClass: LineClientHttp },
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
   exports: [TokenService],
 })

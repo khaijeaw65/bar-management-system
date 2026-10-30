@@ -26,6 +26,7 @@
     "migration:run": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:run -d dist/providers/database/data-source.js",
     "migration:revert": "nest build && node --env-file=.env ./node_modules/typeorm/cli.js migration:revert -d dist/providers/database/data-source.js",
     "seed:staff": "nest build && node --env-file=.env ./dist/cli/seed-staff.js",
+    "seed:roster": "nest build && node --env-file=.env ./dist/cli/seed-roster.js",
     "seed:venue": "nest build && node --env-file=.env ./dist/cli/seed-venue-main.js",
     "seed:menu": "nest build && node --env-file=.env ./dist/cli/seed-menu.js",
     "seed:demo-history": "nest build && node --env-file=.env ./dist/cli/seed-demo-history.js",
