@@ -8,7 +8,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { LoadError } from "@/components/ui/LoadError";
 import { useTableLive } from "@/hooks/useSocketEvent";
-import { getTables } from "@/lib/api/tables";
+import { useAcknowledgeCall } from "@/hooks/useStaffCalls";
+import { usePendingBySeat } from "@/hooks/useTicketBoard";
+import { getTables, TABLES_KEY } from "@/lib/api/tables";
 import { CheckoutModal } from "./checkout/CheckoutModal";
 import { DisconnectedBanner } from "./DisconnectedBanner";
 import { FloorSummary } from "./FloorSummary";
@@ -31,9 +33,11 @@ function withPay(params: URLSearchParams, on: boolean): Route {
 }
 
 export function TableGrid() {
-  const tables = useQuery({ queryKey: ["tables"], queryFn: getTables, retry: false });
+  const tables = useQuery({ queryKey: TABLES_KEY, queryFn: getTables, retry: false });
   const disconnected = useTableLive();
   const now = useMinuteClock();
+  const pending = usePendingBySeat();
+  const acknowledge = useAcknowledgeCall();
   const [draft, setDraft] = useState<{ seatId: string | null } | null>(null);
   const params = useSearchParams();
   const router = useRouter();
@@ -84,8 +88,8 @@ export function TableGrid() {
         <>
           {disconnected ? <DisconnectedBanner /> : null}
           <FloorSummary items={items} />
-          <SeatSection title="เคาน์เตอร์" seats={items.filter((seat) => seat.kind === "counter").sort(byOrder)} now={now} selectedId={selectedId} onSeat={onSeat} />
-          <SeatSection title="โต๊ะ" seats={items.filter((seat) => seat.kind === "table").sort(byOrder)} now={now} selectedId={selectedId} onSeat={onSeat} />
+          <SeatSection title="เคาน์เตอร์" seats={items.filter((seat) => seat.kind === "counter").sort(byOrder)} now={now} selectedId={selectedId} pending={pending} onSeat={onSeat} onAcknowledge={acknowledge.mutate} />
+          <SeatSection title="โต๊ะ" seats={items.filter((seat) => seat.kind === "table").sort(byOrder)} now={now} selectedId={selectedId} pending={pending} onSeat={onSeat} onAcknowledge={acknowledge.mutate} />
         </>
       ) : null}
       {draft ? (
