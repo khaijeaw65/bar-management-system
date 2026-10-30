@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { TableSeatKind, VisitState } from '@bar/contracts';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Repository } from 'typeorm';
 import { readDate, readOptionalText, readText } from '../../../../common/persistence/row-values.js';
 import type { GuestSessionRepository } from '../../domain/guest-session.repository.js';
@@ -8,13 +10,15 @@ import type { GuestSessionRow, NewGuestSession } from '../../domain/guest-sessio
 import { GuestSession } from './guest-session.entity.js';
 
 const FIND_BY_HASH = `
-  SELECT g.id, g.visit_id, g.display_name, g.expires_at,
+  SELECT g.id, g.visit_id, g.display_name, g.expires_at, g.created_at,
          s.id AS seat_id, s.label, s.kind, s.is_active, v.state AS visit_state
   FROM guest_session g
   JOIN table_seat s ON s.id = g.table_seat_id
   LEFT JOIN visit v ON v.id = g.visit_id
   WHERE g.token_hash = $1
 `;
+
+const BIND_VISIT = `UPDATE guest_session SET visit_id = $2 WHERE id = $1 AND visit_id IS NULL`;
 
 const PURGE_EXPIRED = `
   DELETE FROM guest_session
@@ -29,6 +33,7 @@ interface SessionJoinRow {
   visit_id: unknown;
   display_name: unknown;
   expires_at: unknown;
+  created_at: unknown;
   seat_id: unknown;
   label: unknown;
   kind: TableSeatKind;
@@ -41,6 +46,7 @@ export class GuestSessionTypeormRepository implements GuestSessionRepository {
   public constructor(
     @InjectRepository(GuestSession)
     private readonly ormRepository: Repository<GuestSession>,
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
 
   public async insert(input: NewGuestSession): Promise<string> {
@@ -58,6 +64,11 @@ export class GuestSessionTypeormRepository implements GuestSessionRepository {
     await this.mutate(id, (session) => {
       session.expiresAt = expiresAt;
     });
+  }
+
+  // Through the transaction handle: the visit row it points at is not committed yet.
+  public async bindVisit(id: string, visitId: string): Promise<void> {
+    await this.txHost.tx.query(BIND_VISIT, [id, visitId]);
   }
 
   public async setDisplayName(id: string, displayName: string | null): Promise<void> {
@@ -92,6 +103,7 @@ export class GuestSessionTypeormRepository implements GuestSessionRepository {
       visitState: row.visit_state,
       displayName: readOptionalText(row.display_name),
       expiresAt: readDate(row.expires_at),
+      createdAt: readDate(row.created_at),
     };
   }
 }

@@ -1,6 +1,5 @@
 import {
   UnavailableLineSchema,
-  type MenuItem,
   type PlaceOrderRequest,
   type UnavailableLine,
   type UnavailableReason,
@@ -8,6 +7,7 @@ import {
 import { z } from "zod";
 import { ApiError } from "@/lib/api/errors";
 import { scaleMoney, sumMoney } from "@/lib/utils/money";
+import type { OrderableItem } from "./orderable";
 
 export interface NewLine {
   itemId: string;
@@ -36,6 +36,8 @@ export interface CartState {
   closed: boolean;
   forbidden: boolean;
   notice: "network" | "reused" | null;
+  /** Server message of a 429 — informational only, the cart stays editable and the key is kept. */
+  rateLimited: string | null;
   undo: { id: string; quantity: number } | null;
 }
 
@@ -47,11 +49,13 @@ export type CartAction =
   | { type: "rememberName"; name: string }
   | { type: "pending"; value: boolean }
   | { type: "unavailable"; details: UnavailableLine[] }
-  | { type: "sync"; items: readonly MenuItem[] }
+  | { type: "sync"; items: readonly OrderableItem[] }
   | { type: "closed" }
   | { type: "forbidden" }
   | { type: "network" }
-  | { type: "reused" };
+  | { type: "reused" }
+  | { type: "rateLimited"; message: string }
+  | { type: "reset" };
 
 const detailsSchema = z.object({ details: z.array(UnavailableLineSchema) });
 
@@ -65,6 +69,7 @@ export function createCart(): CartState {
     closed: false,
     forbidden: false,
     notice: null,
+    rateLimited: null,
     undo: null,
   };
 }
@@ -74,7 +79,7 @@ function signature(line: NewLine): string {
   return [line.variantId, options, line.orderedByName ?? "", line.notes ?? ""].join("|");
 }
 
-export function lineReason(line: CartLine, items: readonly MenuItem[]): UnavailableReason | null {
+export function lineReason(line: CartLine, items: readonly OrderableItem[]): UnavailableReason | null {
   const item = items.find((entry) => entry.id === line.itemId);
   if (!item) return null;
   if (!item.availableNow) return item.unavailableReason ?? "sold_out";
@@ -119,6 +124,7 @@ export function sendFailure(error: unknown): CartAction {
   }
   if (error.status === 403) return { type: "forbidden" };
   if (error.code === "INVALID_STATE_TRANSITION") return { type: "closed" };
+  if (error.code === "RATE_LIMITED") return { type: "rateLimited", message: error.message };
   if (error.code === "IDEMPOTENCY_KEY_REUSED") return { type: "reused" };
   if (error.code === "ITEM_UNAVAILABLE") {
     const parsed = detailsSchema.safeParse(error.data);
@@ -205,7 +211,7 @@ function flagUnavailable(state: CartState, details: UnavailableLine[]): CartStat
   };
 }
 
-function syncMenu(state: CartState, items: readonly MenuItem[]): CartState {
+function syncMenu(state: CartState, items: readonly OrderableItem[]): CartState {
   let changed = false;
   const lines = state.lines.map((line) => {
     if (line.unavailable) return line;
@@ -218,7 +224,7 @@ function syncMenu(state: CartState, items: readonly MenuItem[]): CartState {
 }
 
 function setPending(state: CartState, value: boolean): CartState {
-  return { ...state, pending: value, notice: value ? null : state.notice };
+  return { ...state, pending: value, notice: value ? null : state.notice, rateLimited: value ? null : state.rateLimited };
 }
 
 export function cartReducer(state: CartState, action: CartAction): CartState {
@@ -247,6 +253,10 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, notice: "network", pending: false };
     case "reused":
       return { ...state, notice: "reused", pending: false };
+    case "rateLimited":
+      return { ...state, rateLimited: action.message, pending: false };
+    case "reset":
+      return createCart();
     default:
       return state;
   }

@@ -3,7 +3,7 @@
 import { toast } from "@heroui/react";
 import type { MenuItem } from "@bar/contracts";
 import { useEffect } from "react";
-import { lineReason, type CartAction, type CartLine } from "../cart";
+import { lineReason, type CartAction, type CartLine } from "@/lib/order/cart";
 
 export function useMenuSync(
   items: readonly MenuItem[] | undefined,

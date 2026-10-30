@@ -24,4 +24,23 @@ export class CustomerThrottle {
       return true;
     }
   }
+
+  /** One action per `seconds`: true when this call took the slot. Fails open like `allow`. */
+  public async acquire(key: string, seconds: number): Promise<boolean> {
+    try {
+      return (await this.redis.client.set(key, '1', 'EX', seconds, 'NX')) === 'OK';
+    } catch (error) {
+      this.logger.warn(`throttle ${key.split(':')[1] ?? 'key'} failed open: ${error instanceof Error ? error.message : 'error'}`);
+      return true;
+    }
+  }
+
+  /** Gives the slot back, so a request that failed does not cost the guest the wait. */
+  public async release(key: string): Promise<void> {
+    try {
+      await this.redis.client.del(key);
+    } catch {
+      // The slot simply expires on its own.
+    }
+  }
 }

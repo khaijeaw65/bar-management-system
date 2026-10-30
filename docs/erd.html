@@ -521,7 +521,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     <div>
       <h1 class="intro-title">Entity<br><span>Relationship Diagram</span></h1>
       <div class="intro-meta">
-        <span><strong>10 domains</strong> · 38 tables</span>
+        <span><strong>10 domains</strong> · 39 tables</span>
         <span><strong>Stack:</strong> NestJS + PostgreSQL + TypeORM</span>
         <span><strong>Updated:</strong> Sep 2026</span>
       </div>
@@ -606,6 +606,9 @@ erDiagram
         string qr_token
         int capacity
         string status
+        timestamp staff_called_at
+        string staff_call_reason
+        string staff_call_note
     }
     customer {
         uuid id PK
@@ -634,6 +637,15 @@ erDiagram
         string opened_via
         timestamp opened_at
         timestamp closed_at
+    }
+    guest_session {
+        uuid id PK
+        string token_hash
+        uuid table_seat_id FK
+        uuid visit_id FK
+        string display_name
+        timestamp expires_at
+        timestamp created_at
     }
     staff_user {
         uuid id PK
@@ -775,6 +787,7 @@ erDiagram
     order_record {
         uuid id PK
         uuid visit_id FK
+        uuid guest_session_id FK
         int order_number
         date business_date
         timestamp created_at
@@ -899,6 +912,9 @@ erDiagram
     customer |o--o{ bottle_keep : keeps
 
     visit ||--o{ order_record : contains
+    table_seat ||--o{ guest_session : "scanned at"
+    visit |o--o{ guest_session : binds
+    guest_session |o--o{ order_record : places
     visit ||--o{ payment : settles
     visit ||--o{ bottle_keep_pour : poured_at
 
@@ -994,8 +1010,11 @@ erDiagram
             <div class="field-row"><span class="field-name">qr_token</span><span class="field-type">varchar</span></div>
             <div class="field-row"><span class="field-name">capacity</span><span class="field-type">smallint</span></div>
             <div class="field-row"><span class="field-name">status</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">staff_called_at</span><span class="field-type">timestamptz?</span></div>
+            <div class="field-row"><span class="field-name">staff_call_reason</span><span class="field-type">varchar?</span></div>
+            <div class="field-row"><span class="field-name">staff_call_note</span><span class="field-type">varchar?</span></div>
           </div>
-          <div class="field-note">status: active | inactive. qr_token: regenerating issues a new token and invalidates old (counter QR reuse pattern)</div>
+          <div class="field-note">status: active | inactive. qr_token: regenerating issues a new token and invalidates old (counter QR reuse pattern). staff_call_*: the guest's call-staff bell lives on the seat, so a free table can ring it; cleared on acknowledge or visit close (BRIEF-048).</div>
         </div>
 
       </div>
@@ -1060,6 +1079,23 @@ erDiagram
             <div class="field-row"><span class="field-name">closed_at</span><span class="field-type">timestamptz</span></div>
           </div>
           <div class="field-note">customer_id nullable — visit exists before identity. State machine: OPEN → ACTIVE → IDLE → CLOSED. One live visit per seat (partial unique index). opened_by / opened_via (pos | app | qr) feed the join-confirm dialog when two devices open the same seat (BRIEF-011 Q3).</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">guest_session</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">token_hash</span><span class="field-type">char(64)</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> table_seat_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> visit_id</span><span class="field-type">uuid?</span></div>
+            <div class="field-row"><span class="field-name">display_name</span><span class="field-type">varchar(30)?</span></div>
+            <div class="field-row"><span class="field-name">expires_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">One row = one phone that scanned a table QR (DR-028). Opaque cookie token; only its SHA-256 is stored. visit_id NULL = seat-only (expires 2 h sliding); bound at the first order = lives until the visit closes. Not a customer identity — no login, no PDPA data.</div>
         </div>
 
       </div>
@@ -1411,12 +1447,13 @@ erDiagram
           <div class="entity-fields">
             <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> visit_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> guest_session_id</span><span class="field-type">uuid?</span></div>
             <div class="field-row"><span class="field-name">order_number</span><span class="field-type">int</span></div>
             <div class="field-row"><span class="field-name">business_date</span><span class="field-type">date</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">One row = one order "#001" — what was sent in one go (DR-013). order_number resets daily; business_date uses the 06:00 Asia/Bangkok cut-off. UNIQUE (business_date, order_number). 1 order → 1..3 tickets. Bill link: payment_order → order_record.</div>
+          <div class="field-note">One row = one order "#001" — what was sent in one go (DR-013). order_number resets daily; business_date uses the 06:00 Asia/Bangkok cut-off. UNIQUE (business_date, order_number). 1 order → 1..3 tickets. Bill link: payment_order → order_record. guest_session_id NULL = staff order; set = placed from a guest phone ("ของฉัน", DR-028).</div>
         </div>
 
         <div class="entity-card">

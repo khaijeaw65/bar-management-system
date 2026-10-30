@@ -8,7 +8,7 @@ import type { VisitRepository } from '../domain/visit.repository.js';
 import type { VisitRecord } from '../domain/visit.types.js';
 import { PaymentGuard } from '../../payment/application/payment-guard.js';
 import { VisitService } from './visit.service.js';
-import { VISIT_OPENED, VISIT_STATE_CHANGED } from '@bar/contracts';
+import { TABLE_STAFF_CALL_CLEARED, VISIT_OPENED, VISIT_STATE_CHANGED } from '@bar/contracts';
 
 const SEAT: SeatIdentity = {
   id: '11111111-1111-4111-8111-111111111111',
@@ -42,6 +42,7 @@ function seatWith(current: VisitRecord | null): SeatWithLiveVisit {
           guestLabel: current.guestLabel,
         }
       : null,
+    staffCall: null,
   };
 }
 
@@ -66,9 +67,10 @@ describe('VisitService', () => {
     findById: vi.fn(),
     findActiveById: vi.fn(),
     replaceQrToken: vi.fn(),
+    clearStaffCall: vi.fn(),
   };
   const staff = { findById: vi.fn() };
-  const notifications = { emitToPos: vi.fn() };
+  const notifications = { emitToPos: vi.fn(), emitToStaff: vi.fn(), emitTabChanged: vi.fn(), emitSeatVisitOpened: vi.fn() };
   const paymentGuard = { assertNoPaymentInFlight: vi.fn() };
   const service = new VisitService(
     visits as unknown as VisitRepository,
@@ -104,6 +106,30 @@ describe('VisitService', () => {
       tableSeatId: SEAT.id,
       state: 'closed',
     });
+  });
+
+  it('clears the seat bell and pings the guests when the visit closes', async () => {
+    const closed = visit({ state: 'closed', closedAt: new Date() });
+    visits.lockById.mockResolvedValue(visit());
+    visits.closeIfLive.mockResolvedValue(closed);
+    seats.clearStaffCall.mockResolvedValue(true);
+
+    await service.close(closed.id);
+
+    expect(seats.clearStaffCall).toHaveBeenCalledWith(SEAT.id);
+    expect(notifications.emitToStaff).toHaveBeenCalledWith(TABLE_STAFF_CALL_CLEARED, { tableSeatId: SEAT.id });
+    expect(notifications.emitTabChanged).toHaveBeenCalledWith(closed.id, true);
+  });
+
+  it('stays quiet about the bell when the seat had none', async () => {
+    const closed = visit({ state: 'closed', closedAt: new Date() });
+    visits.lockById.mockResolvedValue(visit());
+    visits.closeIfLive.mockResolvedValue(closed);
+    seats.clearStaffCall.mockResolvedValue(false);
+
+    await service.close(closed.id);
+
+    expect(notifications.emitToStaff).not.toHaveBeenCalled();
   });
 
   it.each(['closed', 'abandoned'] as const)(

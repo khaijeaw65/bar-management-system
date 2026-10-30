@@ -5,6 +5,7 @@ import { z } from "zod";
 import { apiEnvelope, staffMe } from "@/mocks/handlers";
 import { server } from "@/mocks/node";
 import { apiGet, apiPost, onSessionExpired } from "./client";
+import { getSession, onGuestExpired } from "./customer";
 
 const okSchema = z.object({ ok: z.literal(true) });
 
@@ -155,4 +156,24 @@ test("sends an idempotency key when asked", async () => {
 
   await apiPost("/orders", { visitId: "x" }, okSchema, { idempotencyKey: "key-1" });
   expect(key).toBe("key-1");
+});
+
+test("a guest 401 never triggers the staff refresh and tells every screen the session is gone", async () => {
+  let refreshed = 0;
+  const gone: string[] = [];
+  const stop = onGuestExpired(() => gone.push("expired"));
+  server.use(
+    http.get("*/api/customer/session", () =>
+      HttpResponse.json(apiEnvelope(null, 401, "GUEST_SESSION_INVALID", "เซสชันหมดอายุ"), { status: 401 }),
+    ),
+    http.post("*/api/auth/refresh", () => {
+      refreshed += 1;
+      return HttpResponse.json(apiEnvelope({ ok: true }));
+    }),
+  );
+
+  await expect(getSession()).rejects.toMatchObject({ status: 401, code: "GUEST_SESSION_INVALID" });
+  stop();
+  expect(refreshed).toBe(0);
+  expect(gone).toEqual(["expired"]);
 });

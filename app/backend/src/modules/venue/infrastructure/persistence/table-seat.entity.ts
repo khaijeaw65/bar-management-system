@@ -25,4 +25,13 @@ export class TableSeat extends BaseEntity {
 
   @Column({ type: COL.BOOLEAN, default: true })
   public isActive!: boolean;
+
+  @Column({ type: COL.TIMESTAMP, nullable: true })
+  public staffCalledAt!: Date | null;
+
+  @Column({ type: COL.VARCHAR, length: 10, nullable: true })
+  public staffCallReason!: 'bill' | 'other' | null;
+
+  @Column({ type: COL.VARCHAR, length: 100, nullable: true })
+  public staffCallNote!: string | null;
 }

@@ -1,13 +1,13 @@
 # State — KJ
-Updated: 2026-10-29 · Agent: Claude Code (BRIEF-047 audit PASS, PR open)
+Updated: 2026-10-30 · Agent: Claude Code (BRIEF-049 audit PASS, PR open)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-047 audit PASS** (S `70ee421`) → PR open, merge on green `ci`. Notes for BRIEF-049: ignore `expiresAt` once visit-bound (401 is the signal), hide `isAvailable:false` variants. ERD page with BRIEF-048. 046 Done (#95).
+**BRIEF-050 audit PASS, PR open** → `ci` green → merge (Field's own PR, §7). 049 merged (#99), 048 Done (#98). Sonar run (gate fails on pre-existing issues + 0 % coverage). Open point: the 60 min seat-only cap is Rev 2.
 
 ## Active
-- Brief: BRIEF-047 Rev 1 · Stage: Audit PASS · Branch: `feat/BRIEF-047-customer-qr-session` (PR open)
-- Done 21–29 Oct: BRIEF-046 (#95) · BRIEF-025 (#94) · BRIEF-045 (#92) · BRIEF-041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
+- Brief: BRIEF-050 Rev 2 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-050-customer-tab-bell-live`
+- Done 21–30 Oct: BRIEF-049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
 1. Plan to 8 Nov (Field 29 Oct): customer C1–C6 (047 → 048 order/tab/call-staff → UI → pay merge → POS badge) → IAM → AI owner insight (+ tuning) → rest of POS/admin · 2 Nov update: mobile briefs to Metee (010, 022, + new order) · Field: LINE console callback `http://localhost:3011/api/auth/line/callback` if not done
@@ -18,7 +18,7 @@ Updated: 2026-10-29 · Agent: Claude Code (BRIEF-047 audit PASS, PR open)
 ## Blockers / Coordination
 - Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4)
 - e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e · frontend unit tests time out under heavy load
-- Dev `start:dev` :3011 + `next dev` :3010 left running (046 run proof) — stop before backend/frontend test:e2e · SonarQube :9000 up · dev `bar` has no pending migrations
+- Dev servers stopped · SonarQube stopped (start with the compose sonar profile) · dev `bar` has a test order #1 on T3 from the 049 run proof
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
@@ -36,5 +36,5 @@ Updated: 2026-10-29 · Agent: Claude Code (BRIEF-047 audit PASS, PR open)
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-047 C1 (Ready) → 048 C2 → customer UI C3–C4 → C5 pay merge → C6 POS badge → IAM → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
+1. BRIEF-050 C4 (PR open) → C5 pay merge → C6 POS badge → IAM → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)

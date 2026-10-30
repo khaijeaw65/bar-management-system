@@ -15,6 +15,7 @@ export interface GuestSessionRow {
   visitState: VisitState | null;
   displayName: string | null;
   expiresAt: Date;
+  createdAt: Date;
 }
 
 /** What `request.guestSession` carries once the guard has accepted the cookie. */
@@ -24,6 +25,8 @@ export interface GuestSessionView {
   visitId: string | null;
   displayName: string | null;
   expiresAt: Date;
+  /** Set on the request that bound a seat-only session to the seat's live visit (bind on read). */
+  justBound?: true;
 }
 
 export interface StartedGuestSession {

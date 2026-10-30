@@ -2,6 +2,7 @@ import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod
 import { UpdateVenuePaymentSettingsSchema, UpdateVenueSettingsSchema } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 import { fromSatang, scaleMoney, sumMoney, toSatang } from "@/lib/utils/money";
+import { customerHandlers } from "./customer";
 import { createMenuHandlers } from "./menu";
 import { reportHandlers } from "./reports";
 
@@ -117,7 +118,7 @@ const seat = (
   kind: TableSummary["kind"],
   sortOrder: number,
   currentVisit: TableSummary["currentVisit"],
-): TableSummary => ({ id, label, kind, sortOrder, currentVisit });
+): TableSummary => ({ id, label, kind, sortOrder, currentVisit, staffCall: null });
 
 const visitOn = (
   id: string,
@@ -530,6 +531,7 @@ function settle(visitId: string, paid: string, remaining: string, locked: boolea
 }
 
 export const handlers = [
+  ...customerHandlers,
   http.get("*/api/auth/me", () => json(staffMe)),
   http.post("*/api/auth/refresh", () => json({ ok: true })),
   http.post("*/api/auth/logout", () => json({ ok: true })),

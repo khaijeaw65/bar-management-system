@@ -34,6 +34,8 @@ export interface NewOrder {
   businessDate: string;
   tickets: NewTicket[];
   placedAt: Date;
+  /** NULL / absent = a staff order (DR-028). */
+  guestSessionId?: string | null;
 }
 
 export interface LockedTicket {

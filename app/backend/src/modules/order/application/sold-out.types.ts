@@ -8,6 +8,8 @@ export interface ToggleOutcome {
   autoVoided: AvailabilityTicket[];
   notVoided: NotVoidedTicket[];
   cancelled: TicketView[];
+  /** Visits that lost lines to the 86 — their guests' tabs changed. */
+  voidedVisits: string[];
 }
 
 export interface SeatRef {

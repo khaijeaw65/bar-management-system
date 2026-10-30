@@ -1,4 +1,4 @@
-import type { MenuItem } from "@bar/contracts";
+import type { OrderableItem } from "./orderable";
 
 export interface ItemDraft {
   variantId: string;
@@ -19,7 +19,7 @@ export type ItemDraftAction =
   | { type: "name"; value: string }
   | { type: "naming"; open: boolean };
 
-export function createItemDraft(item: MenuItem): ItemDraft {
+export function createItemDraft(item: OrderableItem): ItemDraft {
   const variant = item.variants.find((entry) => entry.isAvailable) ?? item.variants[0];
   return {
     variantId: variant?.id ?? "",

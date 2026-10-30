@@ -46,6 +46,10 @@ export class OrderQueryService {
     return this.orders.orderTotals(visitId);
   }
 
+  public async guestSessionIds(visitId: string): Promise<ReadonlyMap<string, string>> {
+    return this.orders.guestSessionIds(visitId);
+  }
+
   public async billsFor(visitIds: readonly string[]): Promise<Map<string, VisitBill>> {
     const rows = await this.orders.bills(visitIds);
     return new Map(rows.map((row) => [row.visitId, { total: row.total, itemCount: row.itemCount }]));
