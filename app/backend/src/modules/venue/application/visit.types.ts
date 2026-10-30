@@ -29,3 +29,9 @@ export interface OrderClaim {
   visitId: string;
   tableSeatId: string;
 }
+
+export interface GuestVisit {
+  visitId: string;
+  tableSeatId: string;
+  created: boolean;
+}

@@ -32,6 +32,7 @@ export async function clearStaffAndVenue(dataSource: DataSource): Promise<void> 
   await dataSource.query('DELETE FROM order_item');
   await dataSource.query('DELETE FROM order_ticket');
   await dataSource.query('DELETE FROM order_record');
+  await dataSource.query('DELETE FROM guest_session');
   await dataSource.query('DELETE FROM menu_variant_modifier_group');
   await dataSource.query('DELETE FROM modifier_option');
   await dataSource.query('DELETE FROM modifier_group');

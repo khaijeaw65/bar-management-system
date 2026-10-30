@@ -43,6 +43,6 @@ import { VisitTypeormRepository } from './infrastructure/persistence/visit.typeo
     AuditLogService,
     { provide: CLOCK, useClass: SystemClock },
   ],
-  exports: [VisitService, VenueSettingsService],
+  exports: [VisitService, VenueSettingsService, TableSeatService],
 })
 export class VenueModule {}

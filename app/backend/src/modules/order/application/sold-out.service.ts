@@ -59,18 +59,20 @@ export class SoldOutService {
     return { ...empty, ...voided };
   }
 
-  private async voidLines(lines: readonly PendingItemLine[]): Promise<Pick<ToggleOutcome, 'autoVoided' | 'notVoided' | 'cancelled'>> {
+  private async voidLines(lines: readonly PendingItemLine[]): Promise<Pick<ToggleOutcome, 'autoVoided' | 'notVoided' | 'cancelled' | 'voidedVisits'>> {
     const autoVoided: AvailabilityTicket[] = [];
     const notVoided: NotVoidedTicket[] = [];
     const cancelled: TicketView[] = [];
+    const voidedVisits: string[] = [];
     for (const visitId of this.visitIds(lines)) {
       const visitLines = lines.filter((line) => line.visitId === visitId);
       const outcome = await this.voidVisit(visitId, visitLines);
       autoVoided.push(...outcome.autoVoided);
       notVoided.push(...outcome.notVoided);
       cancelled.push(...outcome.cancelled);
+      if (outcome.autoVoided.length > 0) voidedVisits.push(visitId);
     }
-    return { autoVoided: this.bySeat(autoVoided), notVoided: this.bySeat(notVoided), cancelled };
+    return { autoVoided: this.bySeat(autoVoided), notVoided: this.bySeat(notVoided), cancelled, voidedVisits };
   }
 
   private async voidVisit(
@@ -116,7 +118,7 @@ export class SoldOutService {
   }
 
   private untouched(item: MenuItem, available: boolean, changed: boolean): ToggleOutcome {
-    return { changed, available, item, autoVoided: [], notVoided: [], cancelled: [] };
+    return { changed, available, item, autoVoided: [], notVoided: [], cancelled: [], voidedVisits: [] };
   }
 
   private async publish(outcome: ToggleOutcome, staffId: string): Promise<void> {
@@ -129,6 +131,7 @@ export class SoldOutService {
       autoVoided: outcome.autoVoided,
       notVoided: outcome.notVoided,
     });
+    for (const visitId of outcome.voidedVisits) this.notifications.emitTabChanged(visitId);
     for (const ticket of outcome.cancelled) {
       this.notifications.emitToStaff(TICKET_STATUS_CHANGED, {
         ticketId: ticket.id,

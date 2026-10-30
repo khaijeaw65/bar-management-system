@@ -1,6 +1,6 @@
 -- ============================================================
 -- Bar Management System — Initial Schema
--- Generated: 2026-09-13  |  Updated: 2026-10-23  |  10 domains, 38 tables
+-- Generated: 2026-09-13  |  Updated: 2026-10-29  |  10 domains, 39 tables
 -- ============================================================
 -- updated_at is owned by the database (DR-023): the trigger block above the seed data stamps every UPDATE.
 -- A table created later with an updated_at column attaches the same trigger in its own migration.
@@ -56,6 +56,9 @@ CREATE TABLE table_seat (
   sort_order  SMALLINT NOT NULL DEFAULT 0,
   qr_token    VARCHAR(64) UNIQUE,                         -- opaque random token; regenerate = replace (BRIEF-011 Q1, Field 2026-10-04)
   is_active   BOOLEAN NOT NULL DEFAULT TRUE,
+  staff_called_at   TIMESTAMPTZ,                         -- call-staff bell (BRIEF-048); NULL = no bell. Cleared on acknowledge / visit close
+  staff_call_reason VARCHAR(10) CHECK (staff_call_reason IN ('bill', 'other')),
+  staff_call_note   VARCHAR(100),
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by  UUID,
@@ -100,6 +103,21 @@ CREATE TABLE visit (
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Guest QR session (DR-028, BRIEF-047). Opaque cookie token; only its SHA-256 is stored.
+-- visit_id NULL = seat-only (expires 2 h sliding); bound to a visit = lives until the visit closes.
+CREATE TABLE guest_session (
+  id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  token_hash     CHAR(64) NOT NULL UNIQUE,
+  table_seat_id  UUID NOT NULL REFERENCES table_seat(id),
+  visit_id       UUID REFERENCES visit(id),
+  display_name   VARCHAR(30),                 -- guest nickname (CD-06 R3), snapshot to order lines at send
+  expires_at     TIMESTAMPTZ NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()   -- trg_guest_session_updated_at (DR-023)
+);
+CREATE INDEX idx_guest_session_seat ON guest_session(table_seat_id);
+CREATE INDEX idx_guest_session_seat_only_expiry ON guest_session(expires_at) WHERE visit_id IS NULL;
 
 CREATE TABLE customer_consent (
   id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -364,12 +382,14 @@ CREATE TABLE order_record (
   visit_id       UUID NOT NULL REFERENCES visit(id),
   order_number   INT  NOT NULL,             -- daily sequence, shown "#001" (DR-013)
   business_date  DATE NOT NULL,             -- business day, 06:00 Asia/Bangkok cut-off (DR-013)
+  guest_session_id UUID REFERENCES guest_session(id),  -- NULL = staff order; set = placed from a guest phone (DR-028, BRIEF-048 — "ของฉัน")
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by     UUID REFERENCES staff_user(id),   -- NULL = customer QR order
   updated_by     UUID REFERENCES staff_user(id),
   CONSTRAINT uq_order_number_per_day UNIQUE (business_date, order_number)
 );
+CREATE INDEX idx_order_guest_session ON order_record(guest_session_id) WHERE guest_session_id IS NOT NULL;
 
 -- One row = one station's part of an order; owns the STATUS (DR-012, DR-013).
 -- Split by station only when venue.kitchen_display_enabled; otherwise one 'bar' ticket (+ charge ticket).

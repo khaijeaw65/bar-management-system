@@ -40,6 +40,6 @@ import { OrderTypeormRepository } from './infrastructure/persistence/order.typeo
     TicketService,
     SoldOutService,
   ],
-  exports: [OrderQueryService],
+  exports: [OrderQueryService, OrderService],
 })
 export class OrderModule {}

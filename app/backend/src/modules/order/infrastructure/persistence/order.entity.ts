@@ -12,4 +12,8 @@ export class OrderRecord extends BaseEntity {
 
   @Column({ type: COL.DATE })
   public businessDate!: string;
+
+  /** NULL = a staff order (DR-028). */
+  @Column({ type: COL.UUID, nullable: true })
+  public guestSessionId!: string | null;
 }
