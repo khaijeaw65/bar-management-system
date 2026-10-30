@@ -8,13 +8,17 @@ export function SeatSection({
   seats,
   now,
   selectedId,
+  pending,
   onSeat,
+  onAcknowledge,
 }: Readonly<{
   title: string;
   seats: TableSummary[];
   now: number | null;
   selectedId: string | null;
+  pending: ReadonlyMap<string, number>;
   onSeat: (seat: TableSummary) => void;
+  onAcknowledge: (seatId: string) => void;
 }>) {
   if (seats.length === 0) return null;
   const counter = seats[0]?.kind === "counter";
@@ -35,7 +39,9 @@ export function SeatSection({
             seat={seat}
             now={now}
             selected={seat.currentVisit?.id === selectedId}
+            pendingOrders={pending.get(seat.id) ?? 0}
             onPress={() => onSeat(seat)}
+            onAcknowledge={() => onAcknowledge(seat.id)}
           />
         ))}
       </div>

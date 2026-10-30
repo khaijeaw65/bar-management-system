@@ -245,6 +245,23 @@ function moveTicket(id: string, from: Ticket["status"][], patch: Partial<Ticket>
   return json(next);
 }
 
+// ponytail: e2e-only handle (window.__posMock, see mocks/browser.ts) to ring the bell and place a guest order.
+export const posMockControls = {
+  ring(label: string, reason: "bill" | "other" | null = "bill", note: string | null = null) {
+    seats = seats.map((row) =>
+      row.label === label ? { ...row, staffCall: { reason, note, calledAt: new Date().toISOString() } } : row,
+    );
+    return seats.find((row) => row.label === label)?.id;
+  },
+  guestOrder(label: string, orderNumber: number) {
+    const row = seats.find((item) => item.label === label);
+    if (!row) return null;
+    const made = boardTicket(orderNumber, row.id, label, "pending");
+    tickets = [...tickets, made];
+    return { id: made.orderId, visitId: row.currentVisit?.id ?? "", orderNumber, businessDate: "2026-10-30", createdAt: made.createdAt, createdBy: null, tickets: [made], total: "240.00" };
+  },
+};
+
 export function currentSeats(): TableSummary[] {
   return seats;
 }
@@ -568,6 +585,10 @@ export const handlers = [
   http.patch("*/api/venue/settings", async ({ request }) => patchVenue(await request.json())),
   http.get("*/api/venue/payment-settings", () => json(paymentSettings)),
   http.patch("*/api/venue/payment-settings", async ({ request }) => patchPromptPay(await request.json())),
+  http.post("*/api/tables/:seatId/acknowledge-call", ({ params }) => {
+    seats = seats.map((row) => (row.id === params.seatId ? { ...row, staffCall: null } : row));
+    return json({ ok: true });
+  }),
   http.get("*/api/tickets", ({ request }) => {
     const wanted = new URL(request.url).searchParams.get("status")?.split(",") ?? ["pending", "accepted", "ready"];
     return json({ items: tickets.filter((ticket) => wanted.includes(ticket.status)) });

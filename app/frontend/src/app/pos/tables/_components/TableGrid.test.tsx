@@ -1,11 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import type { ReactNode } from "react";
 import { afterEach, expect, test, vi } from "vitest";
 import { toast, Toast } from "@heroui/react";
-import { apiEnvelope, attachedVisitId, currentSeats } from "@/mocks/handlers";
+import { apiEnvelope, attachedVisitId, currentSeats, posMockControls } from "@/mocks/handlers";
 import { server } from "@/mocks/node";
 import { resetStaffSocket } from "@/lib/socket/socket";
 import { formatElapsed } from "./table-time";
@@ -130,7 +130,7 @@ test("a selected visit gets the ring", async () => {
   renderGrid();
   const card = await screen.findByRole("button", { name: /T2/ });
   expect(card).toHaveAttribute("aria-pressed", "true");
-  expect(card.className).toContain("ring-line-accent");
+  expect(card.parentElement?.className).toContain("ring-line-accent");
 });
 
 test("formatElapsed counts whole minutes from openedAt", () => {
@@ -227,4 +227,35 @@ test("the seat list offers only free seats", async () => {
   await user.click(within(dialog).getByRole("button", { name: /เลือกโต๊ะที่ว่าง/ }));
   const options = screen.getAllByRole("option").map((option) => option.textContent);
   expect(options).toEqual(["C1", "T6", "T5"]);
+});
+
+test("AC-1/AC-2/AC-3: a bell shows on the card, even a free seat; รับทราบ clears it without opening the drawer", async () => {
+  posMockControls.ring("T3", "bill");
+  posMockControls.ring("C1", "other", "ขอน้ำแข็ง");
+  renderGrid();
+  expect(await screen.findByText(/เรียกพนักงาน · เช็คบิล · เมื่อกี้/)).toBeInTheDocument();
+  expect(screen.getByText(/เรียกพนักงาน · ขอน้ำแข็ง/)).toBeInTheDocument();
+
+  await userEvent.click(screen.getByRole("button", { name: "รับทราบ T3" }));
+  await waitFor(() => expect(screen.queryByText(/เช็คบิล/)).not.toBeInTheDocument());
+  expect(nav.replace).not.toHaveBeenCalled();
+  expect(screen.getByText(/ขอน้ำแข็ง/)).toBeInTheDocument();
+});
+
+test("AC-8: a failed acknowledge restores the badge and says so", async () => {
+  posMockControls.ring("T3", "bill");
+  server.use(
+    http.post("*/api/tables/:seatId/acknowledge-call", () =>
+      HttpResponse.json(apiEnvelope(null, 500, "INTERNAL_ERROR", "เกิดข้อผิดพลาด"), { status: 500 }),
+    ),
+  );
+  renderGrid();
+  await userEvent.click(await screen.findByRole("button", { name: "รับทราบ T3" }));
+  expect(await screen.findByText("ยังรับทราบไม่ได้ ลองอีกครั้ง")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "รับทราบ T3" })).toBeInTheDocument();
+});
+
+test("AC-4: pending tickets give the seat an ออเดอร์ใหม่ badge", async () => {
+  renderGrid();
+  expect(await screen.findByText("ออเดอร์ใหม่ 1")).toBeInTheDocument();
 });
