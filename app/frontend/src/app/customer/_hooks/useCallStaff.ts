@@ -1,6 +1,6 @@
 "use client";
 
-import type { CallStaffReason } from "@bar/contracts";
+import type { CustomerCallStaff } from "@bar/contracts";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { callStaff } from "@/lib/api/customer";
@@ -8,6 +8,9 @@ import { ApiError } from "@/lib/api/errors";
 import { useCallLock } from "./useCallLock";
 
 export const CALL_LOCK_SECONDS = 60;
+
+// A guest can ring for the bill or something else; `transfer` is set only by "แจ้งโอนแล้ว" (BRIEF-052).
+export type GuestCallReason = NonNullable<CustomerCallStaff["reason"]>;
 
 export type CallOutcome = "idle" | "sent" | "limited" | "error";
 
@@ -17,7 +20,7 @@ export function useCallStaff() {
   const [outcome, setOutcome] = useState<CallOutcome>("idle");
   const [message, setMessage] = useState<string | null>(null);
   const mutation = useMutation({
-    mutationFn: (input: { reason: CallStaffReason | null; note: string }) =>
+    mutationFn: (input: { reason: GuestCallReason | null; note: string }) =>
       callStaff({ ...(input.reason ? { reason: input.reason } : {}), ...(input.note ? { note: input.note } : {}) }),
     onSuccess: () => {
       lock(CALL_LOCK_SECONDS);
@@ -40,7 +43,7 @@ export function useCallStaff() {
     remaining,
     locked,
     pending: mutation.isPending,
-    send: (reason: CallStaffReason | null, note: string) => {
+    send: (reason: GuestCallReason | null, note: string) => {
       if (!locked && !mutation.isPending) mutation.mutate({ reason, note });
     },
   };

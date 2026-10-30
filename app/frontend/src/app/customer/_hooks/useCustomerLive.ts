@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { notifyGuestExpired } from "@/lib/api/customer";
 import { connectCustomerSocket } from "@/lib/socket/customer-socket";
 import { sessionKey } from "./useGuestSession";
+import { paymentKey } from "./useCustomerPayment";
 import { tabKey } from "./useCustomerTab";
 
 /** Keeps the tab live over the guest socket; `lost` drives the "connection lost" banner. */
@@ -22,10 +23,10 @@ export function useCustomerLive(onEnded: () => void): { lost: boolean } {
       for (const queryKey of keys) void client.invalidateQueries({ queryKey });
     };
     return connectCustomerSocket({
-      onTabChanged: (sessionEnded) => (sessionEnded ? ended.current() : refetch([tabKey, sessionKey])),
+      onTabChanged: (sessionEnded) => (sessionEnded ? ended.current() : refetch([tabKey, paymentKey, sessionKey])),
       onConnected: () => {
         setLost(false);
-        if (wasLost.current) refetch([tabKey, sessionKey, ["customer", "menu"]]);
+        if (wasLost.current) refetch([tabKey, paymentKey, sessionKey, ["customer", "menu"]]);
         wasLost.current = false;
       },
       onLost: () => {

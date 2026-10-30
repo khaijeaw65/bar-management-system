@@ -1,9 +1,12 @@
 import {
   CustomerMenuSchema,
   CallStaffResultSchema,
+  CustomerPaymentSchema,
+  CustomerPendingPaymentSchema,
   CustomerPlaceOrderResultSchema,
   CustomerSessionSchema,
   CustomerTabSchema,
+  NotifyTransferResultSchema,
   type CustomerCallStaff,
   type CustomerPlaceOrder,
 } from "@bar/contracts";
@@ -63,4 +66,20 @@ export function getTab() {
 
 export function callStaff(body: CustomerCallStaff) {
   return guarded(apiPost("/customer/call-staff", body, CallStaffResultSchema));
+}
+
+export function getPayment() {
+  return guarded(apiGet("/customer/payment", CustomerPaymentSchema));
+}
+
+export function createPayment(idempotencyKey: string) {
+  return guarded(apiPost("/customer/payments", {}, CustomerPendingPaymentSchema, { idempotencyKey }));
+}
+
+export function cancelPayment(id: string) {
+  return guarded(apiPost(`/customer/payments/${id}/cancel`, {}, CustomerPaymentSchema));
+}
+
+export function notifyTransfer(id: string) {
+  return guarded(apiPost(`/customer/payments/${id}/notify-transfer`, {}, NotifyTransferResultSchema));
 }

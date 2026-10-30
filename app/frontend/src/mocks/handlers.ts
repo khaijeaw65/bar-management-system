@@ -1,4 +1,4 @@
-import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod, PlaceOrderRequest, TableSummary, Ticket, Visit, VisitDetail } from "@bar/contracts";
+import type { MenuItem, Order, OrderLine, Payment, PaymentAttempt, PaymentMethod, PlaceOrderRequest, StaffCall, TableSummary, Ticket, Visit, VisitDetail } from "@bar/contracts";
 import { UpdateVenuePaymentSettingsSchema, UpdateVenueSettingsSchema } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 import { fromSatang, scaleMoney, sumMoney, toSatang } from "@/lib/utils/money";
@@ -247,7 +247,7 @@ function moveTicket(id: string, from: Ticket["status"][], patch: Partial<Ticket>
 
 // ponytail: e2e-only handle (window.__posMock, see mocks/browser.ts) to ring the bell and place a guest order.
 export const posMockControls = {
-  ring(label: string, reason: "bill" | "other" | null = "bill", note: string | null = null) {
+  ring(label: string, reason: StaffCall["reason"] = "bill", note: string | null = null) {
     seats = seats.map((row) =>
       row.label === label ? { ...row, staffCall: { reason, note, calledAt: new Date().toISOString() } } : row,
     );

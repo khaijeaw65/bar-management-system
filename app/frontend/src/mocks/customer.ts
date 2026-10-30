@@ -1,4 +1,12 @@
-import type { CustomerMenu, CustomerMenuItem, CustomerSession, CustomerTab, CustomerTabOrder } from "@bar/contracts";
+import type {
+  CustomerMenu,
+  CustomerMenuItem,
+  CustomerPayment,
+  CustomerPendingPayment,
+  CustomerSession,
+  CustomerTab,
+  CustomerTabOrder,
+} from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 
 const id = (n: number): string => `c0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -80,6 +88,29 @@ const dropped = new Set<string>();
 const placed = new Map<string, { body: string; result: { orderId: string; orderNumber: number; visitId: string } }>();
 
 let tabOrders: CustomerTabOrder[] = [];
+// Pay (BRIEF-052): orders before `paidThrough` are covered by a completed payment.
+let paidThrough = 0;
+let pending: CustomerPendingPayment | null = null;
+// ponytail: the e2e may expire a QR before its create request has landed; that create then comes back already cancelled.
+let expireNextCreate = false;
+
+const STORE = "customer-mock";
+
+// ponytail: a page reload resets module state, but a real server would remember — keep the "server" in sessionStorage.
+function persist(): void {
+  if (typeof sessionStorage === "undefined") return;
+  sessionStorage.setItem(STORE, JSON.stringify({ tabOrders, nextNumber, paidThrough, pending }));
+}
+
+function restore(): void {
+  if (typeof sessionStorage === "undefined") return;
+  const raw = sessionStorage.getItem(STORE);
+  if (!raw) return;
+  const saved = JSON.parse(raw) as { tabOrders: CustomerTabOrder[]; nextNumber: number; paidThrough: number; pending: CustomerPendingPayment | null };
+  ({ tabOrders, nextNumber, paidThrough, pending } = saved);
+}
+
+restore();
 
 export function resetCustomer(): void {
   displayName = null;
@@ -87,6 +118,9 @@ export function resetCustomer(): void {
   placed.clear();
   dropped.clear();
   tabOrders = [];
+  paidThrough = 0;
+  pending = null;
+  if (typeof sessionStorage !== "undefined") sessionStorage.removeItem(STORE);
 }
 
 function variantLine(variantId: string, quantity: number) {
@@ -105,13 +139,44 @@ function variantLine(variantId: string, quantity: number) {
   };
 }
 
+function sumOf(orders: CustomerTabOrder[]): number {
+  return orders.flatMap((order) => order.lines).filter((line) => !line.cancelled).reduce((sum, line) => sum + Number(line.lineTotal), 0);
+}
+
 function tabOf(): CustomerTab {
-  const total = tabOrders.flatMap((order) => order.lines).filter((line) => !line.cancelled).reduce((sum, line) => sum + Number(line.lineTotal), 0);
   return {
     visitId: tabOrders.length > 0 ? id(800) : null,
     orders: [...tabOrders].reverse(),
-    total: total.toFixed(2),
+    total: sumOf(tabOrders).toFixed(2),
     asOf: new Date().toISOString(),
+  };
+}
+
+function remainingOf(): number {
+  return sumOf(tabOrders.slice(paidThrough));
+}
+
+function paymentOf(): CustomerPayment {
+  return {
+    bill: {
+      total: sumOf(tabOrders).toFixed(2),
+      paid: sumOf(tabOrders.slice(0, paidThrough)).toFixed(2),
+      remaining: remainingOf().toFixed(2),
+      locked: pending !== null,
+    },
+    pending,
+  };
+}
+
+function pendingPayment(mine: boolean): CustomerPendingPayment {
+  const now = Date.now();
+  return {
+    id: id(950),
+    amount: remainingOf().toFixed(2),
+    qrPayload: "00020101021229370016A000000677010111011300812345678530376454031205802TH6304ABCD",
+    expiresAt: new Date(now + 15 * 60_000).toISOString(),
+    mine,
+    createdAt: new Date(now).toISOString(),
   };
 }
 
@@ -125,6 +190,7 @@ export const customerMockControls = {
       tickets: [{ station: "bar", status: "pending" }],
       lines: [{ ...variantLine(id(112), 1), orderedByName: "เอก" }],
     });
+    persist();
   },
   acceptAll(): void {
     for (const order of tabOrders) order.tickets = order.tickets.map((ticket) => ({ ...ticket, status: "accepted" }));
@@ -132,6 +198,23 @@ export const customerMockControls = {
   cancelFirstLine(): void {
     const line = tabOrders[0]?.lines[0];
     if (line) line.cancelled = true;
+  },
+  // The POS started a payment (this phone did not): view-only for the guest.
+  posPending(): void {
+    pending = pendingPayment(false);
+    persist();
+  },
+  // Staff marked the pending payment paid: everything ordered so far is covered.
+  markPaid(): void {
+    paidThrough = tabOrders.length;
+    pending = null;
+    persist();
+  },
+  // The 15-minute job cancelled it.
+  expirePending(): void {
+    expireNextCreate = pending === null;
+    pending = null;
+    persist();
   },
 };
 
@@ -154,6 +237,28 @@ export const customerHandlers = [
   }),
   http.get("*/api/customer/menu", () => envelope(customerMenu)),
   http.get("*/api/customer/tab", () => envelope(tabOf())),
+  http.get("*/api/customer/payment", () => envelope(paymentOf())),
+  http.post("*/api/customer/payments", () => {
+    if (remainingOf() <= 0) return envelope(null, 409, "NOTHING_TO_PAY", "ไม่มียอดที่ต้องชำระ");
+    if (pending) return envelope(null, 409, "PAYMENT_IN_FLIGHT", "มีการชำระเงินที่ยังไม่จบ");
+    const created = pendingPayment(true);
+    pending = expireNextCreate ? null : created;
+    expireNextCreate = false;
+    persist();
+    return envelope(created, 201);
+  }),
+  http.post("*/api/customer/payments/:paymentId/cancel", ({ params }) => {
+    const current = pending;
+    if (!current || current.id !== params.paymentId) return envelope(null, 409, "INVALID_STATE_TRANSITION", "สถานะการชำระเงินไม่ถูกต้อง");
+    if (!current.mine) return envelope(null, 403, "PAYMENT_NOT_YOURS", "ยกเลิกได้เฉพาะ QR ที่คุณสร้าง");
+    pending = null;
+    persist();
+    return envelope(paymentOf());
+  }),
+  http.post("*/api/customer/payments/:paymentId/notify-transfer", ({ params }) => {
+    if (pending?.id !== params.paymentId) return envelope(null, 409, "INVALID_STATE_TRANSITION", "สถานะการชำระเงินไม่ถูกต้อง");
+    return envelope({ notifiedAt: new Date().toISOString() });
+  }),
   http.post("*/api/customer/call-staff", () => envelope({ calledAt: new Date().toISOString() }, 201)),
   http.post("*/api/customer/orders", async ({ request }) => {
     const key = request.headers.get("Idempotency-Key") ?? "";
@@ -182,6 +287,7 @@ export const customerHandlers = [
       lines: (raw.items ?? []).map((line) => variantLine(line.variantId, line.quantity ?? 1)),
     });
     if (key) placed.set(key, { body, result });
+    persist();
     return envelope(result, 201);
   }),
 ];
