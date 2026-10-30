@@ -48,7 +48,7 @@
 - `DEV_OWNER_LINE_SUBS="U-demo-owner:Field (demo)" pnpm seed:roster` → Field (demo) → เจ้าของ, Demo ผู้จัดการ → ผู้จัดการ, Demo พนักงาน → พนักงาน.
 - `GET /api/me/permissions`: เจ้าของ 20 codes · ผู้จัดการ 18 · พนักงาน 12 (no `payments:mark_paid`, no `staff:manage`).
 - Demo พนักงาน opened C1 and took an order (201); owner created a PromptPay payment; staff `mark-paid` → **403** `{"code":"FORBIDDEN","message":"ไม่มีสิทธิ์ใช้งานส่วนนี้","data":{"missing":["payments:mark_paid"]}}`; staff `PATCH /menu/items/:id` → 403 `menu:write`; staff `GET /reports/summary` → 403 `reports:read`; Demo ผู้จัดการ `PATCH /venue/payment-settings` → 403 `venue:update_payment`, `mark-paid` → 200, visit close → 200. (Tokens minted with `TokenService`; visit on C1 closed again.)
-- **Not done:** signing in with LINE as Field and clicking through the POS in a browser (no LINE flow headless; the web POS UI is unchanged and its token path is the same cookie the e2e covers). Dev `bar` now has the 3 roster members.
+- **Audit Must fix 2 (done by Field, 2026-10-30):** `DEV_OWNER_LINE_SUBS` = Field's real LINE sub in `.env` → `pnpm seed:roster` (Field → เจ้าของ, Demo ผู้จัดการ, Demo พนักงาน) → Field signed in with LINE on `localhost:3010` (dev API :3011 on commit `5269a86`) → open table → order → checkout → close: no 403 anywhere. Staff-app Bearer path = AC-6 e2e.
 
 ## Sonar (local scan)
 - Scanned commit: `1460fe9` + this brief's working tree (re-scanned after the S2871 fix) · Quality Gate: ERROR — `new_coverage` 0 % (no coverage report path, known follow-up) + `new_violations` 22.
@@ -57,6 +57,10 @@
 
 ## Decisions Raised
 - none
+
+## Audit round 1 fixes
+- **Must fix 3** (`5269a86`): safety net = `everHadOwner()` only (any เจ้าของ membership row, whatever dates / `is_active`); e2e "expired or deactivated owner never switches enforcement off". Supersedes deviation 4's "live owner" wording.
+- **Must fix 2:** done, see run proof. **Must fix 1:** full `test:e2e` with dev backends stopped — pending.
 
 ## Deviations from Brief
 1. **AC-2 manager/owner "mark-paid 200"** is tested against a real pending payment (`pendingPayment()` helper) — no deviation; noted because the cash flow in the brief text is `via: 'cash'`.
