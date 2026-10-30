@@ -5,6 +5,7 @@ import { Receipt } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoadError } from "@/components/ui/LoadError";
+import { useCustomerPayment } from "../../_hooks/useCustomerPayment";
 import { useCustomerTab } from "../../_hooks/useCustomerTab";
 import { raiseSentToast } from "../../_lib/sent-toast";
 import { filterOrders, type TabFilter as Filter } from "../_lib/tab";
@@ -15,6 +16,7 @@ import { TabOrderCard } from "./TabOrderCard";
 export function TabScreen() {
   const router = useRouter();
   const tab = useCustomerTab();
+  const payment = useCustomerPayment().data;
   const [filter, setFilter] = useState<Filter>("all");
   useEffect(raiseSentToast, []);
   const toMenu = () => router.push("/customer/menu");
@@ -49,7 +51,13 @@ export function TabScreen() {
           </ul>
         )}
       </div>
-      <TabFooter total={tab.data.total} asOf={tab.data.asOf} onOrderMore={toMenu} />
+      <TabFooter
+        total={tab.data.total}
+        asOf={tab.data.asOf}
+        canPay={payment !== undefined && payment.bill.remaining !== "0.00"}
+        onOrderMore={toMenu}
+        onPay={() => router.push("/customer/pay")}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import {
   CustomerCallStaffSchema,
   CustomerMenuItemSchema,
   CustomerMenuSchema,
+  CustomerPaymentSchema,
   CustomerPlaceOrderSchema,
   CustomerSessionSchema,
   CustomerTabSchema,
@@ -98,5 +99,15 @@ describe('customer order, tab and call staff (BRIEF-048)', () => {
     expect(CustomerCallStaffSchema.safeParse({ reason: 'bill', note: 'เช็คบิล' }).success).toBe(true);
     expect(CustomerCallStaffSchema.safeParse({ reason: 'cash' }).success).toBe(false);
     expect(CustomerCallStaffSchema.safeParse({ note: 'ก'.repeat(101) }).success).toBe(false);
+  });
+
+  it('refuses a guest transfer bell and extra fields on the payment view', () => {
+    expect(CustomerCallStaffSchema.safeParse({ reason: 'transfer' }).success).toBe(false);
+    const payment = {
+      bill: { total: '10.00', paid: '0.00', remaining: '10.00', locked: false },
+      pending: null,
+    };
+    expect(CustomerPaymentSchema.safeParse(payment).success).toBe(true);
+    expect(CustomerPaymentSchema.safeParse({ ...payment, staffId: ID }).success).toBe(false);
   });
 });

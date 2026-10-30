@@ -842,6 +842,7 @@ erDiagram
         int part_count
         string status_reason
         text status_note
+        uuid guest_session_id FK
         timestamp expires_at
         timestamp created_at
     }
@@ -915,6 +916,7 @@ erDiagram
     table_seat ||--o{ guest_session : "scanned at"
     visit |o--o{ guest_session : binds
     guest_session |o--o{ order_record : places
+    guest_session |o--o{ payment : starts
     visit ||--o{ payment : settles
     visit ||--o{ bottle_keep_pour : poured_at
 
@@ -1014,7 +1016,7 @@ erDiagram
             <div class="field-row"><span class="field-name">staff_call_reason</span><span class="field-type">varchar?</span></div>
             <div class="field-row"><span class="field-name">staff_call_note</span><span class="field-type">varchar?</span></div>
           </div>
-          <div class="field-note">status: active | inactive. qr_token: regenerating issues a new token and invalidates old (counter QR reuse pattern). staff_call_*: the guest's call-staff bell lives on the seat, so a free table can ring it; cleared on acknowledge or visit close (BRIEF-048).</div>
+          <div class="field-note">status: active | inactive. qr_token: regenerating issues a new token and invalidates old (counter QR reuse pattern). staff_call_*: the guest's call-staff bell lives on the seat, so a free table can ring it; cleared on acknowledge or visit close (BRIEF-048). staff_call_reason: bill | other | transfer — transfer = guest tapped แจ้งโอนแล้ว, cleared when the payment leaves pending (BRIEF-052).</div>
         </div>
 
       </div>
@@ -1565,9 +1567,10 @@ erDiagram
             <div class="field-row"><span class="field-name">status_reason</span><span class="field-type">varchar(30)</span></div>
             <div class="field-row"><span class="field-name">status_note</span><span class="field-type">text</span></div>
             <div class="field-row"><span class="field-name">expires_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> guest_session_id</span><span class="field-type">uuid?</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">attempt_id groups the parts of one checkout (merge = 1 part; split = part_no of part_count). status_reason: staff_cancel | expired | webhook_missing | direct_transfer | other (CD-03 F1; note required for other). expires_at = pending QR lifetime, 15 min. gateway_tx_id UNIQUE = idempotency key — the gateway may retry webhooks, check before settling. method: promptpay | cash. status: pending | completed | failed | refunded | cancelled. confirmed_via: webhook | manual | cash | slip_verify (DR-014). slip_trans_ref UNIQUE = reused-slip guard. One visit can have multiple payments (separate bills).</div>
+          <div class="field-note">attempt_id groups the parts of one checkout (merge = 1 part; split = part_no of part_count). status_reason: staff_cancel | guest_cancel | expired | webhook_missing | direct_transfer | other (CD-03 F1; note required for other; guest_cancel = the guest's เปลี่ยนวิธีจ่าย, BRIEF-052). expires_at = pending QR lifetime, 15 min. gateway_tx_id UNIQUE = idempotency key — the gateway may retry webhooks, check before settling. method: promptpay | cash. status: pending | completed | failed | refunded | cancelled. confirmed_via: webhook | manual | cash | slip_verify (DR-014). slip_trans_ref UNIQUE = reused-slip guard. One visit can have multiple payments (separate bills). guest_session_id NULL = staff created; set = the guest phone that created it (BRIEF-052) — only that phone may cancel.</div>
         </div>
 
         <div class="entity-card">

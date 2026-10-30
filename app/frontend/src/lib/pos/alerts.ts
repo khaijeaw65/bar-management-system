@@ -1,4 +1,5 @@
 import type { Order, StaffCall } from "@bar/contracts";
+import { formatTHB } from "@/lib/utils/format";
 
 // created_by is NULL only for a guest order from the QR (BRIEF-048).
 export function isGuestOrder(order: Pick<Order, "createdBy">): boolean {
@@ -11,6 +12,8 @@ export function orderTag(orderNumber: number): string {
 
 export function callReasonText(call: Pick<StaffCall, "reason" | "note">): string | null {
   if (call.reason === "bill") return "เช็คบิล";
+  // The note is the pending payment's amount as a Money string (BRIEF-052).
+  if (call.reason === "transfer") return call.note ? `แจ้งโอนแล้ว ${formatTHB(call.note)}` : "แจ้งโอนแล้ว";
   return call.note?.trim() || null;
 }
 

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { CallStaffReason } from '@bar/contracts';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { TableSeatRepository } from '../../domain/table-seat.repository.js';
@@ -66,9 +67,10 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
     await this.tableSeatOrmRepository.save(seat);
   }
 
-  public async clearStaffCall(id: string): Promise<boolean> {
+  public async clearStaffCall(id: string, onlyReason?: CallStaffReason): Promise<boolean> {
     const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
     if (!seat?.staffCalledAt) return false;
+    if (onlyReason && seat.staffCallReason !== onlyReason) return false;
     seat.staffCalledAt = null;
     seat.staffCallReason = null;
     seat.staffCallNote = null;

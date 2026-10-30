@@ -22,6 +22,8 @@ export interface PaymentRecord {
   qrPayload: string | null;
   expiresAt: Date | null;
   paidAt: Date | null;
+  /** NULL = staff created; set = the guest phone that created it (BRIEF-052). */
+  guestSessionId: string | null;
   createdBy: string | null;
   updatedBy: string | null;
   createdAt: Date;
@@ -41,4 +43,5 @@ export interface NewPayment {
   qrPayload: string | null;
   expiresAt: Date | null;
   paidAt: Date | null;
+  guestSessionId?: string | null;
 }

@@ -57,7 +57,7 @@ CREATE TABLE table_seat (
   qr_token    VARCHAR(64) UNIQUE,                         -- opaque random token; regenerate = replace (BRIEF-011 Q1, Field 2026-10-04)
   is_active   BOOLEAN NOT NULL DEFAULT TRUE,
   staff_called_at   TIMESTAMPTZ,                         -- call-staff bell (BRIEF-048); NULL = no bell. Cleared on acknowledge / visit close
-  staff_call_reason VARCHAR(10) CHECK (staff_call_reason IN ('bill', 'other')),
+  staff_call_reason VARCHAR(10) CHECK (staff_call_reason IN ('bill', 'other', 'transfer')),  -- transfer = guest tapped แจ้งโอนแล้ว (BRIEF-052), cleared when the payment leaves pending
   staff_call_note   VARCHAR(100),
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -462,14 +462,17 @@ CREATE TABLE payment (
   attempt_id      UUID NOT NULL,         -- groups the parts of one checkout; merge = 1 part (BRIEF-013 Q2)
   part_no         SMALLINT NOT NULL DEFAULT 1,
   part_count      SMALLINT NOT NULL DEFAULT 1,
-  status_reason   VARCHAR(30),           -- staff_cancel | expired | webhook_missing | direct_transfer | other (CD-03 F1)
+  status_reason   VARCHAR(30),           -- staff_cancel | guest_cancel | expired | webhook_missing | direct_transfer | other (CD-03 F1; guest_cancel = BRIEF-052)
   status_note     TEXT,                  -- required when status_reason = 'other' (CD-03 F3)
   expires_at      TIMESTAMPTZ,           -- pending QR lifetime, 15 min (CD-03 Q1)
+  guest_session_id UUID REFERENCES guest_session(id),  -- NULL = staff created; set = the guest phone that created it — only it may cancel (BRIEF-052)
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by      UUID REFERENCES staff_user(id),
   updated_by      UUID REFERENCES staff_user(id)
 );
+
+CREATE INDEX idx_payment_guest_session ON payment(guest_session_id) WHERE guest_session_id IS NOT NULL;
 
 -- Which orders does this payment cover?
 CREATE TABLE payment_order (

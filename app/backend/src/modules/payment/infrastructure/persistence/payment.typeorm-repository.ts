@@ -114,6 +114,7 @@ export class PaymentTypeormRepository implements PaymentRepository {
       qrPayload: entity.qrPayload,
       expiresAt: entity.expiresAt,
       paidAt: entity.paidAt,
+      guestSessionId: entity.guestSessionId,
       createdBy: entity.createdBy,
       updatedBy: entity.updatedBy,
       createdAt: entity.createdAt,
