@@ -28,6 +28,7 @@ import {
   type MobileTokenResponse,
 } from '@bar/contracts';
 import type { Request, Response } from 'express';
+import { AnyStaff } from '../../../../common/decorators/any-staff.decorator.js';
 import { CurrentUser } from '../../../../common/decorators/current-user.decorator.js';
 import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
 import { Public } from '../../../../common/decorators/public.decorator.js';
@@ -171,6 +172,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @AnyStaff()
   @ApiOperation({
     summary: 'Current staff user',
     description:

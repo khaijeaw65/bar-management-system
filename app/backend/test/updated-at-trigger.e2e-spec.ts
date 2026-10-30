@@ -14,6 +14,7 @@ import { NotificationsService } from '../src/modules/notifications/notifications
 import { CustomerOrderCallStaff1763000000000 } from '../src/providers/database/migrations/1763000000000-CustomerOrderCallStaff.js';
 import { GuestSession1762900000000 } from '../src/providers/database/migrations/1762900000000-GuestSession.js';
 import { CustomerPayment1763100000000 } from '../src/providers/database/migrations/1763100000000-CustomerPayment.js';
+import { IamCore1763200000000 } from '../src/providers/database/migrations/1763200000000-IamCore.js';
 import { UpdatedAtTrigger1762500000000 } from '../src/providers/database/migrations/1762500000000-UpdatedAtTrigger.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
@@ -34,6 +35,8 @@ const TRIGGERED_TABLES = [
   'order_item',
   'payment',
   'guest_session',
+  'staff_group',
+  'policy',
 ];
 
 describe('Database-owned updated_at (e2e, DR-023)', () => {
@@ -66,7 +69,7 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
     await seedMenu(dataSource);
   });
 
-  it('attaches the trigger to the 15 tables that have updated_at', async () => {
+  it('attaches the trigger to the 17 tables that have updated_at', async () => {
     const rows: Array<{ tgname: string }> = await dataSource.query(
       `SELECT tgname FROM pg_trigger WHERE NOT tgisinternal AND tgname LIKE 'trg\\_%\\_updated\\_at' ORDER BY tgname`,
     );
@@ -187,14 +190,16 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
     });
   });
 
-  it('AC-5: revert drops the 15 triggers and the function, run brings them back', async () => {
+  it('AC-5: revert drops the 17 triggers and the function, run brings them back', async () => {
     const migration = new UpdatedAtTrigger1762500000000();
     const guestSession = new GuestSession1762900000000();
     const customerOrder = new CustomerOrderCallStaff1763000000000();
     const customerPayment = new CustomerPayment1763100000000();
+    const iamCore = new IamCore1763200000000();
     const runner = dataSource.createQueryRunner();
     try {
       // guest_session's trigger depends on the function, so it goes first and comes back last.
+      await iamCore.down(runner); // staff_group and policy triggers depend on the function too
       await customerPayment.down(runner); // payment points at guest_session too
       await customerOrder.down(runner); // order_record points at guest_session
       await guestSession.down(runner);
@@ -206,6 +211,7 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
       await guestSession.up(runner);
       await customerOrder.up(runner);
       await customerPayment.up(runner);
+      await iamCore.up(runner);
       expect(await triggerCount()).toBe(TRIGGERED_TABLES.length);
     } finally {
       await runner.release();

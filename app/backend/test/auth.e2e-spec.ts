@@ -96,6 +96,8 @@ describe('Auth (e2e)', () => {
 
   beforeEach(async () => {
     await dataSource.query('DELETE FROM staff_access_request');
+    await dataSource.query('DELETE FROM user_policy');
+    await dataSource.query('DELETE FROM user_group_membership');
     await dataSource.query('DELETE FROM staff_user_identity');
     await dataSource.query('DELETE FROM staff_user');
     await redis.client.flushdb();
