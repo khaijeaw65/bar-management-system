@@ -25,6 +25,7 @@ class FakeSessions implements GuestSessionRepository {
       visitState: input.visitId ? 'open' : null,
       displayName: null,
       expiresAt: input.expiresAt,
+      createdAt: T0,
     });
     return id;
   }
@@ -58,7 +59,7 @@ class FakeSessions implements GuestSessionRepository {
   }
 }
 
-function build(options: { liveVisitId?: string | null; allow?: boolean } = {}) {
+function build(options: { liveVisitId?: string | null; allow?: boolean; seatVisitId?: string | null } = {}) {
   const sessions = new FakeSessions();
   let now = T0;
   const clock = { now: () => now };
@@ -67,6 +68,7 @@ function build(options: { liveVisitId?: string | null; allow?: boolean } = {}) {
       qr === 'good'
         ? { seat: { id: SEAT, label: 'T3', kind: 'table', sortOrder: 1 }, liveVisitId: options.liveVisitId ?? null }
         : null,
+    findLiveVisitId: async () => options.seatVisitId ?? null,
   } as unknown as TableSeatService;
   const throttle = { allow: async () => options.allow ?? true } as unknown as CustomerThrottle;
   const service = new GuestSessionService(sessions, clock, seats, throttle);
@@ -122,9 +124,9 @@ describe('GuestSessionService', () => {
   it('slides a seat-only session by 2 h from now (AC-5)', async () => {
     const { service, setNow } = build();
     const started = await service.start(scan());
-    setNow(new Date(T0.getTime() + HOUR + 50 * 60 * 1000));
+    setNow(new Date(T0.getTime() + 50 * 60 * 1000));
     const resolved = await service.resolve(started.token ?? undefined);
-    expect(resolved.expiresAt.getTime()).toBe(T0.getTime() + 3 * HOUR + 50 * 60 * 1000);
+    expect(resolved.expiresAt.getTime()).toBe(T0.getTime() + 2 * HOUR + 50 * 60 * 1000);
   });
 
   it('rejects an expired seat-only session (AC-4)', async () => {
@@ -177,5 +179,45 @@ describe('GuestSessionService', () => {
     expect(renamed.displayName).toBe('ต้น');
     expect([...sessions.rows.values()][0]?.displayName).toBe('ต้น');
     expect((await service.rename(started.session, null)).displayName).toBeNull();
+  });
+});
+
+describe('GuestSessionService bind on read (BRIEF-050)', () => {
+  it('binds a seat-only session once the seat has a live visit', async () => {
+    const { service, sessions } = build({ seatVisitId: VISIT });
+    const started = await service.start(scan());
+    expect(started.session.visitId).toBeNull();
+    const resolved = await service.resolve(started.token ?? undefined);
+    expect(resolved).toMatchObject({ visitId: VISIT, justBound: true });
+    expect([...sessions.rows.values()][0]?.visitId).toBe(VISIT);
+    const again = await service.resolve(started.token ?? undefined);
+    expect(again.visitId).toBe(VISIT);
+    expect(again.justBound).toBeUndefined();
+  });
+
+  it('stays seat-only while the seat has no visit', async () => {
+    const { service } = build();
+    const started = await service.start(scan());
+    const resolved = await service.resolve(started.token ?? undefined);
+    expect(resolved.visitId).toBeNull();
+    expect(resolved.justBound).toBeUndefined();
+  });
+});
+
+describe('GuestSessionService seat-only cap (BRIEF-050 AC-11)', () => {
+  it('still slides and binds at 59 min', async () => {
+    const { service, setNow } = build({ seatVisitId: VISIT });
+    const started = await service.start(scan());
+    setNow(new Date(T0.getTime() + 59 * 60 * 1000));
+    expect(await service.resolve(started.token ?? undefined)).toMatchObject({ visitId: VISIT, justBound: true });
+  });
+
+  it('is invalid at 61 min even with a fresh sliding expiry, and never binds', async () => {
+    const { service, sessions, setNow } = build({ seatVisitId: VISIT });
+    const started = await service.start(scan());
+    setNow(new Date(T0.getTime() + 30 * 60 * 1000));
+    setNow(new Date(T0.getTime() + 61 * 60 * 1000));
+    await expect(service.resolve(started.token ?? undefined)).rejects.toMatchObject({ code: 'GUEST_SESSION_INVALID', status: 401 });
+    expect([...sessions.rows.values()][0]?.visitId).toBeNull();
   });
 });

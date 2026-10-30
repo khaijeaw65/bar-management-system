@@ -15,7 +15,9 @@ import { CustomerThrottle } from './customer-throttle.js';
 import { hashGuestToken, newGuestToken } from './guest-token.js';
 
 const SEAT_ONLY_LIFE_MS = 2 * 60 * 60 * 1000;
-const LIVE_VISIT_STATES = ['open', 'active', 'idle'];
+// A seat-only phone never outlives this, however often it is used — so it cannot join a later group's visit (DR-028).
+const SEAT_ONLY_CAP_MS = 60 * 60 * 1000;
+const LIVE_VISIT_STATES = new Set(['open', 'active', 'idle']);
 const SCANS_PER_MINUTE = 30;
 const PURGE_BATCH = 100;
 
@@ -90,14 +92,25 @@ export class GuestSessionService {
     const now = this.clock.now();
     if (!this.isValid(row, now)) return null;
     if (row.visitId) return this.toView(row, row.expiresAt);
+    const bound = await this.bindToLiveVisit(row);
+    if (bound) return bound;
     const expiresAt = new Date(now.getTime() + SEAT_ONLY_LIFE_MS);
     await this.sessions.setExpiresAt(row.id, expiresAt);
     return this.toView(row, expiresAt);
   }
 
+  // A phone that scanned a free seat keeps a seat-only session; once the table has a visit it joins it (DR-028).
+  private async bindToLiveVisit(row: GuestSessionRow): Promise<GuestSessionView | null> {
+    const visitId = await this.seats.findLiveVisitId(row.seat.id);
+    if (!visitId) return null;
+    await this.sessions.bindVisit(row.id, visitId);
+    return { ...this.toView({ ...row, visitId }, row.expiresAt), justBound: true };
+  }
+
   private isValid(row: GuestSessionRow, now: Date): boolean {
     if (!row.seat.isActive) return false;
-    if (row.visitId) return row.visitState !== null && LIVE_VISIT_STATES.includes(row.visitState);
+    if (row.visitId) return row.visitState !== null && LIVE_VISIT_STATES.has(row.visitState);
+    if (now.getTime() > row.createdAt.getTime() + SEAT_ONLY_CAP_MS) return false;
     return row.expiresAt.getTime() > now.getTime();
   }
 

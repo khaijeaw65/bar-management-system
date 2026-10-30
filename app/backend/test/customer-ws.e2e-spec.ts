@@ -102,6 +102,19 @@ describe('Customer socket /customer (e2e)', () => {
     await waitFor(() => pings.length > before, 'ping on the same socket after the bind');
   });
 
+  it('pings a seat-only socket when the POS opens a visit on its seat, then follows the visit (BRIEF-050 AC-1)', async () => {
+    const seat = await seatByLabel(dataSource, 'T4');
+    const phone = await startGuest(app, seat.qr);
+    const pings = await listen(phone);
+    const visitId = (await openVisit(app, accessToken, seat.id).expect(201)).body.data.visit.id as string;
+    await waitFor(() => pings.some((ping) => ping.visitId === visitId), 'seat ping on visit open');
+
+    await asGuest(app, 'get', '/tab', phone).expect(200);
+    const before = pings.length;
+    await request(app.getHttpServer()).post(`/api/visits/${visitId}/close`).set(staff()).expect(200);
+    await waitFor(() => pings.length > before && pings.some((ping) => ping.sessionEnded === true), 'close ping on the visit room');
+  });
+
   it('rejects a socket with no cookie or a bad one, and the staff token (AC-8)', async () => {
     await expect(connect()).rejects.toThrow();
     await expect(connect('guest_session=not-a-session')).rejects.toThrow();

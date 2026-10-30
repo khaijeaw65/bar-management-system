@@ -70,7 +70,7 @@ describe('VisitService', () => {
     clearStaffCall: vi.fn(),
   };
   const staff = { findById: vi.fn() };
-  const notifications = { emitToPos: vi.fn(), emitToStaff: vi.fn(), emitTabChanged: vi.fn() };
+  const notifications = { emitToPos: vi.fn(), emitToStaff: vi.fn(), emitTabChanged: vi.fn(), emitSeatVisitOpened: vi.fn() };
   const paymentGuard = { assertNoPaymentInFlight: vi.fn() };
   const service = new VisitService(
     visits as unknown as VisitRepository,

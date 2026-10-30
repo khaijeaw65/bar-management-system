@@ -50,7 +50,7 @@ export function saveCart(sessionId: string, state: CartState): void {
   try {
     const target = storage();
     if (!target) return;
-    if (state.lines.length === 0) {
+    if (state.lines.length === 0 || state.closed) {
       target.removeItem(keyOf(sessionId));
       return;
     }

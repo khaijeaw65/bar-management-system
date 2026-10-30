@@ -70,4 +70,5 @@ The customer QR web (CD-06/07) has no login: the guest scans the table QR and or
 **Decision:** Approved: A (opaque token, `guest_session` row in Postgres, Redis for throttles only)
 **Why:** One source of truth, instant cut-off on visit close, stable per-phone id for "ของฉัน"; Redis only for data that is fine to lose.
 **Amended 2026-10-29 (Field, BRIEF-047 interview):** route prefix `/customer` (was `/public`, CD-06 action table) — matches DR-009 surface name and the WS `/customer` room; cookie path `/api/customer`. Code lives in a new `CustomerModule` (BRIEF-047). Session start is `POST /customer/sessions { qrToken }` (not a GET — it creates a row and sets a cookie; link previews / prefetch must not create sessions).
+**Amended 2026-10-30 (Field, BRIEF-050 audit Finding 3 → B):** a seat-only session (not yet bound to a visit) also ends 60 min after creation, whatever its 2 h sliding expiry — so a phone left open on the menu can never join a later group's visit on that seat (bind on read / at first order). Visit-bound sessions unchanged.
 **Date:** 2026-10-29 · recorded by Cowork on Field's explicit instruction (session: "approve DR-028 A")

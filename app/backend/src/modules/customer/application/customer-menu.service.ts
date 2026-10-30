@@ -15,11 +15,13 @@ export class CustomerMenuService {
       this.catalog.listCategories(false),
       this.catalog.listItems({ availableOnly: false }),
     ]);
+    const guestItems = items.items.filter((item) => item.itemType !== 'charge').map((item) => this.toItem(item));
+    const stocked = new Set(guestItems.map((item) => item.categoryId));
     return {
       categories: categories.items
-        .filter((category) => category.isActive)
+        .filter((category) => category.isActive && stocked.has(category.id))
         .map(({ id, name, sortOrder }) => ({ id, name, sortOrder })),
-      items: items.items.filter((item) => item.itemType !== 'charge').map((item) => this.toItem(item)),
+      items: guestItems,
     };
   }
 

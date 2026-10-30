@@ -57,7 +57,7 @@ test("AC-3: J1 — half sheet, full sheet with a required option, one POST, cart
   const sent = page.waitForRequest((request) => request.method() === "POST" && request.url().includes("/customer/orders"));
   await page.getByRole("button", { name: "สั่งเลย" }).click();
   expect((await sent).headers()["idempotency-key"]).toMatch(/[0-9a-f-]{36}/);
-  await expect(page).toHaveURL(/\/customer\/menu$/);
+  await expect(page).toHaveURL(/\/customer\/tab$/);
   await expect(page.getByText("ส่งออเดอร์แล้ว · #001")).toBeVisible();
   await expect(page.getByText(/ตะกร้า \d+ รายการ/)).toHaveCount(0);
 });

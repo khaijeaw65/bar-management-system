@@ -10,7 +10,7 @@ import type { GuestSessionRow, NewGuestSession } from '../../domain/guest-sessio
 import { GuestSession } from './guest-session.entity.js';
 
 const FIND_BY_HASH = `
-  SELECT g.id, g.visit_id, g.display_name, g.expires_at,
+  SELECT g.id, g.visit_id, g.display_name, g.expires_at, g.created_at,
          s.id AS seat_id, s.label, s.kind, s.is_active, v.state AS visit_state
   FROM guest_session g
   JOIN table_seat s ON s.id = g.table_seat_id
@@ -33,6 +33,7 @@ interface SessionJoinRow {
   visit_id: unknown;
   display_name: unknown;
   expires_at: unknown;
+  created_at: unknown;
   seat_id: unknown;
   label: unknown;
   kind: TableSeatKind;
@@ -102,6 +103,7 @@ export class GuestSessionTypeormRepository implements GuestSessionRepository {
       visitState: row.visit_state,
       displayName: readOptionalText(row.display_name),
       expiresAt: readDate(row.expires_at),
+      createdAt: readDate(row.created_at),
     };
   }
 }

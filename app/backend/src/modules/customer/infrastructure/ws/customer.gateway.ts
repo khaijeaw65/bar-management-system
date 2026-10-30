@@ -35,6 +35,12 @@ export class CustomerGateway extends CustomerTabGateway implements OnGatewayInit
       );
     });
     this.notifications.registerTabSink((visitId, sessionEnded) => this.emitTabChanged(visitId, sessionEnded));
+    this.notifications.registerSeatSink((seatId, visitId) => this.emitSeatVisitOpened(seatId, visitId));
+  }
+
+  public emitSeatVisitOpened(tableSeatId: string, visitId: string): void {
+    const payload: TabChangedPayload = { visitId };
+    this.server.to(seatRoom(tableSeatId)).emit(TAB_CHANGED, payload);
   }
 
   public emitTabChanged(visitId: string, sessionEnded: boolean): void {

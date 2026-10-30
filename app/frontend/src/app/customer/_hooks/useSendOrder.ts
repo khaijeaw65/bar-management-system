@@ -1,12 +1,12 @@
 "use client";
 
-import { toast } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
 import { placeOrder } from "@/lib/api/customer";
 import { sendFailure, type CartAction, type CartState } from "@/lib/order/cart";
 import { customerBody } from "../_lib/menu";
+import { announceSent } from "../_lib/sent-toast";
 
 export function useSendOrder(state: CartState, dispatch: (action: CartAction) => void) {
   const router = useRouter();
@@ -17,8 +17,8 @@ export function useSendOrder(state: CartState, dispatch: (action: CartAction) =>
     onMutate: () => dispatch({ type: "pending", value: true }),
     onSuccess: (order) => {
       dispatch({ type: "reset" });
-      toast.success(`ส่งออเดอร์แล้ว · #${String(order.orderNumber).padStart(3, "0")}`);
-      router.replace("/customer/menu");
+      announceSent(order.orderNumber);
+      router.replace("/customer/tab");
     },
     onError: (error) => dispatch(sendFailure(error)),
     onSettled: () => {

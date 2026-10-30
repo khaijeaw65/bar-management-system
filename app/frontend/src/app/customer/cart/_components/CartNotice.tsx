@@ -12,6 +12,16 @@ export function CartNotice({ state }: Readonly<{ state: CartState }>) {
       </Alert>
     );
   }
+  if (state.rateLimited) {
+    return (
+      <Alert status="warning" role="alert">
+        <Alert.Content>
+          <Alert.Title>{state.rateLimited}</Alert.Title>
+          <Alert.Description>ตะกร้ายังอยู่ครบ — รอสักครู่แล้วกดสั่งอีกครั้ง</Alert.Description>
+        </Alert.Content>
+      </Alert>
+    );
+  }
   if (state.lines.some((line) => line.unavailable)) {
     return (
       <Alert status="warning" role="alert">
