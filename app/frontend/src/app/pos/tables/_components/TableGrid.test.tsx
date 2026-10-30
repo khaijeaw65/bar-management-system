@@ -8,6 +8,7 @@ import { toast, Toast } from "@heroui/react";
 import { apiEnvelope, attachedVisitId, currentSeats, posMockControls } from "@/mocks/handlers";
 import { server } from "@/mocks/node";
 import { resetStaffSocket } from "@/lib/socket/socket";
+import { ticket } from "./session.fixture";
 import { formatElapsed } from "./table-time";
 import { TableGrid } from "./TableGrid";
 
@@ -258,4 +259,13 @@ test("AC-8: a failed acknowledge restores the badge and says so", async () => {
 test("AC-4: pending tickets give the seat an ออเดอร์ใหม่ badge", async () => {
   renderGrid();
   expect(await screen.findByText("ออเดอร์ใหม่ 1")).toBeInTheDocument();
+});
+
+test("Must fix 1: a free seat never shows ออเดอร์ใหม่, even with pending tickets left on it", async () => {
+  const t6 = currentSeats().find((seat) => seat.label === "T6");
+  const stale = { ...ticket("60000000-0000-4000-8000-000000000099", 99, [], { status: "pending" }), seat: { id: t6?.id ?? "", label: "T6", kind: "table" as const } };
+  server.use(http.get("*/api/tickets", () => HttpResponse.json(apiEnvelope({ items: [stale] }))));
+  renderGrid();
+  expect(await screen.findByRole("button", { name: "T6" })).toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByText(/ออเดอร์ใหม่/)).not.toBeInTheDocument());
 });

@@ -38,7 +38,7 @@ export function getStaffSocket(): Socket {
   if (socket) return socket;
   socket = io(staffSocketUrl(), { withCredentials: true });
   // ponytail: with MSW there is no server; the e2e fires staff events through this handle.
-  if (process.env.NEXT_PUBLIC_API_MOCKING === "enabled") {
+  if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_API_MOCKING === "enabled") {
     const live = socket;
     (window as unknown as { __staffSocket?: unknown }).__staffSocket = {
       fire: (event: string, payload: unknown) => {

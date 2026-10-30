@@ -9,14 +9,18 @@ import { TABLES_KEY } from "@/lib/api/tables";
 import { callTitle, isGuestOrder, orderTag } from "@/lib/pos/alerts";
 import { playChime, unlockAudio } from "@/lib/sound/chime";
 import { useSocketEvent } from "./useSocketEvent";
+import { useSoundState } from "./useSoundState";
 
 // The first tap anywhere in the POS is the user gesture browsers need before audio may play.
+// Re-armed whenever the context is locked again (a tablet that slept), so any tap restores sound.
 function useAudioUnlock(): void {
+  const { locked } = useSoundState();
   useEffect(() => {
+    if (!locked) return;
     const unlock = () => unlockAudio();
     document.addEventListener("pointerdown", unlock, { once: true, capture: true });
     return () => document.removeEventListener("pointerdown", unlock, { capture: true });
-  }, []);
+  }, [locked]);
 }
 
 // Mounted once in BoardEvents: bell and guest-order cues on every POS page (BRIEF-051).

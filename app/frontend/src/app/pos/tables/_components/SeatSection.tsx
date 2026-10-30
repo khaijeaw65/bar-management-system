@@ -39,7 +39,7 @@ export function SeatSection({
             seat={seat}
             now={now}
             selected={seat.currentVisit?.id === selectedId}
-            pendingOrders={pending.get(seat.id) ?? 0}
+            pendingOrders={seat.currentVisit ? (pending.get(seat.id) ?? 0) : 0}
             onPress={() => onSeat(seat)}
             onAcknowledge={() => onAcknowledge(seat.id)}
           />
