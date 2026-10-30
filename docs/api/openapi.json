@@ -197,6 +197,7 @@
                             "statusReason": {
                               "enum": [
                                 "staff_cancel",
+                                "guest_cancel",
                                 "expired",
                                 "webhook_missing",
                                 "direct_transfer",
@@ -1305,6 +1306,158 @@
         ]
       }
     },
+    "/api/customer/call-staff": {
+      "post": {
+        "description": "Auth: `guest_session` cookie. Optional `reason` (`bill` / `other`) and `note` (≤ 100). Sets the flag on the seat; staff clear it with `POST /tables/:seatId/acknowledge-call`. One call per 60 s per session.",
+        "operationId": "CustomerOrderController_callStaff",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "maxLength": 100,
+                    "type": "string"
+                  },
+                  "reason": {
+                    "enum": [
+                      "bill",
+                      "other"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "calledAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "calledAt"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "RATE_LIMITED"
+          }
+        },
+        "security": [
+          {
+            "guest_session": []
+          }
+        ],
+        "summary": "Ring the bell for staff",
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/api/customer/menu": {
       "get": {
         "description": "Auth: `guest_session` cookie. Active categories only; charge items excluded; sold-out and out-of-window items are listed with `availableNow: false` + `unavailableReason`. `imageUrl` is a presigned URL valid for 1 hour.",
@@ -1632,6 +1785,212 @@
           }
         ],
         "summary": "The menu a guest sees: categories and items in one call",
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/api/customer/orders": {
+      "post": {
+        "description": "Auth: `guest_session` cookie. The first order on a free table opens the visit (`opened_via = qr`) or joins the one POS opened. `orderedByName` is taken from the nickname, never the body. One order per 10 s per session. 409 ITEM_UNAVAILABLE for a sold-out / out-of-window line, 400 for a charge line. `Idempotency-Key` replays the same order.",
+        "operationId": "CustomerOrderController_place",
+        "parameters": [
+          {
+            "description": "UUID; scoped to the guest session",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "items": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "modifierOptionIds": {
+                          "items": {
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                            "type": "string"
+                          },
+                          "maxItems": 30,
+                          "type": "array"
+                        },
+                        "notes": {
+                          "maxLength": 500,
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "maximum": 99,
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "variantId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "variantId",
+                        "quantity"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 50,
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "items"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "orderId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "orderNumber": {
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "visitId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "orderId",
+                        "orderNumber",
+                        "visitId"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "RATE_LIMITED"
+          }
+        },
+        "security": [
+          {
+            "guest_session": []
+          }
+        ],
+        "summary": "Send an order from the phone",
         "tags": [
           "customer"
         ]
@@ -2816,6 +3175,250 @@
           }
         },
         "summary": "Scan a table QR: start (or resume) a guest session",
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/api/customer/tab": {
+      "get": {
+        "description": "Auth: `guest_session` cookie. Every order on the visit (guest and staff entered), newest first, from snapshots. Cancelled lines stay, struck, and are left out of `total`. A seat-only session gets an empty tab. No staff or other guests' identities.",
+        "operationId": "CustomerOrderController_getTab",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "orders": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "lines": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "cancelled": {
+                                      "type": "boolean"
+                                    },
+                                    "itemName": {
+                                      "type": "string"
+                                    },
+                                    "lineTotal": {
+                                      "pattern": "^\\d+\\.\\d{2}$",
+                                      "type": "string"
+                                    },
+                                    "modifiers": {
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
+                                    },
+                                    "orderedByName": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "quantity": {
+                                      "exclusiveMinimum": true,
+                                      "maximum": 9007199254740991,
+                                      "minimum": 0,
+                                      "type": "integer"
+                                    },
+                                    "unitPrice": {
+                                      "pattern": "^\\d+\\.\\d{2}$",
+                                      "type": "string"
+                                    },
+                                    "variantName": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "itemName",
+                                    "variantName",
+                                    "modifiers",
+                                    "quantity",
+                                    "unitPrice",
+                                    "lineTotal",
+                                    "orderedByName",
+                                    "cancelled"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "mine": {
+                                "type": "boolean"
+                              },
+                              "orderNumber": {
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "placedAt": {
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "type": "string"
+                              },
+                              "tickets": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "station": {
+                                      "enum": [
+                                        "bar",
+                                        "food"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "status": {
+                                      "enum": [
+                                        "pending",
+                                        "accepted",
+                                        "ready",
+                                        "sent",
+                                        "issue",
+                                        "cancelled"
+                                      ],
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "station",
+                                    "status"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "orderNumber",
+                              "placedAt",
+                              "mine",
+                              "tickets",
+                              "lines"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "total": {
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "visitId": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "visitId",
+                        "orders",
+                        "total",
+                        "asOf"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "security": [
+          {
+            "guest_session": []
+          }
+        ],
+        "summary": "The running tab of the whole table, with \"ของฉัน\" marked per order",
         "tags": [
           "customer"
         ]
@@ -7677,6 +8280,7 @@
                         "statusReason": {
                           "enum": [
                             "staff_cancel",
+                            "guest_cancel",
                             "expired",
                             "webhook_missing",
                             "direct_transfer",
@@ -7929,6 +8533,7 @@
                         "statusReason": {
                           "enum": [
                             "staff_cancel",
+                            "guest_cancel",
                             "expired",
                             "webhook_missing",
                             "direct_transfer",
@@ -8216,6 +8821,7 @@
                         "statusReason": {
                           "enum": [
                             "staff_cancel",
+                            "guest_cancel",
                             "expired",
                             "webhook_missing",
                             "direct_transfer",
@@ -8489,6 +9095,7 @@
                         "statusReason": {
                           "enum": [
                             "staff_cancel",
+                            "guest_cancel",
                             "expired",
                             "webhook_missing",
                             "direct_transfer",
@@ -14045,6 +14652,7 @@
                                     "statusReason": {
                                       "enum": [
                                         "staff_cancel",
+                                        "guest_cancel",
                                         "expired",
                                         "webhook_missing",
                                         "direct_transfer",
@@ -15154,6 +15762,7 @@
                               "statusReason": {
                                 "enum": [
                                   "staff_cancel",
+                                  "guest_cancel",
                                   "expired",
                                   "webhook_missing",
                                   "direct_transfer",

@@ -78,8 +78,9 @@ export class PaymentService {
     return groupAttempts(await this.payments.listByVisit(visitId));
   }
 
-  public async cancel(id: string): Promise<Payment> {
-    const payment = await this.cancelPending(id);
+  /** `staff_cancel` from the POS; the guest route passes `guest_cancel` so reports can tell them apart. */
+  public async cancel(id: string, reason: 'staff_cancel' | 'guest_cancel' = 'staff_cancel'): Promise<Payment> {
+    const payment = await this.cancelPending(id, reason);
     await this.removeExpiry(payment.id);
     await this.emitChanged(payment);
     return payment;
@@ -135,10 +136,10 @@ export class PaymentService {
   }
 
   @Transactional()
-  private async cancelPending(id: string): Promise<Payment> {
+  private async cancelPending(id: string, reason: 'staff_cancel' | 'guest_cancel'): Promise<Payment> {
     const locked = await this.requirePending(id);
     locked.status = 'cancelled';
-    locked.statusReason = 'staff_cancel';
+    locked.statusReason = reason;
     return toPayment(await this.payments.save(locked));
   }
 

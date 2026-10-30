@@ -74,6 +74,7 @@ export type PaymentConfirmedVia = z.infer<typeof PaymentConfirmedViaSchema>;
 // VARCHAR on payment.status_reason, not a SQL enum. CD-03 F1.
 export const PaymentStatusReasonSchema = z.enum([
   'staff_cancel',
+  'guest_cancel',
   'expired',
   'webhook_missing',
   'direct_transfer',

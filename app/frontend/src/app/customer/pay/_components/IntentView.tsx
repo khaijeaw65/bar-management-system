@@ -22,7 +22,10 @@ export function IntentView({
     <div className="flex flex-col gap-4 p-4">
       <h2 className="text-heading">ชำระเงิน</h2>
       <p className="text-title tabular-nums">ยอดทั้งโต๊ะ {formatTHB(payment.bill.remaining)}</p>
-      {payment.pending ? (
+      {payment.bill.locked && !payment.pending ? (
+        // A payment the phone cannot show (the cashier is settling the bill): no second attempt either.
+        <p className="text-text-muted">พนักงานกำลังเช็คบิลให้โต๊ะนี้</p>
+      ) : payment.pending ? (
         // One attempt at a time per table: someone already started, so this phone can only look (CD-07 D3).
         <Button size="lg" className="min-h-13" onPress={onView}>
           <QrCode aria-hidden size={18} />

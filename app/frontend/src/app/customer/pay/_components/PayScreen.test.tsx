@@ -16,8 +16,8 @@ const pending = {
   createdAt: "2026-10-30T10:00:00.000Z",
 };
 
-function serve(bill: { total: string; paid: string; remaining: string }, current: typeof pending | null) {
-  const data = { bill: { ...bill, locked: current !== null }, pending: current };
+function serve(bill: { total: string; paid: string; remaining: string }, current: typeof pending | null, locked = current !== null) {
+  const data = { bill: { ...bill, locked }, pending: current };
   server.use(http.get("*/api/customer/payment", () => HttpResponse.json({ status: 200, code: "", message: "success", data })));
 }
 
@@ -40,4 +40,12 @@ test("says paid once the whole bill is covered", async () => {
   serve({ total: "240.00", paid: "240.00", remaining: "0.00" }, null);
   renderCustomer(<PayScreen />);
   expect(await screen.findByText("ชำระเรียบร้อย")).toBeInTheDocument();
+});
+
+test("a locked bill with nothing to show says staff are settling it and offers no QR", async () => {
+  serve({ total: "240.00", paid: "0.00", remaining: "240.00" }, null, true);
+  renderCustomer(<PayScreen />);
+  expect(await screen.findByText("พนักงานกำลังเช็คบิลให้โต๊ะนี้")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "สร้าง QR พร้อมเพย์" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "ดู QR" })).not.toBeInTheDocument();
 });

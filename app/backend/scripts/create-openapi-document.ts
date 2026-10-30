@@ -3,10 +3,14 @@ import { Test } from '@nestjs/testing';
 import { buildOpenApiDocument } from '../dist/common/openapi/document.js';
 import { AuthController } from '../dist/modules/auth/infrastructure/http/auth.controller.js';
 import { AuthService } from '../dist/modules/auth/application/auth.service.js';
+import { CustomerCallService } from '../dist/modules/customer/application/customer-call.service.js';
+import { CustomerOrderService } from '../dist/modules/customer/application/customer-order.service.js';
+import { CustomerTabService } from '../dist/modules/customer/application/customer-tab.service.js';
 import { CustomerPaymentService } from '../dist/modules/customer/application/customer-payment.service.js';
 import { CustomerTabGateway } from '../dist/modules/customer/application/customer-tab-gateway.js';
 import { CustomerMenuService } from '../dist/modules/customer/application/customer-menu.service.js';
 import { GuestSessionService } from '../dist/modules/customer/application/guest-session.service.js';
+import { CustomerOrderController } from '../dist/modules/customer/infrastructure/http/customer-order.controller.js';
 import { CustomerPaymentController } from '../dist/modules/customer/infrastructure/http/customer-payment.controller.js';
 import { CustomerMenuController } from '../dist/modules/customer/infrastructure/http/customer-menu.controller.js';
 import {
@@ -63,6 +67,7 @@ const documentedControllers = [
   CustomerScanController,
   CustomerSessionController,
   CustomerMenuController,
+  CustomerOrderController,
   CustomerPaymentController,
 ];
 
@@ -93,6 +98,9 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: CustomerTabGateway, useValue: {} },
       { provide: CustomerMenuService, useValue: {} },
       { provide: CustomerPaymentService, useValue: {} },
+      { provide: CustomerOrderService, useValue: {} },
+      { provide: CustomerTabService, useValue: {} },
+      { provide: CustomerCallService, useValue: {} },
       {
         provide: AppConfigService,
         useValue: { nodeEnv: 'test', frontendUrl: 'http://localhost:3000' },

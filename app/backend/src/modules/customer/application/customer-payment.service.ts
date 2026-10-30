@@ -33,7 +33,9 @@ export class CustomerPaymentService {
     if (!guest.visitId) return emptyPayment();
     const snapshot = await this.bills.forVisit(guest.visitId);
     const pending = await this.payments.findPendingRecord(guest.visitId);
-    return { bill: snapshot.bill, pending: pending ? pendingView(pending, guest.id) : null };
+    // Only a PromptPay QR is shown to the phone; any other pending payment just keeps the bill locked.
+    const showable = pending?.method === 'promptpay' ? pending : null;
+    return { bill: snapshot.bill, pending: showable ? pendingView(showable, guest.id) : null };
   }
 
   public async create(guest: GuestSessionView, key: string | null): Promise<CustomerPendingPayment> {
@@ -56,7 +58,7 @@ export class CustomerPaymentService {
     if (record.guestSessionId !== guest.id) {
       throw new DomainException('PAYMENT_NOT_YOURS', 'ยกเลิกได้เฉพาะ QR ที่คุณสร้าง', 403);
     }
-    await this.payments.cancel(record.id);
+    await this.payments.cancel(record.id, 'guest_cancel');
     return this.get(guest);
   }
 
