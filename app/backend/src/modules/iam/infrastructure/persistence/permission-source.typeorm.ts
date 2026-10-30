@@ -55,16 +55,10 @@ export class PermissionSourceTypeorm implements PermissionSource {
     return rows.map((row) => row.code);
   }
 
-  public async hasLiveOwner(now: Date): Promise<boolean> {
+  public async everHadOwner(): Promise<boolean> {
     const rows: unknown[] = await this.dataSource.query(
-      `SELECT 1
-         FROM user_group_membership m
-         JOIN staff_user u ON u.id = m.user_id AND u.is_active
-        WHERE m.group_id = $1
-          AND m.valid_from <= $2
-          AND (m.valid_until IS NULL OR m.valid_until > $2)
-        LIMIT 1`,
-      [DEFAULT_GROUP_IDS.owner, now],
+      `SELECT 1 FROM user_group_membership WHERE group_id = $1 LIMIT 1`,
+      [DEFAULT_GROUP_IDS.owner],
     );
     return rows.length > 0;
   }

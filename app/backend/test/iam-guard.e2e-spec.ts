@@ -85,6 +85,14 @@ describe('IAM guard (e2e)', () => {
     await patchPromptPay(ownerToken).expect(200);
   });
 
+  it('Must fix 3: an expired or deactivated owner never switches enforcement off', async () => {
+    await dataSource.query(`UPDATE user_group_membership SET valid_until = NOW() - interval '1 hour' WHERE user_id = $1`, [owner]);
+    await dataSource.query(`UPDATE staff_user SET is_active = false WHERE id = $1`, [owner]);
+    const denied = await markPaid(await tokenOf(staff), UNKNOWN);
+    expect(denied.status).toBe(403);
+    expect(denied.body.data).toEqual({ missing: ['payments:mark_paid'] });
+  });
+
   it('AC-3: most permissive wins — a direct policy adds what the group lacks', async () => {
     const token = await tokenOf(staff);
     const paymentId = await pendingPayment(await tokenOf(owner), 'T1');

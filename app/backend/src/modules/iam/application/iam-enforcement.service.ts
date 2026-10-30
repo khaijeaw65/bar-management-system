@@ -4,8 +4,9 @@ import { PERMISSION_SOURCE, type PermissionSource } from '../domain/permission-s
 const RECHECK_MS = 60_000;
 
 /**
- * Boot safety net (BRIEF-053): while no active staff member holds a live เจ้าของ membership, nobody could
- * ever grant permissions, so the guard logs would-be denials instead of throwing. Flips back as soon as an owner exists.
+ * Boot safety net (BRIEF-053, Field 2026-10-30): only while no เจ้าของ membership has ever existed (a fresh database)
+ * the guard logs would-be denials instead of throwing. Once one exists it always enforces — an expired or
+ * deactivated owner is fixed with `seed:staff --group เจ้าของ`, never by opening everything.
  */
 @Injectable()
 export class IamEnforcement implements OnApplicationBootstrap, OnModuleDestroy {
@@ -36,7 +37,7 @@ export class IamEnforcement implements OnApplicationBootstrap, OnModuleDestroy {
 
   private async refresh(now: Date): Promise<void> {
     try {
-      this.enforcing = await this.source.hasLiveOwner(now);
+      this.enforcing = await this.source.everHadOwner();
       this.checkedAt = now.getTime();
     } catch (error) {
       this.logger.error(`IAM owner check failed, keeping the last answer: ${String(error)}`);

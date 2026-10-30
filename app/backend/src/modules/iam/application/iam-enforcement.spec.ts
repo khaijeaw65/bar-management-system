@@ -8,7 +8,7 @@ const later = (seconds: number): Date => new Date(NOW.getTime() + seconds * 1000
 function build(owner: { present: boolean; fails?: boolean }): { service: IamEnforcement; checks: () => number } {
   let calls = 0;
   const source = {
-    hasLiveOwner: (): Promise<boolean> => {
+    everHadOwner: (): Promise<boolean> => {
       calls += 1;
       if (owner.fails) return Promise.reject(new Error('db down'));
       return Promise.resolve(owner.present);

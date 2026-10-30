@@ -45,7 +45,7 @@ class FakeSource implements PermissionSource {
   public codesFor(_userId: string, groupIds: string[]): Promise<PermissionCode[]> {
     return Promise.resolve(groupIds.length > 0 ? this.codes : []);
   }
-  public hasLiveOwner(): Promise<boolean> {
+  public everHadOwner(): Promise<boolean> {
     return Promise.resolve(true);
   }
 }
