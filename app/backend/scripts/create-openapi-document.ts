@@ -17,6 +17,13 @@ import {
   CustomerScanController,
   CustomerSessionController,
 } from '../dist/modules/customer/infrastructure/http/customer-session.controller.js';
+import { StaffAdminService } from '../dist/modules/iam/application/staff-admin.service.js';
+import {
+  AccessRequestsController,
+  StaffController,
+} from '../dist/modules/iam/infrastructure/http/staff.controller.js';
+import { MeController } from '../dist/modules/iam/infrastructure/http/me.controller.js';
+import { PermissionResolver } from '../dist/modules/iam/application/permission-resolver.service.js';
 import { HealthController } from '../dist/modules/health/health.controller.js';
 import { HealthService } from '../dist/modules/health/health.service.js';
 import { MenuCatalogService } from '../dist/modules/menu/application/menu-catalog.service.js';
@@ -53,6 +60,9 @@ import { JwtConfigService } from '../dist/providers/config/jwt/config.service.js
 const documentedControllers = [
   HealthController,
   AuthController,
+  MeController,
+  AccessRequestsController,
+  StaffController,
   TablesController,
   VisitsController,
   VenueController,
@@ -80,6 +90,8 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
         useValue: { checkDb: async () => 'up' as const },
       },
       { provide: AuthService, useValue: {} },
+      { provide: PermissionResolver, useValue: {} },
+      { provide: StaffAdminService, useValue: {} },
       { provide: TableSeatService, useValue: {} },
       { provide: VisitService, useValue: {} },
       { provide: VenueSettingsService, useValue: {} },

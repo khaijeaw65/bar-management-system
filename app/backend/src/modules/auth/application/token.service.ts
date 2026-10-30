@@ -3,8 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { CurrentUserPayload } from '../../../common/decorators/current-user.types.js';
 import { JwtConfigService } from '../../../providers/config/jwt/config.service.js';
+import { StaffActivity } from '../../iam/application/staff-activity.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
 import {
+  INDEX_FAMILY,
+  REVOKE_ALL_FOR_USER,
   REVOKE_FAMILY,
   ROTATE_REFRESH,
   familyKey,
@@ -25,6 +28,7 @@ export class TokenService {
     private readonly redisService: RedisService,
     private readonly jwtService: JwtService,
     private readonly jwtConfig: JwtConfigService,
+    private readonly staffActivity: StaffActivity,
   ) {}
 
   public async createSession(userId: string): Promise<IssuedSession> {
@@ -49,6 +53,13 @@ export class TokenService {
     await this.revokeFamily(rawRefresh);
   }
 
+  /** Deactivation: end every web and mobile session of the user. The next request on any of their tokens is 401. */
+  public async revokeAllForUser(userId: string): Promise<number> {
+    const longest = Math.max(this.jwtConfig.refreshTtlSeconds, this.jwtConfig.mobileRefreshTtlSeconds);
+    const revoked = await this.evalScript(REVOKE_ALL_FOR_USER, [userId, String(longest)]);
+    return Number(revoked);
+  }
+
   public async sessionExists(familyId: string): Promise<boolean> {
     const value = await this.redisService.client.get(sessionKey(familyId));
     return value !== null;
@@ -61,6 +72,7 @@ export class TokenService {
     if (!claims) return null;
     const active = await this.sessionExists(claims.sid);
     if (!active) return null;
+    if (!(await this.staffActivity.isActive(claims.sub))) return null;
     return claims;
   }
 
@@ -77,6 +89,7 @@ export class TokenService {
     const refreshTtlSeconds = this.refreshLifetime(record);
     await this.storeRefresh(refreshToken, record, refreshTtlSeconds);
     await this.storeSession(record.familyId, record.userId, refreshTtlSeconds);
+    await this.evalScript(INDEX_FAMILY, [record.userId, record.familyId, String(refreshTtlSeconds)]);
     const accessToken = await this.signAccess(record.userId, record.familyId);
     return { accessToken, refreshToken, familyId: record.familyId };
   }
@@ -141,12 +154,19 @@ export class TokenService {
     const outcome = this.parseRotationOutcome(rawOutcome);
     if (outcome.kind === 'reused') return this.reused(rawRefresh);
     if (outcome.kind !== 'ok') return { status: 'invalid' };
+    if (!(await this.staffActivity.isActive(outcome.userId))) return this.inactive(rawRefresh);
     return this.rotated(outcome.userId, outcome.familyId, refreshToken);
   }
 
   private async reused(rawRefresh: string): Promise<RotateResult> {
     await this.revokeFamily(rawRefresh);
     return { status: 'reused' };
+  }
+
+  /** A deactivated person cannot refresh: end the family the token belonged to. */
+  private async inactive(rawRefresh: string): Promise<RotateResult> {
+    await this.revokeFamily(rawRefresh);
+    return { status: 'invalid' };
   }
 
   private async rotated(

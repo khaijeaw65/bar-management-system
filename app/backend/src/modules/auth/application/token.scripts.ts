@@ -3,12 +3,22 @@ export const REFRESH_USED_PREFIX = 'refresh-used:';
 export const FAMILY_PREFIX = 'family:';
 export const FAMILY_REVOKED_PREFIX = 'family-revoked:';
 export const SESSION_PREFIX = 'session:';
+export const USER_FAMILIES_PREFIX = 'user-families:';
 
 const DECODE = `local function decode(raw)
   if not raw or raw == false then return nil end
   local ok, value = pcall(cjson.decode, raw)
   if not ok or type(value) ~= 'table' then return nil end
   return value
+end`;
+
+// Per-user index of live families so a deactivation can end every session (BRIEF-054).
+// The set lives at least as long as its longest family.
+const INDEX = `
+local function indexFamily(userId, familyId, ttl)
+  local key = '${USER_FAMILIES_PREFIX}' .. userId
+  redis.call('SADD', key, familyId)
+  if redis.call('TTL', key) < ttl then redis.call('EXPIRE', key, ttl) end
 end`;
 
 // One EVAL: consume the live token and publish its replacement together.
@@ -32,6 +42,7 @@ end`;
 export const ROTATE_REFRESH = `
 ${DECODE}
 ${ENCODE}
+${INDEX}
 
 local oldHash = ARGV[1]
 local newHash = ARGV[2]
@@ -62,6 +73,7 @@ redis.call('DEL', '${REFRESH_PREFIX}' .. oldHash)
 redis.call('SET', '${REFRESH_PREFIX}' .. newHash, encodeRefresh(userId, familyId, storedTtl), 'EX', ttl)
 redis.call('SET', '${FAMILY_PREFIX}' .. familyId, newHash, 'EX', ttl)
 redis.call('SET', '${SESSION_PREFIX}' .. familyId, cjson.encode({ userId = userId }), 'EX', ttl)
+indexFamily(userId, familyId, ttl)
 return {'ok', userId, familyId}
 `;
 
@@ -95,6 +107,31 @@ end
 redis.call('DEL', '${REFRESH_PREFIX}' .. hash)
 redis.call('DEL', '${FAMILY_PREFIX}' .. familyId, '${SESSION_PREFIX}' .. familyId)
 redis.call('SET', '${FAMILY_REVOKED_PREFIX}' .. familyId, '1', 'EX', ttl)
+return 1
+`;
+
+// One EVAL: end every family the user has. ARGV[1] = userId, ARGV[2] = revoked-marker TTL (the longest family lifetime).
+export const REVOKE_ALL_FOR_USER = `
+local userId = ARGV[1]
+local ttl = tonumber(ARGV[2])
+local indexKey = '${USER_FAMILIES_PREFIX}' .. userId
+local families = redis.call('SMEMBERS', indexKey)
+for _, familyId in ipairs(families) do
+  local current = redis.call('GET', '${FAMILY_PREFIX}' .. familyId)
+  if current and current ~= false then
+    redis.call('DEL', '${REFRESH_PREFIX}' .. current)
+  end
+  redis.call('DEL', '${FAMILY_PREFIX}' .. familyId, '${SESSION_PREFIX}' .. familyId)
+  redis.call('SET', '${FAMILY_REVOKED_PREFIX}' .. familyId, '1', 'EX', ttl)
+end
+redis.call('DEL', indexKey)
+return #families
+`;
+
+// Called when a session is created. Same TTL rule as the rotation script.
+export const INDEX_FAMILY = `
+${INDEX}
+indexFamily(ARGV[1], ARGV[2], tonumber(ARGV[3]))
 return 1
 `;
 

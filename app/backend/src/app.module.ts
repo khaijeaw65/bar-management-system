@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
+import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { ClsUserInterceptor } from './common/interceptors/cls-user.interceptor.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { IamModule } from './modules/iam/iam.module.js';
+import { StaffAdminModule } from './modules/iam/staff-admin.module.js';
 import { CustomerModule } from './modules/customer/customer.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { MenuModule } from './modules/menu/menu.module.js';
@@ -28,6 +32,8 @@ import { RedisModule } from './providers/redis/redis.module.js';
     QueueModule,
     DatabaseModule,
     AuthModule,
+    IamModule,
+    StaffAdminModule,
     NotificationsModule,
     VenueModule,
     MenuModule,
@@ -37,6 +43,11 @@ import { RedisModule } from './providers/redis/redis.module.js';
     CustomerModule,
     HealthModule,
   ],
-  providers: [{ provide: APP_INTERCEPTOR, useClass: ClsUserInterceptor }],
+  providers: [
+    { provide: APP_INTERCEPTOR, useClass: ClsUserInterceptor },
+    // Order matters: authenticate first, then authorise.
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: PermissionsGuard },
+  ],
 })
 export class AppModule {}

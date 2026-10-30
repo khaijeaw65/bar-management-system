@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { Redis } from 'ioredis';
 import { JwtConfigService } from '../src/providers/config/jwt/config.service.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
+import { StaffActivity } from '../src/modules/iam/application/staff-activity.service.js';
 import { TokenService } from '../src/modules/auth/application/token.service.js';
 import type { RotateResult } from '../src/modules/auth/application/token.types.js';
 
@@ -30,6 +31,7 @@ describe('Refresh rotation atomicity (e2e, real Redis)', () => {
       ],
       providers: [
         TokenService,
+        { provide: StaffActivity, useValue: { isActive: () => Promise.resolve(true) } },
         { provide: RedisService, useValue: { client: redis } },
         {
           provide: JwtConfigService,

@@ -64,6 +64,19 @@ Query params, camelCase: `GET /api/orders?status=pending,accepted&visitId=…`. 
 | Payment gateway | webhook signature | `/api/webhooks/payments/:provider`, exempt from envelope |
 Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_paid`) via `@RequirePermissions` + `PermissionsGuard`. Each endpoint's permission is listed in its OpenAPI description.
 
+### Permissions (BRIEF-053)
+`PermissionsGuard` runs after the auth guard on every staff route. Caller's set = policies of their live groups ∪ their own policies; most permissive wins, no explicit deny. A group membership counts only inside `[valid_from, valid_until)`. The set is cached in Redis (`perms:{userId}:v{iamVersion}`, ≤ 15 min, never past the next membership change); Redis down → read from the DB. A route needs `@RequirePermissions(...)` (all listed codes), `@AnyStaff()` or `@Public()` — a test fails otherwise.
+
+- **Catalog (20):** `menu:read` `menu:write` `menu:toggle_availability` · `orders:read` `orders:create` `orders:update_status` · `payments:read` `payments:create` `payments:mark_paid` · `reports:read` · `tables:read` `tables:manage` · `visits:read` `visits:open` `visits:close` · `venue:read` `venue:update` `venue:read_payment` `venue:update_payment` · `staff:manage`.
+- **Default groups:** เจ้าของ = all · ผู้จัดการ = all except `staff:manage`, `venue:update_payment` · พนักงาน = `menu:read`, `menu:toggle_availability`, `orders:read|create|update_status`, `tables:read`, `visits:read|open|close`, `payments:read|create`, `venue:read` (no manual payment confirm).
+- **403:** `{ status: 403, code: "FORBIDDEN", message: "ไม่มีสิทธิ์ใช้งานส่วนนี้", data: { missing: ["payments:mark_paid"] } }`.
+- **Safety net:** only while no เจ้าของ membership has ever existed (a fresh database) the guard does not enforce (it logs each would-be denial and warns once a minute), so a new install never locks everyone out. Once one exists the guard always enforces — an expired or deactivated owner is recovered with `pnpm seed:staff --group เจ้าของ`. Seed the first owner with `pnpm seed:staff` / `pnpm seed:roster`.
+- **Inactive staff** (BRIEF-054): every token of a deactivated person is refused — any route, refresh and the `/staff` socket answer 401, whatever session they hold. Reactivating lets a still-live session work again.
+
+| Method | Path | Purpose | Permission |
+|---|---|---|---|
+| GET | `/api/me/permissions` | `{ permissions: PermissionCode[], groups: { id, name, validUntil }[] }` — for hiding UI | any staff |
+
 ### Realtime (socket.io)
 - Namespaces: `/staff` (auth = same access token), `/customer` (auth = the `guest_session` cookie; its own socket.io path `/api/customer/socket.io` so the `Path=/api/customer` cookie reaches the handshake).
 - Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`, `notification.created`. `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, and `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu) go to room `staff`. `visit.*` stays on room `pos`. `table.staff_called` `{ tableSeatId, reason, note, calledAt }` and `table.staff_call_cleared` `{ tableSeatId }` go to room `staff` (BRIEF-048).
@@ -97,8 +110,25 @@ Order = build order for the core vertical slice (**order → pay → close**). "
 | GET | `/api/auth/line/callback` | LINE callback → cookies → redirect | BRIEF-007 |
 | POST | `/api/auth/refresh` | rotate refresh token | BRIEF-007 |
 | POST | `/api/auth/logout` | revoke family, clear cookies | BRIEF-007 |
-| GET | `/api/auth/me` | current staff + effective permissions | BRIEF-007 |
+| GET | `/api/auth/me` | current staff (permissions: `GET /api/me/permissions`) | BRIEF-007 |
 | POST | `/api/auth/mobile/token` | Expo: exchange one-time code (PKCE) → tokens | mobile auth (DR-005) |
+
+### Staff (IAM I2 — BRIEF-054, all `staff:manage`)
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/staff/access-requests?status=pending\|rejected` | LINE access requests, newest first (default `pending`) → `AccessRequest[]` `{ id, displayName, avatarUrl, status, requestedAt, decidedAt }` |
+| POST | `/api/staff/access-requests/:id/approve` | `{ displayName, memberships: [{ groupId, until }] (≥ 1) }` → `StaffMember` (201). One transaction: staff user + LINE identity + memberships. Not `pending` → 409 `ACCESS_REQUEST_DECIDED`. The person's next LINE login succeeds |
+| POST | `/api/staff/access-requests/:id/reject` | `pending` → `rejected` → `AccessRequest` (201). Later logins by that LINE account stay refused and the request stays `rejected` |
+| POST | `/api/staff/access-requests/:id/reopen` | `rejected` → `pending`, decision cleared → `AccessRequest` (201). Any other state → 409 `ACCESS_REQUEST_DECIDED` |
+| GET | `/api/staff` | `StaffMember[]` `{ id, displayName, avatarUrl, isActive, memberships: [{ groupId, groupName, validFrom, validUntil, state: live\|future\|expired }] }`, active first, then name |
+| GET | `/api/staff/:id` | one `StaffMember` |
+| PATCH | `/api/staff/:id` | `{ displayName?, isActive? }` → `StaffMember`. `isActive: false` ends every web and mobile session of that person (next request on any token → 401) and refuses their LINE login; `true` reactivates, memberships unchanged. Yourself → 409 `SELF_DEACTIVATE` |
+| PUT | `/api/staff/:id/memberships` | `{ memberships: [{ groupId, until }] }` replaces the whole set (may be empty; expired rows not listed are removed) → `StaffMember` |
+| GET | `/api/staff/:id/effective-permissions` | `{ permissions: [{ code, sources: [{ kind: group\|user, groupName?, policyName }] }] }` — live memberships and direct user policies |
+
+- **`until`:** `permanent` (no end) · `end_of_night` (the next venue business-day cut-off, Bangkok wall-clock; default 06:00) · an ISO time in the future (else 400 `VALIDATION_ERROR`). `valid_from` = now. The same group twice, or an unknown group → 400.
+- **Lockout rule:** a write that removes a membership, gives one an end date or deactivates someone is refused with `409 IAM_LOCKOUT` (`data: { reason: 'last_manager' }`) when, afterwards, no active staff member would hold `staff:manage` through a membership with no end date or a direct user policy. Checked in the database inside the write's transaction. Approve, reject, reopen and rename never trigger it.
+- Every successful write bumps `iam:version`, so the change shows on the person's next request.
 
 ### Venue
 | Method | Path | Purpose | Permission |
