@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-30 |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-30 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | frontend · backend (small) |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | BRIEF-047 ✅ (#97) · BRIEF-048 ✅ (#98) · BRIEF-049 ✅ (merged) — seed is based on an older local `main`: **merge `origin/main` first** |
 | **References** | CD-06 handoff (boards `tab`, `call-staff`, menu·6 ·8, cart·6; §3, §6 copy, §7, §9; D2/D3) · canvas https://claude.ai/artifact/6f5CBjGzpN4zYFotFQauGi · DR-028 · DR-012 (status per ticket, customer labels) · audits BRIEF-048 Findings 5–6, BRIEF-049 Suggestions 2, 4, 8 |
 | **Audit depth** | Full (guest auth binding + customer realtime) |
@@ -33,6 +33,7 @@ Every phone at a table sees the whole table's bill live (status per station, can
 ### In — backend (`modules/customer`, `modules/venue`, `modules/notifications`)
 - **Bind on read:** in `GuestSessionService` resolve path — seat-only session (`visit_id NULL`) on a seat that now has a live visit → `bindVisit(sessionId, visitId)` (same write as BRIEF-048) → view returns the `visitId`; then `CustomerTabGateway.bindSession(sessionId, visitId)` so its sockets join `visit:{id}`. Expiry rules unchanged (bound = life of the visit, DR-028).
 - **Seat room ping *(proposed)*:** `VisitService` announces an opened visit (`announceOpened`, staff and guest paths) → `NotificationsService.emitSeatVisitOpened(tableSeatId, visitId)` → the customer gateway emits `tab.changed { visitId }` to `seat:{tableSeatId}`. Same sink pattern as `emitTabChanged`; no staff payload on `/customer`.
+- **Seat-only hard cap (Rev 2, Field 2026-10-30 — audit Finding 3 B):** a seat-only session (`visit_id NULL`) is invalid once `now > created_at + 60 min`, whatever its sliding `expires_at` (2 h sliding stays, capped). Checked in `GuestSessionService.isValid` **before** bind-on-read, so an old browsing phone can never join a later visit on the seat. Visit-bound sessions unchanged. Needs `created_at` in the session row read (no schema change). Tests: unit (fake clock: 59 min binds / slides, 61 min → invalid even with a fresh `expires_at`) + e2e (seat-only session created 61 min ago + POS opens the visit → `GET /customer/tab` 401 `GUEST_SESSION_INVALID`).
 - **Hide empty guest categories:** `CustomerMenuService` drops categories with no item left after the charge/hidden filters.
 - Tests: e2e — seat-only session + POS opens the visit → `GET /customer/tab` returns that visit's orders and the session row has `visit_id`; a socket in `seat:` receives `tab.changed` on POS open; empty category absent from `/customer/menu`.
 
@@ -67,6 +68,7 @@ Every phone at a table sees the whole table's bill live (status per station, can
 - **AC-8** — `RATE_LIMITED` at send shows the server message as a notice; cart remains editable; retry after the wait succeeds with the same key.
 - **AC-9** — Navigating menu → cart → tab dismisses stale Toasts; header bell and บิลโต๊ะ reachable on all three pages; 360×780 no horizontal scroll.
 - **AC-10** — Gates + run proof pass.
+- **AC-11 (Rev 2)** — A seat-only session older than 60 min is rejected (401) even if used within the last 2 h, and is never bound to a visit opened later; a session bound before 60 min keeps living with its visit.
 
 ## 5. Test Gate
 | AC | Test type | Location (expected) |
@@ -114,3 +116,4 @@ Run proof (real stack, ports BRIEF-046; stop dev servers before e2e): two phone 
 |---|---|---|
 | 1 | 2026-10-30 | Initial Draft (Cowork) — customer side C4 |
 | 1 | 2026-10-30 | Ready — Field in session: "approve BRIEF-050 Rev 1 Ready" (incl. the two *(proposed)* rows) |
+| 2 | 2026-10-30 | Field in session (audit Finding 3 → option B): seat-only sessions capped at 60 min after creation; AC-11; DR-028 amended |
