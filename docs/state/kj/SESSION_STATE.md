@@ -1,12 +1,12 @@
 # State — KJ
-Updated: 2026-10-30 · Agent: Claude Code (BRIEF-048 Implemented)
+Updated: 2026-10-30 · Agent: Claude Code (BRIEF-048 audit PASS, PR open)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-048 Implemented** (branch pushed, no PR) → next: `audit BRIEF-048` (Cowork). Needs Field-approved `docs/schema.sql` + `erd.html` edit (guest_session_id + 3 seat columns), plus the one-line frontend mock fix to confirm. 047 Done (#97).
+**BRIEF-048 audit PASS** (Cowork) → PR open, merge once `ci` is green on the head (Field's own PR, §7). Schema docs edit included. Audit follow-ups: F2 release slot only on ITEM_UNAVAILABLE (optional), F3 add `emitTabChanged` to BRIEF-018 ACs. 047 Done (#97).
 
 ## Active
-- Brief: BRIEF-048 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-048-customer-order-tab-call` (no PR)
+- Brief: BRIEF-048 Rev 1 · Stage: PASS, PR open · Branch: `feat/BRIEF-048-customer-order-tab-call`
 - Done 21–30 Oct: BRIEF-047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
@@ -36,5 +36,5 @@ Updated: 2026-10-30 · Agent: Claude Code (BRIEF-048 Implemented)
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-048 C2 (Implemented, audit next) → customer UI C3–C4 → C5 pay merge → C6 POS badge → IAM → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
+1. BRIEF-048 C2 (PASS, PR open) → customer UI C3–C4 → C5 pay merge → C6 POS badge → IAM → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
 2. BRIEF-023 split equal (Deferred, DR-019) · IAM brief · BRIEF-018 void/comp + PIN · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)

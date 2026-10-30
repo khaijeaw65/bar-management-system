@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-048-customer-order-tab-call` (PR opens after audit PASS) |
 | **Commit** | Work SHA: see chat (not recorded here — no SHA-record commits) |
-| **Status** | Implemented — waiting for `audit BRIEF-048` (Cowork) |
+| **Status** | Audit PASS (Cowork, 2026-10-30) — PR open |
 
 > Created at `Implemented`. Updated once in the PASS commit. Frozen at merge.
 
@@ -59,8 +59,8 @@ Run proof on dev `bar` (migration applied, `start:dev` :3011, T6): scan A → or
 - none
 
 ## Deviations from Brief
-- **`docs/schema.sql` / `docs/erd.html`** not edited (§8 unlocks nothing; both protected). Needs the Field-approved Cowork edit for `order_record.guest_session_id` + the three `table_seat` columns, as for BRIEF-047.
-- **`app/frontend/src/mocks/handlers.ts`** — one line (`staffCall: null`) so the frontend typechecks after `TableSummary.staffCall` became required. Outside "backend · contracts"; revert if you prefer the frontend brief to carry it.
+- **`docs/schema.sql` / `docs/erd.html`** not edited by the executor (protected). Closed at audit PASS: Cowork wrote both as a Field-approved edit (audit Finding 1); committed here with `Approved-by: Field (session)`.
+- **`app/frontend/src/mocks/handlers.ts`** — one line (`staffCall: null`) so the frontend typechecks after `TableSummary.staffCall` became required. Outside "backend · contracts"; accepted by the auditor (Finding 4).
 - **Throttle slot is released when an order fails** (sold-out, charge line, validation) so fixing the cart does not cost another 10 s; a successful order always holds it. Brief said only "SET NX EX 10".
 - **"POS item cancel"** (AC-8) has no endpoint yet (void/comp = BRIEF-018); the covered cancel path is the 86 auto-void.
 - Test helper `staff-session.ts` deletes `guest_session` after `order_record` (new FK); `updated-at-trigger` revert test also reverts/re-applies the new migration.

@@ -56,6 +56,9 @@ CREATE TABLE table_seat (
   sort_order  SMALLINT NOT NULL DEFAULT 0,
   qr_token    VARCHAR(64) UNIQUE,                         -- opaque random token; regenerate = replace (BRIEF-011 Q1, Field 2026-10-04)
   is_active   BOOLEAN NOT NULL DEFAULT TRUE,
+  staff_called_at   TIMESTAMPTZ,                         -- call-staff bell (BRIEF-048); NULL = no bell. Cleared on acknowledge / visit close
+  staff_call_reason VARCHAR(10) CHECK (staff_call_reason IN ('bill', 'other')),
+  staff_call_note   VARCHAR(100),
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by  UUID,
@@ -379,12 +382,14 @@ CREATE TABLE order_record (
   visit_id       UUID NOT NULL REFERENCES visit(id),
   order_number   INT  NOT NULL,             -- daily sequence, shown "#001" (DR-013)
   business_date  DATE NOT NULL,             -- business day, 06:00 Asia/Bangkok cut-off (DR-013)
+  guest_session_id UUID REFERENCES guest_session(id),  -- NULL = staff order; set = placed from a guest phone (DR-028, BRIEF-048 — "ของฉัน")
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by     UUID REFERENCES staff_user(id),   -- NULL = customer QR order
   updated_by     UUID REFERENCES staff_user(id),
   CONSTRAINT uq_order_number_per_day UNIQUE (business_date, order_number)
 );
+CREATE INDEX idx_order_guest_session ON order_record(guest_session_id) WHERE guest_session_id IS NOT NULL;
 
 -- One row = one station's part of an order; owns the STATUS (DR-012, DR-013).
 -- Split by station only when venue.kitchen_display_enabled; otherwise one 'bar' ticket (+ charge ticket).
