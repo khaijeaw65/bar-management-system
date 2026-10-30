@@ -33,7 +33,10 @@
               "SLIP_ALREADY_USED",
               "QR_INVALID",
               "GUEST_SESSION_INVALID",
-              "PAYMENT_NOT_YOURS"
+              "PAYMENT_NOT_YOURS",
+              "ACCESS_REQUEST_DECIDED",
+              "IAM_LOCKOUT",
+              "SELF_DEACTIVATE"
             ],
             "type": "string"
           },
@@ -529,6 +532,21 @@
                 },
                 "required": [
                   "missing"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "reason": {
+                    "enum": [
+                      "last_manager"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
                 ],
                 "type": "object"
               }

@@ -1,4 +1,4 @@
-import type { ErrorCode, MenuItem, MissingPermissions, PaymentAttempt } from '@bar/contracts';
+import type { ErrorCode, IamLockoutData, MenuItem, MissingPermissions, PaymentAttempt } from '@bar/contracts';
 
 export type ErrorData =
   | null
@@ -10,7 +10,8 @@ export type ErrorData =
     }
   | { details: PaymentAttempt }
   | { details: MenuItem }
-  | MissingPermissions;
+  | MissingPermissions
+  | IamLockoutData;
 
 export interface ErrorEnvelope {
   status: number;

@@ -6,6 +6,7 @@ import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { ClsUserInterceptor } from './common/interceptors/cls-user.interceptor.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { IamModule } from './modules/iam/iam.module.js';
+import { StaffAdminModule } from './modules/iam/staff-admin.module.js';
 import { CustomerModule } from './modules/customer/customer.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { MenuModule } from './modules/menu/menu.module.js';
@@ -32,6 +33,7 @@ import { RedisModule } from './providers/redis/redis.module.js';
     DatabaseModule,
     AuthModule,
     IamModule,
+    StaffAdminModule,
     NotificationsModule,
     VenueModule,
     MenuModule,

@@ -5,6 +5,8 @@ import type { CurrentUserPayload } from '../../../common/decorators/current-user
 import { JwtConfigService } from '../../../providers/config/jwt/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
 import {
+  INDEX_FAMILY,
+  REVOKE_ALL_FOR_USER,
   REVOKE_FAMILY,
   ROTATE_REFRESH,
   familyKey,
@@ -49,6 +51,13 @@ export class TokenService {
     await this.revokeFamily(rawRefresh);
   }
 
+  /** Deactivation: end every web and mobile session of the user. The next request on any of their tokens is 401. */
+  public async revokeAllForUser(userId: string): Promise<number> {
+    const longest = Math.max(this.jwtConfig.refreshTtlSeconds, this.jwtConfig.mobileRefreshTtlSeconds);
+    const revoked = await this.evalScript(REVOKE_ALL_FOR_USER, [userId, String(longest)]);
+    return Number(revoked);
+  }
+
   public async sessionExists(familyId: string): Promise<boolean> {
     const value = await this.redisService.client.get(sessionKey(familyId));
     return value !== null;
@@ -77,6 +86,7 @@ export class TokenService {
     const refreshTtlSeconds = this.refreshLifetime(record);
     await this.storeRefresh(refreshToken, record, refreshTtlSeconds);
     await this.storeSession(record.familyId, record.userId, refreshTtlSeconds);
+    await this.evalScript(INDEX_FAMILY, [record.userId, record.familyId, String(refreshTtlSeconds)]);
     const accessToken = await this.signAccess(record.userId, record.familyId);
     return { accessToken, refreshToken, familyId: record.familyId };
   }

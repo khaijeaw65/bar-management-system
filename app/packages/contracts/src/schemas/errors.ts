@@ -30,6 +30,9 @@ export const ErrorCodeSchema = z.enum([
   'QR_INVALID',
   'GUEST_SESSION_INVALID',
   'PAYMENT_NOT_YOURS',
+  'ACCESS_REQUEST_DECIDED',
+  'IAM_LOCKOUT',
+  'SELF_DEACTIVATE',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
