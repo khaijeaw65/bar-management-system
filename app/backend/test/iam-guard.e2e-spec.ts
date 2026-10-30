@@ -187,12 +187,11 @@ describe('IAM guard (e2e)', () => {
     await request(app.getHttpServer()).get('/api/me/permissions').expect(401);
   });
 
-  it('AC-7: a deactivated user with a live session gets an empty set (the session itself is not revoked here)', async () => {
+  it('AC-7: a deactivated user with a live session is logged out on every token (BRIEF-054: inactive = 401)', async () => {
     const token = await tokenOf(staff);
     await dataSource.query(`UPDATE staff_user SET is_active = false WHERE id = $1`, [staff]);
-    const body = (await me(token).expect(200)).body.data;
-    expect(body).toEqual({ permissions: [], groups: [] });
-    expect((await markPaid(token, UNKNOWN)).status).toBe(403);
+    await me(token).expect(401);
+    expect((await markPaid(token, UNKNOWN)).status).toBe(401);
   });
 
   function bearer(token: string): { Authorization: string } {

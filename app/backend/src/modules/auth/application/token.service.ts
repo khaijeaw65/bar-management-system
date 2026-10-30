@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { CurrentUserPayload } from '../../../common/decorators/current-user.types.js';
 import { JwtConfigService } from '../../../providers/config/jwt/config.service.js';
+import { StaffActivity } from '../../iam/application/staff-activity.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
 import {
   INDEX_FAMILY,
@@ -27,6 +28,7 @@ export class TokenService {
     private readonly redisService: RedisService,
     private readonly jwtService: JwtService,
     private readonly jwtConfig: JwtConfigService,
+    private readonly staffActivity: StaffActivity,
   ) {}
 
   public async createSession(userId: string): Promise<IssuedSession> {
@@ -70,6 +72,7 @@ export class TokenService {
     if (!claims) return null;
     const active = await this.sessionExists(claims.sid);
     if (!active) return null;
+    if (!(await this.staffActivity.isActive(claims.sub))) return null;
     return claims;
   }
 
@@ -151,12 +154,19 @@ export class TokenService {
     const outcome = this.parseRotationOutcome(rawOutcome);
     if (outcome.kind === 'reused') return this.reused(rawRefresh);
     if (outcome.kind !== 'ok') return { status: 'invalid' };
+    if (!(await this.staffActivity.isActive(outcome.userId))) return this.inactive(rawRefresh);
     return this.rotated(outcome.userId, outcome.familyId, refreshToken);
   }
 
   private async reused(rawRefresh: string): Promise<RotateResult> {
     await this.revokeFamily(rawRefresh);
     return { status: 'reused' };
+  }
+
+  /** A deactivated person cannot refresh: end the family the token belonged to. */
+  private async inactive(rawRefresh: string): Promise<RotateResult> {
+    await this.revokeFamily(rawRefresh);
+    return { status: 'invalid' };
   }
 
   private async rotated(

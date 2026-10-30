@@ -4,6 +4,7 @@ import { AccessRequestService } from './application/access-request.service.js';
 import { IamEnforcement } from './application/iam-enforcement.service.js';
 import { IamVersion } from './application/iam-version.service.js';
 import { PermissionResolver } from './application/permission-resolver.service.js';
+import { StaffActivity } from './application/staff-activity.service.js';
 import { StaffUserService } from './application/staff-user.service.js';
 import { ACCESS_REQUEST_REPOSITORY } from './domain/access-request.repository.js';
 import { PERMISSION_SOURCE } from './domain/permission-source.js';
@@ -36,8 +37,9 @@ import { StaffUserTypeormRepository } from './infrastructure/persistence/staff-u
     AccessRequestTypeormRepository,
     { provide: ACCESS_REQUEST_REPOSITORY, useExisting: AccessRequestTypeormRepository },
     StaffUserService,
+    StaffActivity,
     AccessRequestService,
   ],
-  exports: [StaffUserService, AccessRequestService, PermissionResolver, IamEnforcement, IamVersion],
+  exports: [StaffUserService, StaffActivity, AccessRequestService, PermissionResolver, IamEnforcement, IamVersion],
 })
 export class IamModule {}

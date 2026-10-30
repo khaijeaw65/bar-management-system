@@ -337,6 +337,22 @@ describe('IAM staff API (e2e)', () => {
     expect(await tokens.rotate(rotated.refreshToken)).toEqual({ status: 'invalid' });
   });
 
+  it('AC-6: a session issued before the family index existed is logged out too (inactive = logged out on every token)', async () => {
+    const staffId = await approvedStaff();
+    const tokens = app.get(TokenService);
+    const web = await tokens.createSession(staffId);
+    const mobile = await tokens.createMobileSession(staffId);
+    await redis.client.del(`user-families:${staffId}`); // what a pre-change session looks like
+    await api(web.accessToken).get('/auth/me').expect(200);
+
+    await api().patch(`/staff/${staffId}`, { isActive: false }).expect(200);
+    await api(web.accessToken).get('/auth/me').expect(401);
+    await api(mobile.accessToken).get('/auth/me').expect(401);
+    expect(await tokens.authenticateAccessToken(web.accessToken)).toBeNull(); // the WS /staff handshake uses this
+    expect(await tokens.rotate(web.refreshToken)).toEqual({ status: 'invalid' });
+    expect(await tokens.rotate(mobile.refreshToken)).toEqual({ status: 'invalid' });
+  });
+
   it('AC-7: effective permissions list where each code comes from', async () => {
     const manager = await insertStaff(dataSource, 'ผู้จัดการ', 'ผู้จัดการ');
     const policy: Array<{ id: string }> = await dataSource.query(`INSERT INTO policy (name) VALUES ('งานพิเศษ') RETURNING id`);
