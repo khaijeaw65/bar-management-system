@@ -13,6 +13,7 @@ import { MenuCategory } from '../src/modules/menu/infrastructure/persistence/men
 import { NotificationsService } from '../src/modules/notifications/notifications.service.js';
 import { CustomerOrderCallStaff1763000000000 } from '../src/providers/database/migrations/1763000000000-CustomerOrderCallStaff.js';
 import { GuestSession1762900000000 } from '../src/providers/database/migrations/1762900000000-GuestSession.js';
+import { CustomerPayment1763100000000 } from '../src/providers/database/migrations/1763100000000-CustomerPayment.js';
 import { UpdatedAtTrigger1762500000000 } from '../src/providers/database/migrations/1762500000000-UpdatedAtTrigger.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
@@ -190,9 +191,11 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
     const migration = new UpdatedAtTrigger1762500000000();
     const guestSession = new GuestSession1762900000000();
     const customerOrder = new CustomerOrderCallStaff1763000000000();
+    const customerPayment = new CustomerPayment1763100000000();
     const runner = dataSource.createQueryRunner();
     try {
       // guest_session's trigger depends on the function, so it goes first and comes back last.
+      await customerPayment.down(runner); // payment points at guest_session too
       await customerOrder.down(runner); // order_record points at guest_session
       await guestSession.down(runner);
       await migration.down(runner);
@@ -202,6 +205,7 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
       await migration.up(runner);
       await guestSession.up(runner);
       await customerOrder.up(runner);
+      await customerPayment.up(runner);
       expect(await triggerCount()).toBe(TRIGGERED_TABLES.length);
     } finally {
       await runner.release();

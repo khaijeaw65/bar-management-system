@@ -84,6 +84,15 @@ export class TableSeatService {
     }
   }
 
+  /** The payment behind a "แจ้งโอนแล้ว" bell left pending: clear that bell only — `bill` / `other` stay (BRIEF-052). */
+  public async clearTransferCall(visitId: string): Promise<void> {
+    const visit = await this.visitRepository.findById(visitId);
+    if (!visit) return;
+    if (await this.tableSeatRepository.clearStaffCall(visit.tableSeatId, 'transfer')) {
+      this.notifications.emitToStaff(TABLE_STAFF_CALL_CLEARED, { tableSeatId: visit.tableSeatId });
+    }
+  }
+
   public async regenerateQr(id: string): Promise<string> {
     const seat = await this.tableSeatRepository.findActiveById(id);
     if (!seat) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);

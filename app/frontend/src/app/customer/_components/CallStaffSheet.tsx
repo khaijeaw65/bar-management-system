@@ -1,14 +1,13 @@
 "use client";
 
-import type { CallStaffReason } from "@bar/contracts";
 import { Button, Drawer, FieldError, Label, TextArea, TextField } from "@heroui/react";
 import { BellRing, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
-import type { useCallStaff } from "../_hooks/useCallStaff";
+import type { GuestCallReason, useCallStaff } from "../_hooks/useCallStaff";
 
 const NOTE_MAX = 100;
-const REASONS: ReadonlyArray<{ value: CallStaffReason; label: string }> = [
+const REASONS: ReadonlyArray<{ value: GuestCallReason; label: string }> = [
   { value: "bill", label: "เช็คบิล" },
   { value: "other", label: "อื่นๆ" },
 ];
@@ -32,7 +31,7 @@ function CallStatus({ call }: Readonly<{ call: Call }>) {
   );
 }
 
-function ReasonChips({ reason, onChange }: Readonly<{ reason: CallStaffReason | null; onChange: (value: CallStaffReason | null) => void }>) {
+function ReasonChips({ reason, onChange }: Readonly<{ reason: GuestCallReason | null; onChange: (value: GuestCallReason | null) => void }>) {
   return (
     <fieldset aria-label="เหตุผล" className="m-0 flex gap-2 border-0 p-0">
       {REASONS.map((entry) => (
@@ -53,8 +52,12 @@ function ReasonChips({ reason, onChange }: Readonly<{ reason: CallStaffReason | 
   );
 }
 
-export function CallStaffSheet({ call, onClose }: Readonly<{ call: Call; onClose: () => void }>) {
-  const [reason, setReason] = useState<CallStaffReason | null>(null);
+export function CallStaffSheet({
+  call,
+  onClose,
+  initialReason = null,
+}: Readonly<{ call: Call; onClose: () => void; initialReason?: GuestCallReason | null }>) {
+  const [reason, setReason] = useState<GuestCallReason | null>(initialReason);
   const [note, setNote] = useState("");
   const tooLong = note.length > NOTE_MAX;
   return (

@@ -4,6 +4,8 @@ import type { SlipCheck } from '../domain/ports/slip-verifier.port.js';
 export interface CreatePaymentInput {
   visitId: string;
   method: PaymentMethod;
+  /** Set when a guest phone creates the payment (BRIEF-052). */
+  guestSessionId?: string;
 }
 
 export interface MarkPaidInput {

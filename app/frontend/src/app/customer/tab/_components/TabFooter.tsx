@@ -5,8 +5,10 @@ import { clockOf } from "../_lib/tab";
 export function TabFooter({
   total,
   asOf,
+  canPay,
   onOrderMore,
-}: Readonly<{ total: string; asOf: string; onOrderMore: () => void }>) {
+  onPay,
+}: Readonly<{ total: string; asOf: string; canPay: boolean; onOrderMore: () => void; onPay: () => void }>) {
   return (
     <div className="sticky bottom-0 z-10 mt-auto flex items-center gap-3 border-t border-line-hairline bg-surface-bar p-4 backdrop-blur-(--blur-bar)">
       <div className="flex flex-1 flex-col">
@@ -14,9 +16,14 @@ export function TabFooter({
         <span className="text-title tabular-nums">{formatTHB(total)}</span>
         <span className="text-small text-text-faint">อัปเดต {clockOf(asOf)}</span>
       </div>
-      <Button size="lg" className="min-h-13" onPress={onOrderMore}>
+      <Button size="lg" variant={canPay ? "secondary" : "primary"} className="min-h-13" onPress={onOrderMore}>
         สั่งเพิ่ม
       </Button>
+      {canPay ? (
+        <Button size="lg" className="min-h-13" onPress={onPay}>
+          ชำระเงิน
+        </Button>
+      ) : null}
     </div>
   );
 }

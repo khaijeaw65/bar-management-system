@@ -6,6 +6,7 @@ import type { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import type { PaymentConfigService } from '../../../providers/config/payment/config.service.js';
 import type { NotificationsService } from '../../notifications/notifications.service.js';
+import type { TableSeatService } from '../../venue/application/table-seat.service.js';
 import type { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
 import type { VisitService } from '../../venue/application/visit.service.js';
 import type { PaymentRepository } from '../domain/ports/payment.repository.port.js';
@@ -37,6 +38,26 @@ describe('PaymentService expiry clock', () => {
     expect(harness.repo.row).toMatchObject({ status: 'cancelled', statusReason: 'expired' });
     expect(harness.events).toHaveLength(1);
     expect(harness.events[0]).toMatchObject({ paymentId: 'pay-1', status: 'cancelled', statusReason: 'expired' });
+  });
+
+  it('pings the phones and clears the transfer bell only once the payment leaves pending', async () => {
+    const calls: string[] = [];
+    const harness = harnessOf(pending(at));
+    const wired = new PaymentService(
+      harness.repo,
+      new FixedClock(at),
+      {} as Queue,
+      {} as VisitService,
+      {} as BillService,
+      {} as VenueSettingsService,
+      { clearTransferCall: async (id: string) => { calls.push(`clear:${id}`); } } as unknown as TableSeatService,
+      { emitToStaff: () => undefined, emitTabChanged: (id: string) => { calls.push(`tab:${id}`); } } as unknown as NotificationsService,
+      { qrTtlSeconds: 900 } as PaymentConfigService,
+      { verify: async () => ({ kind: 'unavailable' }) },
+      { record: async () => undefined } as unknown as AuditLogService,
+    );
+    await wired.expire('pay-1');
+    expect(calls).toEqual(['tab:visit-1', 'clear:visit-1']);
   });
 
   it('ignores a payment that is already settled', async () => {
@@ -145,6 +166,7 @@ function harnessOf(row: PaymentRecord): { service: PaymentService; repo: MemoryP
     emitToStaff: (_event: string, payload: unknown) => {
       events.push(payload);
     },
+    emitTabChanged: () => undefined,
   };
   const service = new PaymentService(
     repo,
@@ -153,7 +175,8 @@ function harnessOf(row: PaymentRecord): { service: PaymentService; repo: MemoryP
     {} as VisitService,
     {} as BillService,
     {} as VenueSettingsService,
-    notifications as NotificationsService,
+    { clearTransferCall: async () => undefined } as unknown as TableSeatService,
+    notifications as unknown as NotificationsService,
     { qrTtlSeconds: 900 } as PaymentConfigService,
     { verify: async () => ({ kind: 'unavailable' }) },
     { record: async () => undefined } as unknown as AuditLogService,
@@ -183,6 +206,7 @@ function pending(expiresAt: Date): PaymentRecord {
     qrPayload: 'payload',
     expiresAt,
     paidAt: null,
+    guestSessionId: null,
     createdBy: null,
     updatedBy: null,
     createdAt: at,
@@ -224,10 +248,12 @@ function verifyHarness(row: PaymentRecord): {
     {} as VisitService,
     {} as BillService,
     {} as VenueSettingsService,
+    { clearTransferCall: async () => undefined } as unknown as TableSeatService,
     {
       emitToStaff: (_event: string, payload: unknown) => {
         events.push(payload);
       },
+      emitTabChanged: () => undefined,
     } as unknown as NotificationsService,
     { qrTtlSeconds: 900 } as PaymentConfigService,
     slips,

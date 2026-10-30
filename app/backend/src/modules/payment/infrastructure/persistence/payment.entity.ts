@@ -64,4 +64,7 @@ export class Payment extends BaseEntity {
 
   @Column({ type: COL.TIMESTAMP, nullable: true })
   public paidAt!: Date | null;
+
+  @Column({ type: COL.UUID, nullable: true })
+  public guestSessionId!: string | null;
 }

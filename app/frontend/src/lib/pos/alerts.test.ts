@@ -14,6 +14,7 @@ test("AC-4: a guest order has no creator; staff orders do", () => {
 test("call text: bill, note, none", () => {
   expect(callTitle("T3", { reason: "bill", note: null })).toBe("T3 เรียกพนักงาน · เช็คบิล");
   expect(callReasonText({ reason: "other", note: " ขอน้ำแข็ง " })).toBe("ขอน้ำแข็ง");
+  expect(callReasonText({ reason: "transfer", note: "1240.00" })).toBe("แจ้งโอนแล้ว ฿1,240.00");
   expect(callTitle("T3", { reason: null, note: null })).toBe("T3 เรียกพนักงาน");
 });
 
