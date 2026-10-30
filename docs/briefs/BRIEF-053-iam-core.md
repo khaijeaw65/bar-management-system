@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-30 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -119,9 +119,10 @@ Run proof (real stack, ports BRIEF-046; stop dev servers before e2e): `migration
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
 - [x] Size within workflow §2 (≤ 3 working days)
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-30 | Initial Draft (Cowork) — IAM I1 core |
+| 1 | 2026-10-30 | Ready — Field in session: "approve BRIEF-053 Rev 1 Ready" (incl. the two *(proposed)* rows: default policies as in §3, boot safety net) |
