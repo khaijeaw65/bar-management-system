@@ -25,6 +25,7 @@ class FakeSessions implements GuestSessionRepository {
       visitState: input.visitId ? 'open' : null,
       displayName: null,
       expiresAt: input.expiresAt,
+      createdAt: T0,
     });
     return id;
   }
@@ -123,9 +124,9 @@ describe('GuestSessionService', () => {
   it('slides a seat-only session by 2 h from now (AC-5)', async () => {
     const { service, setNow } = build();
     const started = await service.start(scan());
-    setNow(new Date(T0.getTime() + HOUR + 50 * 60 * 1000));
+    setNow(new Date(T0.getTime() + 50 * 60 * 1000));
     const resolved = await service.resolve(started.token ?? undefined);
-    expect(resolved.expiresAt.getTime()).toBe(T0.getTime() + 3 * HOUR + 50 * 60 * 1000);
+    expect(resolved.expiresAt.getTime()).toBe(T0.getTime() + 2 * HOUR + 50 * 60 * 1000);
   });
 
   it('rejects an expired seat-only session (AC-4)', async () => {
@@ -200,5 +201,23 @@ describe('GuestSessionService bind on read (BRIEF-050)', () => {
     const resolved = await service.resolve(started.token ?? undefined);
     expect(resolved.visitId).toBeNull();
     expect(resolved.justBound).toBeUndefined();
+  });
+});
+
+describe('GuestSessionService seat-only cap (BRIEF-050 AC-11)', () => {
+  it('still slides and binds at 59 min', async () => {
+    const { service, setNow } = build({ seatVisitId: VISIT });
+    const started = await service.start(scan());
+    setNow(new Date(T0.getTime() + 59 * 60 * 1000));
+    expect(await service.resolve(started.token ?? undefined)).toMatchObject({ visitId: VISIT, justBound: true });
+  });
+
+  it('is invalid at 61 min even with a fresh sliding expiry, and never binds', async () => {
+    const { service, sessions, setNow } = build({ seatVisitId: VISIT });
+    const started = await service.start(scan());
+    setNow(new Date(T0.getTime() + 30 * 60 * 1000));
+    setNow(new Date(T0.getTime() + 61 * 60 * 1000));
+    await expect(service.resolve(started.token ?? undefined)).rejects.toMatchObject({ code: 'GUEST_SESSION_INVALID', status: 401 });
+    expect([...sessions.rows.values()][0]?.visitId).toBeNull();
   });
 });

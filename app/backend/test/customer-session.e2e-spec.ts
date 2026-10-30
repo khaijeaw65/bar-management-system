@@ -128,6 +128,7 @@ describe('Customer QR session (e2e)', () => {
 
     it('rejects an expired seat-only session', async () => {
       const cookie = cookieValue(await scan(await qrOf('T3')).expect(201));
+      await alignCreatedAt();
       await getWith(cookie).expect(200);
       now = new Date(FRIDAY_2300.getTime() + 2 * HOUR + 1000);
       await getWith(cookie).expect(401);
@@ -172,9 +173,25 @@ describe('Customer QR session (e2e)', () => {
   it('slides a seat-only session on use (AC-5)', async () => {
     const started = await scan(await qrOf('T3')).expect(201);
     const cookie = cookieValue(started);
-    now = new Date(FRIDAY_2300.getTime() + HOUR + 50 * 60 * 1000);
+    await alignCreatedAt();
+    now = new Date(FRIDAY_2300.getTime() + 50 * 60 * 1000);
     const used = await getWith(cookie).expect(200);
     expect(used.body.data.expiresAt).toBe(new Date(now.getTime() + 2 * HOUR).toISOString());
+  });
+
+  it('caps a seat-only session at 60 min: never joins a visit opened later (BRIEF-050 AC-11)', async () => {
+    const seat = await seatByLabel('T3');
+    const old = cookieValue(await scan(seat.qr).expect(201));
+    const fresh = cookieValue(await scan(seat.qr).expect(201));
+    await alignCreatedAt();
+    await openVisit(seat.id);
+    now = new Date(FRIDAY_2300.getTime() + 61 * 60 * 1000);
+    await dataSource.query(`UPDATE guest_session SET expires_at = $1 WHERE token_hash <> 'x'`, [new Date(now.getTime() + HOUR).toISOString()]);
+    const rejected = await request(app.getHttpServer()).get('/api/customer/tab').set('Cookie', `guest_session=${old}`).expect(401);
+    expect(rejected.body.code).toBe('GUEST_SESSION_INVALID');
+    expect(fresh).not.toBe(old);
+    const rows: Array<{ visit_id: string | null }> = await dataSource.query(`SELECT visit_id FROM guest_session`);
+    expect(rows.every((row) => row.visit_id === null)).toBe(true);
   });
 
   it('trims, clears and bounds the nickname (AC-6)', async () => {
@@ -264,6 +281,11 @@ describe('Customer QR session (e2e)', () => {
       .set({ Authorization: `Bearer ${accessToken}` })
       .send({ tableSeatId })
       .expect(201);
+  }
+
+  // The fake clock is not the database clock: pin created_at to it so the 60 min cap is measured on one timeline.
+  async function alignCreatedAt(): Promise<void> {
+    await dataSource.query(`UPDATE guest_session SET created_at = $1`, [FRIDAY_2300.toISOString()]);
   }
 
   async function insertSession(

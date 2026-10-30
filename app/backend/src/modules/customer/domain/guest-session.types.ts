@@ -15,6 +15,7 @@ export interface GuestSessionRow {
   visitState: VisitState | null;
   displayName: string | null;
   expiresAt: Date;
+  createdAt: Date;
 }
 
 /** What `request.guestSession` carries once the guard has accepted the cookie. */
