@@ -41,8 +41,8 @@ export function PayScreen() {
 
   if (watching && pending) {
     const changeMethod = () => {
-      setWatching(false);
-      actions.cancel.mutate(pending.id);
+      // Leave the QR only once the server says it is cancelled, so the intent never flashes "ดู QR" for a payment that is going away.
+      actions.cancel.mutate(pending.id, { onSuccess: () => setWatching(false) });
     };
     return <QrView pending={pending} seat={seat} actions={actions} onChangeMethod={changeMethod} />;
   }
