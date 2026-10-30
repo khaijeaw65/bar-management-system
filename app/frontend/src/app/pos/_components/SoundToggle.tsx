@@ -11,7 +11,9 @@ export function SoundToggle() {
   // The unlock listener resolves before onPress, so remember whether this tap found the sound locked.
   const wasLocked = useRef(false);
   const hint = locked && !muted;
-  const label = muted ? "เปิดเสียง" : hint ? "แตะเพื่อเปิดเสียง" : "ปิดเสียง";
+  let label = "ปิดเสียง";
+  if (muted) label = "เปิดเสียง";
+  else if (hint) label = "แตะเพื่อเปิดเสียง";
   const Icon = muted ? VolumeX : Volume2;
 
   return (

@@ -16,7 +16,8 @@ export function StaffCallRow({
   onAcknowledge: () => void;
 }>) {
   const reason = callReasonText(call);
-  const text = `เรียกพนักงาน${reason ? ` · ${reason}` : ""} · ${formatCallAge(call.calledAt, now)}`;
+  const parts = ["เรียกพนักงาน", reason, formatCallAge(call.calledAt, now)].filter(Boolean);
+  const text = parts.join(" · ");
 
   return (
     <div className="flex w-full flex-wrap items-center gap-2">

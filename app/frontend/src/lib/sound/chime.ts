@@ -32,11 +32,11 @@ function readMuted(): boolean {
 }
 
 function isLocked(): boolean {
-  return context === null || context.state !== "running";
+  return context?.state !== "running";
 }
 
 function publish(next: SoundState): void {
-  if (state && state.muted === next.muted && state.locked === next.locked) return;
+  if (state?.muted === next.muted && state?.locked === next.locked) return;
   state = next;
   for (const listener of listeners) listener();
 }
