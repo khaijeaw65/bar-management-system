@@ -3,10 +3,10 @@ Updated: 2026-10-31 · Agent: Claude Code (BRIEF-054 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-054 Implemented** (branch pushed, no PR) → `audit BRIEF-054` (Cowork). Run proof partial (no real LINE account) and Sonar not run — see handoff. 053 merged (#103). I2 time rule: wall-clock cut-off, done.
+**BRIEF-054 audit PASS, PR open** → `ci` green → merge (Field's own PR, §7). Next: I3 groups/policies API (registers in `modules/iam/staff-admin.module.ts`, lockout on every group / policy write).
 
 ## Active
-- Brief: BRIEF-054 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-054-iam-staff-api`
+- Brief: BRIEF-054 Rev 1 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-054-iam-staff-api`
 - Done 21–30 Oct: BRIEF-053 (#103) · BRIEF-052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps

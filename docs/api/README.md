@@ -71,7 +71,7 @@ Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_
 - **Default groups:** เจ้าของ = all · ผู้จัดการ = all except `staff:manage`, `venue:update_payment` · พนักงาน = `menu:read`, `menu:toggle_availability`, `orders:read|create|update_status`, `tables:read`, `visits:read|open|close`, `payments:read|create`, `venue:read` (no manual payment confirm).
 - **403:** `{ status: 403, code: "FORBIDDEN", message: "ไม่มีสิทธิ์ใช้งานส่วนนี้", data: { missing: ["payments:mark_paid"] } }`.
 - **Safety net:** only while no เจ้าของ membership has ever existed (a fresh database) the guard does not enforce (it logs each would-be denial and warns once a minute), so a new install never locks everyone out. Once one exists the guard always enforces — an expired or deactivated owner is recovered with `pnpm seed:staff --group เจ้าของ`. Seed the first owner with `pnpm seed:staff` / `pnpm seed:roster`.
-- **Inactive staff** with a still-valid session: `GET /api/me/permissions` → empty `permissions` / `groups`; every permissioned route → 403.
+- **Inactive staff** (BRIEF-054): every token of a deactivated person is refused — any route, refresh and the `/staff` socket answer 401, whatever session they hold. Reactivating lets a still-live session work again.
 
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
