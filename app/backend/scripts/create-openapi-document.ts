@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { buildOpenApiDocument } from '../dist/common/openapi/document.js';
 import { AuthController } from '../dist/modules/auth/infrastructure/http/auth.controller.js';
 import { AuthService } from '../dist/modules/auth/application/auth.service.js';
+import { CustomerTabGateway } from '../dist/modules/customer/application/customer-tab-gateway.js';
 import { CustomerMenuService } from '../dist/modules/customer/application/customer-menu.service.js';
 import { GuestSessionService } from '../dist/modules/customer/application/guest-session.service.js';
 import { CustomerMenuController } from '../dist/modules/customer/infrastructure/http/customer-menu.controller.js';
@@ -86,6 +87,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: PaymentService, useValue: {} },
       { provide: ReportsService, useValue: {} },
       { provide: GuestSessionService, useValue: {} },
+      { provide: CustomerTabGateway, useValue: {} },
       { provide: CustomerMenuService, useValue: {} },
       {
         provide: AppConfigService,
