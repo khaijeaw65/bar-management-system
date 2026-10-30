@@ -50,9 +50,10 @@ export class VisitService {
   }
 
   /** After commit: the POS learns a new table is occupied. */
-  public async announceOpened(tableSeatId: string): Promise<void> {
+  public async announceOpened(tableSeatId: string, visitId: string): Promise<void> {
     const summary = await this.summaryFor(tableSeatId);
     if (summary) this.notificationsService.emitToPos(VISIT_OPENED, summary);
+    this.notificationsService.emitSeatVisitOpened(tableSeatId, visitId);
   }
 
   public async getById(id: string): Promise<VisitView> {
@@ -112,7 +113,7 @@ export class VisitService {
 
   private async emitOpened(result: OpenVisitResult): Promise<void> {
     if (result.attached) return;
-    await this.announceOpened(result.visit.tableSeatId);
+    await this.announceOpened(result.visit.tableSeatId, result.visit.id);
   }
 
   private async finishClose(closed: VisitRecord): Promise<VisitView> {

@@ -104,7 +104,7 @@ export class OrderService {
   // The order is committed: a failed announcement is logged, never turned into a failed order.
   private async publish(outcome: PlacedOrder, order: Order): Promise<void> {
     try {
-      if (outcome.opened) await this.visits.announceOpened(outcome.tableSeatId);
+      if (outcome.opened) await this.visits.announceOpened(outcome.tableSeatId, outcome.visitId);
       if (outcome.activated) this.emitActivated(outcome);
       this.notifications.emitToStaff(ORDER_CREATED, order);
       this.notifications.emitTabChanged(outcome.visitId);

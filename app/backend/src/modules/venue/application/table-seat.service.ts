@@ -56,6 +56,12 @@ export class TableSeatService {
     return { seat, liveVisitId: live?.id ?? null };
   }
 
+  /** The visit currently occupying the seat, if any (bind-on-read for a seat-only guest session). */
+  public async findLiveVisitId(tableSeatId: string): Promise<string | null> {
+    const live = await this.visitRepository.findLiveBySeat(tableSeatId);
+    return live?.id ?? null;
+  }
+
   /** Rings the bell on a seat (a newer call overwrites an older one) and tells the staff screens. */
   public async callStaff(
     tableSeatId: string,

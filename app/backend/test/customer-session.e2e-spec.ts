@@ -203,6 +203,7 @@ describe('Customer QR session (e2e)', () => {
     expect(menu.categories.map((category) => category.name)).not.toContain('ไฮบอล');
     expect(names).not.toContain('ไฮบอลมะนาวโซดา');
     expect(names).not.toContain('ค่าเปิดขวด');
+    expect(menu.categories.map((category) => category.name)).not.toContain('ค่าบริการ');
     expect(names).toContain('โอลด์แฟชั่น');
 
     const soldOut = menu.items.find((item) => item.name === 'ยำหมูยอ');

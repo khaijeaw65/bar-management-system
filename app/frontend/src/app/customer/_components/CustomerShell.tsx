@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { LoadError } from "@/components/ui/LoadError";
 import { useGuestSession } from "../_hooks/useGuestSession";
 import { CartProvider } from "./CartProvider";
-import { CustomerHeader } from "./CustomerHeader";
+import { CustomerFrame } from "./CustomerFrame";
 import { GuestExpired } from "./GuestExpired";
 
 export function CustomerShell({ children }: Readonly<{ children: ReactNode }>) {
@@ -28,10 +28,7 @@ export function CustomerShell({ children }: Readonly<{ children: ReactNode }>) {
   }
   return (
     <CartProvider sessionId={query.data.seat.id}>
-      <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-bg-app">
-        <CustomerHeader session={query.data} />
-        <main className="flex flex-1 flex-col">{children}</main>
-      </div>
+      <CustomerFrame session={query.data}>{children}</CustomerFrame>
     </CartProvider>
   );
 }

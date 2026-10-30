@@ -6,6 +6,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { cartReducer, createCart, type NewLine } from "@/lib/order/cart";
 import { customerItems } from "@/mocks/customer";
 import { server } from "@/mocks/node";
+import { raiseSentToast } from "../../_lib/sent-toast";
 import { saveCart } from "../../_lib/cart-storage";
 import { renderCustomer, SEAT } from "../../_lib/test-render";
 import { CartScreen } from "./CartScreen";
@@ -58,10 +59,12 @@ test("AC-3: sends one POST with an Idempotency-Key, clears the cart and shows th
   renderCustomer(<CartScreen />);
   expect(await screen.findByText("฿320.00", { selector: "span.text-title" })).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "สั่งเลย" }));
-  await waitFor(() => expect(replace).toHaveBeenCalledWith("/customer/menu"));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/customer/tab"));
   expect(requests).toHaveLength(1);
   expect(requests[0]?.key).toBe(key);
   expect(JSON.stringify(requests[0]?.body)).not.toContain("orderedByName");
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/customer/tab"));
+  raiseSentToast();
   expect(await screen.findByText("ส่งออเดอร์แล้ว · #001")).toBeInTheDocument();
   expect(window.localStorage.getItem(`bar.customer.cart.${SEAT}`)).toBeNull();
 });
@@ -78,7 +81,7 @@ test("AC-4: a 409 marks the line, blocks the send until it is removed, then the 
   await user.click(screen.getByRole("button", { name: "ลบออก ยำหมูยอ" }));
   await waitFor(() => expect(screen.getByRole("button", { name: "สั่งเลย" })).toBeEnabled());
   await user.click(screen.getByRole("button", { name: "สั่งเลย" }));
-  await waitFor(() => expect(replace).toHaveBeenCalledWith("/customer/menu"));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/customer/tab"));
 });
 
 test("AC-5: a network failure keeps the cart and the retry reuses the same key", async () => {
@@ -108,4 +111,19 @@ test("an empty cart says so and offers the menu", async () => {
   renderCustomer(<CartScreen />);
   expect(await screen.findByText("ตะกร้ายังว่าง")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "เลือกเมนูเพิ่ม" })).toBeInTheDocument();
+});
+
+test("AC-8: a 429 shows the server message, keeps the cart editable and the key", async () => {
+  const key = seed(lineFor("ช้างดราฟต์", 1));
+  server.use(
+    http.post("*/api/customer/orders", () =>
+      HttpResponse.json({ status: 429, code: "RATE_LIMITED", message: "กรุณารอสักครู่ก่อนสั่งอีกครั้ง", data: null }, { status: 429 }),
+    ),
+  );
+  const user = userEvent.setup();
+  renderCustomer(<CartScreen />);
+  await user.click(await screen.findByRole("button", { name: "สั่งเลย" }));
+  expect(await screen.findByText("กรุณารอสักครู่ก่อนสั่งอีกครั้ง")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "สั่งเลย" })).toBeEnabled();
+  expect(JSON.parse(window.localStorage.getItem(`bar.customer.cart.${SEAT}`) ?? "{}").idempotencyKey).toBe(key);
 });

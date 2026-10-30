@@ -92,6 +92,25 @@ describe('Customer order, tab and call staff (e2e)', () => {
     }
   });
 
+  it('binds a seat-only phone to the visit the POS opens later (BRIEF-050 AC-1)', async () => {
+    const seat = await seatByLabel(dataSource, 'T6');
+    const phoneB = await startGuest(app, seat.qr);
+    expect((await tabOf(phoneB)).orders).toEqual([]);
+    const visitId = (await openVisit(app, accessToken, seat.id).expect(201)).body.data.visit.id as string;
+    const phoneA = await startGuest(app, seat.qr);
+    const beer = await variantByName(dataSource, 'ช้างดราฟต์');
+    await send(phoneA, [{ variantId: beer.variantId, quantity: 1 }]).expect(201);
+
+    const tab = await tabOf(phoneB);
+    expect(tab.visitId).toBe(visitId);
+    expect(tab.orders.map((order) => order.mine)).toEqual([false]);
+    const rows: Array<{ visit_id: string | null }> = await dataSource.query(
+      `SELECT visit_id FROM guest_session WHERE table_seat_id = $1`,
+      [seat.id],
+    );
+    expect(rows.every((row) => row.visit_id === visitId)).toBe(true);
+  });
+
   it('shares one tab between phones and marks only mine (AC-3, AC-6)', async () => {
     const seat = await seatByLabel(dataSource, 'T5');
     const visitId = (await openVisit(app, accessToken, seat.id).expect(201)).body.data.visit.id as string;

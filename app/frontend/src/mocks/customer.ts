@@ -1,4 +1,4 @@
-import type { CustomerMenu, CustomerMenuItem, CustomerSession } from "@bar/contracts";
+import type { CustomerMenu, CustomerMenuItem, CustomerSession, CustomerTab, CustomerTabOrder } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
 
 const id = (n: number): string => `c0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -79,15 +79,64 @@ let nextNumber = 1;
 const dropped = new Set<string>();
 const placed = new Map<string, { body: string; result: { orderId: string; orderNumber: number; visitId: string } }>();
 
+let tabOrders: CustomerTabOrder[] = [];
+
 export function resetCustomer(): void {
   displayName = null;
   nextNumber = 1;
   placed.clear();
   dropped.clear();
+  tabOrders = [];
 }
 
+function variantLine(variantId: string, quantity: number) {
+  const item = customerItems.find((entry) => entry.variants.some((variant) => variant.id === variantId));
+  const variant = item?.variants.find((entry) => entry.id === variantId);
+  const unit = Number(variant?.price ?? 0);
+  return {
+    itemName: item?.name ?? "",
+    variantName: variant?.name ?? "",
+    modifiers: [],
+    quantity,
+    unitPrice: unit.toFixed(2),
+    lineTotal: (unit * quantity).toFixed(2),
+    orderedByName: displayName,
+    cancelled: false,
+  };
+}
+
+function tabOf(): CustomerTab {
+  const total = tabOrders.flatMap((order) => order.lines).filter((line) => !line.cancelled).reduce((sum, line) => sum + Number(line.lineTotal), 0);
+  return {
+    visitId: tabOrders.length > 0 ? id(800) : null,
+    orders: [...tabOrders].reverse(),
+    total: total.toFixed(2),
+    asOf: new Date().toISOString(),
+  };
+}
+
+// ponytail: the e2e plays the POS through these (the browser worker runs in the page, so `window` reaches them).
+export const customerMockControls = {
+  addOtherOrder(): void {
+    tabOrders.push({
+      orderNumber: nextNumber++,
+      placedAt: new Date().toISOString(),
+      mine: false,
+      tickets: [{ station: "bar", status: "pending" }],
+      lines: [{ ...variantLine(id(112), 1), orderedByName: "เอก" }],
+    });
+  },
+  acceptAll(): void {
+    for (const order of tabOrders) order.tickets = order.tickets.map((ticket) => ({ ...ticket, status: "accepted" }));
+  },
+  cancelFirstLine(): void {
+    const line = tabOrders[0]?.lines[0];
+    if (line) line.cancelled = true;
+  },
+};
+
 interface OrderBody {
-  items?: { variantId: string; notes?: string | null }[];
+  items?: { variantId: string; quantity?: number; notes?: string | null }[];
 }
 
 export const customerHandlers = [
@@ -104,6 +153,8 @@ export const customerHandlers = [
     return envelope(session(displayName));
   }),
   http.get("*/api/customer/menu", () => envelope(customerMenu)),
+  http.get("*/api/customer/tab", () => envelope(tabOf())),
+  http.post("*/api/customer/call-staff", () => envelope({ calledAt: new Date().toISOString() }, 201)),
   http.post("*/api/customer/orders", async ({ request }) => {
     const key = request.headers.get("Idempotency-Key") ?? "";
     const raw = (await request.json()) as OrderBody;
@@ -122,7 +173,14 @@ export const customerHandlers = [
       const details = stale.map((line) => ({ variantId: line.variantId, reason: "sold_out" as const }));
       return envelope({ details }, 409, "ITEM_UNAVAILABLE", "สินค้าหมด");
     }
-    const result = { orderId: crypto.randomUUID(), orderNumber: nextNumber++, visitId: id(800) };
+    const result = { orderId: crypto.randomUUID(), orderNumber: nextNumber, visitId: id(800) };
+    tabOrders.push({
+      orderNumber: nextNumber++,
+      placedAt: new Date().toISOString(),
+      mine: true,
+      tickets: [{ station: "bar", status: "pending" }],
+      lines: (raw.items ?? []).map((line) => variantLine(line.variantId, line.quantity ?? 1)),
+    });
     if (key) placed.set(key, { body, result });
     return envelope(result, 201);
   }),

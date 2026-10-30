@@ -1,7 +1,10 @@
 import {
   CustomerMenuSchema,
+  CallStaffResultSchema,
   CustomerPlaceOrderResultSchema,
   CustomerSessionSchema,
+  CustomerTabSchema,
+  type CustomerCallStaff,
   type CustomerPlaceOrder,
 } from "@bar/contracts";
 import { apiGet, apiPatch, apiPost } from "./client";
@@ -19,12 +22,16 @@ export function onGuestExpired(listener: ExpiredListener): () => void {
   };
 }
 
+export function notifyGuestExpired(): void {
+  for (const listener of expiredListeners) listener();
+}
+
 async function guarded<T>(request: Promise<T>): Promise<T> {
   try {
     return await request;
   } catch (error) {
     if (error instanceof ApiError && error.code === "GUEST_SESSION_INVALID") {
-      for (const listener of expiredListeners) listener();
+      notifyGuestExpired();
     }
     throw error;
   }
@@ -48,4 +55,12 @@ export function getMenu() {
 
 export function placeOrder(body: CustomerPlaceOrder, idempotencyKey: string) {
   return guarded(apiPost("/customer/orders", body, CustomerPlaceOrderResultSchema, { idempotencyKey }));
+}
+
+export function getTab() {
+  return guarded(apiGet("/customer/tab", CustomerTabSchema));
+}
+
+export function callStaff(body: CustomerCallStaff) {
+  return guarded(apiPost("/customer/call-staff", body, CallStaffResultSchema));
 }

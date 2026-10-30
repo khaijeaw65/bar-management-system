@@ -90,9 +90,19 @@ export class GuestSessionService {
     const now = this.clock.now();
     if (!this.isValid(row, now)) return null;
     if (row.visitId) return this.toView(row, row.expiresAt);
+    const bound = await this.bindToLiveVisit(row);
+    if (bound) return bound;
     const expiresAt = new Date(now.getTime() + SEAT_ONLY_LIFE_MS);
     await this.sessions.setExpiresAt(row.id, expiresAt);
     return this.toView(row, expiresAt);
+  }
+
+  // A phone that scanned a free seat keeps a seat-only session; once the table has a visit it joins it (DR-028).
+  private async bindToLiveVisit(row: GuestSessionRow): Promise<GuestSessionView | null> {
+    const visitId = await this.seats.findLiveVisitId(row.seat.id);
+    if (!visitId) return null;
+    await this.sessions.bindVisit(row.id, visitId);
+    return { ...this.toView({ ...row, visitId }, row.expiresAt), justBound: true };
   }
 
   private isValid(row: GuestSessionRow, now: Date): boolean {

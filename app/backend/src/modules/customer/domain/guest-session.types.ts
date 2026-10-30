@@ -24,6 +24,8 @@ export interface GuestSessionView {
   visitId: string | null;
   displayName: string | null;
   expiresAt: Date;
+  /** Set on the request that bound a seat-only session to the seat's live visit (bind on read). */
+  justBound?: true;
 }
 
 export interface StartedGuestSession {

@@ -36,6 +36,8 @@ export interface CartState {
   closed: boolean;
   forbidden: boolean;
   notice: "network" | "reused" | null;
+  /** Server message of a 429 — informational only, the cart stays editable and the key is kept. */
+  rateLimited: string | null;
   undo: { id: string; quantity: number } | null;
 }
 
@@ -52,6 +54,7 @@ export type CartAction =
   | { type: "forbidden" }
   | { type: "network" }
   | { type: "reused" }
+  | { type: "rateLimited"; message: string }
   | { type: "reset" };
 
 const detailsSchema = z.object({ details: z.array(UnavailableLineSchema) });
@@ -66,6 +69,7 @@ export function createCart(): CartState {
     closed: false,
     forbidden: false,
     notice: null,
+    rateLimited: null,
     undo: null,
   };
 }
@@ -120,6 +124,7 @@ export function sendFailure(error: unknown): CartAction {
   }
   if (error.status === 403) return { type: "forbidden" };
   if (error.code === "INVALID_STATE_TRANSITION") return { type: "closed" };
+  if (error.code === "RATE_LIMITED") return { type: "rateLimited", message: error.message };
   if (error.code === "IDEMPOTENCY_KEY_REUSED") return { type: "reused" };
   if (error.code === "ITEM_UNAVAILABLE") {
     const parsed = detailsSchema.safeParse(error.data);
@@ -219,7 +224,7 @@ function syncMenu(state: CartState, items: readonly OrderableItem[]): CartState 
 }
 
 function setPending(state: CartState, value: boolean): CartState {
-  return { ...state, pending: value, notice: value ? null : state.notice };
+  return { ...state, pending: value, notice: value ? null : state.notice, rateLimited: value ? null : state.rateLimited };
 }
 
 export function cartReducer(state: CartState, action: CartAction): CartState {
@@ -248,6 +253,8 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, notice: "network", pending: false };
     case "reused":
       return { ...state, notice: "reused", pending: false };
+    case "rateLimited":
+      return { ...state, rateLimited: action.message, pending: false };
     case "reset":
       return createCart();
     default:
