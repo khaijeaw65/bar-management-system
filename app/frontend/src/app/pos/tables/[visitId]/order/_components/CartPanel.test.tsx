@@ -9,7 +9,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { apiEnvelope } from "@/mocks/handlers";
 import { server } from "@/mocks/node";
 import { resetStaffSocket } from "@/lib/socket/socket";
-import { cartReducer, createCart, type NewLine } from "../cart";
+import { cartReducer, createCart, type NewLine } from "@/lib/order/cart";
 import { CartPanel } from "./CartPanel";
 import { OrderScreen } from "./OrderScreen";
 

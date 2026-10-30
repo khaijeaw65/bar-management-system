@@ -65,8 +65,9 @@ function requestPath(config: AxiosRequestConfig | undefined): string {
   return (config?.url ?? "").split("?")[0] ?? "";
 }
 
+// Guest routes use their own cookie (DR-028): a 401 there must never trigger the staff refresh.
 function skipsRefresh(path: string): boolean {
-  return path.endsWith("/auth/refresh") || path.endsWith("/auth/logout") || path.includes("/auth/line/");
+  return path.endsWith("/auth/refresh") || path.endsWith("/auth/logout") || path.includes("/auth/line/") || path.startsWith("/customer/");
 }
 
 function emitSession(phase: AuthPhase): void {

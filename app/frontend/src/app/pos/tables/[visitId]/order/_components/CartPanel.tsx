@@ -2,7 +2,7 @@
 
 import { Alert, Button } from "@heroui/react";
 import { formatTHB } from "@/lib/utils/format";
-import { orderedLines, previewOf, type CartAction, type CartState } from "../cart";
+import { orderedLines, previewOf, type CartAction, type CartState } from "@/lib/order/cart";
 import { CartLineRow } from "./CartLine";
 import { usePlaceOrder } from "../_hooks/usePlaceOrder";
 

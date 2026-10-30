@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { formatTHB } from "@/lib/utils/format";
 import { scaleMoney } from "@/lib/utils/money";
-import type { CartLine } from "../cart";
+import type { CartLine } from "@/lib/order/cart";
 import { QtyStepper } from "./QtyStepper";
 
 function reasonLabel(reason: CartLine["unavailable"]): string {
