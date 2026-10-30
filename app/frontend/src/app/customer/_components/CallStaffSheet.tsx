@@ -26,9 +26,9 @@ function CallStatus({ call }: Readonly<{ call: Call }>) {
   if (!call.locked) return null;
   const lead = call.outcome === "limited" ? (call.message ?? "แจ้งบ่อยเกินไป") : "แจ้งพนักงานแล้ว";
   return (
-    <p role="status" className="text-small text-text-muted">
+    <output className="text-small text-text-muted">
       {lead} · เรียกได้อีกครั้งใน {call.remaining} วินาที
-    </p>
+    </output>
   );
 }
 
