@@ -83,7 +83,8 @@ export class CustomerPaymentService {
   /** A payment on another visit is simply not found. */
   private async ownVisitPayment(guest: GuestSessionView, paymentId: string): Promise<PaymentRecord> {
     const record = guest.visitId ? await this.payments.findRecord(paymentId) : null;
-    if (!record || record.visitId !== guest.visitId) throw new DomainException('NOT_FOUND', 'ไม่พบการชำระเงิน', 404);
-    return record;
+    const own = record?.visitId === guest.visitId ? record : null;
+    if (!own) throw new DomainException('NOT_FOUND', 'ไม่พบการชำระเงิน', 404);
+    return own;
   }
 }
