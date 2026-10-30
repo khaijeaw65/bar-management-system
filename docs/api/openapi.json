@@ -32,7 +32,8 @@
               "SLIP_AMOUNT_SHORT",
               "SLIP_ALREADY_USED",
               "QR_INVALID",
-              "GUEST_SESSION_INVALID"
+              "GUEST_SESSION_INVALID",
+              "PAYMENT_NOT_YOURS"
             ],
             "type": "string"
           },
@@ -1631,6 +1632,674 @@
           }
         ],
         "summary": "The menu a guest sees: categories and items in one call",
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/api/customer/payment": {
+      "get": {
+        "description": "Auth: `guest_session` cookie. `pending` is whoever created it; `mine` marks this phone's own. A seat-only session gets a zero bill.",
+        "operationId": "CustomerPaymentController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "bill": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "locked": {
+                              "type": "boolean"
+                            },
+                            "paid": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "remaining": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "total": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "paid",
+                            "remaining",
+                            "locked"
+                          ],
+                          "type": "object"
+                        },
+                        "pending": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "amount": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "createdAt": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "expiresAt": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "id": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "mine": {
+                              "type": "boolean"
+                            },
+                            "qrPayload": {
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "amount",
+                            "qrPayload",
+                            "expiresAt",
+                            "mine",
+                            "createdAt"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "bill",
+                        "pending"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "security": [
+          {
+            "guest_session": []
+          }
+        ],
+        "summary": "The table bill and the visit's pending PromptPay payment, if any",
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/api/customer/payments": {
+      "post": {
+        "description": "Auth: `guest_session` cookie. Same lock and 15-min expiry as staff payments, through `PaymentService`. Errors: 409 NOTHING_TO_PAY, PAYMENT_IN_FLIGHT, PROMPTPAY_NOT_SET, PAYMENT_MODE_UNAVAILABLE. `Idempotency-Key` replays the same payment.",
+        "operationId": "CustomerPaymentController_create",
+        "parameters": [
+          {
+            "description": "UUID; scoped to the guest session",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "amount": {
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "expiresAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "mine": {
+                          "type": "boolean"
+                        },
+                        "qrPayload": {
+                          "minLength": 1,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "amount",
+                        "qrPayload",
+                        "expiresAt",
+                        "mine",
+                        "createdAt"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "security": [
+          {
+            "guest_session": []
+          }
+        ],
+        "summary": "Create the table's PromptPay QR (merge)",
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/api/customer/payments/{id}/cancel": {
+      "post": {
+        "description": "Auth: `guest_session` cookie. 403 PAYMENT_NOT_YOURS for a payment another phone or the POS created; 409 INVALID_STATE_TRANSITION unless pending.",
+        "operationId": "CustomerPaymentController_cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "bill": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "locked": {
+                              "type": "boolean"
+                            },
+                            "paid": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "remaining": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "total": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "paid",
+                            "remaining",
+                            "locked"
+                          ],
+                          "type": "object"
+                        },
+                        "pending": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "amount": {
+                              "pattern": "^\\d+\\.\\d{2}$",
+                              "type": "string"
+                            },
+                            "createdAt": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "expiresAt": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "id": {
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string"
+                            },
+                            "mine": {
+                              "type": "boolean"
+                            },
+                            "qrPayload": {
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "amount",
+                            "qrPayload",
+                            "expiresAt",
+                            "mine",
+                            "createdAt"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "bill",
+                        "pending"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "security": [
+          {
+            "guest_session": []
+          }
+        ],
+        "summary": "Change payment method: cancel this phone's own pending QR",
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/api/customer/payments/{id}/notify-transfer": {
+      "post": {
+        "description": "Auth: `guest_session` cookie. Rings the seat bell with reason `transfer` and the amount as `note`; never changes the payment. One tap per 60 s per session. 409 INVALID_STATE_TRANSITION unless the visit's payment is a pending PromptPay one.",
+        "operationId": "CustomerPaymentController_notifyTransfer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "notifiedAt": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "notifiedAt"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "RATE_LIMITED"
+          }
+        },
+        "security": [
+          {
+            "guest_session": []
+          }
+        ],
+        "summary": "Tell staff the transfer was made (แจ้งโอนแล้ว)",
         "tags": [
           "customer"
         ]
@@ -8862,7 +9531,8 @@
                                   "reason": {
                                     "enum": [
                                       "bill",
-                                      "other"
+                                      "other",
+                                      "transfer"
                                     ],
                                     "nullable": true,
                                     "type": "string"

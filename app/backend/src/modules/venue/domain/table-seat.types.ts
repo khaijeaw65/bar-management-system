@@ -1,4 +1,4 @@
-import type { TableSeatKind, VisitState } from '@bar/contracts';
+import type { CallStaffReason, TableSeatKind, VisitState } from '@bar/contracts';
 
 export interface SeatIdentity {
   id: string;
@@ -15,7 +15,7 @@ export interface LiveVisitCard {
 }
 
 export interface StaffCallRecord {
-  reason: 'bill' | 'other' | null;
+  reason: CallStaffReason | null;
   note: string | null;
   calledAt: Date;
 }

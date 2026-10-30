@@ -23,7 +23,8 @@ export const CurrentVisitSchema = z.object({
 export type CurrentVisit = z.infer<typeof CurrentVisitSchema>;
 
 // The bell lives on the seat so a guest at a free table can ring it too (BRIEF-048).
-export const CallStaffReasonSchema = z.enum(['bill', 'other'], 'เหตุผลไม่ถูกต้อง');
+// `transfer` (BRIEF-052) is set only by notify-transfer, never by a guest's call-staff body.
+export const CallStaffReasonSchema = z.enum(['bill', 'other', 'transfer'], 'เหตุผลไม่ถูกต้อง');
 export type CallStaffReason = z.infer<typeof CallStaffReasonSchema>;
 
 export const StaffCallSchema = z.object({

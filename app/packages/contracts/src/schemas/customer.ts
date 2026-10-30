@@ -3,7 +3,8 @@ import { apiResponseSchema, IsoDateTimeSchema, MoneySchema, UuidSchema } from '.
 import { KitchenStationSchema, OrderStatusSchema, TableSeatKindSchema } from './enums.js';
 import { MenuModifierGroupSchema, MenuWindowSchema, UnavailableReasonSchema } from './menu.js';
 import { PlaceOrderItemSchema } from './orders.js';
-import { CallStaffReasonSchema } from './visits.js';
+
+const GuestCallReasonSchema = z.enum(['bill', 'other'], 'เหตุผลไม่ถูกต้อง');
 
 // Guest QR session (DR-028). The cookie carries the token; the body never does.
 export const CustomerSessionSchema = z.object({
@@ -130,7 +131,7 @@ export const CustomerTabSchema = z.strictObject({
 export type CustomerTab = z.infer<typeof CustomerTabSchema>;
 
 export const CustomerCallStaffSchema = z.object({
-  reason: CallStaffReasonSchema.optional(),
+  reason: GuestCallReasonSchema.optional(),
   note: z.string('หมายเหตุต้องเป็นข้อความ').trim().max(100, 'หมายเหตุยาวเกินไป').optional(),
 });
 export type CustomerCallStaff = z.infer<typeof CustomerCallStaffSchema>;
@@ -140,3 +141,23 @@ export type CallStaffResult = z.infer<typeof CallStaffResultSchema>;
 
 export const AcknowledgeCallResultSchema = z.strictObject({ ok: z.literal(true) });
 export type AcknowledgeCallResult = z.infer<typeof AcknowledgeCallResultSchema>;
+
+// Pay the table bill from the phone (BRIEF-052). Built field by field: no staff ids, statusNote or slip data.
+export const CustomerPendingPaymentSchema = z.strictObject({
+  id: UuidSchema,
+  amount: MoneySchema,
+  qrPayload: z.string().min(1),
+  expiresAt: IsoDateTimeSchema,
+  mine: z.boolean(),
+  createdAt: IsoDateTimeSchema,
+});
+export type CustomerPendingPayment = z.infer<typeof CustomerPendingPaymentSchema>;
+
+export const CustomerPaymentSchema = z.strictObject({
+  bill: z.strictObject({ total: MoneySchema, paid: MoneySchema, remaining: MoneySchema, locked: z.boolean() }),
+  pending: CustomerPendingPaymentSchema.nullable(),
+});
+export type CustomerPayment = z.infer<typeof CustomerPaymentSchema>;
+
+export const NotifyTransferResultSchema = z.strictObject({ notifiedAt: IsoDateTimeSchema });
+export type NotifyTransferResult = z.infer<typeof NotifyTransferResultSchema>;

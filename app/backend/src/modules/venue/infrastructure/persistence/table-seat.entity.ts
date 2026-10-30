@@ -1,4 +1,4 @@
-import type { TableSeatKind } from '@bar/contracts';
+import type { CallStaffReason, TableSeatKind } from '@bar/contracts';
 import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../../../../common/base/base.entity.js';
 import { COL } from '../../../../common/constants/sql-column.constant.js';
@@ -30,7 +30,7 @@ export class TableSeat extends BaseEntity {
   public staffCalledAt!: Date | null;
 
   @Column({ type: COL.VARCHAR, length: 10, nullable: true })
-  public staffCallReason!: 'bill' | 'other' | null;
+  public staffCallReason!: CallStaffReason | null;
 
   @Column({ type: COL.VARCHAR, length: 100, nullable: true })
   public staffCallNote!: string | null;

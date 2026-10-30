@@ -18,6 +18,7 @@ import { PaymentConfigService } from '../../../providers/config/payment/config.s
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
 import type { VenuePaymentAccount } from '../../venue/domain/venue.repository.js';
+import { TableSeatService } from '../../venue/application/table-seat.service.js';
 import { VisitService } from '../../venue/application/visit.service.js';
 import {
   PAYMENT_REPOSITORY,
@@ -53,6 +54,7 @@ export class PaymentService {
     private readonly visits: VisitService,
     private readonly bills: BillService,
     private readonly venues: VenueSettingsService,
+    private readonly seats: TableSeatService,
     private readonly notifications: NotificationsService,
     private readonly ttl: PaymentConfigService,
     @Inject(SLIP_VERIFIER) private readonly slips: SlipVerifier,
@@ -62,7 +64,7 @@ export class PaymentService {
   public async create(input: CreatePaymentInput): Promise<PaymentAttempt> {
     const created = await this.insertAttempt(input);
     await this.scheduleExpiry(created);
-    this.emitChanged(created);
+    await this.emitChanged(created);
     return toAttempt([created]);
   }
 
@@ -79,14 +81,14 @@ export class PaymentService {
   public async cancel(id: string): Promise<Payment> {
     const payment = await this.cancelPending(id);
     await this.removeExpiry(payment.id);
-    this.emitChanged(payment);
+    await this.emitChanged(payment);
     return payment;
   }
 
   public async markPaid(input: MarkPaidInput): Promise<Payment> {
     const payment = await this.completePending(input);
     await this.removeExpiry(payment.id);
-    this.emitChanged(payment);
+    await this.emitChanged(payment);
     return payment;
   }
 
@@ -105,7 +107,7 @@ export class PaymentService {
     try {
       const payment = await this.completeFromSlip(current.id, result);
       await this.removeExpiry(payment.id);
-      this.emitChanged(payment);
+      await this.emitChanged(payment);
       return payment;
     } catch (error) {
       if (!(error instanceof DomainException) || !REJECTION_CODES.has(error.code)) throw error;
@@ -117,7 +119,7 @@ export class PaymentService {
   public async expire(paymentId: string): Promise<void> {
     const payment = await this.expirePending(paymentId);
     if (!payment) return;
-    this.emitChanged(payment);
+    await this.emitChanged(payment);
   }
 
   @Transactional()
@@ -243,6 +245,7 @@ export class PaymentService {
       qrPayload: promptpay ? this.qr(account, snapshot.bill.remaining) : null,
       expiresAt: promptpay ? this.expiresAt(now) : null,
       paidAt: promptpay ? null : now,
+      guestSessionId: input.guestSessionId ?? null,
     };
   }
 
@@ -323,7 +326,24 @@ export class PaymentService {
     }
   }
 
-  private emitChanged(payment: Payment): void {
+  /** Staff event, the phones' `tab.changed` ping, and the "แจ้งโอนแล้ว" bell clears once the payment leaves pending. */
+  private async emitChanged(payment: Payment): Promise<void> {
     this.notifications.emitToStaff(PAYMENT_STATUS_CHANGED, statusChanged(payment));
+    this.notifications.emitTabChanged(payment.visitId);
+    if (payment.status === 'pending') return;
+    try {
+      await this.seats.clearTransferCall(payment.visitId);
+    } catch {
+      this.logger.error(`transfer bell clear failed ${payment.id}`);
+    }
+  }
+
+  /** Raw rows for the guest routes, which build their own slim view. */
+  public findRecord(id: string): Promise<PaymentRecord | null> {
+    return this.payments.findById(id);
+  }
+
+  public findPendingRecord(visitId: string): Promise<PaymentRecord | null> {
+    return this.payments.findPendingByVisit(visitId);
   }
 }

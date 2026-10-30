@@ -6,8 +6,10 @@ import { AppConfigModule } from '../../providers/config/app/config.module.js';
 import { MenuModule } from '../menu/menu.module.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
 import { OrderModule } from '../order/order.module.js';
+import { PaymentModule } from '../payment/payment.module.js';
 import { VenueModule } from '../venue/venue.module.js';
 import { CustomerCallService } from './application/customer-call.service.js';
+import { CustomerPaymentService } from './application/customer-payment.service.js';
 import { CustomerMenuService } from './application/customer-menu.service.js';
 import { CustomerOrderService } from './application/customer-order.service.js';
 import { CustomerTabGateway } from './application/customer-tab-gateway.js';
@@ -15,6 +17,7 @@ import { CustomerTabService } from './application/customer-tab.service.js';
 import { CustomerThrottle } from './application/customer-throttle.js';
 import { GuestSessionService } from './application/guest-session.service.js';
 import { GUEST_SESSION_REPOSITORY } from './domain/guest-session.repository.js';
+import { CustomerPaymentController } from './infrastructure/http/customer-payment.controller.js';
 import { CustomerOrderController } from './infrastructure/http/customer-order.controller.js';
 import { CustomerMenuController } from './infrastructure/http/customer-menu.controller.js';
 import {
@@ -27,8 +30,14 @@ import { GuestSession } from './infrastructure/persistence/guest-session.entity.
 import { GuestSessionTypeormRepository } from './infrastructure/persistence/guest-session.typeorm-repository.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GuestSession]), AppConfigModule, VenueModule, MenuModule, OrderModule],
-  controllers: [CustomerScanController, CustomerSessionController, CustomerMenuController, CustomerOrderController],
+  imports: [TypeOrmModule.forFeature([GuestSession]), AppConfigModule, VenueModule, MenuModule, OrderModule, PaymentModule],
+  controllers: [
+    CustomerScanController,
+    CustomerSessionController,
+    CustomerMenuController,
+    CustomerOrderController,
+    CustomerPaymentController,
+  ],
   providers: [
     GuestSessionTypeormRepository,
     { provide: GUEST_SESSION_REPOSITORY, useExisting: GuestSessionTypeormRepository },
@@ -39,6 +48,7 @@ import { GuestSessionTypeormRepository } from './infrastructure/persistence/gues
     CustomerOrderService,
     CustomerTabService,
     CustomerCallService,
+    CustomerPaymentService,
     IdempotencyService,
     CustomerGateway,
     { provide: CustomerTabGateway, useExisting: CustomerGateway },

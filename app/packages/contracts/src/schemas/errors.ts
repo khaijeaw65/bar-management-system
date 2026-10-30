@@ -29,6 +29,7 @@ export const ErrorCodeSchema = z.enum([
   'SLIP_ALREADY_USED',
   'QR_INVALID',
   'GUEST_SESSION_INVALID',
+  'PAYMENT_NOT_YOURS',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
