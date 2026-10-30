@@ -58,6 +58,8 @@ export const StaffMemberSchema = z.object({
   avatarUrl: z.string().nullable(),
   isActive: z.boolean(),
   memberships: z.array(StaffMembershipSchema),
+  /** Personal policies attached to this person (BRIEF-055). */
+  policyIds: z.array(UuidSchema),
 });
 export type StaffMember = z.infer<typeof StaffMemberSchema>;
 

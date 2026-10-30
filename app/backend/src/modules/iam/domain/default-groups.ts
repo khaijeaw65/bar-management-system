@@ -10,3 +10,9 @@ export const GROUP_ID_BY_NAME: Record<string, string> = {
   ผู้จัดการ: DEFAULT_GROUP_IDS.manager,
   พนักงาน: DEFAULT_GROUP_IDS.staff,
 };
+
+export const DEFAULT_POLICY_IDS = {
+  all: '00000000-0000-4000-8000-0000000a0001',
+  manager: '00000000-0000-4000-8000-0000000a0002',
+  staff: '00000000-0000-4000-8000-0000000a0003',
+} as const;

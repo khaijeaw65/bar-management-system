@@ -16,6 +16,7 @@ export interface StaffRow {
   avatarUrl: string | null;
   isActive: boolean;
   memberships: MembershipRow[];
+  policyIds: string[];
 }
 
 /** `validFrom` is always the moment of the write. */
@@ -46,4 +47,5 @@ export type StaffWriteOutcome =
   | { kind: 'ok' }
   | { kind: 'not_found' }
   | { kind: 'unknown_group' }
+  | { kind: 'unknown_policy' }
   | { kind: 'lockout' };
