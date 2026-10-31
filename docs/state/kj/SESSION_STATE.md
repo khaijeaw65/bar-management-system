@@ -1,12 +1,12 @@
 # State — KJ
-Updated: 2026-10-31 · Agent: Claude Code (BRIEF-058 Implemented)
+Updated: 2026-10-31 · Agent: Claude Code (BRIEF-058 audit PASS)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-058 Implemented** (S see handoff), branch pushed, no PR. Next: `audit BRIEF-058` (Cowork). Open: real-stack UI run proof + screenshots not done (needs an owner session).
+**BRIEF-058 audit PASS, PR open** (S `33bd61d`) → `ci` green → merge (Field's own PR, §7). Next: AI owner insight / bootstrap batch per queue.
 
 ## Active
-- Brief: BRIEF-058 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-058-groups-policies-ui` (main merged in at start)
+- Brief: BRIEF-058 Rev 1 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-058-groups-policies-ui` (main merged in at start)
 - Done 21–31 Oct: BRIEF-057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps

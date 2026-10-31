@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-058-groups-policies-ui` (PR opens after audit PASS) |
 | **Commit** | `59aea49` (work SHA S) |
-| **Status** | Implemented — fix round for audit finding #1 (run proof) |
+| **Status** | Audit PASS (Cowork, round 2, S `33bd61d`) — merged PR determines Done |
 
 ## Summary
 New tabs "กลุ่มสิทธิ์" and "นโยบายสิทธิ์ · ขั้นสูง" (route map: `/pos/settings/(staff|groups|policies)` → `staff:manage`).
