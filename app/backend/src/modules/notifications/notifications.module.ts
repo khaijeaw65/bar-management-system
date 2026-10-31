@@ -4,7 +4,12 @@ import { CLOCK } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { IamModule } from '../iam/iam.module.js';
+import { ExpoConfigModule } from '../../providers/config/expo/config.module.js';
 import { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
+import { StaffPushTokenEntity } from './infrastructure/persistence/staff-push-token.entity.js';
+import { PUSH_SENDER } from './application/ports/push-sender.port.js';
+import { PushTokenService } from './application/push-token.service.js';
+import { ExpoPushSenderAdapter } from './infrastructure/push/expo-push-sender.adapter.js';
 import { NotificationRecipients } from './application/notification-recipients.js';
 import { NotificationsService } from './notifications.service.js';
 import { NotificationsGateway } from './notifications.gateway.js';
@@ -13,7 +18,8 @@ import { NotificationsController } from './infrastructure/http/notifications.con
 @Global()
 @Module({
   imports: [
-    TypeOrmModule.forFeature([NotificationEntity]),
+    TypeOrmModule.forFeature([NotificationEntity, StaffPushTokenEntity]),
+    ExpoConfigModule,
     AuthModule,
     IamModule,
   ],
@@ -22,6 +28,9 @@ import { NotificationsController } from './infrastructure/http/notifications.con
     NotificationsGateway,
     NotificationsService,
     NotificationRecipients,
+    PushTokenService,
+    ExpoPushSenderAdapter,
+    { provide: PUSH_SENDER, useExisting: ExpoPushSenderAdapter },
     { provide: CLOCK, useClass: SystemClock },
   ],
   exports: [NotificationsService, NotificationRecipients],

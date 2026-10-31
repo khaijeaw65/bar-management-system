@@ -1,13 +1,16 @@
-import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Put, Query } from '@nestjs/common';
+import { ApiBody, ApiNoContentResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   NotificationPageSchema,
   NotificationSchema,
+  OkSchema,
   ReadAllResultSchema,
+  RegisterPushTokenSchema,
   UnreadCountSchema,
   UuidSchema,
   type Notification,
   type NotificationPage,
+  type Ok,
   type ReadAllResult,
   type UnreadCount,
 } from '@bar/contracts';
@@ -17,6 +20,7 @@ import type { CurrentUserPayload } from '../../../../common/decorators/current-u
 import { requireUuid } from '../../../../common/http/http-input.js';
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
+import { PushTokenService } from '../../application/push-token.service.js';
 import { NotificationsService } from '../../notifications.service.js';
 
 const NOT_FOUND = 'ไม่พบการแจ้งเตือน';
@@ -25,7 +29,10 @@ const ACCESS_DESC = 'any active staff; own rows only';
 @ApiTags('notifications')
 @Controller('notifications')
 export class NotificationsController {
-  public constructor(private readonly notifications: NotificationsService) {}
+  public constructor(
+    private readonly notifications: NotificationsService,
+    private readonly pushTokens: PushTokenService,
+  ) {}
 
   @Get()
   @AnyStaff()
@@ -84,5 +91,36 @@ export class NotificationsController {
   ): Promise<ReadAllResult> {
     const updated = await this.notifications.markAllAsRead(user.sub);
     return { updated };
+  }
+
+  @Put('push-tokens')
+  @AnyStaff()
+  @ApiOperation({
+    summary: 'Register this phone for push (upsert; a token held by another staff member moves to the caller)',
+    description: 'any active staff; 400 VALIDATION_ERROR when the token is not an Expo push token',
+  })
+  @ApiBody({ schema: zodToOpenApi(RegisterPushTokenSchema) })
+  @ApiEnvelopedOk(OkSchema)
+  public async registerPushToken(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: unknown,
+  ): Promise<Ok> {
+    return await this.pushTokens.register(user.sub, RegisterPushTokenSchema.parse(body));
+  }
+
+  @Delete('push-tokens/:token')
+  @HttpCode(204)
+  @AnyStaff()
+  @ApiOperation({
+    summary: 'Unregister this phone (call before logout)',
+    description: 'any active staff; own token only; unknown or foreign token → 204 (idempotent)',
+  })
+  @ApiParam({ name: 'token' })
+  @ApiNoContentResponse({ description: 'Token removed or already absent' })
+  public async unregisterPushToken(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('token') token: string,
+  ): Promise<void> {
+    await this.pushTokens.unregister(user.sub, token);
   }
 }
