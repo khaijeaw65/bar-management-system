@@ -1,4 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
+import {
+  NOTIFICATION_NEW,
+  type Notification,
+  type NotificationType,
+} from '@bar/contracts';
+import { CLOCK, type Clock } from '../../common/clock.js';
+import { DomainException } from '../../common/domain-exception.js';
+import { NotificationEntity } from './entities/notification.entity.js';
 import { NotificationsGateway } from './notifications.gateway.js';
 
 /** The guest socket lives in the Customer module; it registers here so Notifications never imports it. */
@@ -6,13 +16,23 @@ export type TabChangedSink = (visitId: string, sessionEnded: boolean) => void;
 
 export type SeatVisitOpenedSink = (tableSeatId: string, visitId: string) => void;
 
+const PAGE_SIZE = 20;
+
+interface CursorData {
+  createdAt: string;
+  id: string;
+}
+
 @Injectable()
 export class NotificationsService {
   private tabSink: TabChangedSink | null = null;
   private seatSink: SeatVisitOpenedSink | null = null;
 
   public constructor(
+    @InjectRepository(NotificationEntity)
+    private readonly repo: Repository<NotificationEntity>,
     private readonly notificationsGateway: NotificationsGateway,
+    @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   public emitToPos(event: string, payload: unknown): void {
@@ -39,5 +59,188 @@ export class NotificationsService {
   /** Ping the phones on this visit (`tab.changed`); they refetch their tab. A failed emit never fails the write. */
   public emitTabChanged(visitId: string, sessionEnded = false): void {
     this.tabSink?.(visitId, sessionEnded);
+  }
+
+  /**
+   * Persists notifications for recipients and emits live `notification:new` to each recipient room.
+   * Returns the created entity rows.
+   */
+  public async notify(
+    type: NotificationType,
+    recipientIds: string[],
+    payload: {
+      title: string;
+      body?: string | null;
+      refType?: string | null;
+      refId?: string | null;
+    },
+  ): Promise<NotificationEntity[]> {
+    if (recipientIds.length === 0) {
+      return [];
+    }
+    const saved = await this.insertRows(type, recipientIds, payload);
+    this.broadcastNotifications(saved);
+    return saved;
+  }
+
+  public async feed(
+    recipientId: string,
+    cursor?: string,
+  ): Promise<{ items: Notification[]; nextCursor: string | null }> {
+    const rows = await this.queryFeedPage(recipientId, cursor);
+    return this.buildFeedPage(rows);
+  }
+
+  public async unreadCount(recipientId: string): Promise<number> {
+    return await this.repo.count({
+      where: { recipientId, readAt: IsNull() },
+    });
+  }
+
+  public async markAsRead(recipientId: string, id: string): Promise<Notification> {
+    const item = await this.findRecipientNotification(recipientId, id);
+    const updated = await this.persistReadTimestamp(item);
+    return this.serialize(updated);
+  }
+
+  public async markAllAsRead(recipientId: string): Promise<number> {
+    const result = await this.repo
+      .createQueryBuilder()
+      .update(NotificationEntity)
+      .set({ readAt: this.clock.now() })
+      .where('recipient_id = :recipientId AND read_at IS NULL', { recipientId })
+      .execute();
+    return result.affected ?? 0;
+  }
+
+  private async insertRows(
+    type: NotificationType,
+    recipientIds: string[],
+    payload: {
+      title: string;
+      body?: string | null;
+      refType?: string | null;
+      refId?: string | null;
+    },
+  ): Promise<NotificationEntity[]> {
+    const entities = recipientIds.map((recipientId) =>
+      this.repo.create({
+        recipientId,
+        type,
+        title: payload.title,
+        body: payload.body ?? null,
+        refType: payload.refType ?? null,
+        refId: payload.refId ?? null,
+        readAt: null,
+      }),
+    );
+    return await this.repo.save(entities);
+  }
+
+  private broadcastNotifications(items: NotificationEntity[]): void {
+    for (const item of items) {
+      this.notificationsGateway.emitToUser(
+        item.recipientId,
+        NOTIFICATION_NEW,
+        this.serialize(item),
+      );
+    }
+  }
+
+  private async queryFeedPage(
+    recipientId: string,
+    cursor?: string,
+  ): Promise<NotificationEntity[]> {
+    const qb = this.repo
+      .createQueryBuilder('n')
+      .where('n.recipient_id = :recipientId', { recipientId })
+      .orderBy('n.created_at', 'DESC')
+      .addOrderBy('n.id', 'DESC')
+      .take(PAGE_SIZE + 1);
+
+    const cursorData = this.parseCursor(cursor);
+    if (cursorData) {
+      qb.andWhere(
+        '(n.created_at < :cursorCreatedAt OR (n.created_at = :cursorCreatedAt AND n.id < :cursorId))',
+        {
+          cursorCreatedAt: new Date(cursorData.createdAt),
+          cursorId: cursorData.id,
+        },
+      );
+    }
+    return await qb.getMany();
+  }
+
+  private buildFeedPage(
+    rows: NotificationEntity[],
+  ): { items: Notification[]; nextCursor: string | null } {
+    const hasMore = rows.length > PAGE_SIZE;
+    const pageRows = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+    const nextCursor =
+      hasMore && pageRows.length > 0
+        ? this.createCursor(pageRows[pageRows.length - 1]!)
+        : null;
+
+    return {
+      items: pageRows.map((r) => this.serialize(r)),
+      nextCursor,
+    };
+  }
+
+  private async findRecipientNotification(
+    recipientId: string,
+    id: string,
+  ): Promise<NotificationEntity> {
+    const item = await this.repo.findOne({ where: { id, recipientId } });
+    if (!item) {
+      throw new DomainException('NOT_FOUND', 'ไม่พบการแจ้งเตือน', 404);
+    }
+    return item;
+  }
+
+  private async persistReadTimestamp(
+    item: NotificationEntity,
+  ): Promise<NotificationEntity> {
+    if (item.readAt !== null) {
+      return item;
+    }
+    item.readAt = this.clock.now();
+    return await this.repo.save(item);
+  }
+
+  private serialize(entity: NotificationEntity): Notification {
+    return {
+      id: entity.id,
+      recipientId: entity.recipientId,
+      type: entity.type,
+      title: entity.title,
+      body: entity.body,
+      refType: entity.refType,
+      refId: entity.refId,
+      readAt: entity.readAt ? entity.readAt.toISOString() : null,
+      createdAt: entity.createdAt.toISOString(),
+    };
+  }
+
+  private parseCursor(raw?: string): CursorData | null {
+    if (!raw) return null;
+    try {
+      const json = Buffer.from(raw, 'base64url').toString('utf8');
+      const parsed = JSON.parse(json) as { createdAt?: unknown; id?: unknown };
+      if (typeof parsed.createdAt === 'string' && typeof parsed.id === 'string') {
+        return { createdAt: parsed.createdAt, id: parsed.id };
+      }
+    } catch {
+      // Malformed cursor treated as absent
+    }
+    return null;
+  }
+
+  private createCursor(item: NotificationEntity): string {
+    const data: CursorData = {
+      createdAt: item.createdAt.toISOString(),
+      id: item.id,
+    };
+    return Buffer.from(JSON.stringify(data), 'utf8').toString('base64url');
   }
 }

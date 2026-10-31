@@ -31,6 +31,10 @@ export class NotificationsGateway implements OnGatewayInit {
     this.server.to('staff').emit(event, payload);
   }
 
+  public emitToUser(userId: string, event: string, payload: unknown): void {
+    this.server.to(`user:${userId}`).emit(event, payload);
+  }
+
   private async admit(socket: Socket, next: HandshakeNext): Promise<void> {
     const admitted = await this.tryJoinPos(socket);
     if (!admitted) {
@@ -55,6 +59,7 @@ export class NotificationsGateway implements OnGatewayInit {
     if (!user) return false;
     await socket.join('pos');
     await socket.join('staff');
+    await socket.join(`user:${user.id}`);
     return true;
   }
 }
