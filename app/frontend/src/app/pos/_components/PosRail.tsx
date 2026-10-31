@@ -13,6 +13,7 @@ import {
 import { Badge } from "@heroui/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 import { usePendingRequestCount } from "@/hooks/useAccessRequests";
 import { usePendingTicketCount } from "@/hooks/useTicketBoard";
 import { permissionForPath } from "@/lib/permissions/pos-routes";
@@ -47,6 +48,28 @@ function isActive(href: string, pathname: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function withBadge(key: string, icon: ReactNode, pendingTickets: number, pendingAccess: number): ReactNode {
+  if (key === "orders" && pendingTickets > 0) {
+    return (
+      <Badge.Anchor>
+        {icon}
+        <Badge color="danger" size="sm" aria-label={`รอรับ ${pendingTickets} ออเดอร์`}>
+          {pendingTickets}
+        </Badge>
+      </Badge.Anchor>
+    );
+  }
+  if (key === "settings" && pendingAccess > 0) {
+    return (
+      <Badge.Anchor>
+        {icon}
+        <Badge color="danger" size="sm" aria-label={`มีคำขอเข้าใช้งาน ${pendingAccess} คำขอ`} />
+      </Badge.Anchor>
+    );
+  }
+  return icon;
+}
+
 export function PosRail() {
   const pathname = usePathname();
   const pendingTickets = usePendingTicketCount();
@@ -68,21 +91,7 @@ export function PosRail() {
           const icon = <Icon size={24} strokeWidth={1.75} aria-hidden />;
           const body = (
             <>
-              {item.key === "orders" && pendingTickets > 0 ? (
-                <Badge.Anchor>
-                  {icon}
-                  <Badge color="danger" size="sm" aria-label={`รอรับ ${pendingTickets} ออเดอร์`}>
-                    {pendingTickets}
-                  </Badge>
-                </Badge.Anchor>
-              ) : item.key === "settings" && pendingAccess > 0 ? (
-                <Badge.Anchor>
-                  {icon}
-                  <Badge color="danger" size="sm" aria-label={`มีคำขอเข้าใช้งาน ${pendingAccess} คำขอ`} />
-                </Badge.Anchor>
-              ) : (
-                icon
-              )}
+              {withBadge(item.key, icon, pendingTickets, pendingAccess)}
               {item.label}
             </>
           );

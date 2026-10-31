@@ -109,10 +109,11 @@ function nextCutoffIso(): string {
   return at.toISOString();
 }
 
-function resolve(until: MembershipInput["until"]): string | null | "past" {
+/** `undefined` = a time already past. */
+function resolve(until: MembershipInput["until"]): string | null | undefined {
   if (until === "permanent") return null;
   if (until === "end_of_night") return nextCutoffIso();
-  return Date.parse(until) <= Date.now() ? "past" : until;
+  return Date.parse(until) <= Date.now() ? undefined : until;
 }
 
 /** The server rule in miniature: someone active must hold เจ้าของ with no end date. */
@@ -158,7 +159,7 @@ export const staffHandlers = [
     if (!found) return envelope(null, 404, "NOT_FOUND", "ไม่พบคำขอ");
     if (found.status !== "pending") return envelope(null, 409, "ACCESS_REQUEST_DECIDED", "คำขอนี้ถูกจัดการแล้ว");
     const memberships = body.memberships.map((item) => ({ groupId: item.groupId, validFrom: new Date().toISOString(), validUntil: resolve(item.until) }));
-    if (memberships.some((item) => item.validUntil === "past")) return envelope(null, 400, "VALIDATION_ERROR", "เวลาสิ้นสุดต้องอยู่ในอนาคต");
+    if (memberships.some((item) => item.validUntil === undefined)) return envelope(null, 400, "VALIDATION_ERROR", "เวลาสิ้นสุดต้องอยู่ในอนาคต");
     const row: Row = {
       id: `4000000${nextId++}-0000-4000-8000-000000000000`.slice(0, 36),
       displayName: body.displayName,
@@ -212,7 +213,7 @@ export const staffHandlers = [
     const found = rows.find((row) => row.id === params.id);
     if (!found) return envelope(null, 404, "NOT_FOUND", "ไม่พบพนักงาน");
     const memberships = body.memberships.map((item) => ({ groupId: item.groupId, validFrom: new Date().toISOString(), validUntil: resolve(item.until) }));
-    if (memberships.some((item) => item.validUntil === "past")) return envelope(null, 400, "VALIDATION_ERROR", "เวลาสิ้นสุดต้องอยู่ในอนาคต");
+    if (memberships.some((item) => item.validUntil === undefined)) return envelope(null, 400, "VALIDATION_ERROR", "เวลาสิ้นสุดต้องอยู่ในอนาคต");
     const next: Row = { ...found, memberships: memberships as Row["memberships"] };
     if (!keepsAnOwner(replaceRow(next))) return lockout();
     rows = replaceRow(next);

@@ -11,6 +11,11 @@ import { UntilPicker } from "./UntilPicker";
 
 const NAME_MAX = 200;
 
+function nameProblem(trimmed: string): string | null {
+  if (trimmed === "") return "กรุณากรอกชื่อ";
+  return trimmed.length > NAME_MAX ? `ชื่อยาวเกิน ${NAME_MAX} ตัวอักษร` : null;
+}
+
 export function ApproveDialog({
   request,
   onClose,
@@ -26,7 +31,7 @@ export function ApproveDialog({
   const now = new Date();
   const trimmed = name.trim();
   const ids = Object.keys(chosen);
-  const nameError = trimmed === "" ? "กรุณากรอกชื่อ" : trimmed.length > NAME_MAX ? `ชื่อยาวเกิน ${NAME_MAX} ตัวอักษร` : null;
+  const nameError = nameProblem(trimmed);
   const memberships = ids.map((groupId) => ({ groupId, until: untilOf(chosen[groupId] ?? PERMANENT, now) }));
   const ready = nameError === null && ids.length > 0 && memberships.every((row) => row.until !== null);
 

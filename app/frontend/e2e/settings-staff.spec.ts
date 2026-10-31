@@ -16,7 +16,7 @@ test("J1 (1280): approve ฝน as พนักงาน ถาวร in three t
   await row.getByRole("button", { name: "อนุมัติ" }).click();
   const dialog = page.getByRole("dialog", { name: "อนุมัติคำขอ" });
   await expect(dialog.getByRole("textbox", { name: "ชื่อที่แสดง" })).toHaveValue("ฝน");
-  await dialog.getByRole("checkbox", { name: "พนักงาน" }).click({ force: true });
+  await dialog.getByText("พนักงาน", { exact: true }).click();
   await dialog.getByRole("button", { name: "อนุมัติ" }).click();
 
   await expect(page.getByRole("link", { name: "ฝน" })).toBeVisible();
@@ -39,8 +39,8 @@ test("J2 (390): give เจ ผู้จัดการ until tonight's close fr
 
   await page.getByRole("button", { name: "เพิ่มกลุ่ม" }).click();
   const dialog = page.getByRole("dialog", { name: "เพิ่มกลุ่ม" });
-  await dialog.getByRole("radio", { name: "ผู้จัดการ" }).click({ force: true });
-  await dialog.getByRole("radio", { name: "ถึงสิ้นกะคืนนี้" }).click({ force: true });
+  await dialog.getByText("ผู้จัดการ", { exact: true }).click();
+  await dialog.getByText("ถึงสิ้นกะคืนนี้", { exact: true }).click();
   await dialog.getByRole("button", { name: "เพิ่มกลุ่ม" }).click();
 
   await expect(page.getByText(/^ผู้จัดการ · ถึง /)).toBeVisible();
