@@ -22,12 +22,12 @@ function issueTicket() {
   });
 }
 
-function renderDrawer(onResolve = vi.fn(), onClose = vi.fn()) {
+function renderDrawer(onResolve = vi.fn(), onClose = vi.fn(), canAct = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   function Wrap({ children }: Readonly<{ children: ReactNode }>) {
     return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
   }
-  render(<TicketDrawer ticket={issueTicket()} kitchenOn={false} resolving={false} onResolve={onResolve} onClose={onClose} />, {
+  render(<TicketDrawer ticket={issueTicket()} kitchenOn={false} canAct={canAct} resolving={false} onResolve={onResolve} onClose={onClose} />, {
     wrapper: Wrap,
   });
   return { onResolve, onClose };
@@ -57,4 +57,12 @@ test("links to the seat's current visit from the floor query", async () => {
   await vi.waitFor(() => expect(link).toBeEnabled());
   await userEvent.setup().click(link);
   expect(nav.push).toHaveBeenCalledWith(`/pos/tables?visit=20000000-0000-4000-8000-000000000003`);
+});
+
+test("a person who cannot act sees the issue but no resolve or void buttons", () => {
+  renderDrawer(vi.fn(), vi.fn(), false);
+  const drawer = screen.getByRole("complementary", { name: "#0045 · T3" });
+  expect(drawer).toHaveTextContent("ของหมด");
+  expect(screen.queryByRole("button", { name: "ทำต่อ" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "ยกเลิกรายการที่มีปัญหา" })).not.toBeInTheDocument();
 });

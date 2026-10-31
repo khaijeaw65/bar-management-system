@@ -3,6 +3,7 @@
 import { Modal } from "@heroui/react";
 import type { VisitDetail } from "@bar/contracts";
 import { useEffect, useRef } from "react";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 import { CheckoutChoose } from "./CheckoutChoose";
 import { ManualConfirm } from "./ManualConfirm";
 import { PaymentResult } from "./PaymentResult";
@@ -11,6 +12,7 @@ import { useCheckout, type CheckoutController } from "./useCheckout";
 
 function CheckoutBody({ checkout, onClose }: Readonly<{ checkout: CheckoutController; onClose: () => void }>) {
   const { phase, visit } = checkout;
+  const canMark = usePermissions().can("payments:mark_paid");
   if (phase.name === "boot" || !visit) return <p>กำลังโหลด</p>;
   if (phase.name === "choose") {
     return (
@@ -36,7 +38,7 @@ function CheckoutBody({ checkout, onClose }: Readonly<{ checkout: CheckoutContro
         expired={phase.name === "expired"}
         fault={checkout.fault}
         onCancel={checkout.cancelQr}
-        onManual={checkout.openManual}
+        onManual={canMark ? checkout.openManual : null}
         onNew={checkout.newQr}
         onVerified={checkout.slipPaid}
       />

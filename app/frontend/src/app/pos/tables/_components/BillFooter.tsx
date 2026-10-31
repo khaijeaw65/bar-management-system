@@ -8,11 +8,15 @@ import { hasMoney } from "./session-groups";
 export function BillFooter({
   bill,
   locked,
+  canPay,
+  canClose,
   onPay,
   onCloseTable,
 }: Readonly<{
   bill: Bill;
   locked: boolean;
+  canPay: boolean;
+  canClose: boolean;
   onPay: () => void;
   onCloseTable: () => void;
 }>) {
@@ -34,12 +38,16 @@ export function BillFooter({
           <dd className="text-pos-total text-text-accent tabular-nums">{formatTHB(bill.remaining)}</dd>
         </div>
       </dl>
-      <Button size="lg" isDisabled={!hasMoney(bill.remaining)} onPress={onPay}>
-        ชำระเงิน
-      </Button>
-      <Button variant="ghost" isDisabled={locked} onPress={onCloseTable}>
-        ปิดโต๊ะ
-      </Button>
+      {canPay ? (
+        <Button size="lg" isDisabled={!hasMoney(bill.remaining)} onPress={onPay}>
+          ชำระเงิน
+        </Button>
+      ) : null}
+      {canClose ? (
+        <Button variant="ghost" isDisabled={locked} onPress={onCloseTable}>
+          ปิดโต๊ะ
+        </Button>
+      ) : null}
     </footer>
   );
 }

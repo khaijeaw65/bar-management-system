@@ -2,6 +2,7 @@
 
 import { Button } from "@heroui/react";
 import { useRouter } from "next/navigation";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 
 export function OrderEntryButton({
   visitId,
@@ -11,6 +12,7 @@ export function OrderEntryButton({
   prominent?: boolean;
 }>) {
   const router = useRouter();
+  if (!usePermissions().can("orders:create")) return null;
   return (
     <Button
       size={prominent ? "lg" : "sm"}

@@ -25,7 +25,7 @@ function LiveQr({
   fault: CheckoutFault;
   onCancel: () => void;
   onScan: () => void;
-  onManual: () => void;
+  onManual: (() => void) | null;
 }>) {
   const { clock, minute } = useQrClock(payment.expiresAt);
   return (
@@ -46,7 +46,7 @@ function LiveQr({
       ) : null}
       <CheckoutNotice fault={fault} />
       <Button onPress={onScan}>สแกนสลิป</Button>
-      <Button variant="ghost" onPress={onManual}>ยืนยันด้วยตนเอง</Button>
+      {onManual ? <Button variant="ghost" onPress={onManual}>ยืนยันด้วยตนเอง</Button> : <p className="text-small text-text-muted">ให้ผู้จัดการยืนยันรับเงิน</p>}
       <Button variant="secondary" isPending={pending} onPress={onCancel}>ยกเลิก QR</Button>
     </>
   );
@@ -80,7 +80,7 @@ export function PromptPayPending({
   expired: boolean;
   fault: CheckoutFault;
   onCancel: () => void;
-  onManual: () => void;
+  onManual: (() => void) | null;
   onNew: () => void;
   onVerified: (payment: Payment) => void;
 }>) {
