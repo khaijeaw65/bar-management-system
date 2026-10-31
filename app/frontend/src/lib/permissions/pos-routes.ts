@@ -10,7 +10,7 @@ const RULES: ReadonlyArray<{ pattern: RegExp; needs: PermissionCode }> = [
   { pattern: /^\/pos\/menu\/?$/, needs: "menu:read" },
   { pattern: /^\/pos\/reports(\/|$)/, needs: "reports:read" },
   // Before the general settings rule (first match wins): staff:manage alone reaches these (BRIEF-057, DR-029).
-  { pattern: /^\/pos\/settings\/staff(\/|$)/, needs: "staff:manage" },
+  { pattern: /^\/pos\/settings\/(staff|groups|policies)(\/|$)/, needs: "staff:manage" },
   // DR-029 (Field 2026-10-31): the settings page is back-office; พนักงาน holds venue:read but must not see it.
   { pattern: /^\/pos\/settings(\/|$)/, needs: "venue:update" },
 ];

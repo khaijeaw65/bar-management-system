@@ -13,6 +13,7 @@ import { getStaffMember, updateStaff } from "@/lib/api/staff";
 import { ActiveSwitch } from "./ActiveSwitch";
 import { EffectivePermissionsPanel } from "./EffectivePermissionsPanel";
 import { MembershipsPanel } from "./MembershipsPanel";
+import { PersonalPoliciesPanel } from "./PersonalPoliciesPanel";
 import { StaffAvatar } from "./StaffAvatar";
 
 function RenameField({ id, name }: Readonly<{ id: string; name: string }>) {
@@ -68,6 +69,7 @@ export function StaffDetailScreen({ staffId }: Readonly<{ staffId: string }>) {
         <ActiveSwitch member={member.data} isSelf={member.data.id === me.data?.id} />
       </header>
       <MembershipsPanel member={member.data} />
+      <PersonalPoliciesPanel member={member.data} />
       <EffectivePermissionsPanel staffId={staffId} />
     </div>
   );

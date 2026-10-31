@@ -10,10 +10,12 @@ import { permissionForPath } from "@/lib/permissions/pos-routes";
 import { usePermissions } from "@/lib/permissions/usePermissions";
 import { cn } from "@/lib/utils/cn";
 
-// Tabs for U2 / tables join when their routes exist; each one is shown only if the shared route map lets the person in.
+// Tabs for tables join when their routes exist; each one is shown only if the shared route map lets the person in.
 const TABS = [
   { href: "/pos/settings", label: "ร้าน" },
   { href: "/pos/settings/staff", label: "พนักงาน" },
+  { href: "/pos/settings/groups", label: "กลุ่มสิทธิ์" },
+  { href: "/pos/settings/policies", label: "นโยบายสิทธิ์ · ขั้นสูง" },
 ] as const;
 
 function isActive(href: string, pathname: string): boolean {
