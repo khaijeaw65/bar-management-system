@@ -5,7 +5,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { COL } from '../../../common/constants/sql-column.constant.js';
+import { COL } from '../../../../common/constants/sql-column.constant.js';
 
 @Entity('notification')
 export class NotificationEntity {

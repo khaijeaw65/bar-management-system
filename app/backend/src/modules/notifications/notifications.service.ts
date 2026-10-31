@@ -10,7 +10,7 @@ import {
 } from '@bar/contracts';
 import { CLOCK, type Clock } from '../../common/clock.js';
 import { DomainException } from '../../common/domain-exception.js';
-import { NotificationEntity } from './entities/notification.entity.js';
+import { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
 import { NotificationsGateway } from './notifications.gateway.js';
 import type { NotifyInput } from './notifications.types.js';
 
@@ -61,19 +61,18 @@ export class NotificationsService {
 
   /**
    * Persists notifications for recipients and emits live `notification:new` to each recipient room.
-   * Returns the created entity rows.
+   * Returns the created serialized notifications.
    */
   public async notify(
     type: NotificationType,
     recipientIds: string[],
     payload: NotifyInput,
-  ): Promise<NotificationEntity[]> {
+  ): Promise<Notification[]> {
     if (recipientIds.length === 0) {
       return [];
     }
     const saved = await this.insertRows(type, recipientIds, payload);
-    this.broadcastNotifications(saved);
-    return saved;
+    return this.broadcastNotifications(saved);
   }
 
   public async feed(
@@ -125,14 +124,16 @@ export class NotificationsService {
     return await this.repo.save(entities);
   }
 
-  private broadcastNotifications(items: NotificationEntity[]): void {
-    for (const item of items) {
+  private broadcastNotifications(items: NotificationEntity[]): Notification[] {
+    const serialized = items.map((item) => this.serialize(item));
+    for (const item of serialized) {
       this.notificationsGateway.emitToUser(
         item.recipientId,
         NOTIFICATION_NEW,
-        this.serialize(item),
+        item,
       );
     }
+    return serialized;
   }
 
   private async queryFeedPage(

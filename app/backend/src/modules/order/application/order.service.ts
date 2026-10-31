@@ -110,13 +110,13 @@ export class OrderService {
       if (outcome.activated) this.emitActivated(outcome);
       this.notifications.emitToStaff(ORDER_CREATED, order);
       this.notifications.emitTabChanged(outcome.visitId);
-      await this.notifyNewOrder(outcome, order);
+      await this.notifyNewOrder(order);
     } catch (error) {
       this.logger.warn(`order ${order.id} announce failed: ${error instanceof Error ? error.message : 'error'}`);
     }
   }
 
-  private async notifyNewOrder(outcome: PlacedOrder, order: Order): Promise<void> {
+  private async notifyNewOrder(order: Order): Promise<void> {
     const seatLabel = order.tickets[0]?.seat.label ?? 'โต๊ะ';
     const count = order.tickets.flatMap((t) => t.items).reduce((sum, item) => sum + item.quantity, 0);
     const recipients = await this.notificationRecipients.orderNew(order.createdBy?.staffId ?? null);

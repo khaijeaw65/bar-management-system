@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Repository } from 'typeorm';
 import { NOTIFICATION_NEW } from '@bar/contracts';
 import type { Clock } from '../../common/clock.js';
-import type { NotificationEntity } from './entities/notification.entity.js';
+import type { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
 import type { NotificationsGateway } from './notifications.gateway.js';
 import { NotificationsService } from './notifications.service.js';
 
@@ -58,6 +58,7 @@ describe('NotificationsService', () => {
     );
 
     expect(result).toHaveLength(2);
+    expect(result[0]?.createdAt).toBe(fixedNow.toISOString());
     expect(repo.save).toHaveBeenCalledTimes(1);
     expect(gateway.emitToUser).toHaveBeenCalledTimes(2);
     expect(gateway.emitToUser).toHaveBeenCalledWith(

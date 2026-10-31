@@ -537,19 +537,75 @@ describe('Notifications gateway and feed (e2e)', () => {
 
   it('AC-6: failure inside notify never fails the trigger request (best effort)', async () => {
     await seedVenue(dataSource);
-    await insertStaff(dataSource, 'Staff User');
+    await seedMenu(dataSource);
+    await dataSource.query(`UPDATE venue SET kitchen_display_enabled = true`);
 
+    const staffId = await insertStaff(dataSource, 'Staff User');
+    await insertStaff(dataSource, 'Other Staff');
+    const session = await staffSession(app, staffId);
+
+    // 1. call-staff succeeds despite notification service failure
     const seat = await seatByLabel(dataSource, 'T1');
     const guestCookie = await startGuest(app, seat.qr);
 
     const notifySpy = vi.spyOn(app.get(NotificationsService), 'notify').mockRejectedValueOnce(new Error('simulated notify failure'));
 
-    // call-staff succeeds despite notification service failure
     await asGuest(app, 'post', '/call-staff', guestCookie)
       .send({ reason: 'bill' })
       .expect(201);
 
-    expect(notifySpy).toHaveBeenCalled();
+    expect(notifySpy).toHaveBeenCalledTimes(1);
+
+    // 2. POST /api/visits/:id/orders succeeds (201 + order saved) despite notify failure
+    const seats: Array<{ id: string }> = await dataSource.query(`SELECT id FROM table_seat WHERE label = 'T2'`);
+    const opened = await request(app.getHttpServer())
+      .post('/api/visits')
+      .set({ Authorization: `Bearer ${session.accessToken}` })
+      .send({ tableSeatId: seats[0]?.id })
+      .expect(201);
+
+    const variants: Array<{ id: string }> = await dataSource.query(
+      `SELECT v.id FROM menu_item_variant v JOIN menu_item i ON i.id = v.menu_item_id WHERE i.name = 'ช้างดราฟต์'`,
+    );
+
+    notifySpy.mockRejectedValueOnce(new Error('simulated order notify failure'));
+
+    const ordered = await request(app.getHttpServer())
+      .post(`/api/visits/${opened.body.data.visit.id}/orders`)
+      .set({ Authorization: `Bearer ${session.accessToken}` })
+      .send({ items: [{ variantId: variants[0]?.id, quantity: 1 }] })
+      .expect(201);
+
+    expect(notifySpy).toHaveBeenCalledTimes(2);
+    const savedOrders: Array<{ id: string }> = await dataSource.query(
+      `SELECT id FROM order_record WHERE id = $1`,
+      [ordered.body.data.id],
+    );
+    expect(savedOrders).toHaveLength(1);
+
+    // 3. POST /api/tickets/:id/ready succeeds (200 + ticket ready) despite notify failure
+    const ticketId = ordered.body.data.tickets[0].id as string;
+    await request(app.getHttpServer())
+      .post(`/api/tickets/${ticketId}/accept`)
+      .set({ Authorization: `Bearer ${session.accessToken}` })
+      .expect(200);
+
+    notifySpy.mockRejectedValueOnce(new Error('simulated ready notify failure'));
+
+    const readyRes = await request(app.getHttpServer())
+      .post(`/api/tickets/${ticketId}/ready`)
+      .set({ Authorization: `Bearer ${session.accessToken}` })
+      .expect(200);
+
+    expect(notifySpy).toHaveBeenCalledTimes(3);
+    expect(readyRes.body.data.status).toBe('ready');
+    const savedTickets: Array<{ status: string }> = await dataSource.query(
+      `SELECT status FROM order_ticket WHERE id = $1`,
+      [ticketId],
+    );
+    expect(savedTickets[0]?.status).toBe('ready');
+
+    notifySpy.mockRestore();
   });
 });
 

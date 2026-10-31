@@ -55,6 +55,7 @@ export class PermissionSourceTypeorm implements PermissionSource {
     return rows.map((row) => row.code);
   }
 
+  // The [valid_from, valid_until) window must match activeGroups in domain/effective-access.ts (CD-13 D1).
   public async staffHolding(code: PermissionCode, now: Date): Promise<string[]> {
     const rows: Array<{ id: string }> = await this.dataSource.query(
       `SELECT DISTINCT u.id
