@@ -13,6 +13,8 @@ test("พนักงาน: no รายงาน in the rail, no coming-soon i
   await expect(rail.getByRole("link", { name: "โต๊ะ" })).toBeVisible();
   await expect(rail.getByRole("link", { name: /ออเดอร์/ })).toBeVisible();
   await expect(rail.getByRole("link", { name: "รายงาน" })).toHaveCount(0);
+  await expect(rail.getByRole("link", { name: "ตั้งค่า" })).toHaveCount(0);
+  await expect(rail.getByRole("link")).toHaveCount(3);
   await expect(rail.getByTitle("เร็ว ๆ นี้")).toHaveCount(0);
 
   await expect(page.getByRole("rowheader", { name: "สิงห์" })).toBeVisible();
@@ -47,6 +49,8 @@ test("พนักงาน typing a back-office URL gets ไม่มีสิ�
   await expect(page).toHaveURL(/\/pos\/tables$/);
 
   await page.goto("/pos/menu/new");
+  await expect(page.getByText("บัญชีนี้ไม่มีสิทธิ์เข้าหน้านี้")).toBeVisible();
+  await page.goto("/pos/settings");
   await expect(page.getByText("บัญชีนี้ไม่มีสิทธิ์เข้าหน้านี้")).toBeVisible();
 });
 

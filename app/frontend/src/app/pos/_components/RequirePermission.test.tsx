@@ -59,7 +59,7 @@ test("without tables:read the way back is the first page that opens, and with no
   expect(nav.push).toHaveBeenCalledWith("/pos/reports");
   first.unmount();
 
-  server.use(onlyPermissions("venue:update"));
+  server.use(onlyPermissions("venue:read"));
   nav.path = "/pos/reports";
   renderGuard();
   expect(await screen.findByText("ติดต่อเจ้าของร้าน")).toBeInTheDocument();

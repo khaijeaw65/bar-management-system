@@ -61,15 +61,16 @@ test("shows the pending ticket count on ออเดอร์", async () => {
   expect(screen.getByRole("link", { name: /ออเดอร์/ })).toHaveAttribute("href", "/pos/orders");
 });
 
-test("พนักงาน gets no coming-soon items and no รายงาน", async () => {
+test("พนักงาน sees only โต๊ะ, ออเดอร์ and เมนู", async () => {
   posMockControls.setRole("staff");
   render(<PosRail />);
   expect(await screen.findByRole("link", { name: "เมนู" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "โต๊ะ" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: /ออเดอร์/ })).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "รายงาน" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "ตั้งค่า" })).not.toBeInTheDocument();
   expect(screen.queryByTitle("เร็ว ๆ นี้")).not.toBeInTheDocument();
-  // ตั้งค่า: พนักงาน holds venue:read, so the map as written keeps it — AC-2 says it should go (DR-029, pending).
+  expect(screen.getAllByRole("link")).toHaveLength(3);
 });
 
 test("ผู้จัดการ keeps every rail item", async () => {

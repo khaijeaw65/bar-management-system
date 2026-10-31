@@ -9,7 +9,8 @@ const RULES: ReadonlyArray<{ pattern: RegExp; needs: PermissionCode }> = [
   { pattern: /^\/pos\/menu\/[^/]+\/?$/, needs: "menu:write" },
   { pattern: /^\/pos\/menu\/?$/, needs: "menu:read" },
   { pattern: /^\/pos\/reports(\/|$)/, needs: "reports:read" },
-  { pattern: /^\/pos\/settings(\/|$)/, needs: "venue:read" },
+  // DR-029 (Field 2026-10-31): the settings page is back-office; พนักงาน holds venue:read but must not see it.
+  { pattern: /^\/pos\/settings(\/|$)/, needs: "venue:update" },
 ];
 
 export const POS_START_PAGES = [
