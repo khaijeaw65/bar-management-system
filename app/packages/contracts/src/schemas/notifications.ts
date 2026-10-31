@@ -32,3 +32,12 @@ export const ReadAllResultSchema = z.object({
   updated: z.number().int().nonnegative(),
 });
 export type ReadAllResult = z.infer<typeof ReadAllResultSchema>;
+
+export const PushPlatformSchema = z.enum(['ios', 'android']);
+export type PushPlatform = z.infer<typeof PushPlatformSchema>;
+
+export const RegisterPushTokenSchema = z.object({
+  token: z.string().min(1).max(255),
+  platform: PushPlatformSchema,
+});
+export type RegisterPushToken = z.infer<typeof RegisterPushTokenSchema>;
