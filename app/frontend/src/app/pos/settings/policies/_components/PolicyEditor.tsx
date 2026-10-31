@@ -1,6 +1,6 @@
 "use client";
 
-import type { PermissionCode, Policy } from "@bar/contracts";
+import type { PermissionCode, Policy, StaffGroup, StaffMember } from "@bar/contracts";
 import { Button, FieldError, Input, Label, TextField, toast } from "@heroui/react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -13,6 +13,27 @@ import { createPolicy, deletePolicy, setPolicyCodes, updatePolicy } from "@/lib/
 import { orderedCodes } from "@/lib/permissions/catalog";
 import { FailureAlert } from "../../groups/_components/FailureAlert";
 import { PolicyMatrix } from "./PolicyMatrix";
+
+interface Draft {
+  name: string;
+  description: string;
+  codes: PermissionCode[];
+}
+
+function namesUsing(policy: Policy | null, groups: StaffGroup[], staff: StaffMember[]): string[] {
+  if (policy === null) return [];
+  return [...groups.filter((group) => group.policyIds.includes(policy.id)).map((group) => `กลุ่ม ${group.name}`), ...staff.filter((member) => member.policyIds.includes(policy.id)).map((member) => member.displayName)];
+}
+
+async function persist(policy: Policy | null, draft: Draft, changed: { nameChanged: boolean; descriptionChanged: boolean; codesChanged: boolean }) {
+  if (policy === null) {
+    await createPolicy({ name: draft.name, description: draft.description || undefined, codes: draft.codes });
+    return;
+  }
+  const text = { ...(changed.nameChanged ? { name: draft.name } : {}), ...(changed.descriptionChanged ? { description: draft.description } : {}) };
+  if (Object.keys(text).length > 0) await updatePolicy(policy.id, text);
+  if (changed.codesChanged) await setPolicyCodes(policy.id, draft.codes);
+}
 
 /** Matrix editor for one policy, or a new one (policy = null). Nothing is sent until บันทึก, and then as one full set. */
 export function PolicyEditor({ policy, onBack }: Readonly<{ policy: Policy | null; onBack: () => void }>) {
@@ -35,7 +56,7 @@ export function PolicyEditor({ policy, onBack }: Readonly<{ policy: Policy | nul
   const descriptionChanged = policy !== null && description.trim() !== (policy.description ?? "");
   const codeChanges = [...selected].filter((code) => !original.has(code)).length + [...original].filter((code) => !selected.has(code)).length;
   const changes = codeChanges + (nameChanged ? 1 : 0) + (descriptionChanged ? 1 : 0);
-  const usedBy = policy ? [...(groups.data ?? []).filter((group) => group.policyIds.includes(policy.id)).map((group) => `กลุ่ม ${group.name}`), ...(staff.data ?? []).filter((member) => member.policyIds.includes(policy.id)).map((member) => member.displayName)] : [];
+  const usedBy = namesUsing(policy, groups.data ?? [], staff.data ?? []);
 
   async function write() {
     if (!catalog.data) return;
@@ -43,12 +64,7 @@ export function PolicyEditor({ policy, onBack }: Readonly<{ policy: Policy | nul
     setFailure(null);
     setNameError(null);
     try {
-      const codes = orderedCodes(catalog.data, selected);
-      if (policy === null) await createPolicy({ name: name.trim(), description: description.trim() || undefined, codes });
-      else {
-        if (nameChanged || descriptionChanged) await updatePolicy(policy.id, { ...(nameChanged ? { name: name.trim() } : {}), ...(descriptionChanged ? { description: description.trim() } : {}) });
-        if (codeChanges > 0) await setPolicyCodes(policy.id, codes);
-      }
+      await persist(policy, { name: name.trim(), description: description.trim(), codes: orderedCodes(catalog.data, selected) }, { nameChanged, descriptionChanged, codesChanged: codeChanges > 0 });
       toast.success(policy === null ? "สร้างนโยบายแล้ว · มีผลทันที" : "บันทึกแล้ว · มีผลทันที");
       await refresh();
       onBack();
@@ -70,6 +86,13 @@ export function PolicyEditor({ policy, onBack }: Readonly<{ policy: Policy | nul
   function requestSave() {
     if (policy !== null && codeChanges > 0 && policy.usage.groups + policy.usage.users > 1) setConfirming("use");
     else commit();
+  }
+
+  function cancel() {
+    if (policy === null) return onBack();
+    setSelected(new Set(original));
+    setName(policy.name);
+    setDescription(policy.description ?? "");
   }
 
   async function remove() {
@@ -115,15 +138,13 @@ export function PolicyEditor({ policy, onBack }: Readonly<{ policy: Policy | nul
         </Button>
       ) : null}
       {readOnly ? null : (
-        <div className="fixed inset-x-0 bottom-0 z-10 flex items-center gap-3 border-t border-line-hairline bg-surface p-3 md:left-auto" role="region" aria-label="บันทึกการแก้ไข">
-          <span className="flex-1 text-body">{policy === null ? "นโยบายใหม่" : `แก้ไข ${changes} รายการ`}</span>
-          <Button size="lg" variant="secondary" className="min-h-11" isDisabled={saving} onPress={() => (policy === null ? onBack() : (setSelected(new Set(original)), setName(policy.name), setDescription(policy.description ?? "")))}>
-            ยกเลิก
-          </Button>
-          <Button size="lg" className="min-h-11" isDisabled={saving || name.trim() === "" || (policy !== null && changes === 0)} onPress={requestSave}>
-            บันทึก
-          </Button>
-        </div>
+        <SaveBar
+          label={policy === null ? "นโยบายใหม่" : `แก้ไข ${changes} รายการ`}
+          saving={saving}
+          canSave={name.trim() !== "" && (policy === null || changes > 0)}
+          onCancel={cancel}
+          onSave={requestSave}
+        />
       )}
       {confirming === "use" ? (
         <ConfirmDialog title="นโยบายนี้ถูกใช้หลายที่" confirmLabel="บันทึกต่อ" onCancel={() => setConfirming(null)} onConfirm={() => { setConfirming(null); commit(); }}>
@@ -156,5 +177,19 @@ function InUseAlert({ failure, staff }: Readonly<{ failure: Extract<IamFailure, 
         </span>
       ) : null}
     </div>
+  );
+}
+
+function SaveBar({ label, saving, canSave, onCancel, onSave }: Readonly<{ label: string; saving: boolean; canSave: boolean; onCancel: () => void; onSave: () => void }>) {
+  return (
+    <section aria-label="บันทึกการแก้ไข" className="fixed inset-x-0 bottom-0 z-10 flex items-center gap-3 border-t border-line-hairline bg-surface p-3">
+      <span className="flex-1 text-body">{label}</span>
+      <Button size="lg" variant="secondary" className="min-h-11" isDisabled={saving} onPress={onCancel}>
+        ยกเลิก
+      </Button>
+      <Button size="lg" className="min-h-11" isDisabled={saving || !canSave} onPress={onSave}>
+        บันทึก
+      </Button>
+    </section>
   );
 }

@@ -8,6 +8,8 @@ import { useSelfGuard } from "@/hooks/useSelfGuard";
 import { createGroup, setGroupPolicies, updateGroup } from "@/lib/api/iam";
 import { FailureAlert } from "./FailureAlert";
 
+const sameIds = (a: string[], b: string[]) => a.length === b.length && a.every((id) => b.includes(id));
+
 const OWNER_COPY = "กลุ่มเจ้าของมีทุกสิทธิ์เสมอ";
 
 /** Create (group = null) or edit; เจ้าของ opens read-only, ผู้จัดการ / พนักงาน keep their name (CD-13 groups·1–3). */
@@ -51,7 +53,7 @@ export function GroupFormDialog({
   async function saveEdit(current: StaffGroup) {
     const text = { ...(trimmed !== current.name && current.system === null ? { name: trimmed } : {}), ...(description.trim() !== (current.description ?? "") ? { description: description.trim() } : {}) };
     if (Object.keys(text).length > 0) await updateGroup(current.id, text);
-    if (chosen.slice().sort().join() !== current.policyIds.slice().sort().join()) await setGroupPolicies(current.id, chosen);
+    if (!sameIds(chosen, current.policyIds)) await setGroupPolicies(current.id, chosen);
   }
 
   function submit() {

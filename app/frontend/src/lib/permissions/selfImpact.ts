@@ -19,8 +19,8 @@ function holdsManage(world: IamWorld, change: IamChange): boolean {
   const groups = change.groups ?? world.groups;
   const policies = change.policies ?? world.policies;
   const personal = change.personalPolicyIds ?? world.member.policyIds;
-  const live = world.member.memberships.filter((row) => row.state === "live").map((row) => row.groupId);
-  const attached = new Set([...personal, ...groups.filter((group) => live.includes(group.id)).flatMap((group) => group.policyIds)]);
+  const live = new Set(world.member.memberships.filter((row) => row.state === "live").map((row) => row.groupId));
+  const attached = new Set([...personal, ...groups.filter((group) => live.has(group.id)).flatMap((group) => group.policyIds)]);
   return policies.some((policy) => attached.has(policy.id) && policy.codes.includes(MANAGE));
 }
 
