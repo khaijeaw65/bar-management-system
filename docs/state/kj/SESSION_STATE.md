@@ -1,18 +1,17 @@
 # State — KJ
-Updated: 2026-11-01 · Agent: Antigravity (BRIEF-063 Audit PASS)
+Updated: 2026-11-01 · Agent: Claude Code (BRIEF-064 Audit PASS)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-063 Audit PASS** (S `d67200e`). Next: PR CI green → approve merge BRIEF-063 → BRIEF-064.
+**BRIEF-064 Audit PASS** (S `2d8175e`) — PR open. Next: CI green on H → merge (Field's own PR) → BRIEF-065.
 
 ## Active
-- Brief: BRIEF-063 Rev 1 · Stage: Audit PASS · Branch: `feat/BRIEF-063-notification-feed` · Work commit: `d67200e`
-- Done 21–31 Oct: BRIEF-061 (#109) · BRIEF-058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
+- Brief: BRIEF-064 Rev 1 · Stage: Audit PASS · Branch: `feat/BRIEF-064-push-delivery` · Work commit: `2d8175e`
+- Done 21–31 Oct: BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
-1. Wait for CI green on BRIEF-063 PR
-2. `อนุมัติ merge BRIEF-063` (Field approval)
-3. Next: BRIEF-064 (push delivery)
+1. CI green on H → merge BRIEF-064 (Section 7)
+2. Next: BRIEF-065 (Expo app push — Metee) · stop the `nest start --watch` dev backend before backend `test:e2e`
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: BRIEF-061 PR · if `ci` hits frontend timeouts → re-run once (038 audit F4)

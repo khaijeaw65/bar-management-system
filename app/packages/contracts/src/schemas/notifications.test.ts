@@ -4,6 +4,7 @@ import {
   NotificationPageSchema,
   NotificationSchema,
   NotificationTypeSchema,
+  RegisterPushTokenSchema,
   UnreadCountSchema,
 } from '../index.js';
 
@@ -49,5 +50,12 @@ describe('notification schemas and events', () => {
 
   it('exports the NOTIFICATION_NEW event string', () => {
     expect(NOTIFICATION_NEW).toBe('notification:new');
+  });
+
+  it('accepts a push token with a known platform and rejects the rest', () => {
+    const token = 'ExponentPushToken[abc]';
+    expect(RegisterPushTokenSchema.safeParse({ token, platform: 'android' }).success).toBe(true);
+    expect(RegisterPushTokenSchema.safeParse({ token, platform: 'web' }).success).toBe(false);
+    expect(RegisterPushTokenSchema.safeParse({ token: '', platform: 'ios' }).success).toBe(false);
   });
 });

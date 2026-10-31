@@ -54,6 +54,7 @@
     "@socket.io/redis-adapter": "^8",
     "bullmq": "6.3.11",
     "cookie-parser": "^1.4.7",
+    "expo-server-sdk": "^3.15.0",
     "ioredis": "^5.11.1",
     "nestjs-cls": "^6.3.1",
     "passport": "^0.7.0",

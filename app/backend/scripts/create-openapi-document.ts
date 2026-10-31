@@ -61,6 +61,7 @@ import { AppConfigService } from '../dist/providers/config/app/config.service.js
 import { JwtConfigService } from '../dist/providers/config/jwt/config.service.js';
 import { NotificationsController } from '../dist/modules/notifications/infrastructure/http/notifications.controller.js';
 import { NotificationsService } from '../dist/modules/notifications/notifications.service.js';
+import { PushTokenService } from '../dist/modules/notifications/application/push-token.service.js';
 
 // ponytail: export boots only the controllers we publish, with providers
 // stubbed, so it never connects to Postgres, Redis, or LINE. This file is
@@ -127,6 +128,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: CustomerTabService, useValue: {} },
       { provide: CustomerCallService, useValue: {} },
       { provide: NotificationsService, useValue: {} },
+      { provide: PushTokenService, useValue: {} },
       {
         provide: AppConfigService,
         useValue: { nodeEnv: 'test', frontendUrl: 'http://localhost:3000' },
