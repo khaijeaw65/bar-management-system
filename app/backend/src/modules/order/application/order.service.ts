@@ -19,6 +19,7 @@ import { businessDateUnder } from './business-date.js';
 import { bucketFor, priceLines } from './order-lines.js';
 import type { GuestOrderInput, PlaceOrderInput } from './order.types.js';
 import { OrderQueryService } from './order-query.service.js';
+import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 
 @Injectable()
 export class OrderService {
@@ -32,6 +33,7 @@ export class OrderService {
     private readonly menu: MenuCatalogService,
     private readonly notifications: NotificationsService,
     private readonly query: OrderQueryService,
+    private readonly notificationRecipients: NotificationRecipients,
   ) {}
 
   public async place(input: PlaceOrderInput): Promise<Order> {
@@ -108,9 +110,22 @@ export class OrderService {
       if (outcome.activated) this.emitActivated(outcome);
       this.notifications.emitToStaff(ORDER_CREATED, order);
       this.notifications.emitTabChanged(outcome.visitId);
+      await this.notifyNewOrder(order);
     } catch (error) {
       this.logger.warn(`order ${order.id} announce failed: ${error instanceof Error ? error.message : 'error'}`);
     }
+  }
+
+  private async notifyNewOrder(order: Order): Promise<void> {
+    const seatLabel = order.tickets[0]?.seat.label ?? 'โต๊ะ';
+    const count = order.tickets.flatMap((t) => t.items).reduce((sum, item) => sum + item.quantity, 0);
+    const recipients = await this.notificationRecipients.orderNew(order.createdBy?.staffId ?? null);
+    await this.notifications.notify('order_new', recipients, {
+      title: `ออเดอร์ใหม่ · ${seatLabel}`,
+      body: `${count} รายการ`,
+      refType: 'order',
+      refId: order.id,
+    });
   }
 
   private emitActivated(outcome: PlacedOrder): void {

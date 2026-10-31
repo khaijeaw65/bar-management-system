@@ -55,6 +55,39 @@ export class PermissionSourceTypeorm implements PermissionSource {
     return rows.map((row) => row.code);
   }
 
+  // The [valid_from, valid_until) window must match activeGroups in domain/effective-access.ts (CD-13 D1).
+  public async staffHolding(code: PermissionCode, now: Date): Promise<string[]> {
+    const rows: Array<{ id: string }> = await this.dataSource.query(
+      `SELECT DISTINCT u.id
+         FROM staff_user u
+        WHERE u.is_active = TRUE
+          AND (
+            EXISTS (
+              SELECT 1
+                FROM user_policy up
+                JOIN policy_permission pp ON pp.policy_id = up.policy_id
+                JOIN permission p ON p.id = pp.permission_id
+               WHERE up.user_id = u.id
+                 AND (p.resource || ':' || p.action) = $1
+            )
+            OR EXISTS (
+              SELECT 1
+                FROM user_group_membership ugm
+                JOIN group_policy gp ON gp.group_id = ugm.group_id
+                JOIN policy_permission pp ON pp.policy_id = gp.policy_id
+                JOIN permission p ON p.id = pp.permission_id
+               WHERE ugm.user_id = u.id
+                 AND ugm.valid_from <= $2
+                 AND (ugm.valid_until IS NULL OR ugm.valid_until > $2)
+                 AND (p.resource || ':' || p.action) = $1
+            )
+          )
+        ORDER BY u.id`,
+      [code, now],
+    );
+    return rows.map((row) => row.id);
+  }
+
   public async everHadOwner(): Promise<boolean> {
     const rows: unknown[] = await this.dataSource.query(
       `SELECT 1 FROM user_group_membership WHERE group_id = $1 LIMIT 1`,

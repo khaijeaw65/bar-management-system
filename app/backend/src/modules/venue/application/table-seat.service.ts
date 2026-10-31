@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   TABLE_STAFF_CALLED,
@@ -15,6 +15,7 @@ import { DomainException } from '../../../common/domain-exception.js';
 import { CLOCK, type Clock } from '../../../common/clock.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
+import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 import { BillService } from '../../payment/application/bill.service.js';
 import { OrderQueryService } from '../../order/application/order-query.service.js';
 import {
@@ -34,6 +35,8 @@ import type { VisitBill } from '../../order/application/order.types.js';
 
 @Injectable()
 export class TableSeatService {
+  private readonly logger = new Logger(TableSeatService.name);
+
   public constructor(
     @Inject(TABLE_SEAT_REPOSITORY)
     private readonly tableSeatRepository: TableSeatRepository,
@@ -41,6 +44,7 @@ export class TableSeatService {
     private readonly orders: OrderQueryService,
     private readonly bills: BillService,
     private readonly notifications: NotificationsService,
+    private readonly notificationRecipients: NotificationRecipients,
     private readonly auditLog: AuditLogService,
     private readonly staffUsers: StaffUserService,
     private readonly cls: ClsService,
@@ -80,7 +84,28 @@ export class TableSeatService {
     await this.tableSeatRepository.setStaffCall(tableSeatId, { ...input, calledAt });
     const payload: TableStaffCalledPayload = { tableSeatId, ...input, calledAt: calledAt.toISOString() };
     this.notifications.emitToStaff(TABLE_STAFF_CALLED, payload);
+    await this.notifyStaffCall(tableSeatId, input.reason);
     return calledAt;
+  }
+
+  private async notifyStaffCall(tableSeatId: string, reason: CallStaffReason | null): Promise<void> {
+    if (reason !== 'bill' && reason !== 'other') {
+      return;
+    }
+    try {
+      const seat = await this.tableSeatRepository.findById(tableSeatId);
+      const label = seat?.label ?? 'โต๊ะ';
+      const body = reason === 'bill' ? 'เช็คบิล' : 'เรียกพนักงาน';
+      const recipients = await this.notificationRecipients.callStaff();
+      await this.notifications.notify('call_staff', recipients, {
+        title: `${label} เรียกพนักงาน`,
+        body,
+        refType: 'table_seat',
+        refId: tableSeatId,
+      });
+    } catch (error) {
+      this.logger.warn(`staff call notification failed: ${error instanceof Error ? error.message : 'error'}`);
+    }
   }
 
   /** Idempotent: no bell → nothing to clear, nothing emitted. */

@@ -13,6 +13,8 @@ export interface PermissionSource {
   membershipsOf(userId: string): Promise<MembershipRow[]>;
   /** Codes granted by these groups' policies plus the user's own policies. */
   codesFor(userId: string, groupIds: string[]): Promise<PermissionCode[]>;
+  /** Active staff user IDs holding code at now via direct policy or active group membership. */
+  staffHolding(code: PermissionCode, now: Date): Promise<string[]>;
   /** Any เจ้าของ membership row exists, whatever its dates or the user's state (Field 2026-10-30: fail-open only on a fresh DB). */
   everHadOwner(): Promise<boolean>;
 }
