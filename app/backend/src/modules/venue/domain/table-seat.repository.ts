@@ -9,8 +9,8 @@ export interface TableSeatRepository {
   replaceQrToken(id: string, qrToken: string): Promise<void>;
   /** Sets (or overwrites) the bell. */
   setStaffCall(id: string, call: StaffCallRecord): Promise<void>;
-  /** Clears the bell; true when there was one. */
-  clearStaffCall(id: string, onlyReason?: CallStaffReason): Promise<boolean>;
+  /** Clears a ringing bell and returns what it was. A second clear in flight gets null. */
+  clearStaffCall(id: string, onlyReason?: CallStaffReason): Promise<StaffCallRecord | null>;
 }
 
 export const TABLE_SEAT_REPOSITORY = Symbol('TABLE_SEAT_REPOSITORY');
