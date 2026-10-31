@@ -5,9 +5,9 @@
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-31 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-056-permission-aware-pos` (no PR until audit PASS) |
+| **Branch** | `feat/BRIEF-056-permission-aware-pos` (PR opened at PASS) |
 | **Work SHA** | `369d8e3` |
-| **Status** | Implemented — DR-029 option A approved by Field in session (Decision section for Cowork to record) · waiting for `audit BRIEF-056` (Cowork) |
+| **Status** | Audit PASS (Cowork, S = `369d8e3`) — PR open; DR-029 Approved A recorded |
 
 ## Summary
 - **`src/lib/permissions/`:** `usePermissions()` (`can` / `canAll` / `canAny`, `status` loading · ready · error; TanStack query `['me','permissions']`, refetch on focus, every 60 s) · `<Can code | anyOf fallback>` · `pos-routes.ts` (the one page → permission map + `firstAllowedPage`) · `PermissionWatcher` (mounted in `Providers`): any 403 with `data.missing` → invalidate the permission query + Toast "ไม่มีสิทธิ์ทำรายการนี้" (once per 3 s burst). `client.ts` gains `onPermissionDenied`; `errors.ts` gains `isPermissionDenied` (ticket actions skip their own error toast on it).

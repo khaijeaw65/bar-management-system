@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Pending |
+| **Status** | Approved |
 | **Raised by** | kj (Claude Code, executor) · 2026-10-31 |
 | **Brief** | BRIEF-056 |
 | **Category** | Brief deviation |
@@ -24,6 +24,6 @@ A — it is what the acceptance criteria and the rail description say, and the d
 ---
 
 ## Decision — Field only
-**Decision:**
-**Why:**
-**Date:**
+**Decision:** Approved: A — `/pos/settings` needs `venue:update`
+**Why:** Matches AC-2 / AC-4 with the default policies — พนักงาน has no back-office page; ผู้จัดการ and เจ้าของ open settings (payment section read-only for ผู้จัดการ). Revisit C if a read-only "bookkeeper" role appears.
+**Date:** 2026-10-31 · recorded by Cowork on Field's explicit instruction (session: "Yes, approve A")
