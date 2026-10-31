@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-058-groups-policies-ui` (PR opens after audit PASS) |
 | **Commit** | `59aea49` (work SHA S) |
-| **Status** | Implemented — awaiting audit (Cowork) |
+| **Status** | Implemented — fix round for audit finding #1 (run proof) |
 
 ## Summary
 New tabs "กลุ่มสิทธิ์" and "นโยบายสิทธิ์ · ขั้นสูง" (route map: `/pos/settings/(staff|groups|policies)` → `staff:manage`).
@@ -30,7 +30,7 @@ New tabs "กลุ่มสิทธิ์" and "นโยบายสิทธ
 | AC-8 | ✅ | `PersonalPoliciesPanel.test::AC-8…` |
 | AC-9 | ✅ | `GroupsScreen.test::AC-9` · `PoliciesScreen.test::AC-9` · `selfImpact.test` |
 | AC-10 | ✅ | `e2e …::J2 (390)` (page area no overflow, save bar in viewport) · manager tab-hidden e2e |
-| AC-11 | ⚠️ partly | gates ✅; real-stack UI run proof **not done** (below) |
+| AC-11 | ✅ | gates ✅; real-stack run proof below (audit finding #1) |
 
 ## Gate Evidence (G1)
 | Command | Exit | Result |
@@ -42,7 +42,16 @@ New tabs "กลุ่มสิทธิ์" and "นโยบายสิทธ
 | `pnpm --filter @bar/frontend build` | 0 | pass |
 | `migration:run` → `start:dev` → `/api/health` | 0 | no migrations pending; health 200 on `a712a3c` (backend unchanged) |
 
-**Not done — real-stack UI proof:** the brief's run proof (Job 1 in the UI as a real owner, put Demo พนักงาน in แคชเชียร์, checkout shows manual confirm, delete, personal policy) and the screenshots in `docs/handoffs/assets/BRIEF-058/` need an owner session (Field's LINE login or a hand-signed token) that this agent session did not have. UI was exercised only against MSW (Playwright 1280 / 390). Needs Field or a follow-up before merge.
+**Real-stack run proof** (dev DB `bar`, backend 3011 + frontend 3010 on `59aea49`; hand-signed 2 h access tokens + Redis sessions for "Field (demo)" (เจ้าของ) and Demo พนักงาน; headless Playwright `page.screenshot()`; screenshots in `docs/handoffs/assets/BRIEF-058/`):
+1. Demo พนักงาน (พนักงาน only): T2 checkout → สร้าง QR → no "ยืนยันด้วยตนเอง" button, hint "ให้ผู้จัดการยืนยันรับเงิน" shown.
+2. Owner at 1280: created policy รับเงิน (ดู / เปิดบิล / ยืนยันรับเงิน) in the matrix (`4-policy-matrix-1280`), then group แคชเชียร์ = งานพนักงาน + รับเงิน (`2-group-create-1280`, list `1-groups-list-1280`).
+3. Owner put Demo พนักงาน in แคชเชียร์ (U1 add group, ถาวร) → staff T2 checkout: manual-confirm button **present**, hint gone.
+4. Owner deleted แคชเชียร์: impact dialog listed "Demo พนักงาน — จะเสีย: ยืนยันรับเงิน" (`3-delete-impact-1280`) → confirmed → staff checkout: button **gone**, hint back. (Retaken once for a clean frame; the first delete + group re-create happened in the same session.)
+5. Owner added รับเงิน as a personal policy on Demo พนักงาน → chip + effective "ส่วนตัว · นโยบาย รับเงิน" (`7-staff-personal-policy-1280`) → staff checkout: button **present**.
+6. While attached, deleting รับเงิน → `POLICY_IN_USE` alert "คน: Demo พนักงาน" with a link (`6-policy-in-use-1280`). Matrix at 390: cards + switches, `main` has no horizontal overflow, sticky save bar visible (`5-policy-matrix-390`).
+7. Owner removed the personal policy → staff checkout: button **gone**, hint back. Policy รับเงิน then deleted (AC-6 second half).
+
+Cleanup verified: dev DB has only the 3 seeded groups and 3 seeded policies, no personal policies, no แคชเชียร์ members. Each staff checkout check created and then cancelled a ฿10 QR payment on T2 (5 extra `cancelled` rows; T2 stays unpaid). Not captured live: the self-impact warning and the lockout alert (covered by component tests). Observations: the Next dev badge overlaps the left of the sticky save bar label in the dev screenshots (dev-only); the sticky bar spans under the left rail at ≥ md (cosmetic, not changed).
 
 ## Deviations / notes
 - Matrix is one responsive card-per-resource with Switches (row-like at ≥ md) instead of Table + CheckboxGroup at 1280 — single DOM, visual approximation of CD-13 §8; no design data changed.
