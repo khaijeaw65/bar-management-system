@@ -9,7 +9,7 @@ import type {
 import { StorageService } from '../../../common/storage/storage.service.js';
 import { hhmm } from '../../../common/time-label.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import {
   MENU_CATALOG_REPOSITORY,
   type MenuCatalogRepository,
@@ -32,7 +32,7 @@ export class MenuCatalogService {
   public constructor(
     @Inject(MENU_CATALOG_REPOSITORY)
     private readonly catalog: MenuCatalogRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
     private readonly storage: StorageService,
   ) {}
 

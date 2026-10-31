@@ -10,7 +10,7 @@ import {
   type NotVoidedTicket,
   type OrderStatus,
 } from '@bar/contracts';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { MenuCatalogService } from '../../menu/application/menu-catalog.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
@@ -27,7 +27,7 @@ const SOLD_OUT_REASON = 'ของหมด';
 export class SoldOutService {
   public constructor(
     @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
     private readonly menu: MenuCatalogService,
     private readonly visits: VisitService,
     private readonly tickets: TicketService,

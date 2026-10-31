@@ -12,7 +12,7 @@ import {
 import { ClsService } from 'nestjs-cls';
 import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
@@ -48,7 +48,7 @@ export class TableSeatService {
     private readonly auditLog: AuditLogService,
     private readonly staffUsers: StaffUserService,
     private readonly cls: ClsService,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
   ) {}
 
   public async list(): Promise<TableSummary[]> {

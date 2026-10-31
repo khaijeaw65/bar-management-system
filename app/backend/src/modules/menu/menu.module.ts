@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CLOCK } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
 import { StorageModule } from '../../common/storage/storage.module.js';
@@ -30,7 +30,7 @@ import { ModifierGroupTypeormRepository } from './infrastructure/persistence/mod
     { provide: MENU_WRITE_REPOSITORY, useExisting: MenuWriteTypeormRepository },
     ModifierGroupTypeormRepository,
     { provide: MODIFIER_GROUP_REPOSITORY, useExisting: ModifierGroupTypeormRepository },
-    { provide: CLOCK, useClass: SystemClock },
+    { provide: Clock, useClass: SystemClock },
     IdempotencyService,
     MenuCatalogService,
     MenuPhotoService,

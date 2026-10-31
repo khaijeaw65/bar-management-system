@@ -1,11 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DomainException } from '../../../common/domain-exception.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { TableSeatService } from '../../venue/application/table-seat.service.js';
-import {
-  GUEST_SESSION_REPOSITORY,
-  type GuestSessionRepository,
-} from '../domain/guest-session.repository.js';
+import { GuestSessionRepository } from '../domain/guest-session.repository.js';
 import type {
   GuestSessionRow,
   GuestSessionView,
@@ -26,8 +23,8 @@ export class GuestSessionService {
   private readonly logger = new Logger(GuestSessionService.name);
 
   public constructor(
-    @Inject(GUEST_SESSION_REPOSITORY) private readonly sessions: GuestSessionRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly sessions: GuestSessionRepository,
+    private readonly clock: Clock,
     private readonly seats: TableSeatService,
     private readonly throttle: CustomerThrottle,
   ) {}

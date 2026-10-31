@@ -15,7 +15,7 @@ import {
   type UpdateMenuCategory,
   type UpdateMenuItem,
 } from '@bar/contracts';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { fromSatang, toSatang } from '../../../common/money.js';
 import { StorageService, UPLOAD_URL_TTL_SECONDS } from '../../../common/storage/storage.service.js';
@@ -40,7 +40,7 @@ export class MenuWriteService {
     private readonly notifications: NotificationsService,
     private readonly photos: MenuPhotoService,
     private readonly storage: StorageService,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
   ) {}
 
   /** A 5-minute presigned POST into `tmp/`; no DB write, no event. */

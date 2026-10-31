@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   ReportDaily,
   ReportItems,
@@ -8,8 +8,8 @@ import type {
   ReportsPeriodQuery,
 } from '@bar/contracts';
 import { businessDate } from '../../../common/business-date.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
-import { REPORT_QUERIES, type ReportQueries } from '../domain/ports/report-queries.port.js';
+import { Clock } from '../../../common/clock.js';
+import { ReportQueries } from '../domain/ports/report-queries.port.js';
 import type {
   HourRevenue,
   OpenSeat,
@@ -26,8 +26,8 @@ const NEW_ITEM_MS = 7 * 24 * 3600 * 1000;
 @Injectable()
 export class ReportsService {
   public constructor(
-    @Inject(REPORT_QUERIES) private readonly queries: ReportQueries,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly queries: ReportQueries,
+    private readonly clock: Clock,
   ) {}
 
   public async summary(period: ReportsPeriodQuery): Promise<ReportSummary> {

@@ -17,7 +17,7 @@ import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import {
   ORDER_REPOSITORY,
   type OrderRepository,
@@ -34,7 +34,7 @@ export class TicketService {
 
   public constructor(
     @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
     private readonly venues: VenueSettingsService,
     private readonly query: OrderQueryService,
     private readonly staff: StaffUserService,

@@ -10,7 +10,7 @@ import { configureApp } from '../src/bootstrap/configure-app.js';
 import { seedMenu } from '../src/cli/seed-menu-catalog.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
 import { PushDeliveryService } from '../src/modules/notifications/application/push-delivery.service.js';
-import { PUSH_SENDER } from '../src/modules/notifications/application/ports/push-sender.port.js';
+import { PushSender } from '../src/modules/notifications/application/ports/push-sender.port.js';
 import { NOTIFICATION_PUSH_QUEUE } from '../src/modules/notifications/application/push.types.js';
 import { NotificationsService } from '../src/modules/notifications/notifications.service.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
@@ -28,7 +28,7 @@ describe('Push delivery (e2e)', () => {
   beforeAll(async () => {
     fake = new FakePushSender();
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(PUSH_SENDER)
+      .overrideProvider(PushSender)
       .useValue(fake)
       .compile();
     app = moduleRef.createNestApplication();

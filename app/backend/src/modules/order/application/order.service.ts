@@ -5,7 +5,7 @@ import {
   MenuCatalogService,
   type OrderableLookup,
 } from '../../menu/application/menu-catalog.service.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import {
   ORDER_REPOSITORY,
@@ -27,7 +27,7 @@ export class OrderService {
 
   public constructor(
     @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
     private readonly visits: VisitService,
     private readonly venues: VenueSettingsService,
     private readonly menu: MenuCatalogService,

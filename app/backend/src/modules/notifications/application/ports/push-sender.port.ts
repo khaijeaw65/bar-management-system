@@ -22,11 +22,9 @@ export type PushReceipt =
   | { status: 'ok' }
   | { status: 'error'; failure: PushFailure; message: string };
 
-export interface PushSender {
-  isValidToken(token: string): boolean;
+export abstract class PushSender {
+  public abstract isValidToken(token: string): boolean;
   /** One ticket per message, same order. */
-  send(messages: PushMessage[]): Promise<PushTicket[]>;
-  receipts(ids: string[]): Promise<Map<string, PushReceipt>>;
+  public abstract send(messages: PushMessage[]): Promise<PushTicket[]>;
+  public abstract receipts(ids: string[]): Promise<Map<string, PushReceipt>>;
 }
-
-export const PUSH_SENDER = Symbol('PUSH_SENDER');

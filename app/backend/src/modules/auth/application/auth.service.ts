@@ -1,6 +1,5 @@
 import { randomBytes } from 'node:crypto';
 import {
-  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -10,7 +9,7 @@ import { AccessRequestService } from '../../iam/application/access-request.servi
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { AppConfigService } from '../../../providers/config/app/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
-import { LINE_CLIENT, type LineClient } from '../domain/line-client.js';
+import { LineClient } from '../domain/ports/line-client.port.js';
 import type { LineProfile } from '../domain/line-client.types.js';
 import type {
   LineLoginCallbackInput,
@@ -35,7 +34,7 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   public constructor(
-    @Inject(LINE_CLIENT) private readonly lineClient: LineClient,
+    private readonly lineClient: LineClient,
     private readonly redisService: RedisService,
     private readonly tokenService: TokenService,
     private readonly staffUserService: StaffUserService,

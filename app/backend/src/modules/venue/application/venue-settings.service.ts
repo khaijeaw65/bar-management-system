@@ -7,7 +7,7 @@ import {
   type VenuePaymentSettings,
   type VenueSettings,
 } from '@bar/contracts';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { AuditRecord } from '../../../common/audit/audit-log.types.js';
 import { DomainException } from '../../../common/domain-exception.js';
@@ -35,7 +35,7 @@ export class VenueSettingsService {
     private readonly paymentGuard: PaymentGuard,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
   ) {}
 
   /** Cut-off changes apply from the next business day: the day open at the change keeps the old cut-off (BRIEF-035 Q1 A). Held in memory, so a restart applies the new cut-off at once. */

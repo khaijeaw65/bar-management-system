@@ -12,8 +12,6 @@ export interface SlipVerifyContext {
   expectedAmount: string;
 }
 
-export interface SlipVerifier {
-  verify(input: SlipCheck, context: SlipVerifyContext): Promise<SlipVerifyResult>;
+export abstract class SlipVerifier {
+  public abstract verify(input: SlipCheck, context: SlipVerifyContext): Promise<SlipVerifyResult>;
 }
-
-export const SLIP_VERIFIER = Symbol('SLIP_VERIFIER');

@@ -12,8 +12,7 @@ import { seedMenu } from '../src/cli/seed-menu-catalog.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
 import { PAYMENT_EXPIRY_QUEUE } from '../src/modules/payment/application/payment.types.js';
 import {
-  SLIP_VERIFIER,
-  type SlipVerifier,
+  SlipVerifier,
   type SlipVerifyResult,
 } from '../src/modules/payment/domain/ports/slip-verifier.port.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
@@ -43,7 +42,7 @@ describe('Payment slip verification (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(SLIP_VERIFIER)
+      .overrideProvider(SlipVerifier)
       .useClass(ScriptedSlipVerifier)
       .compile();
     app = moduleRef.createNestApplication();
@@ -218,7 +217,7 @@ describe('Payment slip verification (e2e)', () => {
   });
 
   function verifier(): ScriptedSlipVerifier {
-    return app.get(SLIP_VERIFIER);
+    return app.get(SlipVerifier);
   }
 
   function auth(): { Authorization: string } {

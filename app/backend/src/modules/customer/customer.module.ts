@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CLOCK } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { AppConfigModule } from '../../providers/config/app/config.module.js';
 import { MenuModule } from '../menu/menu.module.js';
@@ -16,7 +16,7 @@ import { CustomerTabGateway } from './application/customer-tab-gateway.js';
 import { CustomerTabService } from './application/customer-tab.service.js';
 import { CustomerThrottle } from './application/customer-throttle.js';
 import { GuestSessionService } from './application/guest-session.service.js';
-import { GUEST_SESSION_REPOSITORY } from './domain/guest-session.repository.js';
+import { GuestSessionRepository } from './domain/guest-session.repository.js';
 import { CustomerPaymentController } from './infrastructure/http/customer-payment.controller.js';
 import { CustomerOrderController } from './infrastructure/http/customer-order.controller.js';
 import { CustomerMenuController } from './infrastructure/http/customer-menu.controller.js';
@@ -38,8 +38,8 @@ import { GuestSessionTypeormRepository } from './infrastructure/persistence/gues
   ],
   providers: [
     GuestSessionTypeormRepository,
-    { provide: GUEST_SESSION_REPOSITORY, useExisting: GuestSessionTypeormRepository },
-    { provide: CLOCK, useClass: SystemClock },
+    { provide: GuestSessionRepository, useExisting: GuestSessionTypeormRepository },
+    { provide: Clock, useClass: SystemClock },
     CustomerThrottle,
     GuestSessionService,
     CustomerMenuService,

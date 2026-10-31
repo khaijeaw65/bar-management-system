@@ -8,7 +8,7 @@ import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
 import { seedMenu } from '../src/cli/seed-menu-catalog.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
-import { CLOCK } from '../src/common/clock.js';
+import { Clock } from '../src/common/clock.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
 
@@ -23,7 +23,7 @@ describe('Customer QR session (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(CLOCK)
+      .overrideProvider(Clock)
       .useValue({ now: () => now })
       .compile();
     app = moduleRef.createNestApplication();

@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { IamModule } from '../iam/iam.module.js';
 import { MenuModule } from '../menu/menu.module.js';
 import { VenueModule } from '../venue/venue.module.js';
-import { CLOCK } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { RedisModule } from '../../providers/redis/redis.module.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
@@ -33,7 +33,7 @@ import { OrderTypeormRepository } from './infrastructure/persistence/order.typeo
   providers: [
     OrderTypeormRepository,
     { provide: ORDER_REPOSITORY, useExisting: OrderTypeormRepository },
-    { provide: CLOCK, useClass: SystemClock },
+    { provide: Clock, useClass: SystemClock },
     IdempotencyService,
     OrderQueryService,
     OrderService,

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Transactional } from '@nestjs-cls/transactional';
 import type { Queue } from 'bullmq';
@@ -11,7 +11,7 @@ import {
 } from '@bar/contracts';
 import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { AuditFieldChange } from '../../../common/audit/audit-log.types.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { toSatang } from '../../../common/money.js';
 import { PaymentConfigService } from '../../../providers/config/payment/config.service.js';
@@ -20,13 +20,9 @@ import { VenueSettingsService } from '../../venue/application/venue-settings.ser
 import type { VenuePaymentAccount } from '../../venue/domain/venue.repository.js';
 import { TableSeatService } from '../../venue/application/table-seat.service.js';
 import { VisitService } from '../../venue/application/visit.service.js';
+import { PaymentRepository } from '../domain/ports/payment.repository.port.js';
 import {
-  PAYMENT_REPOSITORY,
-  type PaymentRepository,
-} from '../domain/ports/payment.repository.port.js';
-import {
-  SLIP_VERIFIER,
-  type SlipVerifier,
+  SlipVerifier,
   type SlipVerifyResult,
 } from '../domain/ports/slip-verifier.port.js';
 import type { NewPayment, PaymentRecord } from '../domain/payment.types.js';
@@ -48,8 +44,8 @@ export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
 
   public constructor(
-    @Inject(PAYMENT_REPOSITORY) private readonly payments: PaymentRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly payments: PaymentRepository,
+    private readonly clock: Clock,
     @InjectQueue(PAYMENT_EXPIRY_QUEUE) private readonly expiryQueue: Queue<PaymentExpiryJob>,
     private readonly visits: VisitService,
     private readonly bills: BillService,
@@ -57,7 +53,7 @@ export class PaymentService {
     private readonly seats: TableSeatService,
     private readonly notifications: NotificationsService,
     private readonly ttl: PaymentConfigService,
-    @Inject(SLIP_VERIFIER) private readonly slips: SlipVerifier,
+    private readonly slips: SlipVerifier,
     private readonly audit: AuditLogService,
   ) {}
 

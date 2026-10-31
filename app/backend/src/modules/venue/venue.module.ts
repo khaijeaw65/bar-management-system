@@ -1,6 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CLOCK } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { AuditLogService } from '../../common/audit/audit-log.service.js';
 import { IamModule } from '../iam/iam.module.js';
@@ -41,7 +41,7 @@ import { VisitTypeormRepository } from './infrastructure/persistence/visit.typeo
     VisitService,
     VenueSettingsService,
     AuditLogService,
-    { provide: CLOCK, useClass: SystemClock },
+    { provide: Clock, useClass: SystemClock },
   ],
   exports: [VisitService, VenueSettingsService, TableSeatService],
 })

@@ -1,12 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Injectable } from '@nestjs/common';
+import { Clock } from '../../../common/clock.js';
 import { PermissionResolver } from '../../iam/application/permission-resolver.service.js';
 
 @Injectable()
 export class NotificationRecipients {
   public constructor(
     private readonly resolver: PermissionResolver,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
   ) {}
 
   /**
