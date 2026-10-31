@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-061-call-ack-audit` (PR opens after audit PASS) |
 | **Commit** | `efbf89b` (work SHA S) |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS (Cowork, 2026-10-31) — merged PR determines Done |
 
 > Created at `Implemented` (one docs commit). Updated once in the PASS commit. Frozen at merge.
 

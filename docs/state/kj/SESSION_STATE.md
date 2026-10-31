@@ -1,22 +1,22 @@
 # State — KJ
-Updated: 2026-10-31 · Agent: Antigravity (BRIEF-061 Implemented)
+Updated: 2026-10-31 · Agent: Antigravity (BRIEF-061 audit PASS)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-061 Implemented** (S `efbf89b`) on `feat/BRIEF-061-call-ack-audit` → run `audit BRIEF-061` in Cowork.
+**BRIEF-061 audit PASS, PR open** (S `efbf89b`) → `ci` green → merge (Field's own PR, §7). Next: BRIEF-063.
 
 ## Active
-- Brief: BRIEF-061 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-061-call-ack-audit` · Work commit: `efbf89b`
+- Brief: BRIEF-061 Rev 1 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-061-call-ack-audit` · Work commit: `efbf89b`
 - Done 21–31 Oct: BRIEF-058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
-1. Audit BRIEF-061 (`audit BRIEF-061` in Cowork) → PASS commit + PR → merge
+1. `ci` green on BRIEF-061 PR → merge (Field's own PR, §7) → `execute BRIEF-063`
 2. Mobile M1–M5 batch (062–065) / AI owner insight / bootstrap batch per queue
 3. **Overdue (was 25 Oct):** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
 4. Real-use bootstrap batch: after the 8 Nov plan items, before AWS
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-061 (`efbf89b`) · if `ci` hits frontend timeouts → re-run once (038 audit F4)
+- Shared files: none · Review queue: BRIEF-061 PR · if `ci` hits frontend timeouts → re-run once (038 audit F4)
 - e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e · frontend unit tests time out under heavy load
 - Dev servers and SonarQube stopped; Postgres + Redis (docker) left running · dev `bar` has 2 `table_seat` audit_log rows from BRIEF-061 run proof
 
