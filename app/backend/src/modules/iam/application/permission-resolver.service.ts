@@ -26,6 +26,10 @@ export class PermissionResolver {
     return new Set(access.permissions);
   }
 
+  public async staffHolding(code: PermissionCode, now: Date): Promise<string[]> {
+    return await this.source.staffHolding(code, now);
+  }
+
   public async accessFor(userId: string, now: Date): Promise<MyPermissions> {
     const key = await this.cacheKey(userId);
     if (key) {
