@@ -33,6 +33,10 @@ export const ErrorCodeSchema = z.enum([
   'ACCESS_REQUEST_DECIDED',
   'IAM_LOCKOUT',
   'SELF_DEACTIVATE',
+  'SYSTEM_ROW',
+  'GROUP_NAME_TAKEN',
+  'POLICY_NAME_TAKEN',
+  'POLICY_IN_USE',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;

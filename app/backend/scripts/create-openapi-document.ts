@@ -17,11 +17,17 @@ import {
   CustomerScanController,
   CustomerSessionController,
 } from '../dist/modules/customer/infrastructure/http/customer-session.controller.js';
+import { IamAdminService } from '../dist/modules/iam/application/iam-admin.service.js';
 import { StaffAdminService } from '../dist/modules/iam/application/staff-admin.service.js';
 import {
   AccessRequestsController,
   StaffController,
 } from '../dist/modules/iam/infrastructure/http/staff.controller.js';
+import {
+  PermissionCatalogController,
+  PoliciesController,
+  StaffGroupsController,
+} from '../dist/modules/iam/infrastructure/http/iam-admin.controller.js';
 import { MeController } from '../dist/modules/iam/infrastructure/http/me.controller.js';
 import { PermissionResolver } from '../dist/modules/iam/application/permission-resolver.service.js';
 import { HealthController } from '../dist/modules/health/health.controller.js';
@@ -63,6 +69,9 @@ const documentedControllers = [
   MeController,
   AccessRequestsController,
   StaffController,
+  PermissionCatalogController,
+  StaffGroupsController,
+  PoliciesController,
   TablesController,
   VisitsController,
   VenueController,
@@ -92,6 +101,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: AuthService, useValue: {} },
       { provide: PermissionResolver, useValue: {} },
       { provide: StaffAdminService, useValue: {} },
+      { provide: IamAdminService, useValue: {} },
       { provide: TableSeatService, useValue: {} },
       { provide: VisitService, useValue: {} },
       { provide: VenueSettingsService, useValue: {} },
