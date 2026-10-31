@@ -1,13 +1,13 @@
 # State — KJ
-Updated: 2026-10-31 · Agent: Claude Code (BRIEF-057 audit PASS)
+Updated: 2026-10-31 · Agent: Claude Code (BRIEF-058 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-057 audit PASS, PR open** (S `f9d6a35`) → `ci` green → merge (Field's own PR, §7). Real-LINE run proof done 31 Oct (Field's own LINE). Next: IAM UI U2 groups & policies.
+**BRIEF-058 Implemented** (S see handoff), branch pushed, no PR. Next: `audit BRIEF-058` (Cowork). Open: real-stack UI run proof + screenshots not done (needs an owner session).
 
 ## Active
-- Brief: BRIEF-057 Rev 2 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-057-staff-access-ui` (main merged in at start)
-- Done 21–31 Oct: BRIEF-056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
+- Brief: BRIEF-058 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-058-groups-policies-ui` (main merged in at start)
+- Done 21–31 Oct: BRIEF-057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
 1. Plan to 8 Nov (Field 29 Oct): customer C1–C6 (047 → 048 order/tab/call-staff → UI → pay merge → POS badge) → IAM → AI owner insight (+ tuning) → rest of POS/admin · 2 Nov update: mobile briefs to Metee (010, 022, + new order) · Field: LINE console callback `http://localhost:3011/api/auth/line/callback` if not done
