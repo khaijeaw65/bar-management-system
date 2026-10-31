@@ -117,7 +117,10 @@ describe('VisitService', () => {
     await service.close(closed.id);
 
     expect(seats.clearStaffCall).toHaveBeenCalledWith(SEAT.id);
-    expect(notifications.emitToStaff).toHaveBeenCalledWith(TABLE_STAFF_CALL_CLEARED, { tableSeatId: SEAT.id });
+    expect(notifications.emitToStaff).toHaveBeenCalledWith(TABLE_STAFF_CALL_CLEARED, {
+      tableSeatId: SEAT.id,
+      acknowledgedBy: null,
+    });
     expect(notifications.emitTabChanged).toHaveBeenCalledWith(closed.id, true);
   });
 

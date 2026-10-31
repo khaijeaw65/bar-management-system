@@ -1,6 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
-import { TABLE_STAFF_CALL_CLEARED, VISIT_OPENED, VISIT_STATE_CHANGED, type TableSummary } from '@bar/contracts';
+import {
+  TABLE_STAFF_CALL_CLEARED,
+  VISIT_OPENED,
+  VISIT_STATE_CHANGED,
+  type TableStaffCallClearedPayload,
+  type TableSummary,
+} from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
@@ -126,7 +132,8 @@ export class VisitService {
   // The bell belongs to the seat; a closed visit leaves nothing for staff to answer.
   private async clearBell(tableSeatId: string): Promise<void> {
     if (await this.tableSeatRepository.clearStaffCall(tableSeatId)) {
-      this.notificationsService.emitToStaff(TABLE_STAFF_CALL_CLEARED, { tableSeatId });
+      const payload: TableStaffCallClearedPayload = { tableSeatId, acknowledgedBy: null };
+      this.notificationsService.emitToStaff(TABLE_STAFF_CALL_CLEARED, payload);
     }
   }
 

@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import type { CallStaffReason } from '@bar/contracts';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ClsService } from 'nestjs-cls';
 import { Repository } from 'typeorm';
 import type { TableSeatRepository } from '../../domain/table-seat.repository.js';
 import type {
@@ -8,9 +11,30 @@ import type {
   SeatWithLiveVisit,
   StaffCallRecord,
 } from '../../domain/table-seat.types.js';
-import { readDate } from '../../../../common/persistence/row-values.js';
+import { readDate, readOptionalText } from '../../../../common/persistence/row-values.js';
 import { TableSeat } from './table-seat.entity.js';
 import type { SeatVisitRow } from './table-seat.types.js';
+
+// Lock the ringing row, clear it, and hand back the bell that was there.
+// A second clear waits on the lock, sees no bell, and changes nothing.
+const CLEAR_STAFF_CALL = `
+  WITH previous AS (
+    SELECT id, staff_called_at, staff_call_reason, staff_call_note
+    FROM table_seat
+    WHERE id = $1
+      AND staff_called_at IS NOT NULL
+      AND ($2::text IS NULL OR staff_call_reason = $2)
+    FOR UPDATE
+  )
+  UPDATE table_seat AS seat
+  SET staff_called_at = NULL,
+      staff_call_reason = NULL,
+      staff_call_note = NULL,
+      updated_by = COALESCE($3::uuid, seat.updated_by)
+  FROM previous
+  WHERE seat.id = previous.id
+  RETURNING previous.staff_called_at, previous.staff_call_reason, previous.staff_call_note
+`;
 
 const ACTIVE_SEATS = `
   SELECT s.id, s.label, s.kind, s.sort_order,
@@ -29,6 +53,8 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
   public constructor(
     @InjectRepository(TableSeat)
     private readonly tableSeatOrmRepository: Repository<TableSeat>,
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
+    private readonly cls: ClsService,
   ) {}
 
   public async listActive(): Promise<SeatWithLiveVisit[]> {
@@ -67,15 +93,19 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
     await this.tableSeatOrmRepository.save(seat);
   }
 
-  public async clearStaffCall(id: string, onlyReason?: CallStaffReason): Promise<boolean> {
-    const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
-    if (!seat?.staffCalledAt) return false;
-    if (onlyReason && seat.staffCallReason !== onlyReason) return false;
-    seat.staffCalledAt = null;
-    seat.staffCallReason = null;
-    seat.staffCallNote = null;
-    await this.tableSeatOrmRepository.save(seat);
-    return true;
+  public async clearStaffCall(id: string, onlyReason?: CallStaffReason): Promise<StaffCallRecord | null> {
+    const result: unknown = await this.txHost.tx.query(CLEAR_STAFF_CALL, [
+      id,
+      onlyReason ?? null,
+      this.actorId(),
+    ]);
+    const row = this.firstRow(result);
+    if (!row) return null;
+    return {
+      reason: this.callReason(row.staff_call_reason),
+      note: readOptionalText(row.staff_call_note),
+      calledAt: readDate(row.staff_called_at),
+    };
   }
 
   private toSeat(row: SeatVisitRow): SeatWithLiveVisit {
@@ -106,6 +136,26 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
       openedAt: readDate(row.opened_at),
       guestLabel: row.guest_label,
     };
+  }
+
+  private actorId(): string | null {
+    const userId: unknown = this.cls.get('userId');
+    if (typeof userId !== 'string' || userId.length === 0) return null;
+    return userId;
+  }
+
+  private callReason(value: unknown): CallStaffReason | null {
+    if (value === null) return null;
+    if (value === 'bill' || value === 'other' || value === 'transfer') return value;
+    throw new Error('table_seat row has an unknown staff_call_reason');
+  }
+
+  private firstRow(result: unknown): Record<string, unknown> | null {
+    const rows = Array.isArray(result) && Array.isArray(result[0]) ? result[0] : result;
+    if (!Array.isArray(rows)) return null;
+    const row: unknown = rows[0];
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
+    return row as Record<string, unknown>;
   }
 
   private toIdentity(seat: TableSeat): SeatIdentity {
