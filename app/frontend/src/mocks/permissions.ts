@@ -4,7 +4,7 @@ import { http, HttpResponse } from "msw";
 export type MockRole = "owner" | "manager" | "staff";
 
 // The BRIEF-053 default policies, spelled out so a test reads what each role can do.
-const ROLE_CODES: Record<MockRole, readonly PermissionCode[]> = {
+export const ROLE_CODES: Record<MockRole, readonly PermissionCode[]> = {
   owner: PERMISSION_CODES,
   manager: PERMISSION_CODES.filter((code) => code !== "staff:manage" && code !== "venue:update_payment"),
   staff: [

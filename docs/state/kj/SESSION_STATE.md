@@ -1,13 +1,13 @@
 # State — KJ
-Updated: 2026-10-31 · Agent: Claude Code (BRIEF-056 Implemented)
+Updated: 2026-10-31 · Agent: Claude Code (BRIEF-057 audit PASS)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-056 audit PASS, PR open** (S `369d8e3`) → `ci` green → merge (Field's own PR, §7). Next: IAM UI U1 staff & access requests → U2 groups & policies.
+**BRIEF-057 audit PASS, PR open** (S `f9d6a35`) → `ci` green → merge (Field's own PR, §7). Real-LINE run proof done 31 Oct (Field's own LINE). Next: IAM UI U2 groups & policies.
 
 ## Active
-- Brief: BRIEF-056 Rev 1 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-056-permission-aware-pos` (main merged in at start)
-- Done 21–31 Oct: BRIEF-055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
+- Brief: BRIEF-057 Rev 2 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-057-staff-access-ui` (main merged in at start)
+- Done 21–31 Oct: BRIEF-056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
 1. Plan to 8 Nov (Field 29 Oct): customer C1–C6 (047 → 048 order/tab/call-staff → UI → pay merge → POS badge) → IAM → AI owner insight (+ tuning) → rest of POS/admin · 2 Nov update: mobile briefs to Metee (010, 022, + new order) · Field: LINE console callback `http://localhost:3011/api/auth/line/callback` if not done
@@ -36,5 +36,5 @@ Updated: 2026-10-31 · Agent: Claude Code (BRIEF-056 Implemented)
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-056 IAM U0 (audit; DR-029) → IAM UI U1/U2 (CD-13) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
+1. BRIEF-057 IAM U1 (audit) → IAM UI U2 (CD-13) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
 2. BRIEF-023 split equal (Deferred, DR-019) · BRIEF-018 void/comp + PIN · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)

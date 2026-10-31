@@ -11,6 +11,8 @@ test("every POS page maps to one permission", () => {
   expect(permissionForPath("/pos/menu/7f2c")).toBe("menu:write");
   expect(permissionForPath("/pos/reports")).toBe("reports:read");
   expect(permissionForPath("/pos/settings")).toBe("venue:update");
+  expect(permissionForPath("/pos/settings/staff")).toBe("staff:manage");
+  expect(permissionForPath("/pos/settings/staff/7f2c")).toBe("staff:manage");
   expect(permissionForPath("/login")).toBeNull();
 });
 
