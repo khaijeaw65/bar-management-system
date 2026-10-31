@@ -25,7 +25,7 @@
 | AC-8 | ✅ | `SettingsNav.test.tsx::AC-8…` (fake timers, 60 s) |
 | AC-9 | ✅ | `SettingsNav.test.tsx::AC-8/9…` · route map test |
 | AC-10 | ⚠️ partly | e2e checks the page area (`main`) has no horizontal overflow at 1280/1024/390; the **document** still overflows at 390 because of the existing POS top bar (642 px) — the queued "phone 390 shell". Targets use `min-h-11`. |
-| AC-11 | ⚠️ partly | gates ✅; run proof partial (below) |
+| AC-11 | ✅ | gates ✅; real-stack run proof below (Field's own LINE as the new hire) |
 | AC-12 | ✅ | `SettingsNav.test.tsx::AC-12…` · `RequirePermission.test.tsx::AC-12…` · `pos-routes.test.ts` |
 
 ## Gate Evidence (G1)
@@ -39,7 +39,17 @@
 | run proof: `migration:run` → `start:dev` → `curl /api/health` | 0 | migrations none pending; health 200 on `33eb048` (code identical for backend) |
 
 UI exercised: headless Playwright against MSW (J1 1280, J2 390), screenshots in `docs/handoffs/assets/BRIEF-057/`.
-**Not done — needs Field:** the real-LINE approval run proof (Metee logs in → refused → Field approves at 1280 → ผู้จัดการ until tonight on 390 → deactivate) needs a second LINE account and Field's LINE login; I could not drive it. Lockout alert screenshot also not captured (covered by tests).
+
+**Real-stack run proof** (dev DB `bar`, backend 3011 + frontend 3010 on `f9d6a35`; Field's own LINE as the new hire instead of Metee; owner actions as "Field (demo)" with a hand-signed 2 h dev token + Redis session):
+1. Field's `staff_user_identity` backed up (scratchpad, not repo); `external_id` suffixed `-parked`.
+2. Field's LINE login refused; a pending request exists for his real sub (row dated 23 Oct — the refusal reused the old pending row).
+3. Owner at 1280: tab "พนักงาน (1)" on load; approved as พนักงาน · ถาวร → toast, highlighted row (`real-1`, `real-2`). The 60 s poll itself is covered by the unit test, not seen live.
+4. Field logged in: live session, effective permissions = the 12-code พนักงาน set (no `payments:mark_paid`) via the owner's `effective-permissions` — `/api/me/permissions` with his own cookie not called; his pane showed rail โต๊ะ/ออเดอร์/เมนู only and "ไม่มีสิทธิ์" on `/pos/settings/staff` (`real-3`). Staff checkout (no manual confirm) not captured live — covered by `e2e/pos-permissions.spec.ts`.
+5. Owner at 390 (headless): ผู้จัดการ · ถึงสิ้นกะคืนนี้ → chip "ผู้จัดการ · ถึง 06:00", `valid_until` 23:00 UTC (`real-4`). Field reloaded: rail gained รายงาน + ตั้งค่า (`real-6`), T1 checkout shows "ยืนยันด้วยตนเอง" on PromptPay (`real-5`); cancelled, no payment created.
+6. Owner deactivated the new user → his `/api/me/permissions` and `/api/auth/me` both 401.
+7. Restore: reactivated, `seed:roster` ("Field → เจ้าของ"), memberships trimmed to เจ้าของ only, old parked user deactivated (not deleted — history FKs), Field logged in once → owner view OK.
+
+Lockout alert not captured on the real stack (covered by tests).
 
 ## Sonar (local scan)
 - Scanned commit: f9d6a35 · Quality Gate: ERROR (`new_coverage` 0 % — known: no coverage report path; `new_violations` 22, all pre-existing files)
@@ -54,6 +64,8 @@ UI exercised: headless Playwright against MSW (J1 1280, J2 390), screenshots in 
 - None. Two small choices inside scope: the group picker (add-group modal) is a RadioGroup rather than a Select (testable, same behaviour); "กำหนดเอง" uses HeroUI `Input type="datetime-local"` (R8).
 
 ## Known Gaps / Follow-ups
+- UI nit seen in the real run: in the approve modal the unticked group checkbox box is almost invisible on the dark theme (works; contrast). Not changed.
+- Dev DB now has two "Field" staff rows: the active one (his LINE) and the deactivated `-parked` one.
 - `PUT /staff/:id/memberships` takes only `until`, so a rebuild keeps live/future rows as `validUntil ?? permanent` and **drops expired rows** (a past time is a 400). Removing one row therefore also clears other expired rows. A future row's start is reset by the server on rewrite — check in audit whether BRIEF-054 preserves `validFrom`.
 - Mock `ROLE_CODES` export added to `mocks/permissions.ts` for the effective-permissions mock.
 - Env gaps (names only): frontend `NEXT_PUBLIC_API_MOCKING`; backend `EASYSLIP_BASE_URL`.

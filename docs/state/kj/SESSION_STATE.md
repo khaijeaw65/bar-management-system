@@ -3,7 +3,7 @@ Updated: 2026-10-31 · Agent: Claude Code (BRIEF-057 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-057 Implemented** (S `f9d6a35`, pushed, no PR) → `audit BRIEF-057` (Cowork). Real-LINE approval run proof still to do with Field + a second LINE account. Next: IAM UI U2 groups & policies.
+**BRIEF-057 Implemented** (S `f9d6a35`, pushed, no PR) → `audit BRIEF-057` (Cowork). Real-LINE run proof done 31 Oct (Field's own LINE). Next: IAM UI U2 groups & policies.
 
 ## Active
 - Brief: BRIEF-057 Rev 2 · Stage: Implemented · Branch: `feat/BRIEF-057-staff-access-ui` (main merged in at start)
