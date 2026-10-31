@@ -3,7 +3,7 @@ Updated: 2026-10-31 · Agent: Claude Code (BRIEF-056 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-056 Implemented** (work `7a3c318`, branch pushed, no PR) → **Field: decide DR-029** (`/pos/settings` permission) → `audit BRIEF-056` (Cowork) → PASS commit + PR → `ci` green → merge (§7). Next: IAM UI U1 staff & access requests → U2 groups & policies.
+**BRIEF-056 Implemented** (work `369d8e3`, branch pushed, no PR; DR-029 A approved by Field — Cowork records it) → `audit BRIEF-056` (Cowork) → PASS commit + PR → `ci` green → merge (§7). Next: IAM UI U1 staff & access requests → U2 groups & policies.
 
 ## Active
 - Brief: BRIEF-056 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-056-permission-aware-pos` (main merged in at start)
@@ -16,7 +16,7 @@ Updated: 2026-10-31 · Agent: Claude Code (BRIEF-056 Implemented)
 4. Real-use bootstrap batch: after the 8 Nov plan items, before AWS
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: none · Pending DR: DR-029 (BRIEF-056) · if `ci` hits frontend timeouts → re-run once (038 audit F4)
+- Shared files: none · Review queue: none · DR-029 approved A, Decision to be recorded · if `ci` hits frontend timeouts → re-run once (038 audit F4)
 - e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e · frontend unit tests time out under heavy load
 - Dev servers and SonarQube stopped; Postgres + Redis (docker) left running · dev `bar` T3 has extra test orders (#8–#10) and cancelled test payments from the 051/052 run proofs · `bar_test` was dropped once and re-created by e2e (a failed migration-revert spec had left it half-reverted)
 
