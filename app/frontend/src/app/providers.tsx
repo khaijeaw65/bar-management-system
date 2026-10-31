@@ -4,6 +4,7 @@ import { Toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState, type ReactNode } from "react";
+import { PermissionWatcher } from "@/lib/permissions/PermissionWatcher";
 
 const mockingEnabled =
   process.env.NODE_ENV !== "production" &&
@@ -42,6 +43,7 @@ export function Providers({ children }: Readonly<{ children: ReactNode }>) {
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         {ready ? children : null}
+        <PermissionWatcher />
         <Toast.Provider placement="top end" />
       </QueryClientProvider>
     </ThemeProvider>

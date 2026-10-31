@@ -15,12 +15,14 @@ function two(value: number): string {
 export function CutoffField({
   value,
   error,
+  readOnly,
   onChange,
-}: Readonly<{ value: string; error?: string; onChange: (value: string) => void }>) {
+}: Readonly<{ value: string; error?: string; readOnly: boolean; onChange: (value: string) => void }>) {
   return (
     <TimeField
       value={toTime(value)}
       hourCycle={24}
+      isReadOnly={readOnly}
       isInvalid={error !== undefined}
       onChange={(time) => {
         if (time) onChange(`${two(time.hour)}:${two(time.minute)}`);

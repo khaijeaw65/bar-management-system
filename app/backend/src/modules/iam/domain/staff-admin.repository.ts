@@ -43,6 +43,8 @@ export interface StaffAdminRepository {
     memberships: MembershipWrite[],
     now: Date,
   ): Promise<StaffWriteOutcome>;
+  /** Replaces the person's direct (user) policies. */
+  replacePolicies(id: string, policyIds: string[], now: Date): Promise<StaffWriteOutcome>;
   permissionSources(userId: string, now: Date): Promise<PermissionSourceRow[]>;
 }
 

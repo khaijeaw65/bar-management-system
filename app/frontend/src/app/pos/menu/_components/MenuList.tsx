@@ -4,6 +4,7 @@ import { Table } from "@heroui/react";
 import { useSearchParams } from "next/navigation";
 import { useRef } from "react";
 import { useMenuLive } from "@/hooks/useMenuLive";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 import { useMenuList } from "../_hooks/useMenuList";
 import { MenuEmpty } from "./MenuEmpty";
 import { MenuItemRow } from "./MenuItemRow";
@@ -13,6 +14,8 @@ import { MenuToolbar } from "./MenuToolbar";
 
 export function MenuList() {
   const list = useMenuList();
+  const { can } = usePermissions();
+  const canWrite = can("menu:write");
   const highlight = useSearchParams().get("highlight");
   useMenuLive();
   // A signed imageUrl lasts 1 h: a broken thumbnail refetches the list once, not per image.
@@ -37,9 +40,10 @@ export function MenuList() {
         categoryId={list.categoryId}
         onQuery={list.setQuery}
         onCategory={list.setCategoryId}
+        canWrite={canWrite}
       />
       {list.visible.length === 0 ? (
-        <MenuEmpty noItems={list.items.data.items.length === 0} />
+        <MenuEmpty noItems={list.items.data.items.length === 0} canWrite={canWrite} />
       ) : (
         <Table>
           <Table.ScrollContainer>
@@ -58,6 +62,8 @@ export function MenuList() {
                     categoryName={byId.get(item.categoryId)?.name ?? "ไม่มีหมวด"}
                     categoryHidden={byId.get(item.categoryId)?.isActive === false}
                     highlighted={item.id === highlight}
+                    canWrite={canWrite}
+                    canToggle={can("menu:toggle_availability")}
                     onImageError={onImageError}
                   />
                 )}

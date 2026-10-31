@@ -7,6 +7,7 @@ import { LoadError } from "@/components/ui/LoadError";
 import { useDisconnected } from "@/hooks/useSocketEvent";
 import { useTicketBoard } from "@/hooks/useTicketBoard";
 import { getVenue } from "@/lib/api/venue";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 import { DisconnectedBanner } from "../../tables/_components/DisconnectedBanner";
 import { columnsFor, ticketsIn, type StationFilter } from "../board";
 import { useBoardEvents } from "../_hooks/useBoardEvents";
@@ -23,6 +24,7 @@ const filters: ReadonlyArray<{ key: StationFilter; label: string }> = [
 
 export function OrdersBoard() {
   const board = useTicketBoard();
+  const canAct = usePermissions().can("orders:update_status");
   const venue = useQuery({ queryKey: ["venue"], queryFn: getVenue, staleTime: 60_000, retry: false });
   const fresh = useBoardEvents();
   const actions = useTicketActions();
@@ -88,6 +90,7 @@ export function OrdersBoard() {
                   key={ticket.id}
                   ticket={ticket}
                   kitchenOn={kitchenOn}
+                  canAct={canAct}
                   pending={actions.pendingIds.has(ticket.id)}
                   fresh={fresh.has(ticket.id)}
                   onOpen={() => setOpenId(ticket.id)}
@@ -102,6 +105,7 @@ export function OrdersBoard() {
         <TicketDrawer
           ticket={opened}
           kitchenOn={kitchenOn}
+          canAct={canAct}
           resolving={actions.pendingIds.has(opened.id)}
           onResolve={() => actions.resolve(opened)}
           onClose={() => setOpenId(null)}

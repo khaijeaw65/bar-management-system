@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render as rtlRender, screen } from "@testing-library/react";
+import { render as rtlRender, screen, waitFor } from "@testing-library/react";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { expect, test, vi } from "vitest";
+import { posMockControls } from "@/mocks/handlers";
 import { PosRail } from "./PosRail";
 
 vi.mock("next/navigation", () => ({
@@ -27,23 +28,23 @@ function render(ui: ReactNode) {
 
 const labels = ["โต๊ะ", "ออเดอร์", "ชำระเงิน", "เมนู", "แขก", "รายงาน", "ตั้งค่า"];
 
-test("renders the seven items in order", () => {
+test("renders the seven items in order", async () => {
   render(<PosRail />);
   const nav = screen.getByRole("navigation", { name: "เมนูหลัก" });
-  expect(Array.from(nav.children).map((item) => item.textContent)).toEqual(labels);
+  await waitFor(() => expect(Array.from(nav.children).map((item) => item.textContent)).toEqual(labels));
 });
 
-test("marks เมนู active and links โต๊ะ to the floor", () => {
+test("marks เมนู active and links โต๊ะ to the floor", async () => {
   render(<PosRail />);
-  const menu = screen.getByRole("link", { name: "เมนู" });
+  const menu = await screen.findByRole("link", { name: "เมนู" });
   expect(menu).toHaveAttribute("href", "/pos/menu");
   expect(menu).toHaveAttribute("aria-current", "page");
 
   const tables = screen.getByRole("link", { name: "โต๊ะ" });
   expect(tables).toHaveAttribute("href", "/pos/tables");
   expect(tables).not.toHaveAttribute("aria-current");
-  expect(screen.getAllByRole("link")).toHaveLength(5);
-  expect(screen.getByRole("link", { name: "ตั้งค่า" })).toHaveAttribute("href", "/pos/settings");
+  await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(5));
+  expect(screen.getByRole("link", { name: /ตั้งค่า/ })).toHaveAttribute("href", "/pos/settings");
   expect(screen.getByRole("link", { name: "รายงาน" })).toHaveAttribute("href", "/pos/reports");
 
   const soon = screen.getAllByTitle("เร็ว ๆ นี้");
@@ -58,4 +59,28 @@ test("shows the pending ticket count on ออเดอร์", async () => {
   render(<PosRail />);
   expect(await screen.findByLabelText("รอรับ 1 ออเดอร์")).toHaveTextContent("1");
   expect(screen.getByRole("link", { name: /ออเดอร์/ })).toHaveAttribute("href", "/pos/orders");
+});
+
+test("พนักงาน sees only โต๊ะ, ออเดอร์ and เมนู", async () => {
+  posMockControls.setRole("staff");
+  render(<PosRail />);
+  expect(await screen.findByRole("link", { name: "เมนู" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "โต๊ะ" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /ออเดอร์/ })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "รายงาน" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "ตั้งค่า" })).not.toBeInTheDocument();
+  expect(screen.queryByTitle("เร็ว ๆ นี้")).not.toBeInTheDocument();
+  expect(screen.getAllByRole("link")).toHaveLength(3);
+});
+
+test("ผู้จัดการ keeps every rail item", async () => {
+  posMockControls.setRole("manager");
+  render(<PosRail />);
+  const nav = screen.getByRole("navigation", { name: "เมนูหลัก" });
+  await waitFor(() => expect(Array.from(nav.children).map((item) => item.textContent)).toEqual(labels));
+});
+
+test("shows no rail items while the permission set is loading", () => {
+  render(<PosRail />);
+  expect(screen.getByRole("navigation", { name: "เมนูหลัก" }).children).toHaveLength(0);
 });

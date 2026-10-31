@@ -4,7 +4,9 @@ import { http, HttpResponse } from "msw";
 import { fromSatang, scaleMoney, sumMoney, toSatang } from "@/lib/utils/money";
 import { customerHandlers } from "./customer";
 import { createMenuHandlers } from "./menu";
+import { mockRoleCan, permissionHandlers, resetMockRole, setMockRole, type MockRole } from "./permissions";
 import { reportHandlers } from "./reports";
+import { resetStaffMock, staffHandlers } from "./staff";
 
 export const staffMe = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -247,6 +249,9 @@ function moveTicket(id: string, from: Ticket["status"][], patch: Partial<Ticket>
 
 // ponytail: e2e-only handle (window.__posMock, see mocks/browser.ts) to ring the bell and place a guest order.
 export const posMockControls = {
+  setRole(role: MockRole) {
+    setMockRole(role);
+  },
   ring(label: string, reason: StaffCall["reason"] = "bill", note: string | null = null) {
     seats = seats.map((row) =>
       row.label === label ? { ...row, staffCall: { reason, note, calledAt: new Date().toISOString() } } : row,
@@ -274,6 +279,8 @@ const settlement = new Map<string, { paid: string; remaining: string; locked: bo
 let nextOrderNumber = 1;
 
 export function resetFloor(): void {
+  resetMockRole();
+  resetStaffMock();
   seats = buildSeats();
   ordersByVisit.clear();
   placedByKey.clear();
@@ -549,6 +556,8 @@ function settle(visitId: string, paid: string, remaining: string, locked: boolea
 
 export const handlers = [
   ...customerHandlers,
+  ...permissionHandlers,
+  ...staffHandlers,
   http.get("*/api/auth/me", () => json(staffMe)),
   http.post("*/api/auth/refresh", () => json({ ok: true })),
   http.post("*/api/auth/logout", () => json({ ok: true })),
@@ -686,6 +695,9 @@ export const handlers = [
     return json(next);
   }),
   http.post("*/api/payments/:id/mark-paid", async ({ request, params }) => {
+    if (!mockRoleCan("payments:mark_paid")) {
+      return json({ missing: ["payments:mark_paid"] }, 403, "FORBIDDEN", "ไม่มีสิทธิ์ใช้งานส่วนนี้");
+    }
     const payment = paymentById.get(String(params.id));
     if (!payment) return json(null, 404, "NOT_FOUND", "ไม่พบการชำระเงิน");
     if (payment.status !== "pending") return json(null, 409, "INVALID_STATE_TRANSITION", "สถานะการชำระเงินไม่ถูกต้อง");

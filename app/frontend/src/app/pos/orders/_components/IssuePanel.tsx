@@ -7,9 +7,10 @@ import { issueReasonLabel } from "./issue-reason";
 
 export function IssuePanel({
   ticket,
+  canAct,
   pending,
   onResolve,
-}: Readonly<{ ticket: Ticket; pending: boolean; onResolve: () => void }>) {
+}: Readonly<{ ticket: Ticket; canAct: boolean; pending: boolean; onResolve: () => void }>) {
   const issue = ticket.issue;
   if (!issue) return null;
   const item = ticket.items.find((line) => line.id === issue.itemId);
@@ -23,16 +24,20 @@ export function IssuePanel({
         รายงานโดย {issue.reportedBy.displayName}
         {issue.escalatedAt ? ` · ส่งมาจากแอปพนักงาน ${formatThaiTime(issue.escalatedAt)}` : ""}
       </p>
-      <Button fullWidth variant="primary" isPending={pending} onPress={onResolve}>
-        ทำต่อ
-      </Button>
-      <Button fullWidth variant="secondary" isDisabled>
-        ยกเลิกรายการที่มีปัญหา
-      </Button>
-      <Button fullWidth variant="secondary" isDisabled>
-        เปลี่ยนรายการ
-      </Button>
-      <p className="text-small text-text-muted">ต้องใช้สิทธิ์ผู้จัดการ — รอระบบยกเลิกรายการ</p>
+      {canAct ? (
+        <>
+          <Button fullWidth variant="primary" isPending={pending} onPress={onResolve}>
+            ทำต่อ
+          </Button>
+          <Button fullWidth variant="secondary" isDisabled>
+            ยกเลิกรายการที่มีปัญหา
+          </Button>
+          <Button fullWidth variant="secondary" isDisabled>
+            เปลี่ยนรายการ
+          </Button>
+          <p className="text-small text-text-muted">ต้องใช้สิทธิ์ผู้จัดการ — รอระบบยกเลิกรายการ</p>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { toast } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { BOARD_KEY } from "@/hooks/useTicketBoard";
-import { ApiError } from "@/lib/api/errors";
+import { ApiError, isPermissionDenied } from "@/lib/api/errors";
 import { resolveTicket, transitionTicket, type TicketTransition } from "@/lib/api/tickets";
 import { orderTag } from "../board";
 
@@ -20,6 +20,8 @@ export function useTicketActions() {
   const refresh = () => client.invalidateQueries({ queryKey: BOARD_KEY });
 
   function fail(error: unknown, ticket: Ticket) {
+    // A 403 is already toasted, and the permission set refetched, by PermissionWatcher.
+    if (isPermissionDenied(error)) return refresh();
     if (error instanceof ApiError && error.status === 409) {
       toast.warning(`ออเดอร์ ${orderTag(ticket.orderNumber)} เปลี่ยนสถานะแล้ว`);
     } else {

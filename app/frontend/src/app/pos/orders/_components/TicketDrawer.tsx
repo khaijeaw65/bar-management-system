@@ -25,12 +25,14 @@ const statusLabel = {
 export function TicketDrawer({
   ticket,
   kitchenOn,
+  canAct,
   resolving,
   onResolve,
   onClose,
 }: Readonly<{
   ticket: Ticket;
   kitchenOn: boolean;
+  canAct: boolean;
   resolving: boolean;
   onResolve: () => void;
   onClose: () => void;
@@ -72,7 +74,7 @@ export function TicketDrawer({
         {statusLabel[ticket.status]}
         {ticket.status === "accepted" && ticket.acceptedBy ? ` · ${ticket.acceptedBy.displayName}` : ""}
       </Chip>
-      {ticket.status === "issue" ? <IssuePanel ticket={ticket} pending={resolving} onResolve={onResolve} /> : null}
+      {ticket.status === "issue" ? <IssuePanel ticket={ticket} canAct={canAct} pending={resolving} onResolve={onResolve} /> : null}
       <ul className="flex flex-col gap-3">
         {ticket.items.map((line) => {
           const note = lineNote(line);

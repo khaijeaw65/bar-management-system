@@ -28,6 +28,7 @@ const errorEnvelopeSchema = z.object({
 type SessionListener = (phase: AuthPhase) => void;
 
 const sessionListeners = new Set<SessionListener>();
+const forbiddenListeners = new Set<() => void>();
 let refreshPromise: Promise<void> | null = null;
 let authenticated = false;
 
@@ -35,6 +36,14 @@ export function onSessionExpired(listener: SessionListener): () => void {
   sessionListeners.add(listener);
   return () => {
     sessionListeners.delete(listener);
+  };
+}
+
+/** Called for every 403 that names missing permissions (`data.missing`) — the person's rights changed under them. */
+export function onPermissionDenied(listener: () => void): () => void {
+  forbiddenListeners.add(listener);
+  return () => {
+    forbiddenListeners.delete(listener);
   };
 }
 
@@ -46,6 +55,7 @@ export function resetApiSession(): void {
   authenticated = false;
   refreshPromise = null;
   sessionListeners.clear();
+  forbiddenListeners.clear();
 }
 
 export function lineLoginUrl(): string {
@@ -68,6 +78,10 @@ function requestPath(config: AxiosRequestConfig | undefined): string {
 // Guest routes use their own cookie (DR-028): a 401 there must never trigger the staff refresh.
 function skipsRefresh(path: string): boolean {
   return path.endsWith("/auth/refresh") || path.endsWith("/auth/logout") || path.includes("/auth/line/") || path.startsWith("/customer/");
+}
+
+function isMissingPermissions(data: unknown): boolean {
+  return z.object({ missing: z.array(z.string()) }).safeParse(data).success;
 }
 
 function emitSession(phase: AuthPhase): void {
@@ -142,6 +156,9 @@ async function recover(error: unknown): Promise<AxiosResponse> {
   const canRefresh =
     status === 401 && config !== undefined && !config.skipRefresh && !config.retried && !skipsRefresh(path);
 
+  if (status === 403 && isMissingPermissions(data)) {
+    for (const listener of forbiddenListeners) listener();
+  }
   if (!canRefresh) throw new ApiError(status, code, message, data);
 
   // One refresh for every parallel 401. A second refresh revokes the token family (BRIEF-007).

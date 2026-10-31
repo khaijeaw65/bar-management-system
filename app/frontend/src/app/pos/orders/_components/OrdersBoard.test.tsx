@@ -149,7 +149,7 @@ test("kitchen on: four columns, station badges, filter, and counters skip ready"
   const user = userEvent.setup();
   renderBoard();
   expect(await screen.findByRole("region", { name: "พร้อมเสิร์ฟ" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "พร้อมแล้ว #0051 T3" })).toBeInTheDocument();
+  expect(await screen.findByRole("button", { name: "พร้อมแล้ว #0051 T3" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "เสิร์ฟแล้ว #0052 C4" })).toBeInTheDocument();
   expect(column("พร้อมเสิร์ฟ").getByRole("button", { name: "เสิร์ฟแล้ว #0053 T3" })).toBeInTheDocument();
 

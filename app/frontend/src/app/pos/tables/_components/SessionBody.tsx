@@ -2,6 +2,7 @@
 
 import { Alert, Button } from "@heroui/react";
 import type { VisitDetail } from "@bar/contracts";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 import { pendingPayment } from "./checkout/payment";
 import { BillFooter } from "./BillFooter";
 import { OrderEntryButton } from "./OrderEntryButton";
@@ -27,28 +28,29 @@ export function SessionBody({
   onPay: () => void;
   onCloseTable: () => void;
 }>) {
+  const { can } = usePermissions();
   const settled = !paying && !hasMoney(visit.bill.remaining) && hasMoney(visit.bill.paid);
   const late = splitLate(groups, paying ? pendingPayment(visit)?.createdAt ?? null : null);
   return (
     <>
       <SessionCallRow seatId={visit.tableSeatId} label={visit.seatLabel} />
       <SessionHeader titleId={titleId} visit={visit} hasOrders={groups.length > 0} onClose={onClose} />
-      {paying ? <InFlight onPay={onPay} /> : null}
+      {paying ? <InFlight canPay={can("payments:create")} onPay={onPay} /> : null}
       {settled ? <Settled /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {groups.length === 0 ? <EmptyOrders visitId={visit.id} /> : <OrderList locked={late.locked} late={late.late} />}
       </div>
-      <BillFooter bill={visit.bill} locked={paying} onPay={onPay} onCloseTable={onCloseTable} />
+      <BillFooter bill={visit.bill} locked={paying} canPay={can("payments:create")} canClose={can("visits:close")} onPay={onPay} onCloseTable={onCloseTable} />
     </>
   );
 }
 
-function InFlight({ onPay }: Readonly<{ onPay: () => void }>) {
+function InFlight({ canPay, onPay }: Readonly<{ canPay: boolean; onPay: () => void }>) {
   return (
     <Alert status="warning" role="alert">
       <Alert.Content>
         <Alert.Title>มีการชำระเงินค้างอยู่</Alert.Title>
-        <Button size="sm" variant="secondary" onPress={onPay}>ดู QR</Button>
+        {canPay ? <Button size="sm" variant="secondary" onPress={onPay}>ดู QR</Button> : null}
       </Alert.Content>
     </Alert>
   );

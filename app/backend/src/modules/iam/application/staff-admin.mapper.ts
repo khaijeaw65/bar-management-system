@@ -20,6 +20,7 @@ export function toStaffMember(row: StaffRow, now: Date): StaffMember {
     avatarUrl: row.avatarUrl,
     isActive: row.isActive,
     memberships: row.memberships.map((membership) => toMembership(membership, now)),
+    policyIds: row.policyIds,
   };
 }
 

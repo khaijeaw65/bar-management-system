@@ -4,6 +4,7 @@ import type { TicketList } from "@bar/contracts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { getBoardTickets } from "@/lib/api/tickets";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 import { useSocketEvent } from "./useSocketEvent";
 
 export const BOARD_KEY = ["tickets", "board"] as const;
@@ -14,7 +15,9 @@ function isOlder(shown: string, incoming: unknown): boolean {
 
 // One query feeds the board and the rail Badge, so they never disagree (BRIEF-032 §3b).
 export function useTicketBoard() {
-  return useQuery({ queryKey: BOARD_KEY, queryFn: getBoardTickets, retry: false });
+  // Without orders:read the endpoint answers 403, so it is never asked (BRIEF-056).
+  const allowed = usePermissions().can("orders:read");
+  return useQuery({ queryKey: BOARD_KEY, queryFn: getBoardTickets, retry: false, enabled: allowed });
 }
 
 // Mounted once per POS page: every useTicketBoard() caller would otherwise add its own listeners and refetch.

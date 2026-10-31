@@ -41,12 +41,16 @@ export function MenuItemRow({
   categoryName,
   categoryHidden,
   highlighted,
+  canWrite,
+  canToggle,
   onImageError,
 }: Readonly<{
   item: MenuItem;
   categoryName: string;
   categoryHidden: boolean;
   highlighted: boolean;
+  canWrite: boolean;
+  canToggle: boolean;
   onImageError: () => void;
 }>) {
   const router = useRouter();
@@ -57,7 +61,7 @@ export function MenuItemRow({
     <Table.Row
       id={item.id}
       className={highlighted ? "bg-accent-soft" : undefined}
-      onAction={() => router.push(`/pos/menu/${item.id}`)}
+      onAction={canWrite ? () => router.push(`/pos/menu/${item.id}`) : undefined}
     >
       <Table.Cell className={item.unavailableReason === "sold_out" ? "text-text-faint line-through" : undefined}>
         <div className="flex items-center gap-3">
@@ -81,34 +85,36 @@ export function MenuItemRow({
       <Table.Cell className="text-text-accent tabular-nums">{priceLabel(item)}</Table.Cell>
       <Table.Cell>
         <div className="flex items-center gap-3">
-          <div
-            role="presentation"
-            onPointerDown={stop}
-            onPointerUp={stop}
-            onMouseDown={stop}
-            onMouseUp={stop}
-            onClick={(event) => {
-              event.stopPropagation();
-              // HeroUI's visible control sits outside the label, so a click on it reaches nothing but the row.
-              const onControl = (event.target as Element).closest('[data-slot="switch-control"]') !== null;
-              if (onControl && !toggle.pending) toggle.toggle(!toggle.available);
-            }}
-            onKeyDown={stop}
-            onKeyUp={stop}
-          >
-            <Switch
-              isSelected={toggle.available}
-              isDisabled={toggle.pending}
-              onChange={toggle.toggle}
+          {canToggle ? (
+            <div
+              role="presentation"
+              onPointerDown={stop}
+              onPointerUp={stop}
+              onMouseDown={stop}
+              onMouseUp={stop}
+              onClick={(event) => {
+                event.stopPropagation();
+                // HeroUI's visible control sits outside the label, so a click on it reaches nothing but the row.
+                const onControl = (event.target as Element).closest('[data-slot="switch-control"]') !== null;
+                if (onControl && !toggle.pending) toggle.toggle(!toggle.available);
+              }}
+              onKeyDown={stop}
+              onKeyUp={stop}
             >
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-              <Switch.Content>
-                <Label className="sr-only">พร้อมขาย {item.name}</Label>
-              </Switch.Content>
-            </Switch>
-          </div>
+              <Switch
+                isSelected={toggle.available}
+                isDisabled={toggle.pending}
+                onChange={toggle.toggle}
+              >
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+                <Switch.Content>
+                  <Label className="sr-only">พร้อมขาย {item.name}</Label>
+                </Switch.Content>
+              </Switch>
+            </div>
+          ) : null}
           <Chip size="sm" className={toneOf(label)}>
             {label}
           </Chip>
