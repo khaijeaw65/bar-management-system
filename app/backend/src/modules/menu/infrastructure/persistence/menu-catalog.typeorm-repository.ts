@@ -16,19 +16,7 @@ import { MenuItem } from './menu-item.entity.js';
 import { MenuItemAvailability } from './menu-item-availability.entity.js';
 import { MenuItemVariant } from './menu-item-variant.entity.js';
 import { MenuVariantModifierGroup } from './menu-variant-modifier-group.entity.js';
-
-interface ModifierRow {
-  variantId: string;
-  groupId: string;
-  groupName: string;
-  isRequired: boolean;
-  minSelect: number | string;
-  maxSelect: number | string;
-  optionId: string | null;
-  optionName: string | null;
-  priceDelta: string | null;
-  isAvailable: boolean | null;
-}
+import type { ModifierRow } from './menu-catalog.typeorm-repository.types.js';
 
 const SHARE_ITEMS = `
   SELECT mi.id, mi.is_available AS available

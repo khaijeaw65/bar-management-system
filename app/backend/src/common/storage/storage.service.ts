@@ -11,6 +11,9 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
 import { IMAGE_MAX_BYTES, type ImageContentType } from '@bar/contracts';
 import { StorageConfigService } from '../../providers/config/storage/config.service.js';
+import type { PresignedUpload, StoredObject } from './storage.types.js';
+
+export type { PresignedUpload, StoredObject } from './storage.types.js';
 
 /** Presigned POST lifetime (DR-020). */
 export const UPLOAD_URL_TTL_SECONDS = 300;
@@ -25,17 +28,6 @@ export const IMAGE_EXTENSION: Readonly<Record<ImageContentType, string>> = {
 
 /** Shape of a key `presignUpload` hands out; anything else under `tmp/` was not issued by us. */
 export const TMP_KEY_PATTERN = /^tmp\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$/;
-
-export interface PresignedUpload {
-  url: string;
-  fields: Record<string, string>;
-  key: string;
-}
-
-export interface StoredObject {
-  size: number;
-  contentType: string | undefined;
-}
 
 /**
  * The only code that talks to S3 (DR-020). The bucket stays private: uploads go through a

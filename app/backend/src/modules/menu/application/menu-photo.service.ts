@@ -3,13 +3,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { IMAGE_MAX_BYTES, ImageContentTypeSchema } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { IMAGE_EXTENSION, StorageService, TMP_KEY_PATTERN } from '../../../common/storage/storage.service.js';
+import type { AttachedPhoto } from './menu-photo.types.js';
 
-export interface AttachedPhoto {
-  /** The permanent `menu/<itemId>/<uuid>.<ext>` key, already copied. */
-  key: string;
-  /** The upload slot to delete once the item row is committed. */
-  tmpKey: string;
-}
+export type { AttachedPhoto } from './menu-photo.types.js';
 
 /**
  * Photo handling around an item write (DR-020): check what the browser uploaded, copy it to the

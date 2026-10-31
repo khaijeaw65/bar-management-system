@@ -13,12 +13,9 @@ import { DomainException } from '../../common/domain-exception.js';
 import { PushDeliveryService } from './application/push-delivery.service.js';
 import { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
 import { NotificationsGateway } from './notifications.gateway.js';
-import type { NotifyInput } from './notifications.types.js';
+import type { NotifyInput, SeatVisitOpenedSink, TabChangedSink } from './notifications.types.js';
 
-/** The guest socket lives in the Customer module; it registers here so Notifications never imports it. */
-export type TabChangedSink = (visitId: string, sessionEnded: boolean) => void;
-
-export type SeatVisitOpenedSink = (tableSeatId: string, visitId: string) => void;
+export type { SeatVisitOpenedSink, TabChangedSink } from './notifications.types.js';
 
 const PAGE_SIZE = 20;
 

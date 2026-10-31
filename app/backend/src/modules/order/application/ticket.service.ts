@@ -26,14 +26,7 @@ import type { LockedTicket, TicketIssueWrite, TicketLineState } from '../domain/
 import { OrderQueryService } from './order-query.service.js';
 import { withoutVisit, type TicketView } from './present-order.js';
 import { issueStatus, nextTicketStatus, readyStepApplies, type TicketAction } from './ticket-transition.js';
-
-type TicketEvent = 'status' | 'escalated';
-
-interface ResolvedTicket {
-  ticket: TicketView;
-  kind: TicketEvent;
-  written: TicketIssueWrite;
-}
+import type { ResolvedTicket, TicketEvent } from './ticket.types.js';
 
 @Injectable()
 export class TicketService {

@@ -17,7 +17,7 @@ import { VenueSettingsService } from '../../venue/application/venue-settings.ser
 import { VisitService } from '../../venue/application/visit.service.js';
 import { businessDateUnder } from './business-date.js';
 import { bucketFor, priceLines } from './order-lines.js';
-import type { GuestOrderInput, PlaceOrderInput } from './order.types.js';
+import type { GuestOrderInput, PlacedOrder, PlaceOrderInput } from './order.types.js';
 import { OrderQueryService } from './order-query.service.js';
 import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 
@@ -144,12 +144,4 @@ export class OrderService {
     }
     return [...groups.entries()].map(([bucket, grouped]) => ({ bucket, lines: grouped }));
   }
-}
-
-interface PlacedOrder {
-  orderId: string;
-  activated: boolean;
-  opened: boolean;
-  visitId: string;
-  tableSeatId: string;
 }

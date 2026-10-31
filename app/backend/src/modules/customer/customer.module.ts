@@ -20,10 +20,8 @@ import { GUEST_SESSION_REPOSITORY } from './domain/guest-session.repository.js';
 import { CustomerPaymentController } from './infrastructure/http/customer-payment.controller.js';
 import { CustomerOrderController } from './infrastructure/http/customer-order.controller.js';
 import { CustomerMenuController } from './infrastructure/http/customer-menu.controller.js';
-import {
-  CustomerScanController,
-  CustomerSessionController,
-} from './infrastructure/http/customer-session.controller.js';
+import { CustomerScanController } from './infrastructure/http/customer-qr.controller.js';
+import { CustomerSessionController } from './infrastructure/http/customer-session.controller.js';
 import { GuestSessionGuard } from './infrastructure/http/guest-session.guard.js';
 import { CustomerGateway } from './infrastructure/ws/customer.gateway.js';
 import { GuestSession } from './infrastructure/persistence/guest-session.entity.js';

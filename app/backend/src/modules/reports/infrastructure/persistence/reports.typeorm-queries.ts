@@ -25,8 +25,6 @@ import {
   TOP_ITEMS_SQL,
 } from './reports.sql.js';
 
-type Row = Record<string, unknown>;
-
 // Schema default for venue.business_day_cutoff, used before a venue row exists.
 const DEFAULT_CUTOFF = '06:00:00';
 
@@ -90,7 +88,7 @@ export class ReportsTypeormQueries implements ReportQueries {
     return { pending: this.count(row.pending), escalatedIssues: this.count(row.escalated_issues) };
   }
 
-  private rows(sql: string, params: unknown[]): Promise<Row[]> {
+  private rows(sql: string, params: unknown[]): Promise<Record<string, unknown>[]> {
     return this.dataSource.query(sql, params);
   }
 
@@ -99,7 +97,7 @@ export class ReportsTypeormQueries implements ReportQueries {
     return value;
   }
 
-  private toItemSales(row: Row): ItemSales {
+  private toItemSales(row: Record<string, unknown>): ItemSales {
     return {
       menuItemId: readText(row.menu_item_id),
       name: readText(row.name),

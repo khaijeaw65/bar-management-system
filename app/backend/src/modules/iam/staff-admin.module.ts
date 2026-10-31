@@ -5,12 +5,11 @@ import { IamAdminService } from './application/iam-admin.service.js';
 import { StaffAdminService } from './application/staff-admin.service.js';
 import { IAM_ADMIN_REPOSITORY } from './domain/iam-admin.repository.js';
 import { STAFF_ADMIN_REPOSITORY } from './domain/staff-admin.repository.js';
-import {
-  PermissionCatalogController,
-  PoliciesController,
-  StaffGroupsController,
-} from './infrastructure/http/iam-admin.controller.js';
-import { AccessRequestsController, StaffController } from './infrastructure/http/staff.controller.js';
+import { AccessRequestsController } from './infrastructure/http/access-requests.controller.js';
+import { PermissionCatalogController } from './infrastructure/http/iam-admin.controller.js';
+import { PoliciesController } from './infrastructure/http/policies.controller.js';
+import { StaffGroupsController } from './infrastructure/http/staff-groups.controller.js';
+import { StaffController } from './infrastructure/http/staff.controller.js';
 import { IamAdminTypeormRepository } from './infrastructure/persistence/iam-admin.typeorm-repository.js';
 import { StaffAdminTypeormRepository } from './infrastructure/persistence/staff-admin.typeorm-repository.js';
 import { IamModule } from './iam.module.js';

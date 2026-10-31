@@ -20,31 +20,10 @@ import type {
   MenuVariantRecord,
 } from '../domain/menu.types.js';
 import { menuAvailability } from './menu-availability.js';
+import type { MenuListQuery, OrderableLookup, OrderableVariant } from './menu-catalog.types.js';
 import { money } from '../../../common/money.js';
 
-export interface MenuListQuery {
-  categoryId?: string;
-  availableOnly: boolean;
-  /** Hidden categories and their items too (back office, BRIEF-039). */
-  includeHidden?: boolean;
-}
-
-export interface OrderableVariant {
-  variantId: string;
-  price: string;
-  itemName: string;
-  variantName: string;
-  itemType: MenuItem['itemType'];
-  kitchenTag: MenuItemRecord['kitchenTag'];
-  availableNow: boolean;
-  unavailableReason: UnavailableReason | null;
-  modifierGroups: MenuModifierGroup[];
-}
-
-export interface OrderableLookup {
-  found: OrderableVariant[];
-  missing: string[];
-}
+export type { MenuListQuery, OrderableLookup, OrderableVariant } from './menu-catalog.types.js';
 
 @Injectable()
 export class MenuCatalogService {

@@ -1,0 +1,95 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  CreatePolicySchema,
+  OkSchema,
+  PolicySchema,
+  SetPolicyCodesSchema,
+  UpdatePolicySchema,
+  type Ok,
+  type Policy,
+} from '@bar/contracts';
+import { z } from 'zod';
+import { CurrentUser } from '../../../../common/decorators/current-user.decorator.js';
+import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
+import { RequirePermissions } from '../../../../common/decorators/require-permissions.decorator.js';
+import { requireUuid, staffAccess } from '../../../../common/http/http-input.js';
+import { ApiEnvelopedCreated, ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
+import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
+import { IamAdminService } from '../../application/iam-admin.service.js';
+
+const ACCESS = staffAccess('staff:manage');
+const POLICY_NOT_FOUND = 'ไม่พบนโยบาย';
+
+@ApiTags('staff')
+@Controller('policies')
+export class PoliciesController {
+  public constructor(private readonly iamAdmin: IamAdminService) {}
+
+  @Get()
+  @RequirePermissions('staff:manage')
+  @ApiOperation({
+    summary: 'Policies with their permission codes and where they are used',
+    description: `${ACCESS} \`usage\`: groups and people it is attached to; \`people\` = distinct staff reached.`,
+  })
+  @ApiEnvelopedOk(z.array(PolicySchema))
+  public list(): Promise<Policy[]> {
+    return this.iamAdmin.listPolicies();
+  }
+
+  @Post()
+  @RequirePermissions('staff:manage')
+  @ApiOperation({
+    summary: 'Create a policy',
+    description: `${ACCESS} Name unique ignoring case and spaces → 409 POLICY_NAME_TAKEN; unknown code → 400.`,
+  })
+  @ApiBody({ schema: zodToOpenApi(CreatePolicySchema) })
+  @ApiEnvelopedCreated(PolicySchema)
+  public create(@Body() body: unknown, @CurrentUser() user: CurrentUserPayload): Promise<Policy> {
+    return this.iamAdmin.createPolicy(CreatePolicySchema.parse(body), user.sub);
+  }
+
+  @Patch(':id')
+  @RequirePermissions('staff:manage')
+  @ApiOperation({ summary: 'Rename or describe a policy', description: `${ACCESS} ทั้งหมด → 409 SYSTEM_ROW.` })
+  @ApiParam({ name: 'id', type: String })
+  @ApiBody({ schema: zodToOpenApi(UpdatePolicySchema) })
+  @ApiEnvelopedOk(PolicySchema)
+  public update(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<Policy> {
+    return this.iamAdmin.updatePolicy(requireUuid(id, POLICY_NOT_FOUND), UpdatePolicySchema.parse(body), user.sub);
+  }
+
+  @Put(':id/permissions')
+  @RequirePermissions('staff:manage')
+  @ApiOperation({
+    summary: 'Replace the permission codes a policy allows (the whole matrix)',
+    description:
+      `${ACCESS} ทั้งหมด → 409 SYSTEM_ROW; unknown code → 400; would leave nobody holding staff:manage for good → 409 IAM_LOCKOUT.`,
+  })
+  @ApiParam({ name: 'id', type: String })
+  @ApiBody({ schema: zodToOpenApi(SetPolicyCodesSchema) })
+  @ApiEnvelopedOk(PolicySchema)
+  public setCodes(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<Policy> {
+    return this.iamAdmin.setPolicyCodes(requireUuid(id, POLICY_NOT_FOUND), SetPolicyCodesSchema.parse(body).codes, user.sub);
+  }
+
+  @Delete(':id')
+  @RequirePermissions('staff:manage')
+  @ApiOperation({
+    summary: 'Delete a policy nobody uses',
+    description: `${ACCESS} Attached anywhere → 409 POLICY_IN_USE with the group / person names; ทั้งหมด → 409 SYSTEM_ROW.`,
+  })
+  @ApiParam({ name: 'id', type: String })
+  @ApiEnvelopedOk(OkSchema)
+  public remove(@Param('id') id: string): Promise<Ok> {
+    return this.iamAdmin.deletePolicy(requireUuid(id, POLICY_NOT_FOUND));
+  }
+}
