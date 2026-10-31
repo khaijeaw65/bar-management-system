@@ -7,7 +7,7 @@
 | **Brief revision** | 2 |
 | **Branch** | `feat/BRIEF-057-staff-access-ui` (PR opens after audit PASS) |
 | **Commit** | `f9d6a35` (work SHA S; `33eb048` + Sonar fix) |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS (Cowork, S `f9d6a35`) — merged PR determines Done |
 
 ## Summary
 `/pos/settings` now has a shell (tabs ≥ md, drawer at 390) with ร้าน · พนักงาน, reading the same route map as the guard (`/pos/settings/staff*` → `staff:manage`, placed before the `venue:update` rule — DR-029). New `/pos/settings/staff` (requests + approve/reject/reopen + staff list + active switch) and `/pos/settings/staff/[staffId]` (rename, memberships as full-set PUT, effective permissions with sources). Request count on the tab + dot on the rail, polled every 60 s and on focus, only for `staff:manage`. No backend, contract or dependency change. MSW staff API with lockout / self-deactivate rules.
@@ -75,7 +75,7 @@ Lockout alert not captured on the real stack (covered by tests).
 
 ## Review Routing
 - Assigned auditor: Cowork
-- Next command: `audit BRIEF-057`
+- Audit: PASS, zero Must fix (`docs/audits/BRIEF-057.md`) · next: Field merge once `ci` is green on H
 - Work SHA: f9d6a35 · self-check: brief ↔ BRIEF-054 controller/contracts ↔ UI compared (endpoints, `until` values, error codes)
 
 ## Notes for Reviewer

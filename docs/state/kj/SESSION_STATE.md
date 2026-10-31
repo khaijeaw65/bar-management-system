@@ -1,12 +1,12 @@
 # State — KJ
-Updated: 2026-10-31 · Agent: Claude Code (BRIEF-057 Implemented)
+Updated: 2026-10-31 · Agent: Claude Code (BRIEF-057 audit PASS)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-057 Implemented** (S `f9d6a35`, pushed, no PR) → `audit BRIEF-057` (Cowork). Real-LINE run proof done 31 Oct (Field's own LINE). Next: IAM UI U2 groups & policies.
+**BRIEF-057 audit PASS, PR open** (S `f9d6a35`) → `ci` green → merge (Field's own PR, §7). Real-LINE run proof done 31 Oct (Field's own LINE). Next: IAM UI U2 groups & policies.
 
 ## Active
-- Brief: BRIEF-057 Rev 2 · Stage: Implemented · Branch: `feat/BRIEF-057-staff-access-ui` (main merged in at start)
+- Brief: BRIEF-057 Rev 2 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-057-staff-access-ui` (main merged in at start)
 - Done 21–31 Oct: BRIEF-056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
