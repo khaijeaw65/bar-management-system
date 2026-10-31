@@ -244,11 +244,20 @@ async function upsertItem(
   }
   if (item.window) await upsertWindow(dataSource, saved.id, item.window);
   for (const variantId of variantIds) {
-    for (const groupName of item.groups ?? []) {
-      const group = groups.get(groupName);
-      if (!group) throw new Error(`missing modifier group ${groupName}`);
-      await linkGroup(dataSource, variantId, group.id);
-    }
+    await linkVariantGroups(dataSource, variantId, item.groups ?? [], groups);
+  }
+}
+
+async function linkVariantGroups(
+  dataSource: DataSource,
+  variantId: string,
+  groupNames: readonly string[],
+  groups: Map<string, ModifierGroup>,
+): Promise<void> {
+  for (const groupName of groupNames) {
+    const group = groups.get(groupName);
+    if (!group) throw new Error(`missing modifier group ${groupName}`);
+    await linkGroup(dataSource, variantId, group.id);
   }
 }
 
@@ -296,5 +305,8 @@ async function linkGroup(
 }
 
 function lowest(prices: string[]): string {
-  return prices.reduce((min, price) => (Number(price) < Number(min) ? price : min));
+  return prices.reduce(
+    (min, price) => (Number(price) < Number(min) ? price : min),
+    prices[0] ?? '0',
+  );
 }

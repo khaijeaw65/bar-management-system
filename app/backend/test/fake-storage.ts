@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { ImageContentType } from '@bar/contracts';
-import { IMAGE_EXTENSION, type StorageService, type StoredObject } from '../src/common/storage/storage.service.js';
+import {
+  IMAGE_EXTENSION,
+  type StorageService,
+  type StoredObject,
+} from '../src/common/storage/storage.service.js';
+import type { PresignedUpload } from '../src/common/storage/storage.types.js';
 
 type StorageApi = Pick<StorageService, 'presignUpload' | 'head' | 'copy' | 'remove' | 'presignRead'>;
 
@@ -11,7 +16,7 @@ export class FakeStorage implements StorageApi {
   public failRemove = false;
   public failRead = false;
 
-  public async presignUpload(contentType: ImageContentType) {
+  public async presignUpload(contentType: ImageContentType): Promise<PresignedUpload> {
     const key = `tmp/${randomUUID()}.${IMAGE_EXTENSION[contentType]}`;
     return { url: 'https://fake-s3.test/bar-test', fields: { 'Content-Type': contentType, key }, key };
   }

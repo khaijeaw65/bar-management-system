@@ -1,9 +1,7 @@
 import type {
-  BusinessDayRule,
   LockedVenue,
   LockedVenueSettings,
   StoredPromptPay,
-  VenuePaymentAccount,
   VenueRecord,
   VenueSettingsPatch,
 } from './venue.types.js';

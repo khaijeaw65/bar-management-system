@@ -8,14 +8,13 @@ import type {
   MenuCategoryRecord,
   MenuGroupRecord,
   MenuItemRecord,
-  MenuVariantRecord,
-  MenuWindowRecord,
 } from '../../domain/menu.types.js';
 import { MenuCategory } from './menu-category.entity.js';
 import { MenuItem } from './menu-item.entity.js';
 import { MenuItemAvailability } from './menu-item-availability.entity.js';
 import { MenuItemVariant } from './menu-item-variant.entity.js';
 import { MenuVariantModifierGroup } from './menu-variant-modifier-group.entity.js';
+import { groupBy, groupsByVariant, toMenuItemRecord } from './menu-catalog.mapper.js';
 import type { ModifierRow } from './menu-catalog.typeorm-repository.types.js';
 
 const SHARE_ITEMS = `
@@ -188,10 +187,10 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
         : this.variants.find({ where: { menuItemId: In(itemIds) } }),
     ]);
     const groups = await this.modifierGroups(variants.map((variant) => variant.id));
-    const windowsByItem = this.groupBy(windows, (window) => window.menuItemId);
-    const variantsByItem = this.groupBy(variants, (variant) => variant.menuItemId);
+    const windowsByItem = groupBy(windows, (window) => window.menuItemId);
+    const variantsByItem = groupBy(variants, (variant) => variant.menuItemId);
     return items.map((item) =>
-      this.toRecord(
+      toMenuItemRecord(
         item,
         categoryActive.get(item.categoryId) ?? false,
         windowsByItem.get(item.id) ?? [],
@@ -206,71 +205,7 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
   ): Promise<Map<string, MenuGroupRecord[]>> {
     if (variantIds.length === 0) return new Map();
     const rows: ModifierRow[] = await this.links.query(MODIFIERS, [variantIds]);
-    return this.groupsByVariant(rows);
-  }
-
-  private groupBy<T>(rows: T[], key: (row: T) => string): Map<string, T[]> {
-    const grouped = new Map<string, T[]>();
-    for (const row of rows) {
-      const id = key(row);
-      const list = grouped.get(id);
-      if (list) list.push(row);
-      else grouped.set(id, [row]);
-    }
-    return grouped;
-  }
-
-  private toRecord(
-    item: MenuItem,
-    categoryActive: boolean,
-    windows: MenuItemAvailability[],
-    variants: MenuItemVariant[],
-    groups: Map<string, MenuGroupRecord[]>,
-  ): MenuItemRecord {
-    return {
-      id: item.id,
-      categoryId: item.categoryId,
-      categoryActive,
-      name: item.name,
-      description: item.description,
-      imageKey: item.imageKey,
-      basePrice: String(item.basePrice),
-      itemType: item.itemType,
-      kitchenTag: item.kitchenTag,
-      isAvailable: item.isAvailable,
-      isPromo: item.isPromo,
-      sortOrder: item.sortOrder,
-      updatedAt: item.updatedAt,
-      windows: windows.map((window) => this.toWindow(window)),
-      variants: variants
-        .map((variant) => this.toVariant(variant, groups.get(variant.id) ?? []))
-        .sort((left, right) => this.byPriceThenName(left, right)),
-    };
-  }
-
-  private toWindow(window: MenuItemAvailability): MenuWindowRecord {
-    return {
-      daysOfWeek: window.daysOfWeek.map(Number),
-      startTime: String(window.startTime),
-      endTime: String(window.endTime),
-    };
-  }
-
-  private toVariant(
-    variant: MenuItemVariant,
-    modifierGroups: MenuGroupRecord[],
-  ): MenuVariantRecord {
-    return {
-      id: variant.id,
-      name: variant.name,
-      price: String(variant.price),
-      isAvailable: variant.isAvailable,
-      modifierGroups,
-    };
-  }
-
-  private byPriceThenName(left: MenuVariantRecord, right: MenuVariantRecord): number {
-    return Number(left.price) - Number(right.price) || left.name.localeCompare(right.name, 'th');
+    return groupsByVariant(rows);
   }
 
   private asBoolean(value: unknown): boolean {
@@ -284,50 +219,5 @@ export class MenuCatalogTypeormRepository implements MenuCatalogRepository {
       return nested as Record<string, unknown>[];
     }
     return result as Record<string, unknown>[];
-  }
-
-  private groupsByVariant(rows: ModifierRow[]): Map<string, MenuGroupRecord[]> {
-    const byVariant = new Map<string, Map<string, MenuGroupRecord>>();
-    for (const row of rows) {
-      let groups = byVariant.get(row.variantId);
-      if (!groups) {
-        groups = new Map();
-        byVariant.set(row.variantId, groups);
-      }
-      let group = groups.get(row.groupId);
-      if (!group) {
-        group = {
-          id: row.groupId,
-          name: row.groupName,
-          isRequired: row.isRequired,
-          minSelect: Number(row.minSelect),
-          maxSelect: Number(row.maxSelect),
-          options: [],
-        };
-        groups.set(row.groupId, group);
-      }
-      if (row.optionId && row.optionName && row.priceDelta !== null) {
-        group.options.push({
-          id: row.optionId,
-          name: row.optionName,
-          priceDelta: String(row.priceDelta),
-          isAvailable: row.isAvailable ?? true,
-        });
-      }
-    }
-    const result = new Map<string, MenuGroupRecord[]>();
-    for (const [variantId, groups] of byVariant) {
-      const list = [...groups.values()];
-      for (const group of list) {
-        group.options.sort((left, right) => left.name.localeCompare(right.name, 'th'));
-      }
-      list.sort(
-        (left, right) =>
-          Number(right.isRequired) - Number(left.isRequired) ||
-          left.name.localeCompare(right.name, 'th'),
-      );
-      result.set(variantId, list);
-    }
-    return result;
   }
 }

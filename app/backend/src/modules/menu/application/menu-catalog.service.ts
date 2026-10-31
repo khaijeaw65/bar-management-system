@@ -4,7 +4,6 @@ import type {
   MenuItem,
   MenuItemList,
   MenuModifierGroup,
-  UnavailableReason,
 } from '@bar/contracts';
 import { StorageService } from '../../../common/storage/storage.service.js';
 import { hhmm } from '../../../common/time-label.js';

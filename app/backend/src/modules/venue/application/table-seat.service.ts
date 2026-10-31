@@ -19,9 +19,8 @@ import { NotificationRecipients } from '../../notifications/application/notifica
 import { BillService } from '../../payment/application/bill.service.js';
 import { OrderQueryService } from '../../order/application/order-query.service.js';
 import { TableSeatRepository } from '../domain/table-seat.repository.js';
-import type { SeatWithLiveVisit } from '../domain/table-seat.types.js';
+import type { SeatIdentity, SeatWithLiveVisit } from '../domain/table-seat.types.js';
 import { VisitRepository } from '../domain/visit.repository.js';
-import type { SeatIdentity } from '../domain/table-seat.types.js';
 import { newQrToken } from './qr-token.js';
 import { money } from '../../../common/money.js';
 import { toTableSummary } from './table-summary.js';
