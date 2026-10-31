@@ -104,7 +104,8 @@ describe('Push delivery (e2e)', () => {
     const queue = app.get<Queue>(getQueueToken(NOTIFICATION_PUSH_QUEUE));
     const delayed = await queue.getDelayed();
     expect(delayed).toHaveLength(1);
-    const receiptIds = Object.keys((delayed[0]?.data as { tokenByReceiptId: Record<string, string> }).tokenByReceiptId);
+    const queued = delayed[0]?.data;
+    const receiptIds = queued && 'tokenByReceiptId' in queued ? Object.keys(queued.tokenByReceiptId) : [];
     expect(receiptIds).toHaveLength(2);
 
     const failedReceipt = receiptIds.find((id) => id.includes(token(1)));
