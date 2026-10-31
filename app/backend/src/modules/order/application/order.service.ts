@@ -119,7 +119,7 @@ export class OrderService {
   private async notifyNewOrder(outcome: PlacedOrder, order: Order): Promise<void> {
     const seatLabel = order.tickets[0]?.seat.label ?? 'โต๊ะ';
     const count = order.tickets.flatMap((t) => t.items).reduce((sum, item) => sum + item.quantity, 0);
-    const recipients = await this.notificationRecipients.orderNew(order.createdBy?.id ?? null);
+    const recipients = await this.notificationRecipients.orderNew(order.createdBy?.staffId ?? null);
     await this.notifications.notify('order_new', recipients, {
       title: `ออเดอร์ใหม่ · ${seatLabel}`,
       body: `${count} รายการ`,

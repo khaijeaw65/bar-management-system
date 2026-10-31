@@ -59,7 +59,7 @@ export class NotificationsGateway implements OnGatewayInit {
     if (!user) return false;
     await socket.join('pos');
     await socket.join('staff');
-    await socket.join(`user:${user.id}`);
+    await socket.join(`user:${user.sub}`);
     return true;
   }
 }

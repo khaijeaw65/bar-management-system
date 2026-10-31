@@ -8,6 +8,7 @@ import { NotificationEntity } from './entities/notification.entity.js';
 import { NotificationRecipients } from './application/notification-recipients.js';
 import { NotificationsService } from './notifications.service.js';
 import { NotificationsGateway } from './notifications.gateway.js';
+import { NotificationsController } from './infrastructure/http/notifications.controller.js';
 
 @Global()
 @Module({
@@ -16,6 +17,7 @@ import { NotificationsGateway } from './notifications.gateway.js';
     AuthModule,
     IamModule,
   ],
+  controllers: [NotificationsController],
   providers: [
     NotificationsGateway,
     NotificationsService,

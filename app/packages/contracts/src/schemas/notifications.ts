@@ -27,3 +27,8 @@ export const UnreadCountSchema = z.object({
   count: z.number().int().nonnegative(),
 });
 export type UnreadCount = z.infer<typeof UnreadCountSchema>;
+
+export const ReadAllResultSchema = z.object({
+  updated: z.number().int().nonnegative(),
+});
+export type ReadAllResult = z.infer<typeof ReadAllResultSchema>;

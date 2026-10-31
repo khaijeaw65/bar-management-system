@@ -157,7 +157,7 @@ export class TicketService {
     }
     try {
       const order = await this.query.getById(ticket.orderId);
-      const creatorId = order.createdBy?.id ?? null;
+      const creatorId = order.createdBy?.staffId ?? null;
       const recipients = await this.notificationRecipients.foodReady(creatorId);
       await this.notifications.notify('food_ready', recipients, {
         title: `ออเดอร์ #${ticket.orderNumber} พร้อมเสิร์ฟ`,
