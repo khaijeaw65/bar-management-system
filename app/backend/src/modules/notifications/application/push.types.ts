@@ -9,7 +9,7 @@ export const PUSH_RECEIPTS_JOB = 'receipts';
 export const RECEIPT_DELAY_MS = 15 * 60 * 1000;
 
 export const PUSH_JOB_ATTEMPTS = 3;
-export const PUSH_JOB_BACKOFF_MS = 5_000;
+export const PUSH_JOB_BACKOFF_MS = 1_000;
 
 export interface RecipientToken {
   staffUserId: string;

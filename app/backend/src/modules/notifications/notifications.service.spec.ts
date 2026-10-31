@@ -4,6 +4,7 @@ import { NOTIFICATION_NEW } from '@bar/contracts';
 import type { Clock } from '../../common/clock.js';
 import type { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
 import type { NotificationsGateway } from './notifications.gateway.js';
+import type { PushDeliveryService } from './application/push-delivery.service.js';
 import { NotificationsService } from './notifications.service.js';
 
 describe('NotificationsService', () => {
@@ -38,13 +39,15 @@ describe('NotificationsService', () => {
       emitToUser: vi.fn(),
     } as unknown as NotificationsGateway;
 
-    const service = new NotificationsService(repo, gateway, clock);
+    const pushDelivery = { enqueue: vi.fn(async () => undefined) } as unknown as PushDeliveryService;
 
-    return { service, repo, gateway };
+    const service = new NotificationsService(repo, gateway, clock, pushDelivery);
+
+    return { service, repo, gateway, pushDelivery };
   };
 
   it('notify inserts rows for each recipient and emits notification:new to each user room', async () => {
-    const { service, gateway, repo } = createService();
+    const { service, gateway, repo, pushDelivery } = createService();
 
     const result = await service.notify(
       'order_new',
@@ -61,6 +64,7 @@ describe('NotificationsService', () => {
     expect(result[0]?.createdAt).toBe(fixedNow.toISOString());
     expect(repo.save).toHaveBeenCalledTimes(1);
     expect(gateway.emitToUser).toHaveBeenCalledTimes(2);
+    expect(pushDelivery.enqueue).toHaveBeenCalledWith(result);
     expect(gateway.emitToUser).toHaveBeenCalledWith(
       'user-1',
       NOTIFICATION_NEW,
@@ -81,7 +85,7 @@ describe('NotificationsService', () => {
   });
 
   it('notify returns empty array and emits nothing when recipients list is empty', async () => {
-    const { service, gateway, repo } = createService();
+    const { service, gateway, repo, pushDelivery } = createService();
 
     const result = await service.notify('call_staff', [], {
       title: 'T1 เรียกพนักงาน',
@@ -90,6 +94,7 @@ describe('NotificationsService', () => {
     expect(result).toEqual([]);
     expect(repo.save).not.toHaveBeenCalled();
     expect(gateway.emitToUser).not.toHaveBeenCalled();
+    expect(pushDelivery.enqueue).not.toHaveBeenCalled();
   });
 
   it('unreadCount queries repository count for unread rows', async () => {

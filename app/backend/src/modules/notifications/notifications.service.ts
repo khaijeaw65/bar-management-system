@@ -10,6 +10,7 @@ import {
 } from '@bar/contracts';
 import { CLOCK, type Clock } from '../../common/clock.js';
 import { DomainException } from '../../common/domain-exception.js';
+import { PushDeliveryService } from './application/push-delivery.service.js';
 import { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
 import { NotificationsGateway } from './notifications.gateway.js';
 import type { NotifyInput } from './notifications.types.js';
@@ -31,6 +32,7 @@ export class NotificationsService {
     private readonly repo: Repository<NotificationEntity>,
     private readonly notificationsGateway: NotificationsGateway,
     @Inject(CLOCK) private readonly clock: Clock,
+    private readonly pushDelivery: PushDeliveryService,
   ) {}
 
   public emitToPos(event: string, payload: unknown): void {
@@ -60,7 +62,8 @@ export class NotificationsService {
   }
 
   /**
-   * Persists notifications for recipients and emits live `notification:new` to each recipient room.
+   * Persists notifications for recipients and emits live `notification:new` to each recipient room,
+   * then queues the phone push (a push failure never touches the saved rows).
    * Returns the created serialized notifications.
    */
   public async notify(
@@ -72,7 +75,9 @@ export class NotificationsService {
       return [];
     }
     const saved = await this.insertRows(type, recipientIds, payload);
-    return this.broadcastNotifications(saved);
+    const notifications = this.broadcastNotifications(saved);
+    await this.pushDelivery.enqueue(notifications);
+    return notifications;
   }
 
   public async feed(
