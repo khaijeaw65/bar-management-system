@@ -84,6 +84,12 @@ export class StaffAdminService {
     return this.requireMember(id, now);
   }
 
+  public async replacePolicies(id: string, policyIds: string[]): Promise<StaffMember> {
+    const now = new Date();
+    await this.finishWrite(await this.repository.replacePolicies(id, [...new Set(policyIds)], now));
+    return this.requireMember(id, now);
+  }
+
   public async effectivePermissions(id: string): Promise<EffectivePermissions> {
     const now = new Date();
     await this.requireMember(id, now);
@@ -117,6 +123,9 @@ export class StaffAdminService {
   private async finishWrite(outcome: StaffWriteOutcome): Promise<void> {
     if (outcome.kind === 'not_found') throw this.notFound('ไม่พบพนักงาน');
     if (outcome.kind === 'unknown_group') throw this.unknownGroup();
+    if (outcome.kind === 'unknown_policy') {
+      throw new DomainException('VALIDATION_ERROR', 'ไม่พบนโยบายที่เลือก', 400);
+    }
     if (outcome.kind === 'lockout') {
       throw new DomainException('IAM_LOCKOUT', LOCKOUT_MESSAGE, 409, { reason: 'last_manager' });
     }

@@ -1,7 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
 import type { IssuedSession } from '../src/modules/auth/application/token.types.js';
-import { GROUP_ID_BY_NAME } from '../src/modules/iam/domain/default-groups.js';
+import { DEFAULT_GROUP_IDS, DEFAULT_POLICY_IDS, GROUP_ID_BY_NAME } from '../src/modules/iam/domain/default-groups.js';
 import { TokenService } from '../src/modules/auth/application/token.service.js';
 
 export async function insertStaff(
@@ -54,6 +54,7 @@ export async function clearStaffAndVenue(dataSource: DataSource): Promise<void> 
   await dataSource.query('DELETE FROM staff_access_request');
   await dataSource.query('DELETE FROM user_policy');
   await dataSource.query('DELETE FROM user_group_membership');
+  await deleteCustomGroupsAndPolicies(dataSource);
   await dataSource.query('DELETE FROM staff_user_identity');
   await dataSource.query('DELETE FROM staff_user');
 }
@@ -62,4 +63,17 @@ export function httpPort(app: INestApplication): number {
   const address = app.getHttpServer().address() as { port?: number } | null;
   if (!address?.port) throw new Error('app is not listening');
   return address.port;
+}
+
+/** BRIEF-055 specs create their own groups and policies; the three seeded ones stay. */
+async function deleteCustomGroupsAndPolicies(dataSource: DataSource): Promise<void> {
+  const groups = Object.values(DEFAULT_GROUP_IDS);
+  const policies = Object.values(DEFAULT_POLICY_IDS);
+  await dataSource.query('DELETE FROM group_policy WHERE group_id <> ALL($1::uuid[])', [groups]);
+  await dataSource.query('DELETE FROM staff_group WHERE id <> ALL($1::uuid[])', [groups]);
+  await dataSource.query('DELETE FROM policy_permission WHERE policy_id <> ALL($1::uuid[])', [policies]);
+  await dataSource.query('DELETE FROM policy WHERE id <> ALL($1::uuid[])', [policies]);
+  // IAM writes stamp the acting person on the seeded rows too; they must not block deleting that person.
+  await dataSource.query('UPDATE staff_group SET created_by = NULL, updated_by = NULL');
+  await dataSource.query('UPDATE policy SET created_by = NULL, updated_by = NULL');
 }

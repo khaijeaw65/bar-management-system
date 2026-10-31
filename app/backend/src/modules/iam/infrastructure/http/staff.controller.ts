@@ -6,6 +6,7 @@ import {
   EffectivePermissionsSchema,
   ListAccessRequestsQuerySchema,
   ReplaceMembershipsSchema,
+  SetPolicyIdsSchema,
   StaffMemberSchema,
   UpdateStaffSchema,
   type AccessRequest,
@@ -147,6 +148,21 @@ export class StaffController {
       requireUuid(id, STAFF_NOT_FOUND),
       ReplaceMembershipsSchema.parse(body).memberships,
     );
+  }
+
+  @Put(':id/policies')
+  @RequirePermissions('staff:manage')
+  @ApiOperation({
+    summary: "Replace the person's personal policies",
+    description:
+      `${ACCESS} Policies attached to this one person on top of their groups. ` +
+      'Unknown policy → 400; would leave nobody holding staff:manage for good → 409 IAM_LOCKOUT.',
+  })
+  @ApiParam({ name: 'id', type: String })
+  @ApiBody({ schema: zodToOpenApi(SetPolicyIdsSchema) })
+  @ApiEnvelopedOk(StaffMemberSchema)
+  public replacePolicies(@Param('id') id: string, @Body() body: unknown): Promise<StaffMember> {
+    return this.staffAdmin.replacePolicies(requireUuid(id, STAFF_NOT_FOUND), SetPolicyIdsSchema.parse(body).policyIds);
   }
 
   @Get(':id/effective-permissions')
