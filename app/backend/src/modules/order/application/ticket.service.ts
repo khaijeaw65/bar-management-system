@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   TICKET_ISSUE_ESCALATED,
@@ -15,6 +15,7 @@ import { blankToNull } from '../../../common/http/http-input.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
+import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
 import { CLOCK, type Clock } from '../../../common/clock.js';
 import {
@@ -36,6 +37,8 @@ interface ResolvedTicket {
 
 @Injectable()
 export class TicketService {
+  private readonly logger = new Logger(TicketService.name);
+
   public constructor(
     @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -43,6 +46,7 @@ export class TicketService {
     private readonly query: OrderQueryService,
     private readonly staff: StaffUserService,
     private readonly notifications: NotificationsService,
+    private readonly notificationRecipients: NotificationRecipients,
   ) {}
 
   public async accept(id: string, staffId: string): Promise<Ticket> {
@@ -50,7 +54,10 @@ export class TicketService {
   }
 
   public async ready(id: string, staffId: string): Promise<Ticket> {
-    return this.publish(await this.apply(id, 'ready'), staffId, 'status');
+    const outcome = await this.apply(id, 'ready');
+    const result = await this.publish(outcome, staffId, 'status');
+    await this.notifyFoodReady(outcome);
+    return result;
   }
 
   public async send(id: string, staffId: string): Promise<Ticket> {
@@ -142,6 +149,25 @@ export class TicketService {
   private async readyStep(ticket: LockedTicket): Promise<boolean> {
     const settings = await this.venues.get();
     return readyStepApplies(settings.kitchenDisplayEnabled, ticket.seatKind);
+  }
+
+  private async notifyFoodReady(ticket: TicketView): Promise<void> {
+    if (ticket.status !== 'ready') {
+      return;
+    }
+    try {
+      const order = await this.query.getById(ticket.orderId);
+      const creatorId = order.createdBy?.id ?? null;
+      const recipients = await this.notificationRecipients.foodReady(creatorId);
+      await this.notifications.notify('food_ready', recipients, {
+        title: `ออเดอร์ #${ticket.orderNumber} พร้อมเสิร์ฟ`,
+        body: ticket.seat.label,
+        refType: 'order',
+        refId: ticket.orderId,
+      });
+    } catch (error) {
+      this.logger.warn(`food ready notification failed: ${error instanceof Error ? error.message : 'error'}`);
+    }
   }
 
   private emit(
