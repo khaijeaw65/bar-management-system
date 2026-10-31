@@ -605,6 +605,7 @@ CREATE INDEX idx_visit_customer      ON visit(customer_id) WHERE customer_id IS 
 CREATE INDEX idx_visit_state         ON visit(state);
 CREATE UNIQUE INDEX uq_visit_live_per_seat ON visit(table_seat_id) WHERE state IN ('open','active','idle');  -- one live visit per seat (BRIEF-011 Q1)
 CREATE UNIQUE INDEX uq_menu_category_name ON menu_category (lower(trim(name)));  -- category names unique, hidden included (DR-025)
+CREATE UNIQUE INDEX uq_table_seat_label_active ON table_seat (lower(trim(label))) WHERE is_active;  -- active seat labels unique; a retired seat's label can be reused (BRIEF-066)
 
 -- Menu availability windows (DR-010)
 CREATE INDEX idx_menu_item_avail_item ON menu_item_availability(menu_item_id);
