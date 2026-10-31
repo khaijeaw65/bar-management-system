@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready — Rev 1 approved by Field 2026-10-31 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
@@ -101,9 +101,10 @@ Run proof (real stack, ports BRIEF-046) — **includes the real-LINE approval ca
 - [x] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
 - [x] Size within workflow §2 (≤ 3 working days)
 - [x] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-31 | Initial Draft (Cowork) — IAM UI U1 settings shell + staff & access requests |
+| 1 | 2026-10-31 | Ready — Field in session: "approve BRIEF-057 Rev 1 Ready" |
