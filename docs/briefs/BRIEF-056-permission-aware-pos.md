@@ -22,8 +22,8 @@
 | Scope of hiding | **Everywhere now** (POS-wide), in its own brief before U1 |
 | Can't do it | **Hide it**; opening the URL directly → a **"ไม่มีสิทธิ์"** screen |
 | POS PIN | Out — with BRIEF-018 |
-| *(proposed)* Refresh of the permission set | `usePermissions()` = TanStack query on `GET /me/permissions`, refetched on window focus, every 60 s, and immediately after any API `403` whose `data.missing` is set (the server is the truth); while loading, permission-gated actions stay hidden (no flash of a button that then disappears) |
-| *(proposed)* Rail items without any page permission | hidden (not greyed) |
+| Refresh of the permission set *(proposed → accepted by Field 2026-10-31)* | `usePermissions()` = TanStack query on `GET /me/permissions`, refetched on window focus, every 60 s, and immediately after any API `403` whose `data.missing` is set (the server is the truth); while loading, permission-gated actions stay hidden (no flash of a button that then disappears) |
+| Rail items without any page permission *(proposed → accepted by Field 2026-10-31)* | hidden (not greyed) |
 
 ## 1. Goal
 A ผู้จัดการ or พนักงาน only sees the POS screens and buttons they can actually use; a page opened by URL without the permission says "ไม่มีสิทธิ์" instead of breaking; any stray 403 is explained, not a raw error.
@@ -118,3 +118,4 @@ Run proof (real stack, ports BRIEF-046): headless Playwright on the real stack w
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-31 | Initial Draft (Cowork) — IAM UI U0 permission-aware POS |
+| 1 | 2026-10-31 | Draft edit — Field accepted both *(proposed)* rows ("accept proposed") |
