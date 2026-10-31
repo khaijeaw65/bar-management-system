@@ -6,11 +6,14 @@ import { PushTokenService } from './push-token.service.js';
 import {
   PUSH_SENDER,
   type PushMessage,
+  type PushReceipt,
   type PushSender,
   type PushTicket,
 } from './ports/push-sender.port.js';
+import type { RecipientToken } from './ports/staff-push-token.repository.port.js';
 import {
   NOTIFICATION_PUSH_QUEUE,
+  COMPLETED_JOB_TTL_SECONDS,
   PUSH_JOB_ATTEMPTS,
   PUSH_JOB_BACKOFF_MS,
   PUSH_RECEIPTS_JOB,
@@ -19,11 +22,12 @@ import {
   type PushJobData,
   type PushReceiptsJob,
   type PushSendJob,
-  type RecipientToken,
 } from './push.types.js';
 
 const RETRY: JobsOptions = {
   attempts: PUSH_JOB_ATTEMPTS,
+  // Completed jobs carry push tokens; failed ones stay for inspection (backend.md BullMQ).
+  removeOnComplete: { age: COMPLETED_JOB_TTL_SECONDS },
   backoff: { type: 'exponential', delay: PUSH_JOB_BACKOFF_MS },
 };
 
@@ -53,14 +57,22 @@ export class PushDeliveryService {
 
   public async checkReceipts(job: PushReceiptsJob): Promise<void> {
     const receipts = await this.sender.receipts(Object.keys(job.tokenByReceiptId));
+    const dead = this.findDeadTokens(receipts, job.tokenByReceiptId);
+    await this.pushTokens.removeTokens(dead);
+  }
+
+  private findDeadTokens(
+    receipts: Map<string, PushReceipt>,
+    tokenByReceiptId: Record<string, string>,
+  ): string[] {
     const dead: string[] = [];
     for (const [receiptId, receipt] of receipts) {
       if (receipt.status === 'ok') continue;
       this.logger.warn(`push receipt ${receiptId} failed: ${receipt.message}`);
-      const token = job.tokenByReceiptId[receiptId];
+      const token = tokenByReceiptId[receiptId];
       if (token && receipt.failure === 'device_not_registered') dead.push(token);
     }
-    await this.pushTokens.removeTokens(dead);
+    return dead;
   }
 
   private buildMessages(notifications: Notification[], tokens: RecipientToken[]): PushMessage[] {

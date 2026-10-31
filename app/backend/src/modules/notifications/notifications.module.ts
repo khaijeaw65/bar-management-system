@@ -9,6 +9,8 @@ import { ExpoConfigModule } from '../../providers/config/expo/config.module.js';
 import { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
 import { StaffPushTokenEntity } from './infrastructure/persistence/staff-push-token.entity.js';
 import { PUSH_SENDER } from './application/ports/push-sender.port.js';
+import { STAFF_PUSH_TOKEN_REPOSITORY } from './application/ports/staff-push-token.repository.port.js';
+import { StaffPushTokenTypeormRepository } from './infrastructure/persistence/staff-push-token.typeorm-repository.js';
 import { PushDeliveryService } from './application/push-delivery.service.js';
 import { NOTIFICATION_PUSH_QUEUE } from './application/push.types.js';
 import { NotificationPushProcessor } from './infrastructure/queue/notification-push.processor.js';
@@ -36,6 +38,8 @@ import { NotificationsController } from './infrastructure/http/notifications.con
     PushTokenService,
     PushDeliveryService,
     NotificationPushProcessor,
+    StaffPushTokenTypeormRepository,
+    { provide: STAFF_PUSH_TOKEN_REPOSITORY, useExisting: StaffPushTokenTypeormRepository },
     ExpoPushSenderAdapter,
     { provide: PUSH_SENDER, useExisting: ExpoPushSenderAdapter },
     { provide: CLOCK, useClass: SystemClock },

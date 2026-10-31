@@ -90,13 +90,18 @@ describe('Push delivery (e2e)', () => {
     expect(sent.map((m) => m.to).sort()).toEqual([token(1), token(2), token(3)]);
     expect(sent.every((m) => m.title === 'ออเดอร์ใหม่ · T1' && m.body === '2 รายการ')).toBe(true);
     expect(sent.every((m) => m.data.refId === REF_ID && m.data.type === 'order_new')).toBe(true);
+
+    const queue = app.get<Queue>(getQueueToken(NOTIFICATION_PUSH_QUEUE));
+    await vi.waitFor(async () => expect(await queue.getCompletedCount()).toBe(1));
+    const [completed] = await queue.getCompleted();
+    expect(completed?.opts.removeOnComplete).toEqual({ age: 86_400 });
   });
 
   it('AC-4: a DeviceNotRegistered ticket deletes that token now; a failed receipt deletes it later', async () => {
-    fake.ticketFor = (message, index) =>
+    fake.ticketFor = (message) =>
       message.to === token(2)
         ? { status: 'error', failure: 'device_not_registered', message: 'gone' }
-        : { status: 'ok', receiptId: `receipt-${message.to}-${index}` };
+        : { status: 'ok', receiptId: `receipt-${message.to}` };
     await notifyTwoStaffThreeTokens();
 
     await vi.waitFor(async () => expect(await storedTokens()).toEqual([token(1), token(3)]));
@@ -105,16 +110,18 @@ describe('Push delivery (e2e)', () => {
     const delayed = await queue.getDelayed();
     expect(delayed).toHaveLength(1);
     const queued = delayed[0]?.data;
-    const receiptIds = queued && 'tokenByReceiptId' in queued ? Object.keys(queued.tokenByReceiptId) : [];
-    expect(receiptIds).toHaveLength(2);
-
-    const failedReceipt = receiptIds.find((id) => id.includes(token(1)));
-    fake.receiptResults.set(failedReceipt ?? '', { status: 'error', failure: 'device_not_registered', message: 'gone' });
-    await app.get(PushDeliveryService).checkReceipts({
-      tokenByReceiptId: Object.fromEntries(
-        receiptIds.map((id) => [id, id.includes(token(1)) ? token(1) : token(3)]),
-      ),
+    if (!queued || !('tokenByReceiptId' in queued)) throw new Error('receipts job missing');
+    expect(queued.tokenByReceiptId).toEqual({
+      [`receipt-${token(1)}`]: token(1),
+      [`receipt-${token(3)}`]: token(3),
     });
+
+    fake.receiptResults.set(`receipt-${token(1)}`, {
+      status: 'error',
+      failure: 'device_not_registered',
+      message: 'gone',
+    });
+    await app.get(PushDeliveryService).checkReceipts(queued);
 
     expect(await storedTokens()).toEqual([token(3)]);
   });

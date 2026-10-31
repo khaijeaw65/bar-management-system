@@ -1,18 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
 import type { Ok, RegisterPushToken } from '@bar/contracts';
 import { CLOCK, type Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import { StaffPushTokenEntity } from '../infrastructure/persistence/staff-push-token.entity.js';
 import { PUSH_SENDER, type PushSender } from './ports/push-sender.port.js';
-import type { RecipientToken } from './push.types.js';
+import {
+  STAFF_PUSH_TOKEN_REPOSITORY,
+  type RecipientToken,
+  type StaffPushTokenRepository,
+} from './ports/staff-push-token.repository.port.js';
 
 @Injectable()
 export class PushTokenService {
   public constructor(
-    @InjectRepository(StaffPushTokenEntity)
-    private readonly repo: Repository<StaffPushTokenEntity>,
+    @Inject(STAFF_PUSH_TOKEN_REPOSITORY) private readonly tokens: StaffPushTokenRepository,
     @Inject(PUSH_SENDER) private readonly sender: PushSender,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
@@ -20,31 +20,27 @@ export class PushTokenService {
   /** A token already held by another staff member is reassigned to the caller (shared phones). */
   public async register(staffUserId: string, input: RegisterPushToken): Promise<Ok> {
     this.verifyTokenFormat(input.token);
-    await this.repo.upsert(
-      {
-        staffUserId,
-        expoPushToken: input.token,
-        platform: input.platform,
-        lastSeenAt: this.clock.now(),
-      },
-      ['expoPushToken'],
-    );
+    await this.tokens.upsert({
+      staffUserId,
+      token: input.token,
+      platform: input.platform,
+      lastSeenAt: this.clock.now(),
+    });
     return { ok: true };
   }
 
   /** Own token only; an unknown or foreign token is a silent no-op. */
   public async unregister(staffUserId: string, token: string): Promise<void> {
-    await this.repo.delete({ staffUserId, expoPushToken: token });
+    await this.tokens.deleteOwn(staffUserId, token);
   }
 
   public async findByRecipients(recipientIds: string[]): Promise<RecipientToken[]> {
-    const rows = await this.repo.find({ where: { staffUserId: In(recipientIds) } });
-    return rows.map((row) => ({ staffUserId: row.staffUserId, token: row.expoPushToken }));
+    return await this.tokens.findByStaffIds(recipientIds);
   }
 
   public async removeTokens(tokens: string[]): Promise<void> {
     if (tokens.length === 0) return;
-    await this.repo.delete({ expoPushToken: In(tokens) });
+    await this.tokens.deleteTokens(tokens);
   }
 
   private verifyTokenFormat(token: string): void {
