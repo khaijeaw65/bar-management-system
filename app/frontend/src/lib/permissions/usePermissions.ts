@@ -30,16 +30,19 @@ export function usePermissions(): Permissions {
   });
   const granted = query.data?.permissions;
   const refetch = query.refetch;
+  let status: PermissionsStatus = "loading";
+  if (granted) status = "ready";
+  else if (query.isError) status = "error";
 
   return useMemo(() => {
     const set = new Set<PermissionCode>(granted ?? []);
     const can = (code: PermissionCode) => set.has(code);
     return {
-      status: granted ? "ready" : query.isError ? "error" : "loading",
+      status,
       can,
       canAll: (...codes) => codes.every(can),
       canAny: (...codes) => codes.some(can),
       retry: () => void refetch(),
     };
-  }, [granted, query.isError, refetch]);
+  }, [granted, status, refetch]);
 }
