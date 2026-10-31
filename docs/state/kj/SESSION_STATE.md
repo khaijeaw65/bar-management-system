@@ -1,17 +1,17 @@
 # State — KJ
-Updated: 2026-11-01 · Agent: Antigravity (BRIEF-063 Implemented)
+Updated: 2026-11-01 · Agent: Antigravity (BRIEF-063 Audit PASS)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-063 Implemented** (S `f3c4292`). Next: Cowork audit BRIEF-063 → PASS → PR → BRIEF-064.
+**BRIEF-063 Audit PASS** (S `d67200e`). Next: PR CI green → approve merge BRIEF-063 → BRIEF-064.
 
 ## Active
-- Brief: BRIEF-063 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-063-notification-feed` · Work commit: `f3c4292`
+- Brief: BRIEF-063 Rev 1 · Stage: Audit PASS · Branch: `feat/BRIEF-063-notification-feed` · Work commit: `d67200e`
 - Done 21–31 Oct: BRIEF-061 (#109) · BRIEF-058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps
-1. `audit BRIEF-063` in Cowork (G3)
-2. Audit PASS → `ship BRIEF-063` → open PR
+1. Wait for CI green on BRIEF-063 PR
+2. `อนุมัติ merge BRIEF-063` (Field approval)
 3. Next: BRIEF-064 (push delivery)
 
 ## Blockers / Coordination
