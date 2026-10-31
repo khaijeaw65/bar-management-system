@@ -26,6 +26,7 @@ function Line({ line }: Readonly<{ line: OrderLine }>) {
 export function TicketCard({
   ticket,
   kitchenOn,
+  canAct,
   pending,
   fresh,
   onOpen,
@@ -33,6 +34,7 @@ export function TicketCard({
 }: Readonly<{
   ticket: Ticket;
   kitchenOn: boolean;
+  canAct: boolean;
   pending: boolean;
   fresh: boolean;
   onOpen: () => void;
@@ -82,7 +84,7 @@ export function TicketCard({
             <span className="text-small text-text-danger">{issueReasonLabel[ticket.issue.reason]}</span>
           ) : null}
         </button>
-        {action ? (
+        {action && canAct ? (
           <Button
             fullWidth
             variant={action.kind === "accept" ? "primary" : "secondary"}

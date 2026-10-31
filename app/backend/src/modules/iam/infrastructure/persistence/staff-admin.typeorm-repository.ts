@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { AccessRequestStatus, PermissionCode } from '@bar/contracts';
 import { DataSource, EntityManager } from 'typeorm';
+import { IamWriteGuard } from './iam-write-guard.js';
 import type { MembershipRow } from '../../domain/permission-source.js';
 import type { StaffAdminRepository } from '../../domain/staff-admin.repository.js';
 import type {
@@ -13,9 +14,6 @@ import type {
   StaffRow,
   StaffWriteOutcome,
 } from '../../domain/staff-admin.types.js';
-
-/** Serialises every IAM write that can change who may manage staff, so two concurrent removals cannot both pass the lockout check. */
-const IAM_WRITE_LOCK = 7054001;
 
 interface RequestSql {
   id: string;
@@ -43,8 +41,6 @@ interface MembershipSql {
   valid_until: Date | null;
 }
 
-class LockoutError extends Error {}
-
 const REQUEST_COLUMNS = `id, external_id, provider, display_name, avatar_url, status, requested_at, decided_at`;
 
 @Injectable()
@@ -67,7 +63,7 @@ export class StaffAdminTypeormRepository implements StaffAdminRepository {
     now: Date,
   ): Promise<ApproveOutcome> {
     return this.dataSource.transaction(async (manager) => {
-      await manager.query(`SELECT pg_advisory_xact_lock($1)`, [IAM_WRITE_LOCK]);
+      await IamWriteGuard.takeLock(manager);
       const found = await this.lockRequest(manager, requestId);
       if (!found) return { kind: 'not_found' };
       if (found.status !== 'pending') return { kind: 'decided' };
@@ -148,6 +144,19 @@ export class StaffAdminTypeormRepository implements StaffAdminRepository {
     });
   }
 
+  public replacePolicies(id: string, policyIds: string[], now: Date): Promise<StaffWriteOutcome> {
+    return this.guarded(now, true, async (manager) => {
+      if (!(await this.lockUser(manager, id))) return { kind: 'not_found' };
+      const found: unknown[] = await manager.query(`SELECT 1 FROM policy WHERE id = ANY($1::uuid[])`, [policyIds]);
+      if (found.length !== policyIds.length) return { kind: 'unknown_policy' };
+      await manager.query(`DELETE FROM user_policy WHERE user_id = $1`, [id]);
+      for (const policyId of policyIds) {
+        await manager.query(`INSERT INTO user_policy (user_id, policy_id) VALUES ($1, $2)`, [id, policyId]);
+      }
+      return { kind: 'ok' };
+    });
+  }
+
   public async permissionSources(userId: string, now: Date): Promise<PermissionSourceRow[]> {
     const rows: Array<{ code: PermissionCode; kind: 'group' | 'user'; group_name: string | null; policy_name: string }> =
       await this.dataSource.query(
@@ -177,51 +186,12 @@ export class StaffAdminTypeormRepository implements StaffAdminRepository {
     }));
   }
 
-  /** One transaction under the IAM write lock; the lockout check runs after the write is applied and rolls it back. */
-  private async guarded(
+  private guarded(
     now: Date,
     checkLockout: boolean,
     write: (manager: EntityManager) => Promise<StaffWriteOutcome>,
   ): Promise<StaffWriteOutcome> {
-    try {
-      return await this.dataSource.transaction(async (manager) => {
-        await manager.query(`SELECT pg_advisory_xact_lock($1)`, [IAM_WRITE_LOCK]);
-        const outcome = await write(manager);
-        if (checkLockout && outcome.kind === 'ok' && !(await this.someoneCanManage(manager, now))) throw new LockoutError();
-        return outcome;
-      });
-    } catch (error) {
-      if (error instanceof LockoutError) return { kind: 'lockout' };
-      throw error;
-    }
-  }
-
-  /** An active person who holds `staff:manage` through a membership with no end date, or a direct user policy. */
-  private async someoneCanManage(manager: EntityManager, now: Date): Promise<boolean> {
-    const rows: unknown[] = await manager.query(
-      `SELECT 1
-         FROM staff_user u
-        WHERE u.is_active
-          AND (
-            EXISTS (
-              SELECT 1
-                FROM user_group_membership m
-                JOIN group_policy gp ON gp.group_id = m.group_id
-                JOIN policy_permission pp ON pp.policy_id = gp.policy_id
-                JOIN permission p ON p.id = pp.permission_id
-               WHERE m.user_id = u.id AND m.valid_until IS NULL AND m.valid_from <= $1
-                 AND p.resource = 'staff' AND p.action = 'manage')
-            OR EXISTS (
-              SELECT 1
-                FROM user_policy up
-                JOIN policy_permission pp ON pp.policy_id = up.policy_id
-                JOIN permission p ON p.id = pp.permission_id
-               WHERE up.user_id = u.id AND p.resource = 'staff' AND p.action = 'manage')
-          )
-        LIMIT 1`,
-      [now],
-    );
-    return rows.length > 0;
+    return IamWriteGuard.run(this.dataSource, now, checkLockout, write);
   }
 
   private async lockRequest(manager: EntityManager, id: string): Promise<RequestSql | null> {
@@ -304,12 +274,19 @@ export class StaffAdminTypeormRepository implements StaffAdminRepository {
       });
       byUser.set(row.user_id, list);
     }
+    const policies: Array<{ user_id: string; policy_id: string }> = await manager.query(
+      `SELECT user_id, policy_id FROM user_policy WHERE user_id = ANY($1::uuid[]) ORDER BY policy_id`,
+      [users.map((user) => user.id)],
+    );
+    const policyIdsByUser = new Map<string, string[]>();
+    for (const row of policies) policyIdsByUser.set(row.user_id, [...(policyIdsByUser.get(row.user_id) ?? []), row.policy_id]);
     return users.map((user) => ({
       id: user.id,
       displayName: user.display_name,
       avatarUrl: user.avatar_url,
       isActive: user.is_active,
       memberships: byUser.get(user.id) ?? [],
+      policyIds: policyIdsByUser.get(user.id) ?? [],
     }));
   }
 

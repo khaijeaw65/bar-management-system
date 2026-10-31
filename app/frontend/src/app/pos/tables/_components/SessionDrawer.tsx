@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { ApiError } from "@/lib/api/errors";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 import { CloseConfirmModal } from "./CloseConfirmModal";
 import { DrawerStatus } from "./DrawerStatus";
 import { SessionBody } from "./SessionBody";
@@ -21,6 +22,7 @@ export function SessionDrawer({
 }>) {
   const session = useSession(visitId, onClose, holdEscape);
   const titleId = useId();
+  const { can } = usePermissions();
   const visit = session.visit.data;
   const missing = session.visit.error instanceof ApiError && session.visit.error.status === 404;
   if (missing) return null;
@@ -62,6 +64,7 @@ export function SessionDrawer({
           bill={visit.bill}
           pending={session.close.isPending}
           failed={session.retryable}
+          canPay={can("payments:create")}
           onDismiss={session.dismissConfirm}
           onConfirm={session.confirmClose}
           onPay={() => {

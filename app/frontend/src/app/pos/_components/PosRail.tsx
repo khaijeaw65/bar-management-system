@@ -14,6 +14,8 @@ import { Badge } from "@heroui/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePendingTicketCount } from "@/hooks/useTicketBoard";
+import { permissionForPath } from "@/lib/permissions/pos-routes";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 import { cn } from "@/lib/utils/cn";
 
 interface RailItem {
@@ -47,6 +49,9 @@ function isActive(href: string, pathname: string): boolean {
 export function PosRail() {
   const pathname = usePathname();
   const pendingTickets = usePendingTicketCount();
+  const { can } = usePermissions();
+  // Items without a page yet ("เร็ว ๆ นี้") follow the back-office tier until their pages exist.
+  const shown = items.filter((item) => (item.href ? can(permissionForPath(item.href) ?? "tables:read") : can("reports:read")));
 
   return (
     <div className="flex w-22 shrink-0 flex-col border-r border-line-hairline bg-bg-sunken">
@@ -55,7 +60,7 @@ export function PosRail() {
         <span>LOFT</span>
       </div>
       <nav aria-label="เมนูหลัก" className="flex flex-col items-center gap-0.5 py-2">
-        {items.map((item) => {
+        {shown.map((item) => {
           const Icon = item.icon;
           const active = item.href !== undefined && isActive(item.href, pathname);
           const icon = <Icon size={24} strokeWidth={1.75} aria-hidden />;

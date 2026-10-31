@@ -11,7 +11,11 @@ import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import { useSettingsForm } from "./useSettingsForm";
 
 // `payment` sits between ร้าน and การทำงาน (CD-13 order) but saves on its own form.
-export function SettingsForm({ venue, payment }: Readonly<{ venue: VenueSettings; payment: ReactNode }>) {
+export function SettingsForm({
+  venue,
+  payment,
+  readOnly,
+}: Readonly<{ venue: VenueSettings; payment: ReactNode; readOnly: boolean }>) {
   const form = useSettingsForm(venue);
   const guard = useLeaveGuard(form.dirty);
   const { draft, errors } = form;
@@ -19,7 +23,7 @@ export function SettingsForm({ venue, payment }: Readonly<{ venue: VenueSettings
   return (
     <>
       <SettingsSection title="ร้าน">
-        <TextField value={draft.name} isInvalid={errors.name !== undefined} onChange={(value) => form.set("name", value)}>
+        <TextField value={draft.name} isReadOnly={readOnly} isInvalid={errors.name !== undefined} onChange={(value) => form.set("name", value)}>
           <Label>ชื่อร้าน</Label>
           <Input />
           {errors.name ? <FieldError>{errors.name}</FieldError> : null}
@@ -31,15 +35,17 @@ export function SettingsForm({ venue, payment }: Readonly<{ venue: VenueSettings
           label="จอครัว"
           help="ปิด = ใบเดียวต่อออเดอร์, ไม่มีพร้อมเสิร์ฟ"
           isSelected={draft.kitchenDisplayEnabled}
+          isDisabled={readOnly}
           onChange={(value) => form.set("kitchenDisplayEnabled", value)}
         />
         <SettingSwitch
           label="QR ที่เคาน์เตอร์"
           help="ปิด = พนักงานเปิดที่นั่งเคาน์เตอร์เอง"
           isSelected={draft.counterQrEnabled}
+          isDisabled={readOnly}
           onChange={(value) => form.set("counterQrEnabled", value)}
         />
-        <CutoffField value={draft.businessDayCutoff} error={errors.businessDayCutoff} onChange={(value) => form.set("businessDayCutoff", value)} />
+        <CutoffField readOnly={readOnly} value={draft.businessDayCutoff} error={errors.businessDayCutoff} onChange={(value) => form.set("businessDayCutoff", value)} />
       </SettingsSection>
       {form.failure ? (
         <Alert status="danger" role="alert">
@@ -48,11 +54,13 @@ export function SettingsForm({ venue, payment }: Readonly<{ venue: VenueSettings
           </Alert.Content>
         </Alert>
       ) : null}
-      <div className="flex justify-end">
-        <Button size="lg" isPending={form.pending} isDisabled={!form.dirty || Object.keys(errors).length > 0} onPress={form.save}>
-          บันทึก
-        </Button>
-      </div>
+      {readOnly ? null : (
+        <div className="flex justify-end">
+          <Button size="lg" isPending={form.pending} isDisabled={!form.dirty || Object.keys(errors).length > 0} onPress={form.save}>
+            บันทึก
+          </Button>
+        </div>
+      )}
       {guard.target ? <LeaveDialog onStay={guard.stay} onLeave={guard.leave} /> : null}
     </>
   );

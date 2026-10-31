@@ -6,10 +6,11 @@ export function SettingSwitch({
   label,
   help,
   isSelected,
+  isDisabled,
   onChange,
-}: Readonly<{ label: string; help: string; isSelected: boolean; onChange: (value: boolean) => void }>) {
+}: Readonly<{ label: string; help: string; isSelected: boolean; isDisabled: boolean; onChange: (value: boolean) => void }>) {
   return (
-    <Switch isSelected={isSelected} onChange={onChange}>
+    <Switch isSelected={isSelected} isDisabled={isDisabled} onChange={onChange}>
       <Switch.Control>
         <Switch.Thumb />
       </Switch.Control>

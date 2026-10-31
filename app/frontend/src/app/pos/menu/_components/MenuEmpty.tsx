@@ -3,7 +3,7 @@
 import { Button } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
-export function MenuEmpty({ noItems }: Readonly<{ noItems: boolean }>) {
+export function MenuEmpty({ noItems, canWrite }: Readonly<{ noItems: boolean; canWrite: boolean }>) {
   const router = useRouter();
 
   if (!noItems) {
@@ -17,7 +17,7 @@ export function MenuEmpty({ noItems }: Readonly<{ noItems: boolean }>) {
   return (
     <div className="flex flex-col items-center gap-3 py-8 text-center">
       <p className="text-text-muted">ยังไม่มีเมนู</p>
-      <Button onPress={() => router.push("/pos/menu/new")}>เพิ่มเมนูแรก</Button>
+      {canWrite ? <Button onPress={() => router.push("/pos/menu/new")}>เพิ่มเมนูแรก</Button> : null}
     </div>
   );
 }

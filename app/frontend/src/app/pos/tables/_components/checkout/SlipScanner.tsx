@@ -16,7 +16,7 @@ export function SlipScanner({
 }: Readonly<{
   payment: Payment;
   onVerified: (payment: Payment) => void;
-  onManual: () => void;
+  onManual: (() => void) | null;
 }>) {
   const [attempt, setAttempt] = useState(0);
   const [fault, setFault] = useState<string | null>(null);
@@ -53,7 +53,7 @@ export function SlipScanner({
             สแกนใหม่
           </Button>
         ) : null}
-        <Button variant="ghost" onPress={onManual}>ยืนยันด้วยตนเอง</Button>
+        {onManual ? <Button variant="ghost" onPress={onManual}>ยืนยันด้วยตนเอง</Button> : <p className="text-small text-text-muted">ให้ผู้จัดการยืนยันรับเงิน</p>}
       </div>
     </div>
   );

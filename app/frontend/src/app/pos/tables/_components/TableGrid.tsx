@@ -11,6 +11,7 @@ import { useTableLive } from "@/hooks/useSocketEvent";
 import { useAcknowledgeCall } from "@/hooks/useStaffCalls";
 import { usePendingBySeat } from "@/hooks/useTicketBoard";
 import { getTables, TABLES_KEY } from "@/lib/api/tables";
+import { usePermissions } from "@/lib/permissions/usePermissions";
 import { CheckoutModal } from "./checkout/CheckoutModal";
 import { DisconnectedBanner } from "./DisconnectedBanner";
 import { FloorSummary } from "./FloorSummary";
@@ -41,6 +42,7 @@ export function TableGrid() {
   const [draft, setDraft] = useState<{ seatId: string | null } | null>(null);
   const params = useSearchParams();
   const router = useRouter();
+  const { can } = usePermissions();
   const items = tables.data?.items ?? [];
   const selectedId = params.get("visit");
   const payOpen = params.get("pay") === "1" && selectedId !== null;
@@ -61,7 +63,7 @@ export function TableGrid() {
 
   function onSeat(seat: TableSummary) {
     if (!seat.currentVisit) {
-      setDraft({ seatId: seat.id });
+      if (can("visits:open")) setDraft({ seatId: seat.id });
       return;
     }
     selectVisit(seat.currentVisit.id);
@@ -71,9 +73,11 @@ export function TableGrid() {
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-title">โต๊ะ</h1>
-        <Button size="lg" isDisabled={!tables.data || items.length === 0} onPress={() => setDraft({ seatId: null })}>
-          + เปิดโต๊ะ
-        </Button>
+        {can("visits:open") ? (
+          <Button size="lg" isDisabled={!tables.data || items.length === 0} onPress={() => setDraft({ seatId: null })}>
+            + เปิดโต๊ะ
+          </Button>
+        ) : null}
       </div>
       {tables.isPending ? <TableGridSkeleton /> : null}
       {!tables.isPending && !tables.data ? (
@@ -92,7 +96,7 @@ export function TableGrid() {
           <SeatSection title="โต๊ะ" seats={items.filter((seat) => seat.kind === "table").sort(byOrder)} now={now} selectedId={selectedId} pending={pending} onSeat={onSeat} onAcknowledge={acknowledge.mutate} />
         </>
       ) : null}
-      {draft ? (
+      {draft && can("visits:open") ? (
         <OpenTableModal
           key={draft.seatId ?? "blank"}
           seats={items}
@@ -113,7 +117,7 @@ export function TableGrid() {
           onPay={() => router.replace(withPay(params, true))}
         />
       ) : null}
-      {payOpen && selectedId ? <CheckoutModal visitId={selectedId} onClose={() => router.replace(withPay(params, false))} /> : null}
+      {payOpen && selectedId && can("payments:create") ? <CheckoutModal visitId={selectedId} onClose={() => router.replace(withPay(params, false))} /> : null}
     </section>
   );
 }
