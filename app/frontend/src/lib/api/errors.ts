@@ -21,3 +21,10 @@ export class ApiError extends Error {
     this.authPhase = authPhase;
   }
 }
+
+/** A 403 that names the permissions the person lacks; the app already toasts it, so callers skip their own error toast. */
+export function isPermissionDenied(error: unknown): boolean {
+  if (!(error instanceof ApiError) || error.status !== 403) return false;
+  const data = error.data;
+  return typeof data === "object" && data !== null && Array.isArray((data as { missing?: unknown }).missing);
+}

@@ -19,6 +19,7 @@ export function CloseConfirmModal({
   bill,
   pending,
   failed,
+  canPay,
   onDismiss,
   onConfirm,
   onPay,
@@ -27,6 +28,7 @@ export function CloseConfirmModal({
   bill: Bill;
   pending: boolean;
   failed: boolean;
+  canPay: boolean;
   onDismiss: () => void;
   onConfirm: () => void;
   onPay: () => void;
@@ -61,7 +63,7 @@ export function CloseConfirmModal({
             <Button variant="secondary" className="flex-1" onPress={onDismiss}>
               ยกเลิก
             </Button>
-            {owed ? (
+            {owed && canPay ? (
               <Button className="flex-1" onPress={onPay}>
                 ไปชำระเงิน
               </Button>

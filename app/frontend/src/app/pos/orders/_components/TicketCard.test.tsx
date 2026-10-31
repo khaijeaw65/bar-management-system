@@ -10,7 +10,7 @@ function lines(count: number) {
   );
 }
 
-function renderCard(extra: Parameters<typeof ticket>[3] = {}, items = lines(1), kitchenOn = false) {
+function renderCard(extra: Parameters<typeof ticket>[3] = {}, items = lines(1), kitchenOn = false, canAct = true) {
   const onAct = vi.fn();
   const onOpen = vi.fn();
   render(
@@ -18,6 +18,7 @@ function renderCard(extra: Parameters<typeof ticket>[3] = {}, items = lines(1), 
       <TicketCard
         ticket={ticket("60000000-0000-4000-8000-000000000101", 45, items, extra)}
         kitchenOn={kitchenOn}
+        canAct={canAct}
         pending={false}
         fresh={false}
         onOpen={onOpen}
@@ -67,4 +68,10 @@ test("the open button holds only phrasing content, not the lines list", () => {
   const open = screen.getByRole("button", { name: "ดูรายละเอียด #0045 T3" });
   expect(open.querySelector("ul, li, div, p")).toBeNull();
   expect(open).toHaveTextContent("1× เมนู1");
+});
+
+test("a person who cannot act can open the card but has no action button", () => {
+  renderCard({}, lines(1), false, false);
+  expect(screen.getByRole("button", { name: /ดูรายละเอียด/ })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /รับออเดอร์/ })).not.toBeInTheDocument();
 });

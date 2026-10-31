@@ -10,7 +10,7 @@ import { SettingsSection } from "./SettingsSection";
 
 export const PAYMENT_SETTINGS_KEY = ["venue", "payment-settings"] as const;
 
-export function PaymentSection() {
+export function PaymentSection({ canEdit }: Readonly<{ canEdit: boolean }>) {
   const settings = useQuery({ queryKey: PAYMENT_SETTINGS_KEY, queryFn: getPaymentSettings, retry: false });
   const [editing, setEditing] = useState(false);
 
@@ -45,9 +45,11 @@ export function PaymentSection() {
             </span>
             <span className="text-body-md font-semibold">{settings.data.promptpayIdMasked ?? "ยังไม่ได้ตั้งค่า"}</span>
           </div>
-          <Button variant="secondary" onPress={() => setEditing(true)}>
-            เปลี่ยนบัญชี
-          </Button>
+          {canEdit ? (
+            <Button variant="secondary" onPress={() => setEditing(true)}>
+              เปลี่ยนบัญชี
+            </Button>
+          ) : null}
         </div>
       ) : null}
       {settings.data && editing ? <PromptPayForm onDone={() => setEditing(false)} /> : null}
