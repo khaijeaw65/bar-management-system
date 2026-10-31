@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-31 |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-31 |
 | **Implementer** | kj (executor agent) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | frontend |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | BRIEF-054 ✅ (staff API) · **BRIEF-055 merged** (`GET /staff-groups` for the group picker) · **BRIEF-056 merged** (`usePermissions`, `RequirePermission`, route map) |
 | **References** | CD-13 handoff (boards `settings` ·1–4, `staff` ·1–6, `staff · 390` ·1–4, `staff-detail` ·1–5, J1, J2; R3 cut-off, R4 rejected re-login, R6 rules, R7 API; §6 copy, §7 layout, §8 components) · canvas https://claude.ai/artifact/PF5pdKMY4b2w1oaunrHJH3 · BRIEF-054 §3 · audit BRIEF-054 Finding 3 (real-LINE approval proof belongs here) |
 | **Audit depth** | Full (who gets access to the bar's system) |
@@ -31,6 +31,7 @@ The owner lets a new hire in from their LINE request in three taps (J1), and fro
 ## 2. Scope
 ### In
 - **Settings shell** (`src/app/pos/settings/layout.tsx`): sub-nav ร้าน · พนักงาน · กลุ่ม · นโยบาย (ขั้นสูง) · โต๊ะ & QR — each tab shown only if its page is allowed (BRIEF-056 map; U1 adds `/pos/settings/staff*` → `staff:manage`; กลุ่ม / นโยบาย / โต๊ะ tabs appear when their briefs add the routes). Tabs at 1280 / 1024 (settings·1–2), nav drawer at 390 (settings·3–4). Existing venue form moves under the shell unchanged.
+- **Route map order (Rev 2 — audit BRIEF-056 Finding 2, DR-029):** `src/lib/permissions/pos-routes.ts` is first-match and its `/^\/pos\/settings(\/|$)/` rule needs `venue:update` (DR-029 A). Add `/pos/settings/staff` and `/pos/settings/staff/[staffId]` → `staff:manage` **before** that general rule (U2 adds groups / policies the same way). The settings shell's tabs read the **same map** (`permissionForPath`) — no second list — so a custom role with `staff:manage` but no `venue:update` still reaches the staff screens, and the ร้าน tab is hidden for it. Test: role with only `staff:manage` (+ `tables:read`) → พนักงาน tab visible, ร้าน tab hidden, `/pos/settings/staff` opens, `/pos/settings` → "ไม่มีสิทธิ์".
 - **Request notice:** `useAccessRequests()` (poll 60 s + focus, only with `staff:manage`) → count on the พนักงาน tab, dot on the ตั้งค่า rail item.
 - **`/pos/settings/staff`** (staff·1–6, staff·390·1–4):
   - **Requests section** (pending): LINE avatar, name, time; "อนุมัติ" → approve modal (J1): ชื่อที่แสดง (prefilled from LINE, ≤ 200), groups as checkboxes (≥ 1, from `GET /staff-groups`), per ticked group a ระยะเวลา radio **ถาวร / ถึงสิ้นกะคืนนี้ / กำหนดเอง** (date + time, future only) → `POST …/approve` with `until: 'permanent' | 'end_of_night' | ISO`; "ปฏิเสธ" → confirm dialog (staff·4) → `POST …/reject`. No requests → empty state (staff·2). Link **"คำขอที่ปฏิเสธ (n)"** → list with "เปิดคำขออีกครั้ง" (`…/reopen`, CD-13 R4).
@@ -60,6 +61,7 @@ The owner lets a new hire in from their LINE request in three taps (J1), and fro
 - **AC-9** — A user without `staff:manage` doesn't see the พนักงาน tab; opening `/pos/settings/staff` by URL → "ไม่มีสิทธิ์" (BRIEF-056).
 - **AC-10** — 1280, 1024, 390: no horizontal scroll; 390 uses the drawer nav; targets ≥ 44 px.
 - **AC-11** — Gates + run proof pass.
+- **AC-12 (Rev 2)** — Custom role with `staff:manage` but no `venue:update`: staff tab + pages open, ร้าน tab hidden, `/pos/settings` → "ไม่มีสิทธิ์" (route map order, DR-029).
 
 ## 5. Test Gate
 | AC | Test type | Location (expected) |
@@ -108,3 +110,4 @@ Run proof (real stack, ports BRIEF-046) — **includes the real-LINE approval ca
 |---|---|---|
 | 1 | 2026-10-31 | Initial Draft (Cowork) — IAM UI U1 settings shell + staff & access requests |
 | 1 | 2026-10-31 | Ready — Field in session: "approve BRIEF-057 Rev 1 Ready" |
+| 2 | 2026-10-31 | Field in session ("add the 056 note to 057"): route-map order before the `/pos/settings` → `venue:update` rule (DR-029), tabs read the same map; AC-12 |
