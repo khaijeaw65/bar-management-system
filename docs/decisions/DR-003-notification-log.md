@@ -80,3 +80,11 @@ CREATE INDEX idx_staff_push_token_user ON staff_push_token(staff_user_id);
 **Decision:** Approved: A + Amendment (push delivery, `staff_push_token`)
 **Why:** The PWA is removed because the Expo staff app now covers native use and background push (DR-002 #1). Web can only get real-time updates while a tab is open, so notifications must be stored as a feed (A). The mobile app needs push, so phone tokens are stored and delivered through the Expo Push API (Amendment).
 **Date:** 2026-09-23 · recorded by Cowork on Field's explicit instruction (planning session); Field signs off by merging the PR
+
+### Amendment 2 (2026-10-31) — build plan, sender and recipients
+Recorded by Cowork on Field's explicit decisions in session (2026-10-31).
+- **Build both** the feed (`notification`) and push (`staff_push_token`) now — split into BRIEF-063 (feed + live) and BRIEF-064 (push), then BRIEF-065 (Expo app).
+- **Sender: `expo-server-sdk` behind a port.** Replaces "plain `fetch`, no SDK dependency" above. The domain depends on a `PushSender` port (`send(messages) → tickets`, `receipts(ids) → receipts`); `ExpoPushSenderAdapter` is the only file that imports `expo-server-sdk`. Why: chunking, token validation, receipts and retries come from Expo's own library; the port keeps it swappable and testable with a fake.
+- **Phase 1 types** (DR-014 #11 — push only these): `order_new` (replaces `qr_order_new`: any new order, POS or QR), `call_staff`, `food_ready` (kitchen screen on only). The other enum values stay for later briefs.
+- **Recipients by permission** (resolved at creation, valid memberships now, active staff only): `order_new` → `orders:update_status`, minus the person who placed it · `call_staff` → `tables:read` · `food_ready` → the order's creator if they hold `orders:read`, else everyone with `orders:update_status`.
+- **Feed UI:** none in these briefs (backend + events only); a feed screen on web / phone is a later brief.

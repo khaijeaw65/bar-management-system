@@ -521,7 +521,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     <div>
       <h1 class="intro-title">Entity<br><span>Relationship Diagram</span></h1>
       <div class="intro-meta">
-        <span><strong>10 domains</strong> · 39 tables</span>
+        <span><strong>11 domains</strong> · 41 tables</span>
         <span><strong>Stack:</strong> NestJS + PostgreSQL + TypeORM</span>
         <span><strong>Updated:</strong> Sep 2026</span>
       </div>
@@ -547,6 +547,7 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-bottle)"></div> Bottle Keep <span class="legend-count">2</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-inv)"></div> Shift &amp; AI Insight <span class="legend-count">2</span></div>
     <div class="legend-item"><div class="legend-swatch" style="background:var(--d-audit)"></div> Audit Log <span class="legend-count">1</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--d-venue)"></div> Notifications <span class="legend-count">2</span></div>
   </div>
 
   <!-- Key design decisions -->
@@ -904,6 +905,25 @@ erDiagram
         uuid changed_by
         timestamp changed_at
     }
+    notification {
+        uuid id PK
+        uuid recipient_id FK
+        string type
+        string title
+        string body
+        string ref_type
+        uuid ref_id
+        timestamp read_at
+        timestamp created_at
+    }
+    staff_push_token {
+        uuid id PK
+        uuid staff_user_id FK
+        string expo_push_token
+        string platform
+        timestamp created_at
+        timestamp last_seen_at
+    }
 
 
     table_seat ||--o{ visit : receives
@@ -921,6 +941,8 @@ erDiagram
     visit ||--o{ bottle_keep_pour : poured_at
 
     staff_user ||--o{ staff_user_identity : "identified via"
+    staff_user ||--o{ notification : receives
+    staff_user ||--o{ staff_push_token : "registers phone"
     staff_user ||--o{ user_group_membership : belongs
     staff_user ||--o{ user_policy : "has direct"
     staff_user |o--o{ visit : opens
@@ -1726,6 +1748,53 @@ erDiagram
             <div class="field-row"><span class="field-name">changed_at</span><span class="field-type">timestamptz</span></div>
           </div>
           <div class="field-note">Diff-only pattern — changedFields stores <code>{field: {from, to}}</code> for scalar changes only; null on CREATE. Populated automatically by TypeORM AuditSubscriber via @nestjs/cls userId. No actor_type — always a staff user. No full snapshots — query by field name to see who changed status, price, etc.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="domain-block">
+      <div class="domain-header">
+        <div class="domain-swatch" style="background:var(--d-venue)"></div>
+        <div class="domain-name" style="color:var(--d-venue)">Notifications</div>
+        <div class="domain-desc">Stored feed + Expo push tokens (DR-003)</div>
+      </div>
+      <div class="domain-tables">
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">notification</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> recipient_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">type</span><span class="field-type">enum</span></div>
+            <div class="field-row"><span class="field-name">title</span><span class="field-type">varchar(200)</span></div>
+            <div class="field-row"><span class="field-name">body</span><span class="field-type">varchar(500)?</span></div>
+            <div class="field-row"><span class="field-name">ref_type</span><span class="field-type">varchar(50)?</span></div>
+            <div class="field-row"><span class="field-name">ref_id</span><span class="field-type">uuid?</span></div>
+            <div class="field-row"><span class="field-name">read_at</span><span class="field-type">timestamptz?</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">One row per recipient (DR-003 A). type: order_new | call_staff | food_ready in Phase 1 (Am. 2). Recipients resolved from IAM permissions at creation. PDPA-safe copy only. Not audited — staff only set read_at.</div>
+        </div>
+
+        <div class="entity-card">
+          <div class="entity-card-head">
+            <span class="entity-name">staff_push_token</span>
+            <span class="entity-tag tag-s1">Sem 1</span>
+          </div>
+          <div class="entity-fields">
+            <div class="field-row"><span class="field-name"><span class="badge badge-pk">PK</span> id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> staff_user_id</span><span class="field-type">uuid</span></div>
+            <div class="field-row"><span class="field-name">expo_push_token</span><span class="field-type">varchar(255) UNIQUE</span></div>
+            <div class="field-row"><span class="field-name">platform</span><span class="field-type">varchar(10)</span></div>
+            <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
+            <div class="field-row"><span class="field-name">last_seen_at</span><span class="field-type">timestamptz</span></div>
+          </div>
+          <div class="field-note">One row per phone (DR-003 Am. 1). Shared phone → token reassigned to the caller. DeviceNotRegistered → row deleted. Sent via expo-server-sdk behind a PushSender port (Am. 2).</div>
         </div>
 
       </div>

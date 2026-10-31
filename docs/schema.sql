@@ -27,6 +27,7 @@ CREATE TYPE inv_category        AS ENUM ('A', 'B', 'C');
 CREATE TYPE inv_tx_type         AS ENUM ('purchase', 'usage', 'adjustment', 'void');
 CREATE TYPE audit_action        AS ENUM ('CREATE', 'UPDATE', 'REJECT');
 CREATE TYPE actor_type          AS ENUM ('user', 'system');
+CREATE TYPE notification_type   AS ENUM ('table_idle', 'table_opened', 'restock_request', 'low_stock', 'payment_confirmed', 'order_new', 'food_ready', 'call_staff');  -- DR-003 (+ Am. 2: order_new replaces qr_order_new)
 
 -- ============================================================
 -- 1. VENUE & TABLES
@@ -566,6 +567,35 @@ CREATE TABLE ai_insight (
 );
 
 -- ============================================================
+-- 11. NOTIFICATIONS (DR-003)
+-- ============================================================
+
+-- One row per recipient staff (DR-003 A). System-written; staff only set read_at.
+-- Not an audited entity (like audit_log). Phase 1 types: order_new, call_staff, food_ready (DR-003 Am. 2).
+CREATE TABLE notification (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  recipient_id  UUID NOT NULL REFERENCES staff_user(id),
+  type          notification_type NOT NULL,
+  title         VARCHAR(200) NOT NULL,       -- Thai UI text, PDPA-safe (seat, order no., counts only)
+  body          VARCHAR(500),
+  ref_type      VARCHAR(50),                 -- 'order' | 'table_seat' | 'visit' | 'payment' …
+  ref_id        UUID,                        -- click-through target (no FK: polymorphic)
+  read_at       TIMESTAMPTZ,                 -- NULL = unread
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Expo push token per phone (DR-003 Am. 1). Shared phone: PUT with another staff's token reassigns it.
+-- Not an audited entity. DeviceNotRegistered in a ticket / receipt → row deleted.
+CREATE TABLE staff_push_token (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  staff_user_id   UUID NOT NULL REFERENCES staff_user(id) ON DELETE CASCADE,
+  expo_push_token VARCHAR(255) NOT NULL UNIQUE,   -- 'ExponentPushToken[…]'
+  platform        VARCHAR(10) NOT NULL CHECK (platform IN ('ios', 'android')),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_seen_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 
@@ -598,6 +628,11 @@ CREATE INDEX idx_payment_visit_status ON payment(visit_id, status);   -- BRIEF-0
 CREATE INDEX idx_membership_user     ON user_group_membership(user_id);
 CREATE INDEX idx_membership_group    ON user_group_membership(group_id);
 CREATE INDEX idx_membership_valid    ON user_group_membership(valid_until) WHERE valid_until IS NOT NULL;
+
+-- Notification lookups (DR-003)
+CREATE INDEX idx_notification_feed   ON notification(recipient_id, created_at DESC);
+CREATE INDEX idx_notification_unread ON notification(recipient_id) WHERE read_at IS NULL;
+CREATE INDEX idx_staff_push_token_user ON staff_push_token(staff_user_id);
 
 -- Audit log lookups
 CREATE INDEX idx_audit_entity        ON audit_log(entity, entity_id);
