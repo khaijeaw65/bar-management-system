@@ -1,0 +1,29 @@
+import { z } from 'zod';
+import { IsoDateTimeSchema, UuidSchema } from './common.js';
+import { NotificationTypeSchema, type NotificationType } from './enums.js';
+
+export { NotificationTypeSchema, type NotificationType };
+
+export const NotificationSchema = z.object({
+  id: UuidSchema,
+  recipientId: UuidSchema,
+  type: NotificationTypeSchema,
+  title: z.string(),
+  body: z.string().nullable(),
+  refType: z.string().nullable(),
+  refId: UuidSchema.nullable(),
+  readAt: IsoDateTimeSchema.nullable(),
+  createdAt: IsoDateTimeSchema,
+});
+export type Notification = z.infer<typeof NotificationSchema>;
+
+export const NotificationPageSchema = z.object({
+  items: z.array(NotificationSchema),
+  nextCursor: z.string().nullable(),
+});
+export type NotificationPage = z.infer<typeof NotificationPageSchema>;
+
+export const UnreadCountSchema = z.object({
+  count: z.number().int().nonnegative(),
+});
+export type UnreadCount = z.infer<typeof UnreadCountSchema>;

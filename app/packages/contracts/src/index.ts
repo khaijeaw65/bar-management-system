@@ -1,5 +1,6 @@
 export * from './events/customer.js';
 export * from './events/menu.js';
+export * from './events/notifications.js';
 export * from './events/order.js';
 export * from './events/payment.js';
 export * from './events/table.js';
@@ -14,6 +15,7 @@ export * from './schemas/errors.js';
 export * from './schemas/iam-admin.js';
 export * from './schemas/menu.js';
 export * from './schemas/menu-write.js';
+export * from './schemas/notifications.js';
 export * from './schemas/orders.js';
 export * from './schemas/permissions.js';
 export * from './schemas/payments.js';
