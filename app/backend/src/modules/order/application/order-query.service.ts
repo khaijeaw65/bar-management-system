@@ -1,11 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { Order, Ticket, TicketListQuery } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
-import {
-  ORDER_REPOSITORY,
-  type OrderRepository,
-} from '../domain/order.repository.js';
+import { OrderRepository } from '../domain/order.repository.js';
 import type { OrderQuery, OrderTotal } from '../domain/order.types.js';
 import { foldOrders } from './fold-orders.js';
 import type { FoldedOrder } from './folded-order.types.js';
@@ -16,7 +13,7 @@ import { listFilter } from './ticket-query.js';
 @Injectable()
 export class OrderQueryService {
   public constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
+    private readonly orders: OrderRepository,
     private readonly staff: StaffUserService,
   ) {}
 

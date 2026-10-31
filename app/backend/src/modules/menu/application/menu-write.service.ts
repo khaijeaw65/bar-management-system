@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   MENU_CHANGED,
@@ -21,9 +21,8 @@ import { fromSatang, toSatang } from '../../../common/money.js';
 import { StorageService, UPLOAD_URL_TTL_SECONDS } from '../../../common/storage/storage.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import {
-  MENU_WRITE_REPOSITORY,
+  MenuWriteRepository,
   type MenuItemFields,
-  type MenuWriteRepository,
 } from '../domain/menu-write.repository.js';
 import { MenuCatalogService } from './menu-catalog.service.js';
 import { MenuPhotoService, type AttachedPhoto } from './menu-photo.service.js';
@@ -35,7 +34,7 @@ import { MenuPhotoService, type AttachedPhoto } from './menu-photo.service.js';
 @Injectable()
 export class MenuWriteService {
   public constructor(
-    @Inject(MENU_WRITE_REPOSITORY) private readonly menu: MenuWriteRepository,
+    private readonly menu: MenuWriteRepository,
     private readonly catalog: MenuCatalogService,
     private readonly notifications: NotificationsService,
     private readonly photos: MenuPhotoService,

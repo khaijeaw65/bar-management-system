@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type {
   MenuCategoryList,
   MenuItem,
@@ -10,10 +10,7 @@ import { StorageService } from '../../../common/storage/storage.service.js';
 import { hhmm } from '../../../common/time-label.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { Clock } from '../../../common/clock.js';
-import {
-  MENU_CATALOG_REPOSITORY,
-  type MenuCatalogRepository,
-} from '../domain/menu-catalog.repository.js';
+import { MenuCatalogRepository } from '../domain/menu-catalog.repository.js';
 import type {
   MenuGroupRecord,
   MenuItemRecord,
@@ -30,7 +27,6 @@ export class MenuCatalogService {
   private readonly logger = new Logger(MenuCatalogService.name);
 
   public constructor(
-    @Inject(MENU_CATALOG_REPOSITORY)
     private readonly catalog: MenuCatalogRepository,
     private readonly clock: Clock,
     private readonly storage: StorageService,

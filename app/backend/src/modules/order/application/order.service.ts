@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { ORDER_CREATED, VISIT_STATE_CHANGED, type Order } from '@bar/contracts';
 import {
@@ -7,10 +7,7 @@ import {
 } from '../../menu/application/menu-catalog.service.js';
 import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import {
-  ORDER_REPOSITORY,
-  type OrderRepository,
-} from '../domain/order.repository.js';
+import { OrderRepository } from '../domain/order.repository.js';
 import type { NewOrder, NewTicket, PricedLine, TicketBucket } from '../domain/order.types.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
@@ -26,7 +23,7 @@ export class OrderService {
   private readonly logger = new Logger(OrderService.name);
 
   public constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
+    private readonly orders: OrderRepository,
     private readonly clock: Clock,
     private readonly visits: VisitService,
     private readonly venues: VenueSettingsService,

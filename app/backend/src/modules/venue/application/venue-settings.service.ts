@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   VENUE_SETTINGS_CHANGED,
@@ -15,7 +15,7 @@ import { hhmm } from '../../../common/time-label.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { PaymentGuard } from '../../payment/application/payment-guard.js';
 import {
-  VENUE_REPOSITORY,
+  VenueRepository,
   type BusinessDayRule,
   type LockedVenue,
   type LockedVenueSettings,
@@ -23,7 +23,6 @@ import {
   type StoredPromptPay,
   type VenuePaymentAccount,
   type VenueRecord,
-  type VenueRepository,
 } from '../domain/venue.repository.js';
 import { maskPromptPayId, normalizePromptPayId } from './promptpay-id.js';
 import type { StoredSettings } from './venue-settings.types.js';
@@ -31,7 +30,7 @@ import type { StoredSettings } from './venue-settings.types.js';
 @Injectable()
 export class VenueSettingsService {
   public constructor(
-    @Inject(VENUE_REPOSITORY) private readonly venues: VenueRepository,
+    private readonly venues: VenueRepository,
     private readonly paymentGuard: PaymentGuard,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,

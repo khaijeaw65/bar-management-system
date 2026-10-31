@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { ClsService } from 'nestjs-cls';
 import {
@@ -15,7 +15,7 @@ import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { MenuCatalogService } from '../../menu/application/menu-catalog.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { VisitService } from '../../venue/application/visit.service.js';
-import { ORDER_REPOSITORY, type OrderRepository } from '../domain/order.repository.js';
+import { OrderRepository } from '../domain/order.repository.js';
 import type { PendingItemLine } from '../domain/order.types.js';
 import type { TicketView } from './present-order.js';
 import type { SeatRef, ToggleOutcome } from './sold-out.types.js';
@@ -26,7 +26,7 @@ const SOLD_OUT_REASON = 'ของหมด';
 @Injectable()
 export class SoldOutService {
   public constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
+    private readonly orders: OrderRepository,
     private readonly clock: Clock,
     private readonly menu: MenuCatalogService,
     private readonly visits: VisitService,
