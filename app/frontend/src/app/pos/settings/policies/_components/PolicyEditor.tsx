@@ -35,6 +35,18 @@ async function persist(policy: Policy | null, draft: Draft, changed: { nameChang
   if (changed.codesChanged) await setPolicyCodes(policy.id, draft.codes);
 }
 
+/** The editable copy of a policy plus how far it has drifted from what the server last said. */
+function usePolicyDraft(policy: Policy | null) {
+  const original = new Set<PermissionCode>(policy?.codes ?? []);
+  const [selected, setSelected] = useState<Set<PermissionCode>>(original);
+  const [name, setName] = useState(policy?.name ?? "");
+  const [description, setDescription] = useState(policy?.description ?? "");
+  const nameChanged = policy !== null && name.trim() !== policy.name;
+  const descriptionChanged = policy !== null && description.trim() !== (policy.description ?? "");
+  const codeChanges = [...selected].filter((code) => !original.has(code)).length + [...original].filter((code) => !selected.has(code)).length;
+  return { original, selected, setSelected, name, setName, description, setDescription, nameChanged, descriptionChanged, codeChanges };
+}
+
 /** Matrix editor for one policy, or a new one (policy = null). Nothing is sent until บันทึก, and then as one full set. */
 export function PolicyEditor({ policy, onBack }: Readonly<{ policy: Policy | null; onBack: () => void }>) {
   const catalog = useCatalog();
@@ -43,18 +55,12 @@ export function PolicyEditor({ policy, onBack }: Readonly<{ policy: Policy | nul
   const staff = useStaffList();
   const refresh = useRefreshIam();
   const guard = useSelfGuard();
-  const original = new Set<PermissionCode>(policy?.codes ?? []);
-  const [selected, setSelected] = useState<Set<PermissionCode>>(original);
-  const [name, setName] = useState(policy?.name ?? "");
-  const [description, setDescription] = useState(policy?.description ?? "");
+  const { original, selected, setSelected, name, setName, description, setDescription, nameChanged, descriptionChanged, codeChanges } = usePolicyDraft(policy);
   const [nameError, setNameError] = useState<string | null>(null);
   const [failure, setFailure] = useState<IamFailure | null>(null);
   const [confirming, setConfirming] = useState<"use" | "delete" | null>(null);
   const [saving, setSaving] = useState(false);
   const readOnly = policy?.system === "all";
-  const nameChanged = policy !== null && name.trim() !== policy.name;
-  const descriptionChanged = policy !== null && description.trim() !== (policy.description ?? "");
-  const codeChanges = [...selected].filter((code) => !original.has(code)).length + [...original].filter((code) => !selected.has(code)).length;
   const changes = codeChanges + (nameChanged ? 1 : 0) + (descriptionChanged ? 1 : 0);
   const usedBy = namesUsing(policy, groups.data ?? [], staff.data ?? []);
 
