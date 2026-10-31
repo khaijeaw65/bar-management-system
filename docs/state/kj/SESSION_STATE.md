@@ -3,10 +3,10 @@ Updated: 2026-10-31 · Agent: Claude Code (BRIEF-055 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-055 Implemented** (work `d04bf42`, branch pushed, no PR) → `audit BRIEF-055` (Cowork) → PASS commit + PR → `ci` green → merge (Field's own PR, §7). Next: IAM UI briefs on CD-13 (staff, groups, policies).
+**BRIEF-055 audit PASS, PR open** (S `d04bf42`) → `ci` green → merge (Field's own PR, §7). Next: IAM UI briefs on CD-13 (staff, groups, policies).
 
 ## Active
-- Brief: BRIEF-055 Rev 1 · Stage: Implemented · Branch: `feat/BRIEF-055-iam-groups-policies-api` (main merged in at start — seed was cut before #103/#104)
+- Brief: BRIEF-055 Rev 1 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-055-iam-groups-policies-api` (main merged in at start — seed was cut before #103/#104)
 - Done 21–31 Oct: BRIEF-054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
 
 ## Next steps

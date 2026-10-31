@@ -5,9 +5,9 @@
 | **Implementer** | kj (Claude Code) |
 | **Date** | 2026-10-31 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-055-iam-groups-policies-api` (no PR until audit PASS) |
+| **Branch** | `feat/BRIEF-055-iam-groups-policies-api` (PR opened at PASS) |
 | **Work SHA** | `d04bf42` |
-| **Status** | Implemented — waiting for `audit BRIEF-055` (Cowork) |
+| **Status** | Audit PASS (Cowork, S = `d04bf42`) — PR open |
 
 ## Summary
 - **Contracts:** new `schemas/iam-admin.ts` — `PERMISSION_CATALOG` (Thai labels, one place) + `PermissionCatalogSchema`, `StaffGroup`, `Policy` (`usage`), `DeleteImpact`, create / update / set bodies, `PolicyInUseData`. `StaffMember` gains `policyIds`. Error codes `SYSTEM_ROW`, `GROUP_NAME_TAKEN`, `POLICY_NAME_TAKEN`, `POLICY_IN_USE`.
