@@ -1,13 +1,14 @@
 # Bar Management System — Workspace Rules
 
 > Workspace-wide conventions for the monorepo.
-> Scoped rules: `docs/rules/backend.md` (NestJS) and `docs/rules/frontend.md` (Next.js).
+> Scoped rules: `docs/rules/backend.md` (NestJS), `docs/rules/frontend.md` (Next.js) and `docs/rules/mobile.md` (Expo).
 >
 > Reference docs (read before working):
 >   CLAUDE.md         → permanent project context
 >   docs/FRD.md       → feature scope (what is in/out)
 >   docs/schema.sql   → PostgreSQL schema (34 tables, 9 domains)
 >   docs/rules/workflow.md → roles, briefs, gates, Field Guard (always read first)
+>   docs/features/INVARIANTS.md → invariant index (always loaded; feature specs in docs/features/<f>/)
 >   docs/state/<person>/SESSION_STATE.md → current progress (read at start, overwrite at end)
 
 ---
@@ -64,9 +65,24 @@ Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
 - Do not expand scope without an Approved DR in `docs/decisions/` (Field Guard — workflow.md §5)
 - Finish the core vertical before adding breadth
 
+## Cross-app Contracts
+- Shared types/enums/schemas have one source of truth: `app/packages/contracts` (`@bar/contracts`, section above) and, for Feature Tier work, the feature's `docs/features/<feature>/design.md`. Never redefine them in app code.
+- Contract changes are a Data trigger (workflow.md Section 5) and must update `design.md` in the same PR.
+
+## Coding Anti-Patterns — BANNED Across All Stacks
+1. **No type-safety cheats:** Zero `any`, `as any`, `as unknown as T`, `@ts-ignore`, `@ts-expect-error`, or non-null `!` on external/untrusted data. Parse untrusted data at the boundary (Zod/schema) or fix the type definition.
+2. **No silent error swallowing or fake fallbacks:** Never write a `catch` block that logs and returns `null`/`false`/`[]` to hide a failure — rethrow a typed domain/HTTP error or handle an explicit recovery path documented in the brief. Never invent silent fallback defaults (`?? ''`, `?? 0`) that are not in the contract.
+3. **No fake or tautological tests:** Tests must assert observable output or state changes, not mock call counts (`toHaveBeenCalled`). Never mock the class under test or its private helpers — mock only external boundaries/ports. Never weaken an assertion or edit a seeded `.e2e-spec.ts` file to make a failing test pass.
+4. **No dead code, stubs, or shims:** Delete unused functions, parameters, and callers in the same commit. No commented-out code blocks, no `// TODO` stubs on shipped AC paths, and no internal backwards-compatibility shims.
+
 ## Development Workflow
 - Local: Docker Compose for Postgres + Redis (see `infra/docker-compose.yml`)
 - `pnpm dev` → Turborepo runs backend + frontend in parallel
 - Migrations: `migration:generate` → review → `migration:run` (never `synchronize: true`)
 - Migrations are additive by default (add column/table over drop/rename) and each has a working `down`: `migration:run` → `migration:revert` → `migration:run` before handoff. Never edit a migration already on `main` — write a new one.
 - Feature flags: not used — scope control is in FRD, not flags
+
+## Improvement notes
+While pairing, reviewing or auditing, write down anything that would improve the code or the kit — one line each, as you notice it. Don't fix it in the same session unless it's in the current brief.
+- **Code / style** → `docs/style-notes.md`: `decision or idea · example file · why`. Feeds the scoped rule files later.
+- **field-kit** → your reply, prefixed `kit:` (Field collects these for the kit's backlog). Kit fixes happen in batches, never during a coding session.

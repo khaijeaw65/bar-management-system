@@ -1,0 +1,129 @@
+{
+  "kit_version": "0.4.0",
+  "generated": "2026-11-01",
+  "config": {
+    "project": {
+      "name": "AI-Powered Bar Management System",
+      "summary": "Production-grade bar management system for small-to-medium counter bars in Thailand (DPU CPE senior capstone).",
+      "deadline": "April 2027",
+      "core_flow": "QR guest ordering → kitchen/bar display → PromptPay payment → session close",
+      "cuts": [
+        "offline mode",
+        "member QR",
+        "staff performance analytics"
+      ]
+    },
+    "owner": {
+      "id": "kj",
+      "alias": "Field",
+      "github": "khaijeaw65"
+    },
+    "members": [
+      {
+        "id": "kj",
+        "name": "KJ",
+        "role": "backend lead"
+      },
+      {
+        "id": "methee",
+        "name": "Metee (เมธี)",
+        "role": "frontend/web and mobile developer",
+        "mode": "learning",
+        "agent_share": "≤ 20%"
+      }
+    ],
+    "auditor": "Cowork",
+    "auditor_fallback": "Codex",
+    "executors": [
+      "Cursor",
+      "Claude Code",
+      "Antigravity",
+      "Codex"
+    ],
+    "quality_scan": {
+      "tool": "SonarQube Community Build",
+      "command": "pnpm sonar"
+    },
+    "packs": [
+      {
+        "kind": "backend",
+        "stack": "nestjs",
+        "dir": "app/backend"
+      },
+      {
+        "kind": "frontend",
+        "stack": "next",
+        "dir": "app/frontend"
+      },
+      {
+        "kind": "mobile",
+        "stack": "expo",
+        "dir": "app/mobile"
+      }
+    ],
+    "contracts_location": "app/packages/contracts",
+    "stack_extra": [
+      [
+        "Auth",
+        "LINE SSO + JWT + refresh rotation"
+      ],
+      [
+        "Payment",
+        "PromptPay QR + GB Prime Pay webhook"
+      ],
+      [
+        "AI",
+        "OpenAI API (owner insight, DR-014)"
+      ],
+      [
+        "Infra",
+        "AWS ECS/ECR + RDS + S3 + ElastiCache + Terraform + Vercel"
+      ]
+    ],
+    "root_config": [
+      "turbo.json",
+      "pnpm-workspace.yaml",
+      "package.json (root)",
+      ".gitignore"
+    ],
+    "schema_file": "docs/schema.sql"
+  },
+  "rule_hashes": {
+    ".agents/rules/backend.md": "5ec93c60ca32f32de1ff6912f6722aaa8fcb7e38acb06bff4e491eb6cf5d7152",
+    ".agents/rules/boundaries.md": "4742012a1371ccfd8cf2482c87c56ae50eb7bdf9b24c6bcb54dd1f0665e5b1f6",
+    ".agents/rules/core.md": "4d18132796c34b3a342abe72706a0cdda04d3e0f66b4d1adf62739f647769584",
+    ".agents/rules/frontend.md": "f195698792d076c692ccfa885c36ea6b1ddaa5c67b7554ff6784e848fc15bc17",
+    ".agents/rules/mobile.md": "dd7d4fa845990e64559d290be152911e821f61b4aabcfc31e2c093bd4fa7f524",
+    ".agents/rules/ponytail.md": "73c0260e02dbf1b035a951e4aefb71127c8dc92e389bfc82684817d775057ef7",
+    ".agents/rules/workflow.md": "8e4b1d14249d055dcae49777e2fefe18c6cc618073c5261912e7fda39de551d3",
+    ".cursor/rules/backend.mdc": "ec1d2b8e6e63d324568f945aae1a822f3da358533f9926b5ae90e7d92afcb0ca",
+    ".cursor/rules/boundaries.mdc": "085de686953898408fead0282fea3363274dce9191a90ae9a04c3aa3db8509e3",
+    ".cursor/rules/core.mdc": "b4a53c1f8a3d3c64d0b9a7dcc4a85145799b22b5cc5deae47d5e0b02188bc845",
+    ".cursor/rules/frontend.mdc": "877a8018ea55e3fb0c5908fbfc641c5dc15f378111872461adb649996421c02c",
+    ".cursor/rules/mobile.mdc": "f06f80aa982203aede34a69c1e63ea0d4880eb7d68ffb1880c8d318c73cb3af1",
+    ".cursor/rules/ponytail.mdc": "41cb400e8758621249b91e507a982c99d061d854bce06a13507fea424d87f94b",
+    ".cursor/rules/workflow.mdc": "713aae557e3d773ec1332329d0c1c3fadfd969a05b76bdfd96175b18e9ba0d82",
+    "AGENTS.md": "13a5366f514eeaeced3a482a605aa7e567c8959382987025301ee2df2bbca9d9",
+    "CLAUDE.md": "713fbbba2822d460c97473dc1ab166594d971e0b9a064463e49ea0e8d250aa2b",
+    "docs/audits/_TEMPLATE.md": "15315234bd175a24ed53d94b3110c3a4ee3e181854e0db6689aea2904aff4da2",
+    "docs/briefs/_TEMPLATE.md": "94d57eeb56bcf719c3cb4dd36f65f528fa52441d210458e543468f8999c7b384",
+    "docs/decisions/_TEMPLATE.md": "4192b6f1afdbb4171f712c9891eeba2657c04e457f3c3515bdbc1abaa5b6cdaf",
+    "docs/features/_TEMPLATE/design.md": "e1728046e5460e2640dfbb805496bbb4b670422b8b6151d5f221224efa88558b",
+    "docs/features/_TEMPLATE/requirements.md": "985b57a75840aefa283d41079d981ce5e55e0bd06145731daf4870d9ad5cbf25",
+    "docs/features/_TEMPLATE/ui.md": "7608dd35783792372b52dc1070fbed90ddd9d1c173649699d448c628972deff7",
+    "docs/handoffs/_TEMPLATE.md": "f00cc8c85e41b0696342842fd76af116f160e1ff5c4fbe2176e0ab0cc498d880",
+    "docs/rules/agent-boundaries.md": "1e8a9212d468a49241e6f17cad7ce1cdabe0d94c5a7223fbc02ce33f23f21174",
+    "docs/rules/backend.md": "6807136dab5adcb250c32d43e396b749152114f89b37d181611e78cc48a1de26",
+    "docs/rules/core.md": "98cba73865c704e683cc02269d127a1bf4c7ddb618c7964106f4f202a61de418",
+    "docs/rules/frontend.md": "cf08d0ebae648019aa473e97ee86daf2084ece0ab487abab8f0b15786852b1ea",
+    "docs/rules/mobile.md": "c239a54e913a4891437ae003a52006c30a583c2f7c8c642f7b84e22afa7a47c4",
+    "docs/rules/ponytail.md": "52a06363622a8ab09bcc9f0d0d54f81c48d67aa384ac013f5a548f5c346f01e0",
+    "docs/rules/workflow.md": "4ad60960a14ffc44e55716585b99afec9a5dd9d7d7cd9a590934ac0129f27cb4",
+    "docs/state/README.md": "36c7d7460ea2e6430b580d203022a740538e700525bd1c685e0ec5222410523a",
+    "docs/state/_TEMPLATE.md": "434a9ada3a4e4bf41b6fcc6ecc304217242c72e5dafdd4f24e839f21c27ede02",
+    "ops/github/README.md": "3ef84b4780810b4c4c69e64fcd9bc825cf31b463e46196dd84b7bfc0d37bbc65",
+    "ops/github/ruleset-main-ci.json": "f9c41340e25f8b3354325fa72a392b82b9fd55766b4a0318effbd56eeba2004c",
+    "ops/github/ruleset-main-review.json": "3435367c6f6f89acf3d538757c96583f40aebeb8d928aea2a44fa3931eae6895"
+  },
+  "draft_packs": []
+}

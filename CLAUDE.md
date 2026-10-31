@@ -31,6 +31,7 @@ Key differentiators: AI-powered owner insight (sales / anomaly-fraud / menu — 
 │   └── packages/contracts/ → @bar/contracts — shared enums & types
 ├── docs/
 │   ├── rules/              → all agent rules (source of truth) incl. workflow.md
+│   ├── features/           → Spec-Anchored feature specs (<f>/requirements.md, design.md, ui.md) + INVARIANTS.md
 │   ├── briefs/             → executable briefs (<ID>-<slug>.md) + ui/ design references
 │   ├── state/              → kj/SESSION_STATE.md, methee/SESSION_STATE.md — current progress per person
 │   ├── handoffs/ decisions/ audits/
@@ -113,18 +114,34 @@ Cross-cutting concerns to resolve:
 
 ---
 
+## Scoped Rules
+
+Before editing files in a path below, read its rule file.
+
+| Path | Rule file |
+|---|---|
+| `app/backend/**` | `docs/rules/backend.md` |
+| `app/frontend/**` | `docs/rules/frontend.md` |
+| `app/mobile/**` | `docs/rules/mobile.md` |
+
+---
+
 ## Workflow & Decision Authority
 
 Approval policy: routine scoped work and Git (including task-branch commit/push/PR creation) proceed without repeated questions; critical decisions, destructive actions, main merges and releases require explicit authority. See `docs/rules/workflow.md` §4. Tool/sandbox permission prompts remain separate.
 
-Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `audit BRIEF-###` (`ตรวจ`), `สถานะ BRIEF-###`, `handoff`, `อนุมัติ merge BRIEF-###` — definitions and limits in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
+Chat commands & skills: `onboard kj|methee`, `/new-feature`, `/new-brief`, `/new-dr`, `execute BRIEF-###` (`ทำ`), `start BRIEF-###`, `fix BRIEF-### (#…)`, `ship BRIEF-###`, `audit BRIEF-###` (`ตรวจ`), `/review`, `อนุมัติ merge BRIEF-###` (`approve merge`), `/checkpoint` (`/save-session`), `resume` (`/resume`), `/autopilot`, `สถานะ BRIEF-###` (`status`), `handoff` — definitions in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
 
 @docs/rules/workflow.md
+@docs/rules/core.md
+@docs/rules/agent-boundaries.md
+@docs/rules/ponytail.md
+@docs/features/INVARIANTS.md
 
-- **Field** (KJ) is the only decision authority. Any new dependency, brief deviation, flow/architecture change, schema change, or auth/payment/PDPA change → needs approval: an exact Pre-decided item in the Ready brief, or an Approved DR. Neither → raise a DR and stop that path. Never decide alone.
-- **Roles:** Cowork = auditor + decision partner (no app code). Claude Code / Cursor / Antigravity / Codex = executors (only inside a `Ready` brief).
+- **Field** (KJ) is the only decision authority. Any new dependency, brief/e2e deviation, flow/architecture change, schema change, or auth/payment/PDPA change → needs approval: an exact Pre-decided item in the Ready brief, or an Approved DR. Neither → raise a DR and stop that path. Never decide alone.
+- **Roles:** Cowork = planner, QA acceptance-test author (seeded e2e) and default auditor (no app implementation code). Cursor / Claude Code / Antigravity / Codex = executors (unit `*.spec.ts` + app code inside a `Ready` brief; never edit seeded e2e files).
 - **Lifecycle:** executor marks `Implemented` → assigned auditor reviews → merge: Field's own PRs pre-approved once audit PASS + checks green on the audited head; Methee's PRs need Field's `อนุมัติ merge` for the exact head → merged PR means `Done`.
-- **Every implementation session:** read `docs/state/<person>/SESSION_STATE.md` + run the checkout check at start, overwrite state at end (keep its *Carry over* section). Commit/push per `docs/rules/workflow.md` §3 — one brief = one branch = one PR, opened only after audit PASS.
+- **Every session (planning included):** read own `docs/state/<person>/SESSION_STATE.md` first (+ only the active files it lists) and open with where work stands + the next action — no "resume" prompt needed. Implementation sessions also run the checkout check. Update state at checkpoints (commit, merge, status change, decision, blocker; keep its *Carry over* section) and use `/checkpoint` before rotating out of a long session. Commit/push per `docs/rules/workflow.md` §3 — one brief = one branch = one PR, opened only after audit PASS.
 
 ---
 
@@ -137,5 +154,5 @@ Chat commands: `onboard kj|methee`, `execute BRIEF-###` (`ทำ`), `resume`, `a
 - AI split (Field, 2026-10-09): **Field 0% coding / agents 100% — full reviewer mode** (Field writes no app code; owns architecture, decisions, brief approval, audit review and merge). Metee 70–80% / agents ≤ 20% (learning mode). Humans own architecture, integration, edge cases.
 - EKS is a stretch goal — only after ECS is solid. Do not touch Kubernetes in Semester 1.
 - Infra features cut from scope (see `docs/FRD.md`): offline mode, member QR, staff performance analytics. Do not reintroduce.
-- Break tasks into small steps. Do not dump full solutions.
+- Break tasks into small inside→out steps (`1 step = 1 commit`). Do not dump full solutions.
 - Always explain WHY a solution is chosen, not just what.

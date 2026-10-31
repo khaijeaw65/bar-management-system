@@ -40,9 +40,11 @@ docs/schema.sql              ← Field-approved edits by Cowork / Codex allowed 
 docs/erd.html                ← Field-approved edits by Cowork / Codex allowed (see below); not brief-unlockable
 ```
 
-### Workflow Documents (ownership-restricted)
+### Workflow & Spec Documents (ownership-restricted)
 ```
-docs/briefs/**            ← Field only. Cowork may CREATE new briefs with Status: Draft, and revise / set Ready after Field approves in the session (workflow.md §3). Executors never edit briefs (packaging commits only, workflow §3)
+docs/features/**          ← Spec-Anchored feature requirements & design + INVARIANTS.md. Cowork creates/revises with Field approval; executors update only `design.md` status/code-map rows explicitly listed in the brief's Build steps, within the brief PR
+docs/briefs/**            ← Field only. Cowork creates Draft briefs (uncommitted in the main checkout) and sets Ready after Field approves in the session — all uncommitted; the executor seeds the brief's branch (workflow.md §3). Executors never edit briefs (packaging commits only)
+seeded acceptance e2e     ← the e2e files a Ready brief lists as seeded (app/backend/test/**/*.e2e-spec.ts, app/frontend/e2e/**/*.spec.ts). Written by Cowork at brief time, LOCKED during execution. Executors write `*.spec.ts` unit tests only and never edit seeded e2e files without Field's explicit OK or an Approved DR
 docs/decisions/**         ← anyone may CREATE a new DR (Pending). Only Field writes Decision/Status — Cowork may record a decision Field states explicitly in the session (workflow.md §5)
 docs/audits/**            ← assigned Cowork/Codex auditor, or explicitly requested cross-check, only. The executor commits the report unchanged at PASS (packaging only)
 docs/state/<person>/SESSION_STATE.md    ← only the state file of the person running the session
@@ -58,18 +60,20 @@ docs/design/poc-source-handoff/source/**   ← same rule (POC worked example, BR
 
 **Any protected file** in this document may be edited by an agent when Field approves the specific change in the session (approval = Field's explicit OK on the exact change, shown as a diff or exact text before it is written). Record it in the commit message trailer: `Approved-by: Field (session)`. (Field, 2026-10-11 — replaces the 2026-10-10 list of four files.)
 - Approval covers that change only — not similar later changes, not the rest of the file.
+- The agent proposes the diff and writes it after the OK — never hands the edit to Field as manual work.
+- Where it lands: the current executor's next commit (implementation session), the next seed commit (made by the executor), or a docs branch via ship line (planning).
 - No approval in the session → no edit: raise a DR or ask, and stop that path.
-- Inside a brief, executors still edit protected files only via the brief's exact unlock list (below); a Field-approved edit outside a brief is a separate, explicit instruction.
+- Inside a brief, executors still edit protected files only via the brief's exact unlock list (below — Section 7 of the brief, populated during the Planner Dry Run); a Field-approved edit outside a brief is a separate, explicit instruction.
 - Still never edited by anyone: `docs/design/source/**` and `docs/design/poc-source-handoff/source/**` (byte copies — a new canvas version means a new snapshot) and `docs/handoff.md` (frozen legacy log).
 
 ---
 
 ## Brief Unlocks
 
-A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.g. `.github/workflows/ci.yml`, `pnpm-workspace.yaml`, `turbo.json`.
+A `Ready` brief may list **exact paths** under *Unlocked protected files* (verified during the Planner Dry Run before Ready) — e.g. `.github/workflows/ci.yml`, `pnpm-workspace.yaml`, `turbo.json`.
 - The executor may edit **only those paths, only within that brief**. No globs.
 - **Only unlockable:** Root Config, Infrastructure (except `.github/CODEOWNERS` and `.github/pull_request_template.md`), and Schema (`docs/schema.sql` only).
-- **Never unlockable (by brief):** Agent Rules & Instructions, `docs/erd.html`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, and all Workflow Documents above.
+- **Never unlockable (by brief):** Agent Rules & Instructions, `docs/erd.html`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, all Workflow & Spec Documents above, and seeded e2e files.
 - A DR approval alone does not unlock a protected file — only the brief's unlock list does.
 
 ---
@@ -79,10 +83,10 @@ A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.
 | Situation | Action |
 |---|---|
 | Any dependency change (root or app/*) | Allowed only if **approved** (exact Pre-decided item in the Ready brief, or Approved DR). Otherwise raise a DR and stop that path. Root `package.json` also needs the brief's unlock list |
-| Brief looks wrong / incomplete | Raise a DR (Category: Brief deviation) — never edit the brief |
+| Brief or seeded e2e looks wrong / incomplete | Raise a DR (Category: Brief / E2E deviation) or ask Field — never edit the brief or seeded e2e yourself |
 | Schema needs a new column or table | Raise a DR (Category: Data); optional SQL sketch inside the DR |
 | Design source snapshot looks wrong or outdated | Report it in your Phase A / handoff — never edit the snapshot; Cowork takes a new one from the approved canvas version |
-| Workflow / infra / CI change needed | Raise a DR — Field either edits by hand or writes a brief with an unlock list |
+| Workflow / infra / CI change needed | Propose the exact diff for Field's OK (*Field-approved edits*), or raise a DR when it's a real decision; infra/CI can also go through a brief unlock list |
 | A rule looks wrong | Raise a DR or ask Field — edit a rule file only with Field's explicit OK on the exact change; never leave comments inside rule files |
 
 ---
@@ -92,6 +96,7 @@ A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.
 - `docs/schema.sql` is the ERD for 38 tables across 10 domains — silently changing it breaks downstream TypeORM entities, migrations, and the visual ERD.
 - Root configs affect every workspace package — a wrong edit breaks the entire monorepo build.
 - Agent rule files must stay human-controlled: every change needs Field's explicit OK on the exact text, so no agent can change its own constraints unilaterally.
+- Seeded acceptance e2e tests stay independent of the coding agent, so no executor can weaken its own grading criteria.
 - Infra/CI/enforcement files require deliberate review; an accidental change can break pipelines or remove the review requirement itself.
 - Design source snapshots are the agent's design contract; an edit makes the SHA-256 inventory wrong and the build no longer matches what Field approved.
 
@@ -99,5 +104,5 @@ A `Ready` brief may list **exact paths** under *Unlocked protected files* — e.
 
 ## Layer 1 Enforcement (Hard)
 
-GitHub branch protection on `main` — PR required, Field is sole reviewer (`.github/CODEOWNERS`), direct push blocked.
-**Status: pending — Field sets this manually in GitHub. It is not an agent task.**
+Server-side rulesets on `main` per `ops/github/README.md` — **team** profile: `main-review` (PR + 1 approval, CODEOWNERS review, merge commits only; Field bypass for review only) + `main-ci` (required check `ci`, nobody bypasses). Direct push blocked.
+**Applying or changing a ruleset changes GitHub settings: Field does it, or the git hand runs it only after Field's explicit OK.**
