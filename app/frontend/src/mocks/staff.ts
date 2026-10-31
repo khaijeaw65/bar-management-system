@@ -1,46 +1,43 @@
 import {
   PERMISSION_CATALOG,
   type AccessRequest,
-  type EffectivePermissions,
   type MembershipInput,
-  type StaffGroup,
   type StaffMember,
   type StaffMembership,
 } from "@bar/contracts";
 import { http, HttpResponse } from "msw";
-import { mockRoleCan, ROLE_CODES } from "./permissions";
+import {
+  createIamHandlers,
+  effectiveOf,
+  groupName,
+  keepsAnAdmin,
+  MANAGER_GROUP,
+  OWNER_GROUP,
+  resetIamMock,
+  STAFF_GROUP,
+  type IamRow,
+} from "./iam";
+import { mockRoleCan } from "./permissions";
 
 const ME = "11111111-1111-4111-8111-111111111111";
-const OWNER = "00000000-0000-4000-8000-0000000c0001";
-const MANAGER = "00000000-0000-4000-8000-0000000c0002";
-const STAFF = "00000000-0000-4000-8000-0000000c0003";
+const OWNER = OWNER_GROUP;
+const MANAGER = MANAGER_GROUP;
+const STAFF = STAFF_GROUP;
 
 export const staffIds = { me: ME, je: "21111111-1111-4111-8111-111111111111", mod: "22222222-2222-4222-8222-222222222222" } as const;
 export const requestIds = { fon: "31111111-1111-4111-8111-111111111111", nio: "32222222-2222-4222-8222-222222222222" } as const;
 
-const GROUPS: StaffGroup[] = [
-  { id: OWNER, name: "เจ้าของ", description: null, system: "owner", policyIds: [], memberCount: 1 },
-  { id: MANAGER, name: "ผู้จัดการ", description: null, system: "manager", policyIds: [], memberCount: 0 },
-  { id: STAFF, name: "พนักงาน", description: null, system: "staff", policyIds: [], memberCount: 2 },
-];
-const POLICY = { [OWNER]: "ทั้งหมด", [MANAGER]: "จัดการร้าน", [STAFF]: "พนักงานหน้าร้าน" } as const;
-const ROLE_OF = { [OWNER]: "owner", [MANAGER]: "manager", [STAFF]: "staff" } as const;
-
-interface Row {
-  id: string;
-  displayName: string;
-  isActive: boolean;
-  memberships: Array<{ groupId: string; validFrom: string; validUntil: string | null }>;
-}
+type Row = IamRow;
 
 const LONG_AGO = "2026-09-01T00:00:00.000Z";
 const initialRows = (): Row[] => [
-  { id: ME, displayName: "Beam", isActive: true, memberships: [{ groupId: OWNER, validFrom: LONG_AGO, validUntil: null }] },
-  { id: staffIds.je, displayName: "เจ", isActive: true, memberships: [{ groupId: STAFF, validFrom: LONG_AGO, validUntil: null }] },
+  { id: ME, displayName: "Beam", isActive: true, policyIds: [], memberships: [{ groupId: OWNER, validFrom: LONG_AGO, validUntil: null }] },
+  { id: staffIds.je, displayName: "เจ", isActive: true, policyIds: [], memberships: [{ groupId: STAFF, validFrom: LONG_AGO, validUntil: null }] },
   {
     id: staffIds.mod,
     displayName: "มด",
     isActive: true,
+    policyIds: [],
     memberships: [
       { groupId: STAFF, validFrom: LONG_AGO, validUntil: null },
       { groupId: MANAGER, validFrom: LONG_AGO, validUntil: "2026-09-02T06:00:00.000Z" },
@@ -60,6 +57,7 @@ export function resetStaffMock(): void {
   rows = initialRows();
   requests = initialRequests();
   nextId = 1;
+  resetIamMock();
 }
 
 /** e2e / test handle: a LINE request arrives while the page is open. */
@@ -91,10 +89,10 @@ function toMember(row: Row): StaffMember {
     displayName: row.displayName,
     avatarUrl: null,
     isActive: row.isActive,
-    policyIds: [],
+    policyIds: row.policyIds,
     memberships: row.memberships.map((membership) => ({
       groupId: membership.groupId,
-      groupName: GROUPS.find((group) => group.id === membership.groupId)?.name ?? "",
+      groupName: groupName(membership.groupId),
       validFrom: membership.validFrom,
       validUntil: membership.validUntil,
       state: stateOf(membership.validFrom, membership.validUntil, now),
@@ -116,10 +114,7 @@ function resolve(until: MembershipInput["until"]): string | null | undefined {
   return Date.parse(until) <= Date.now() ? undefined : until;
 }
 
-/** The server rule in miniature: someone active must hold เจ้าของ with no end date. */
-function keepsAnOwner(next: Row[]): boolean {
-  return next.some((row) => row.isActive && row.memberships.some((membership) => membership.groupId === OWNER && membership.validUntil === null));
-}
+const keepsAnOwner = keepsAnAdmin;
 
 function lockout() {
   return envelope({ reason: "last_manager" }, 409, "IAM_LOCKOUT", "ต้องมีผู้ดูแลสิทธิ์อย่างน้อย 1 คนที่ไม่มีวันหมดอายุ");
@@ -129,24 +124,22 @@ function replaceRow(next: Row): Row[] {
   return rows.map((row) => (row.id === next.id ? next : row));
 }
 
-function effective(row: Row): EffectivePermissions {
-  const now = Date.now();
-  const byCode = new Map<string, EffectivePermissions["permissions"][number]>();
-  for (const membership of row.memberships) {
-    if (stateOf(membership.validFrom, membership.validUntil, now) !== "live") continue;
-    const group = GROUPS.find((item) => item.id === membership.groupId);
-    for (const code of ROLE_CODES[ROLE_OF[membership.groupId as keyof typeof ROLE_OF]]) {
-      const entry = byCode.get(code) ?? { code, sources: [] };
-      entry.sources.push({ kind: "group", groupName: group?.name, policyName: POLICY[membership.groupId as keyof typeof POLICY] });
-      byCode.set(code, entry);
-    }
-  }
-  return { permissions: [...byCode.values()] };
-}
-
 type Params = { id: string };
 
+const rowStore = { all: () => rows, set: (next: Row[]) => { rows = next; } };
+
 export const staffHandlers = [
+  ...createIamHandlers(rowStore),
+  http.put<Params>("*/api/staff/:id/policies", async ({ params, request }) => {
+    if (!mockRoleCan("staff:manage")) return denied();
+    const body = (await request.json()) as { policyIds: string[] };
+    const found = rows.find((row) => row.id === params.id);
+    if (!found) return envelope(null, 404, "NOT_FOUND", "ไม่พบพนักงาน");
+    const next = { ...found, policyIds: body.policyIds };
+    if (!keepsAnOwner(replaceRow(next))) return lockout();
+    rows = replaceRow(next);
+    return envelope(toMember(next));
+  }),
   http.get("*/api/staff/access-requests", ({ request }) => {
     if (!mockRoleCan("staff:manage")) return denied();
     const status = new URL(request.url).searchParams.get("status") ?? "pending";
@@ -164,6 +157,7 @@ export const staffHandlers = [
       id: `4000000${nextId++}-0000-4000-8000-000000000000`.slice(0, 36),
       displayName: body.displayName,
       isActive: true,
+      policyIds: [],
       memberships: memberships as Row["memberships"],
     };
     rows = [...rows, row];
@@ -188,7 +182,6 @@ export const staffHandlers = [
     requests = requests.map((item) => (item.id === params.id ? next : item));
     return envelope(next, 201);
   }),
-  http.get("*/api/staff-groups", () => (mockRoleCan("staff:manage") ? envelope(GROUPS) : denied())),
   http.get("*/api/permissions/catalog", () => (mockRoleCan("staff:manage") ? envelope(PERMISSION_CATALOG) : denied())),
   http.get("*/api/staff", () => (mockRoleCan("staff:manage") ? envelope(rows.map(toMember)) : denied())),
   http.get<Params>("*/api/staff/:id", ({ params }) => {
@@ -222,6 +215,6 @@ export const staffHandlers = [
   http.get<Params>("*/api/staff/:id/effective-permissions", ({ params }) => {
     if (!mockRoleCan("staff:manage")) return denied();
     const found = rows.find((row) => row.id === params.id);
-    return found ? envelope(effective(found)) : envelope(null, 404, "NOT_FOUND", "ไม่พบพนักงาน");
+    return found ? envelope(effectiveOf(found)) : envelope(null, 404, "NOT_FOUND", "ไม่พบพนักงาน");
   }),
 ];

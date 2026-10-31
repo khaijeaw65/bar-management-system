@@ -12,7 +12,7 @@ export function sourceText(source: Source): string {
   return source.kind === "group" ? `กลุ่ม ${source.groupName ?? ""} · นโยบาย ${source.policyName}` : `ส่วนตัว · นโยบาย ${source.policyName}`;
 }
 
-/** What the person can do now and why — personal policies are read-only here (editing them is U2). */
+/** What the person can do now and why — personal policies are edited in PersonalPoliciesPanel. */
 export function EffectivePermissionsPanel({ staffId }: Readonly<{ staffId: string }>) {
   const effective = useQuery({ queryKey: ["staff", "effective", staffId], queryFn: () => getEffectivePermissions(staffId), retry: false });
   const catalog = useQuery({ queryKey: PERMISSION_CATALOG_KEY, queryFn: getPermissionCatalog, staleTime: 5 * 60_000, retry: false });
