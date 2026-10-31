@@ -87,3 +87,15 @@ test("a path outside the map is never gated", async () => {
   renderGuard();
   expect(await screen.findByText("เนื้อหาหน้า")).toBeInTheDocument();
 });
+
+test("AC-12 staff:manage alone opens /pos/settings/staff, and /pos/settings stays ไม่มีสิทธิ์", async () => {
+  server.use(onlyPermissions("staff:manage", "tables:read"));
+  nav.path = "/pos/settings/staff";
+  const view = renderGuard();
+  expect(await screen.findByText("เนื้อหาหน้า")).toBeInTheDocument();
+  view.unmount();
+
+  nav.path = "/pos/settings";
+  renderGuard();
+  expect(await screen.findByRole("alert")).toHaveTextContent("ไม่มีสิทธิ์");
+});

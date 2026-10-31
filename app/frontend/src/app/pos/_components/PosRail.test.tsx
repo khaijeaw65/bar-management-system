@@ -44,7 +44,7 @@ test("marks เมนู active and links โต๊ะ to the floor", async () =
   expect(tables).toHaveAttribute("href", "/pos/tables");
   expect(tables).not.toHaveAttribute("aria-current");
   await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(5));
-  expect(screen.getByRole("link", { name: "ตั้งค่า" })).toHaveAttribute("href", "/pos/settings");
+  expect(screen.getByRole("link", { name: /ตั้งค่า/ })).toHaveAttribute("href", "/pos/settings");
   expect(screen.getByRole("link", { name: "รายงาน" })).toHaveAttribute("href", "/pos/reports");
 
   const soon = screen.getAllByTitle("เร็ว ๆ นี้");

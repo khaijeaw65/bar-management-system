@@ -13,6 +13,7 @@ import {
 import { Badge } from "@heroui/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePendingRequestCount } from "@/hooks/useAccessRequests";
 import { usePendingTicketCount } from "@/hooks/useTicketBoard";
 import { permissionForPath } from "@/lib/permissions/pos-routes";
 import { usePermissions } from "@/lib/permissions/usePermissions";
@@ -49,6 +50,7 @@ function isActive(href: string, pathname: string): boolean {
 export function PosRail() {
   const pathname = usePathname();
   const pendingTickets = usePendingTicketCount();
+  const pendingAccess = usePendingRequestCount();
   const { can } = usePermissions();
   // Items without a page yet ("เร็ว ๆ นี้") follow the back-office tier until their pages exist.
   const shown = items.filter((item) => (item.href ? can(permissionForPath(item.href) ?? "tables:read") : can("reports:read")));
@@ -72,6 +74,11 @@ export function PosRail() {
                   <Badge color="danger" size="sm" aria-label={`รอรับ ${pendingTickets} ออเดอร์`}>
                     {pendingTickets}
                   </Badge>
+                </Badge.Anchor>
+              ) : item.key === "settings" && pendingAccess > 0 ? (
+                <Badge.Anchor>
+                  {icon}
+                  <Badge color="danger" size="sm" aria-label={`มีคำขอเข้าใช้งาน ${pendingAccess} คำขอ`} />
                 </Badge.Anchor>
               ) : (
                 icon
