@@ -79,7 +79,7 @@ Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_
 
 ### Realtime (socket.io)
 - Namespaces: `/staff` (auth = same access token), `/customer` (auth = the `guest_session` cookie; its own socket.io path `/api/customer/socket.io` so the `Path=/api/customer` cookie reaches the handshake).
-- Event names `domain.event_name`: `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`, `notification.created`. `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, and `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu) go to room `staff`. `visit.*` stays on room `pos`. `table.staff_called` `{ tableSeatId, reason, note, calledAt }` and `table.staff_call_cleared` `{ tableSeatId }` go to room `staff` (BRIEF-048).
+- Event names: staff-wide `domain.event_name` (`order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`) and per-person `notification:new` (DR-003). `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, and `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu) go to room `staff`. `visit.*` stays on room `pos`. `table.staff_called` `{ tableSeatId, reason, note, calledAt }` and `table.staff_call_cleared` `{ tableSeatId }` go to room `staff` (BRIEF-048). `notification:new` `{ ...Notification }` goes to room `user:{staffId}`.
 - `/customer` sends **one** event, `tab.changed` `{ visitId, sessionEnded? }` (order placed, ticket status, item cancelled, payment status change, visit closed → `sessionEnded: true`). It is a ping — the phone refetches `GET /api/customer/tab`. No staff payload is ever mirrored there.
 - Payload = the **same contracts schema** as the REST resource (or a documented slice). Events notify; clients refetch via React Query when unsure (no event-sourced client state).
 - Event schemas live in `contracts/src/events/<domain>.ts`.
@@ -245,8 +245,18 @@ Seat-only sessions live 2 h (sliding); once bound to a visit they live as long a
 
 Comps / voids (`/api/reports/comps-voids`) → with BRIEF-018.
 
+### Notifications (staff feed + alerts, DR-003 — BRIEF-063)
+Stored notifications feed with cursor-based pagination and live per-person delivery (`notification:new` on room `user:{staffId}`).
+
+| Method | Path | Purpose | Permission |
+|---|---|---|---|
+| GET | `/api/notifications?cursor` | Paginated feed (page 20), newest first, own rows only | any staff |
+| GET | `/api/notifications/unread-count` | `{ count }` unread notifications for caller | any staff |
+| PATCH | `/api/notifications/:id/read` | Mark one notification read; 404 if foreign or missing; idempotent | any staff |
+| PATCH | `/api/notifications/read-all` | `{ updated }` count of rows marked read | any staff |
+
 ### Later in Phase 1 (catalogued when their CD/brief starts)
-Notifications feed (`/api/notifications`, DR-003) · guest profile + AI summary · bottle keep · restock requests · IAM admin.
+Guest profile + AI summary · bottle keep · restock requests · IAM admin.
 
 ---
 

@@ -482,6 +482,59 @@ describe('Notifications gateway and feed (e2e)', () => {
     expect(user2Count.body.data.count).toBe(1);
   });
 
+  it('AC-5 sub-ms cursor: two rows inside the same millisecond are not skipped across pages', async () => {
+    const userId = await insertStaff(dataSource, 'Sub-ms User');
+    const session = await staffSession(app, userId);
+
+    // Insert 19 newer items, then Row 20 and Row 21 which share the same millisecond (.500s).
+    // The page size is 20, so the boundary falls exactly between Row 20 and Row 21.
+    for (let i = 1; i <= 19; i++) {
+      await dataSource.query(
+        `INSERT INTO notification (recipient_id, type, title, body, created_at)
+         VALUES ($1, 'order_new', $2, 'item', '2026-11-01 11:00:00+00'::timestamptz + ($3 || ' seconds')::interval)`,
+        [userId, `Newer ${i}`, i],
+      );
+    }
+    await dataSource.query(
+      `INSERT INTO notification (recipient_id, type, title, body, created_at)
+       VALUES ($1, 'order_new', 'Row 20 SameMs', 'item', '2026-11-01 10:59:00.500500+00'::timestamptz)`,
+      [userId],
+    );
+    await dataSource.query(
+      `INSERT INTO notification (recipient_id, type, title, body, created_at)
+       VALUES ($1, 'order_new', 'Row 21 SameMs', 'item', '2026-11-01 10:59:00.500100+00'::timestamptz)`,
+      [userId],
+    );
+
+    // GET /notifications (page 1: 20 items, newest first)
+    const page1 = await request(app.getHttpServer())
+      .get('/api/notifications')
+      .set({ Authorization: `Bearer ${session.accessToken}` })
+      .expect(200);
+
+    expect(page1.body.data.items).toHaveLength(20);
+    // The 20th item on page 1 is Row 20
+    expect(page1.body.data.items[19].title).toBe('Row 20 SameMs');
+    const cursor = page1.body.data.nextCursor;
+    expect(cursor).toBeDefined();
+
+    // Page 2 must return Row 21 (which has the same millisecond timestamp .500s) without skipping it
+    const page2 = await request(app.getHttpServer())
+      .get(`/api/notifications?cursor=${encodeURIComponent(cursor)}`)
+      .set({ Authorization: `Bearer ${session.accessToken}` })
+      .expect(200);
+
+    expect(page2.body.data.items).toHaveLength(1);
+    expect(page2.body.data.items[0].title).toBe('Row 21 SameMs');
+    expect(page2.body.data.nextCursor).toBeNull();
+
+    // Invalid cursor returns 400
+    await request(app.getHttpServer())
+      .get('/api/notifications?cursor=not-a-valid-uuid')
+      .set({ Authorization: `Bearer ${session.accessToken}` })
+      .expect(400);
+  });
+
   it('AC-6: failure inside notify never fails the trigger request (best effort)', async () => {
     await seedVenue(dataSource);
     await insertStaff(dataSource, 'Staff User');

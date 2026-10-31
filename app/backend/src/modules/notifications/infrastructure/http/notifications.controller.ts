@@ -1,10 +1,11 @@
 import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   NotificationPageSchema,
   NotificationSchema,
   ReadAllResultSchema,
   UnreadCountSchema,
+  UuidSchema,
   type Notification,
   type NotificationPage,
   type ReadAllResult,
@@ -15,9 +16,11 @@ import { CurrentUser } from '../../../../common/decorators/current-user.decorato
 import type { CurrentUserPayload } from '../../../../common/decorators/current-user.types.js';
 import { requireUuid } from '../../../../common/http/http-input.js';
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
+import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { NotificationsService } from '../../notifications.service.js';
 
 const NOT_FOUND = 'ไม่พบการแจ้งเตือน';
+const ACCESS_DESC = 'any active staff; own rows only';
 
 @ApiTags('notifications')
 @Controller('notifications')
@@ -26,7 +29,11 @@ export class NotificationsController {
 
   @Get()
   @AnyStaff()
-  @ApiOperation({ summary: 'Paginated notifications for the authenticated staff user' })
+  @ApiOperation({
+    summary: 'Paginated notifications for the authenticated staff user',
+    description: ACCESS_DESC,
+  })
+  @ApiQuery({ name: 'cursor', required: false })
   @ApiEnvelopedOk(NotificationPageSchema)
   public async feed(
     @CurrentUser() user: CurrentUserPayload,
@@ -37,7 +44,10 @@ export class NotificationsController {
 
   @Get('unread-count')
   @AnyStaff()
-  @ApiOperation({ summary: 'Count of unread notifications for the authenticated staff user' })
+  @ApiOperation({
+    summary: 'Count of unread notifications for the authenticated staff user',
+    description: ACCESS_DESC,
+  })
   @ApiEnvelopedOk(UnreadCountSchema)
   public async unreadCount(
     @CurrentUser() user: CurrentUserPayload,
@@ -48,7 +58,11 @@ export class NotificationsController {
 
   @Patch(':id/read')
   @AnyStaff()
-  @ApiOperation({ summary: 'Mark a single notification as read' })
+  @ApiOperation({
+    summary: 'Mark a single notification as read',
+    description: ACCESS_DESC,
+  })
+  @ApiParam({ name: 'id', schema: zodToOpenApi(UuidSchema) })
   @ApiEnvelopedOk(NotificationSchema)
   public async markAsRead(
     @CurrentUser() user: CurrentUserPayload,
@@ -60,7 +74,10 @@ export class NotificationsController {
 
   @Patch('read-all')
   @AnyStaff()
-  @ApiOperation({ summary: 'Mark all notifications as read for the authenticated staff user' })
+  @ApiOperation({
+    summary: 'Mark all notifications as read for the authenticated staff user',
+    description: ACCESS_DESC,
+  })
   @ApiEnvelopedOk(ReadAllResultSchema)
   public async markAllAsRead(
     @CurrentUser() user: CurrentUserPayload,

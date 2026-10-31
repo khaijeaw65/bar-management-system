@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { IsoDateTimeSchema, UuidSchema } from './common.js';
-import { NotificationTypeSchema, type NotificationType } from './enums.js';
+import { NotificationTypeSchema } from './enums.js';
 
-export { NotificationTypeSchema, type NotificationType };
+export { NotificationTypeSchema, type NotificationType } from './enums.js';
 
 export const NotificationSchema = z.object({
   id: UuidSchema,

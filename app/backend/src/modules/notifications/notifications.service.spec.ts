@@ -130,4 +130,44 @@ describe('NotificationsService', () => {
     expect(updated.readAt).toBe(fixedNow.toISOString());
     expect(repo.save).toHaveBeenCalledWith(item);
   });
+
+  it('feed throws 400 DomainException if cursor is invalid UUID', async () => {
+    const { service } = createService();
+    await expect(service.feed('user-1', 'invalid-cursor')).rejects.toThrow('cursor ไม่ถูกต้อง');
+  });
+
+  it('feed queries queryBuilder with cursor and returns items and nextCursor', async () => {
+    const { service, repo } = createService();
+    const rows = Array.from({ length: 21 }, (_, i) => ({
+      id: `123e4567-e89b-42d3-a456-${String(i + 1).padStart(12, '0')}`,
+      recipientId: 'user-1',
+      type: 'order_new' as const,
+      title: `Notif ${i + 1}`,
+      body: null,
+      refType: null,
+      refId: null,
+      readAt: null,
+      createdAt: fixedNow,
+    }));
+    const qb = {
+      where: vi.fn().mockReturnThis(),
+      andWhere: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      addOrderBy: vi.fn().mockReturnThis(),
+      take: vi.fn().mockReturnThis(),
+      getMany: vi.fn().mockResolvedValue(rows),
+    };
+    (repo.createQueryBuilder as unknown as ReturnType<typeof vi.fn>).mockReturnValue(qb);
+
+    const validCursor = '123e4567-e89b-42d3-a456-426614174099';
+    const page = await service.feed('user-1', validCursor);
+
+    expect(qb.where).toHaveBeenCalledWith('n.recipient_id = :recipientId', { recipientId: 'user-1' });
+    expect(qb.andWhere).toHaveBeenCalledWith(
+      '(n.created_at, n.id) < (SELECT sub.created_at, sub.id FROM notification sub WHERE sub.id = :cursorId)',
+      { cursorId: validCursor },
+    );
+    expect(page.items).toHaveLength(20);
+    expect(page.nextCursor).toBe(rows[19].id);
+  });
 });

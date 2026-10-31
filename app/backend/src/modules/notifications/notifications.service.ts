@@ -4,12 +4,15 @@ import { IsNull, Repository } from 'typeorm';
 import {
   NOTIFICATION_NEW,
   type Notification,
+  type NotificationPage,
   type NotificationType,
+  UuidSchema,
 } from '@bar/contracts';
 import { CLOCK, type Clock } from '../../common/clock.js';
 import { DomainException } from '../../common/domain-exception.js';
 import { NotificationEntity } from './entities/notification.entity.js';
 import { NotificationsGateway } from './notifications.gateway.js';
+import type { NotifyInput } from './notifications.types.js';
 
 /** The guest socket lives in the Customer module; it registers here so Notifications never imports it. */
 export type TabChangedSink = (visitId: string, sessionEnded: boolean) => void;
@@ -17,11 +20,6 @@ export type TabChangedSink = (visitId: string, sessionEnded: boolean) => void;
 export type SeatVisitOpenedSink = (tableSeatId: string, visitId: string) => void;
 
 const PAGE_SIZE = 20;
-
-interface CursorData {
-  createdAt: string;
-  id: string;
-}
 
 @Injectable()
 export class NotificationsService {
@@ -68,12 +66,7 @@ export class NotificationsService {
   public async notify(
     type: NotificationType,
     recipientIds: string[],
-    payload: {
-      title: string;
-      body?: string | null;
-      refType?: string | null;
-      refId?: string | null;
-    },
+    payload: NotifyInput,
   ): Promise<NotificationEntity[]> {
     if (recipientIds.length === 0) {
       return [];
@@ -86,7 +79,7 @@ export class NotificationsService {
   public async feed(
     recipientId: string,
     cursor?: string,
-  ): Promise<{ items: Notification[]; nextCursor: string | null }> {
+  ): Promise<NotificationPage> {
     const rows = await this.queryFeedPage(recipientId, cursor);
     return this.buildFeedPage(rows);
   }
@@ -116,12 +109,7 @@ export class NotificationsService {
   private async insertRows(
     type: NotificationType,
     recipientIds: string[],
-    payload: {
-      title: string;
-      body?: string | null;
-      refType?: string | null;
-      refId?: string | null;
-    },
+    payload: NotifyInput,
   ): Promise<NotificationEntity[]> {
     const entities = recipientIds.map((recipientId) =>
       this.repo.create({
@@ -151,6 +139,7 @@ export class NotificationsService {
     recipientId: string,
     cursor?: string,
   ): Promise<NotificationEntity[]> {
+    const cursorId = this.parseCursor(cursor);
     const qb = this.repo
       .createQueryBuilder('n')
       .where('n.recipient_id = :recipientId', { recipientId })
@@ -158,27 +147,21 @@ export class NotificationsService {
       .addOrderBy('n.id', 'DESC')
       .take(PAGE_SIZE + 1);
 
-    const cursorData = this.parseCursor(cursor);
-    if (cursorData) {
+    if (cursorId) {
       qb.andWhere(
-        '(n.created_at < :cursorCreatedAt OR (n.created_at = :cursorCreatedAt AND n.id < :cursorId))',
-        {
-          cursorCreatedAt: new Date(cursorData.createdAt),
-          cursorId: cursorData.id,
-        },
+        '(n.created_at, n.id) < (SELECT sub.created_at, sub.id FROM notification sub WHERE sub.id = :cursorId)',
+        { cursorId },
       );
     }
     return await qb.getMany();
   }
 
-  private buildFeedPage(
-    rows: NotificationEntity[],
-  ): { items: Notification[]; nextCursor: string | null } {
+  private buildFeedPage(rows: NotificationEntity[]): NotificationPage {
     const hasMore = rows.length > PAGE_SIZE;
     const pageRows = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
     const nextCursor =
       hasMore && pageRows.length > 0
-        ? this.createCursor(pageRows[pageRows.length - 1]!)
+        ? this.createCursor(pageRows.at(-1)!)
         : null;
 
     return {
@@ -222,25 +205,16 @@ export class NotificationsService {
     };
   }
 
-  private parseCursor(raw?: string): CursorData | null {
+  private parseCursor(raw?: string): string | null {
     if (!raw) return null;
-    try {
-      const json = Buffer.from(raw, 'base64url').toString('utf8');
-      const parsed = JSON.parse(json) as { createdAt?: unknown; id?: unknown };
-      if (typeof parsed.createdAt === 'string' && typeof parsed.id === 'string') {
-        return { createdAt: parsed.createdAt, id: parsed.id };
-      }
-    } catch {
-      // Malformed cursor treated as absent
+    const parsed = UuidSchema.safeParse(raw);
+    if (!parsed.success) {
+      throw new DomainException('VALIDATION_ERROR', 'cursor ไม่ถูกต้อง', 400);
     }
-    return null;
+    return parsed.data;
   }
 
   private createCursor(item: NotificationEntity): string {
-    const data: CursorData = {
-      createdAt: item.createdAt.toISOString(),
-      id: item.id,
-    };
-    return Buffer.from(JSON.stringify(data), 'utf8').toString('base64url');
+    return item.id;
   }
 }
