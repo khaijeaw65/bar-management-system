@@ -5,12 +5,17 @@
 | **Implementer** | kj (Antigravity) |
 | **Date** | 2026-11-01 |
 | **Brief revision** | 1 |
-| **Branch** | `feat/BRIEF-066-tables-admin-api` (PR opens after audit PASS) |
-| **Commit** | `193c1a4` (work commit before handoff) |
-| **Status** | Implemented — awaiting audit |
+| **Branch** | `feat/BRIEF-066-tables-admin-api` |
+| **Commit** | `8446cc7` (work commit before handoff) |
+| **Status** | Audit PASS |
 
 ## Summary
 Added back-office seat administration API under `tables:manage` permission: list all seats (`GET /tables/manage`), create seat with fresh opaque QR token (`POST /tables`), rename and move sections (`PATCH /tables/:id`), reorder full sections (`PUT /tables/order`), and deactivate/activate seats (`POST /tables/:id/deactivate`, `POST /tables/:id/activate`). Added `TableSeatLabelUnique` partial unique index on active seat labels, audit logging for all mutations, `tables.changed` WebSocket events, and validated guest session invalidation upon seat retirement.
+
+Refactored following audit recommendations:
+- Concurrency serialization: row-level locking on deactivate (`FOR UPDATE`) and staff visit open (`FOR SHARE` on seat + raw `INSERT INTO visit ... ON CONFLICT (table_seat_id) WHERE state IN ('open','active','idle') DO NOTHING RETURNING ...` on `txHost.tx`).
+- Architectural port split: introduced `ITableSeatAdminRepository` (`domain/table-seat-admin.repository.ts`) and `TableSeatAdminTypeormRepository` (`infrastructure/persistence/table-seat-admin.typeorm-repository.ts`), keeping runtime operational lookups on `TableSeatRepository`.
+- Deduplicated error handling with `withDuplicateLabelGuard` in `TableAdminService` and restored clean multi-line SQL layout across repositories.
 
 ## Acceptance Criteria
 | AC | Result | Evidence |
@@ -26,21 +31,21 @@ Added back-office seat administration API under `tables:manage` permission: list
 ## Gate Evidence (G1)
 | Command | Exit | Result |
 |---|---|---|
-| `pnpm --filter @bar/contracts test` | 0 | 17 passed · 137 passed · 0 failed |
-| `pnpm --filter @bar/backend lint` | 0 | Found 0 warnings and 0 errors (447 files, 102 rules) · class files OK |
-| `pnpm --filter @bar/backend typecheck` | 0 | pass |
+| `pnpm --filter @bar/contracts test` | 0 | 17 passed · 138 passed · 0 failed |
+| `pnpm --filter @bar/backend lint` | 0 | Found 0 warnings and 0 errors (452 files, 102 rules) · class files OK |
+| `pnpm --filter @bar/backend typecheck` | 0 | pass (`tsc --noEmit` exit 0) |
 | `pnpm --filter @bar/backend openapi:check` | 0 | pass (`docs/api/openapi.json` synchronized) |
-| `pnpm --filter @bar/backend test` | 0 | 53 passed · 250 passed · 0 failed |
+| `pnpm --filter @bar/backend test` | 0 | 55 passed · 263 passed · 0 failed |
 | `pnpm --filter @bar/backend test:e2e` | 0 | 41 passed · 287 passed · 0 failed |
 | `migration:run → revert → run` | 0 | `TableSeatLabelUnique1763500000000` applied, reverted, and re-applied cleanly |
-| `run proof: dist/main.js + /api/health` | 0 | Built from work commit, `/api/health` 200 `{"status":"ok","db":"up"}`, unauthenticated admin calls return 401 |
+| `run proof: dist/main.js + /api/health + /api/tables/manage` | 0 | Built from `8446cc7`, `/api/health` 200 `{"status":"ok","db":"up"}`, unauthenticated admin calls return 401, authed `GET /api/tables/manage` returns 200 with 14 seats |
 
 UI exercised: n/a (backend admin API).
 
 ## Sonar (local scan)
-- Scanned commit: `193c1a4` · Quality Gate: ERROR (coverage threshold 0.0% vs 80.0% required, pre-existing config limitation)
+- Scanned commit: `8446cc7` · Quality Gate: ERROR (coverage threshold 0.0% vs 80.0% required, pre-existing config limitation)
 - Issues by severity: BLOCKER 0 · HIGH 6 · MEDIUM 7 · LOW 5 · INFO 0
-- Remaining issues + reason: 18 pre-existing issues across frontend and untouched backend files (e.g., `PolicyEditor.tsx`, `customer.gateway.ts`, `setup.ts`, `request-hash.ts`, `promptpay-payload.ts`); 0 issues on files touched by BRIEF-066.
+- Remaining issues + reason: 18 pre-existing issues across frontend and untouched backend files; 0 issues on files touched by BRIEF-066.
 - Who fixed: n/a (all files touched by BRIEF-066 are clean).
 
 ## Decisions Raised
@@ -57,5 +62,5 @@ UI exercised: n/a (backend admin API).
 
 ## Notes for Reviewer
 - Review `app/backend/src/modules/venue/application/table-admin.service.ts` for clean pipeline methods, validation helpers, and transaction handling.
-- Review `app/backend/src/modules/venue/infrastructure/persistence/table-seat.typeorm-repository.ts` for transactional `txHost.tx` execution.
+- Review `app/backend/src/modules/venue/infrastructure/persistence/table-seat-admin.typeorm-repository.ts` and `table-seat.typeorm-repository.ts` for port split.
 - Review `app/backend/test/tables-admin.e2e-spec.ts` for comprehensive acceptance criteria coverage AC-1..AC-6.
