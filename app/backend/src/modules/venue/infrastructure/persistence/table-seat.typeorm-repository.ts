@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
-import type { CallStaffReason } from '@bar/contracts';
-import { InjectRepository } from '@nestjs/typeorm';
+import { TableSeatKindSchema, type CallStaffReason } from '@bar/contracts';
 import { ClsService } from 'nestjs-cls';
-import { Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
 import type { TableSeatRepository } from '../../domain/table-seat.repository.js';
 import type {
   SeatIdentity,
   SeatWithLiveVisit,
   StaffCallRecord,
 } from '../../domain/table-seat.types.js';
-import { readDate, readOptionalText } from '../../../../common/persistence/row-values.js';
+import { readDate, readOptionalText, readText } from '../../../../common/persistence/row-values.js';
 import { TableSeat } from './table-seat.entity.js';
 import type { SeatVisitRow } from './table-seat.types.js';
 
@@ -48,57 +47,58 @@ const ACTIVE_SEATS = `
   ORDER BY CASE s.kind WHEN 'counter' THEN 0 ELSE 1 END, s.sort_order, s.label
 `;
 
+const LOCK_ACTIVE_FOR_SHARE = `
+  SELECT id, label, kind, sort_order
+  FROM table_seat
+  WHERE id = $1 AND is_active = true
+  FOR SHARE
+`;
+
 @Injectable()
 export class TableSeatTypeormRepository implements TableSeatRepository {
   public constructor(
-    @InjectRepository(TableSeat)
-    private readonly tableSeatOrmRepository: Repository<TableSeat>,
     private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
     private readonly cls: ClsService,
   ) {}
 
   public async listActive(): Promise<SeatWithLiveVisit[]> {
-    const rows: SeatVisitRow[] = await this.tableSeatOrmRepository.query(ACTIVE_SEATS);
+    const rows: SeatVisitRow[] = await this.txHost.tx.query(ACTIVE_SEATS);
     return rows.map((row) => this.toSeat(row));
   }
 
   public async findById(id: string): Promise<SeatIdentity | null> {
-    const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
+    const seat = await this.repo.findOne({ where: { id } });
     return seat ? this.toIdentity(seat) : null;
   }
 
   public async findActiveById(id: string): Promise<SeatIdentity | null> {
-    const seat = await this.tableSeatOrmRepository.findOne({ where: { id, isActive: true } });
+    const seat = await this.repo.findOne({ where: { id, isActive: true } });
     return seat ? this.toIdentity(seat) : null;
   }
 
   public async findActiveByQrToken(qrToken: string): Promise<SeatIdentity | null> {
-    const seat = await this.tableSeatOrmRepository.findOne({ where: { qrToken, isActive: true } });
+    const seat = await this.repo.findOne({ where: { qrToken, isActive: true } });
     return seat ? this.toIdentity(seat) : null;
   }
 
   public async replaceQrToken(id: string, qrToken: string): Promise<void> {
-    const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
+    const seat = await this.repo.findOne({ where: { id } });
     if (!seat) return;
     seat.qrToken = qrToken;
-    await this.tableSeatOrmRepository.save(seat);
+    await this.repo.save(seat);
   }
 
   public async setStaffCall(id: string, call: StaffCallRecord): Promise<void> {
-    const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
+    const seat = await this.repo.findOne({ where: { id } });
     if (!seat) return;
     seat.staffCalledAt = call.calledAt;
     seat.staffCallReason = call.reason;
     seat.staffCallNote = call.note;
-    await this.tableSeatOrmRepository.save(seat);
+    await this.repo.save(seat);
   }
 
   public async clearStaffCall(id: string, onlyReason?: CallStaffReason): Promise<StaffCallRecord | null> {
-    const result: unknown = await this.txHost.tx.query(CLEAR_STAFF_CALL, [
-      id,
-      onlyReason ?? null,
-      this.actorId(),
-    ]);
+    const result: unknown = await this.txHost.tx.query(CLEAR_STAFF_CALL, [id, onlyReason ?? null, this.actorId()]);
     const row = this.firstRow(result);
     if (!row) return null;
     return {
@@ -108,13 +108,29 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
     };
   }
 
+  public async lockActiveForShare(id: string): Promise<SeatIdentity | null> {
+    const result: unknown = await this.txHost.tx.query(LOCK_ACTIVE_FOR_SHARE, [id]);
+    const row = this.firstRow(result);
+    if (!row) return null;
+    return {
+      id: readText(row.id),
+      label: readText(row.label),
+      kind: TableSeatKindSchema.parse(row.kind),
+      sortOrder: Number(row.sort_order),
+    };
+  }
+
+  private get repo(): Repository<TableSeat> {
+    return this.txHost.tx.getRepository(TableSeat);
+  }
+
   private toSeat(row: SeatVisitRow): SeatWithLiveVisit {
     return {
       id: row.id,
       label: row.label,
       kind: row.kind,
       sortOrder: Number(row.sort_order),
-      currentVisit: row.visit_id ? this.toCard(row) : null,
+      currentVisit: this.toCard(row),
       staffCall: this.toCall(row),
     };
   }
@@ -150,10 +166,15 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
     throw new Error('table_seat row has an unknown staff_call_reason');
   }
 
+  private listed(result: unknown): unknown[] {
+    if (!Array.isArray(result)) return [];
+    if (Array.isArray(result[0])) return result[0] as unknown[];
+    return result;
+  }
+
   private firstRow(result: unknown): Record<string, unknown> | null {
-    const rows = Array.isArray(result) && Array.isArray(result[0]) ? result[0] : result;
-    if (!Array.isArray(rows)) return null;
-    const row: unknown = rows[0];
+    const rows = this.listed(result);
+    const row = rows[0];
     if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
     return row as Record<string, unknown>;
   }

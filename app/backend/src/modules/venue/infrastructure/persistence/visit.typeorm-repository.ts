@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 import type { VisitOpenSource, VisitState } from '@bar/contracts';
-import { In, QueryFailedError, Repository } from 'typeorm';
+import { In, type Repository } from 'typeorm';
 import type { VisitRepository } from '../../domain/visit.repository.js';
 import type {
   InsertVisitResult,
@@ -19,7 +18,7 @@ import {
 import { Visit } from './visit.entity.js';
 
 const LIVE_STATES = ['open', 'active', 'idle'] as const;
-const LIVE_VISIT_INDEX = 'uq_visit_live_per_seat';
+
 const CLOSE_IF_LIVE = `
   UPDATE visit
   SET state = 'closed', closed_at = now()
@@ -32,49 +31,63 @@ const LOCK_VISIT = `
   SELECT id, table_seat_id, state, opened_at, closed_at, guest_label, opened_by, opened_via
   FROM visit WHERE id = $1 FOR UPDATE
 `;
+
 const ACTIVATE_VISIT = `
   UPDATE visit SET state = 'active'
   WHERE id = $1 AND state IN ('open', 'idle')
   RETURNING id, table_seat_id, state, opened_at, closed_at, guest_label, opened_by, opened_via
 `;
 
+const INSERT_STAFF_VISIT = `
+  INSERT INTO visit (table_seat_id, state, guest_label, opened_by, opened_via, opened_at)
+  VALUES ($1, 'open', $2, $3, $4, now())
+  ON CONFLICT (table_seat_id) WHERE state IN ('open', 'active', 'idle') DO NOTHING
+  RETURNING id, table_seat_id, state, opened_at, closed_at, guest_label, opened_by, opened_via
+`;
+
 const OPEN_FOR_GUEST = `
   INSERT INTO visit (table_seat_id, state, opened_via)
-  VALUES ($1, 'open', 'qr')
+  SELECT $1, 'open', 'qr'
+  WHERE EXISTS (
+    SELECT 1 FROM table_seat
+    WHERE id = $1 AND is_active = true
+    FOR SHARE
+  )
   ON CONFLICT (table_seat_id) WHERE state IN ('open', 'active', 'idle') DO NOTHING
   RETURNING id
 `;
+
 const LIVE_BY_SEAT = `
-  SELECT id FROM visit WHERE table_seat_id = $1 AND state IN ('open', 'active', 'idle')
+  SELECT v.id FROM visit v
+  INNER JOIN table_seat s ON s.id = v.table_seat_id AND s.is_active = true
+  WHERE v.table_seat_id = $1 AND v.state IN ('open', 'active', 'idle')
 `;
 
 @Injectable()
 export class VisitTypeormRepository implements VisitRepository {
   public constructor(
-    @InjectRepository(Visit)
-    private readonly visitOrmRepository: Repository<Visit>,
     private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
 
   public async insert(input: NewVisit): Promise<InsertVisitResult> {
-    try {
-      const saved = await this.visitOrmRepository.save(
-        this.visitOrmRepository.create(this.newRow(input)),
-      );
-      return { kind: 'created', visit: this.toRecord(saved) };
-    } catch (error) {
-      if (!this.isLiveVisitConflict(error)) throw error;
-      return { kind: 'taken' };
-    }
+    const result: unknown = await this.txHost.tx.query(INSERT_STAFF_VISIT, [
+      input.tableSeatId,
+      input.guestLabel,
+      input.staffId,
+      input.via,
+    ]);
+    const row = this.firstRow(result);
+    if (!row) return { kind: 'taken' };
+    return { kind: 'created', visit: this.toAnyRecord(row) };
   }
 
   public async findById(id: string): Promise<VisitRecord | null> {
-    const visit = await this.visitOrmRepository.findOne({ where: { id } });
+    const visit = await this.repo.findOne({ where: { id } });
     return visit ? this.toRecord(visit) : null;
   }
 
   public async findLiveBySeat(tableSeatId: string): Promise<VisitRecord | null> {
-    const visit = await this.visitOrmRepository.findOne({
+    const visit = await this.repo.findOne({
       where: { tableSeatId, state: In([...LIVE_STATES]) },
     });
     return visit ? this.toRecord(visit) : null;
@@ -105,17 +118,8 @@ export class VisitTypeormRepository implements VisitRepository {
     return row ? this.toClosedRecord(row) : null;
   }
 
-  private newRow(input: NewVisit): Partial<Visit> {
-    return {
-      tableSeatId: input.tableSeatId,
-      state: 'open',
-      guestLabel: input.guestLabel,
-      openedBy: input.staffId,
-      openedVia: input.via,
-      openedAt: new Date(),
-      closedAt: null,
-      customerId: null,
-    };
+  private get repo(): Repository<Visit> {
+    return this.txHost.tx.getRepository(Visit);
   }
 
   private toRecord(visit: Visit): VisitRecord {
@@ -129,16 +133,6 @@ export class VisitTypeormRepository implements VisitRepository {
       openedBy: visit.openedBy,
       openedVia: visit.openedVia,
     };
-  }
-
-  private isLiveVisitConflict(error: unknown): boolean {
-    if (!(error instanceof QueryFailedError)) return false;
-    const driver = error.driverError as { code?: string; constraint?: string };
-    if (driver.code !== '23505') return false;
-    return (
-      driver.constraint === LIVE_VISIT_INDEX ||
-      error.message.includes(LIVE_VISIT_INDEX)
-    );
   }
 
   private firstRow(result: unknown): Record<string, unknown> | null {

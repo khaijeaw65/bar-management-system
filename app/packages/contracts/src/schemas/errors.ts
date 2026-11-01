@@ -37,6 +37,8 @@ export const ErrorCodeSchema = z.enum([
   'GROUP_NAME_TAKEN',
   'POLICY_NAME_TAKEN',
   'POLICY_IN_USE',
+  'SEAT_IN_USE',
+  'SEAT_LABEL_TAKEN',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;

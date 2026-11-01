@@ -79,7 +79,7 @@ Permissions are `resource:action` (`menu:read`, `orders:create`, `payments:mark_
 
 ### Realtime (socket.io)
 - Namespaces: `/staff` (auth = same access token), `/customer` (auth = the `guest_session` cookie; its own socket.io path `/api/customer/socket.io` so the `Path=/api/customer` cookie reaches the handshake).
-- Event names: staff-wide `domain.event_name` (`order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`) and per-person `notification:new` (DR-003). `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, and `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu) go to room `staff`. `visit.*` stays on room `pos`. `table.staff_called` `{ tableSeatId, reason, note, calledAt }` and `table.staff_call_cleared` `{ tableSeatId }` go to room `staff` (BRIEF-048). `notification:new` `{ ...Notification }` goes to room `user:{staffId}`.
+- Event names: staff-wide `domain.event_name` (`order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `order_item.status_changed`, `visit.opened`, `visit.state_changed`, `staff.called`, `payment.status_changed`, `menu.availability_changed`, `menu.changed`, `tables.changed`) and per-person `notification:new` (DR-003). `order.created`, `ticket.status_changed`, `ticket.issue_escalated`, `menu.changed` (`{ itemIds?, categoryIds? }`, once per menu write — refetch the menu), and `tables.changed` (`{ seatIds }`, seat setup changes — BRIEF-066) go to room `staff`. `visit.*` stays on room `pos`. `table.staff_called` `{ tableSeatId, reason, note, calledAt }` and `table.staff_call_cleared` `{ tableSeatId }` go to room `staff` (BRIEF-048). `notification:new` `{ ...Notification }` goes to room `user:{staffId}`.
 - `/customer` sends **one** event, `tab.changed` `{ visitId, sessionEnded? }` (order placed, ticket status, item cancelled, payment status change, visit closed → `sessionEnded: true`). It is a ping — the phone refetches `GET /api/customer/tab`. No staff payload is ever mirrored there.
 - Payload = the **same contracts schema** as the REST resource (or a documented slice). Events notify; clients refetch via React Query when unsure (no event-sourced client state).
 - Event schemas live in `contracts/src/events/<domain>.ts`.
@@ -205,6 +205,12 @@ Seat-only sessions live 2 h (sliding); once bound to a visit they live as long a
 | Method | Path | Purpose | Permission |
 |---|---|---|---|
 | GET | `/api/tables` | floor: seats (`kind`: table \| counter) + current visit summary (state, total, `paymentPending`) | `tables:read` |
+| GET | `/api/tables/manage` | list all seats (active + inactive) with QR tokens, live visit status, ordered by kind, sort_order, label | `tables:manage` |
+| POST | `/api/tables` | create seat `{ label, kind }` at end of section with fresh QR token; `409 SEAT_LABEL_TAKEN` | `tables:manage` |
+| PATCH | `/api/tables/:id` | edit seat `{ label?, kind? }`; moving section places at end; `409 SEAT_LABEL_TAKEN` | `tables:manage` |
+| PUT | `/api/tables/order` | reorder seats within section `{ kind, ids }` (must contain all section IDs); `400 VALIDATION_ERROR` | `tables:manage` |
+| POST | `/api/tables/:id/deactivate` | retire seat; clears staff call bell; fails if live visit (`409 SEAT_IN_USE`) | `tables:manage` |
+| POST | `/api/tables/:id/activate` | reactivate seat; retains QR token; `409 SEAT_LABEL_TAKEN` | `tables:manage` |
 | POST | `/api/tables/:seatId/acknowledge-call` | clear the call-staff bell on a seat (POS + staff app); idempotent. Cards on `GET /api/tables` carry `staffCall: { reason, note, calledAt } \| null` and `currentVisit.staffCalled` | `tables:read` |
 | POST | `/api/tables/:id/qr/regenerate` | new signed QR token, old one invalid (FRD §3); reprint = same token, client-only | `tables:manage` |
 | POST | `/api/visits` | open visit `{ tableSeatId }` — first write wins, second attaches (FRD §3) | `visits:open` |
