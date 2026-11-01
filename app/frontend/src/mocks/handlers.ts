@@ -7,6 +7,7 @@ import { createMenuHandlers } from "./menu";
 import { mockRoleCan, permissionHandlers, resetMockRole, setMockRole, type MockRole } from "./permissions";
 import { reportHandlers } from "./reports";
 import { resetStaffMock, staffHandlers } from "./staff";
+import { tablesAdminHandlers } from "./tables-admin";
 
 export const staffMe = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -558,6 +559,7 @@ export const handlers = [
   ...customerHandlers,
   ...permissionHandlers,
   ...staffHandlers,
+  ...tablesAdminHandlers,
   http.get("*/api/auth/me", () => json(staffMe)),
   http.post("*/api/auth/refresh", () => json({ ok: true })),
   http.post("*/api/auth/logout", () => json({ ok: true })),
