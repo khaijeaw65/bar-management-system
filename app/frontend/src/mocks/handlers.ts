@@ -199,6 +199,7 @@ function boardLine(id: string, name: string, quantity = 1, extra: Partial<OrderL
     notes: null,
     cancelledAt: null,
     cancellation: null,
+    comp: null,
     ...extra,
   };
 }
@@ -488,6 +489,7 @@ function lineFor(entry: PlaceOrderRequest["items"][number]): OrderLine {
     notes: entry.notes ?? null,
     cancelledAt: null,
     cancellation: null,
+    comp: null,
   };
 }
 
