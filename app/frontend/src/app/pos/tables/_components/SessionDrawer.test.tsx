@@ -338,3 +338,17 @@ test("an order placed after the QR sits under the divider", async () => {
   expect(divider).toBeLessThan(text.indexOf("#9"));
   expect(within(drawer).getByRole("button", { name: "ปิดโต๊ะ" })).toBeDisabled();
 });
+
+test("tapping 'ยกเลิก / Comp' opens VoidCompModal for active line", async () => {
+  const line = orderLine("40000000-0000-4000-8000-000000000001", "สิงห์", { lineTotal: "120.00" });
+  const t = ticket("50000000-0000-4000-8000-000000000008", 41, [line], { station: "bar", status: "pending" });
+  const o = order("30000000-0000-4000-8000-000000000008", 41, "2026-10-21T12:00:00.000Z", [t], "120.00");
+  show(visitDetail({ orders: [o] }));
+
+  renderDrawer(drawerVisitId);
+  const drawer = await screen.findByRole("complementary", { name: "โต๊ะ T3" });
+  const adjustBtn = within(drawer).getByRole("button", { name: /ยกเลิก \/ Comp/ });
+  await userEvent.click(adjustBtn);
+
+  expect(await screen.findByRole("dialog", { name: "ยกเลิกรายการ / Comp" })).toBeDefined();
+});
