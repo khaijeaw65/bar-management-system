@@ -1,16 +1,16 @@
 # State — KJ
-Updated: 2026-11-01 · Agent: Antigravity (BRIEF-069 & 070 Ready)
+Updated: 2026-11-01 · Agent: Antigravity (BRIEF-069 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-069 & BRIEF-070 Ready** (Web tables admin + QR print; POS void/comp modal). BRIEF-068 merged (#116). Next: in kj executor: `execute BRIEF-069`.
+**BRIEF-069 Implemented** (Web tables admin + QR print). Work commit `6ad751f`. All 6 ACs pass, all 4 gates green (e2e 4/4). Next: in Cowork: `audit BRIEF-069`.
 
 ## Active
-- Brief: BRIEF-069 (Ready, web tables & QR) · BRIEF-070 (Ready, web void/comp) · Implementer: kj · Auditor: Cowork
+- Brief: BRIEF-069 (Implemented, work SHA `6ad751f`) · BRIEF-070 (Ready, web void/comp) · Implementer: kj · Auditor: Cowork
 - Done 21 Oct–1 Nov: BRIEF-068 (#116) · BRIEF-066 (#115) · BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
-1. In kj: `execute BRIEF-069` (Web tables admin & QR sticker print)
+1. In Cowork: `audit BRIEF-069`
 2. Backend BRIEF-018 void/comp + PIN (`feat/BRIEF-018-void-comp-pin`)
 3. In kj: `execute BRIEF-070` (Web POS void/comp modal)
 4. AI owner insight (DR-014) — needs CD + feature spec first
