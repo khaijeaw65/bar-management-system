@@ -1,16 +1,16 @@
 # State — KJ
-Updated: 2026-11-01 · Agent: Antigravity (BRIEF-067 Ready)
+Updated: 2026-11-01 · Agent: Antigravity (BRIEF-067 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-067 Ready** (Rev 1, backend rules & port cleanup). Next: `execute BRIEF-067`.
+**BRIEF-067 Implemented** (Rev 1, work commit `ae3347b`). Next: in Cowork → `audit BRIEF-067`.
 
 ## Active
-- Brief: BRIEF-067 Rev 1 · Stage: Ready (uncommitted seed in main checkout) · Depends on: BRIEF-064 (#112, merged `9e59dfa`)
+- Brief: BRIEF-067 Rev 1 · Stage: Implemented · Work commit: `ae3347b` · Branch: `feat/BRIEF-067-backend-rules-cleanup`
 - Done 21 Oct–1 Nov: BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
-1. `execute BRIEF-067` (seed commit includes Field-approved `docs/rules/backend.md` + `.field-kit.json`, then Steps 0–5)
+1. In Cowork: `audit BRIEF-067` (work commit `ae3347b`)
 2. Next after 067: BRIEF-065 (Expo app push — Metee) · BRIEF-066 (tables admin API)
 
 ## Blockers / Coordination
