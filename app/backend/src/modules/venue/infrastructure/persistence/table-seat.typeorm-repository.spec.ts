@@ -5,7 +5,7 @@ import type { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adap
 import type { ClsService } from 'nestjs-cls';
 import { TableSeatTypeormRepository } from './table-seat.typeorm-repository.js';
 import type { TableSeat } from './table-seat.entity.js';
-import { DuplicateSeatLabelException } from '../../domain/table-seat.types.js';
+import { DuplicateSeatLabelError } from '../../domain/table-seat.errors.js';
 
 describe('TableSeatTypeormRepository', () => {
   let repository: TableSeatTypeormRepository;
@@ -42,7 +42,7 @@ describe('TableSeatTypeormRepository', () => {
   });
 
   describe('create error translation', () => {
-    it('translates 23505 uq_table_seat_label_active into DuplicateSeatLabelException', async () => {
+    it('translates 23505 uq_table_seat_label_active into DuplicateSeatLabelError', async () => {
       const driverError = { code: '23505', constraint: 'uq_table_seat_label_active' };
       const queryError = new QueryFailedError('INSERT INTO table_seat', [], driverError as unknown as Error);
       ormRepo.save.mockRejectedValueOnce(queryError);
@@ -54,7 +54,7 @@ describe('TableSeatTypeormRepository', () => {
           sortOrder: 0,
           qrToken: 'qr-tok',
         }),
-      ).rejects.toBeInstanceOf(DuplicateSeatLabelException);
+      ).rejects.toBeInstanceOf(DuplicateSeatLabelError);
     });
 
     it('rethrows other query errors unchanged', async () => {
@@ -73,7 +73,7 @@ describe('TableSeatTypeormRepository', () => {
   });
 
   describe('update error translation', () => {
-    it('translates 23505 uq_table_seat_label_active on update into DuplicateSeatLabelException', async () => {
+    it('translates 23505 uq_table_seat_label_active on update into DuplicateSeatLabelError', async () => {
       ormRepo.findOne.mockResolvedValueOnce({ id: '11111111-1111-4111-8111-111111111111', label: 'T1' });
       const driverError = { code: '23505', constraint: 'uq_table_seat_label_active' };
       const queryError = new QueryFailedError('UPDATE table_seat', [], driverError as unknown as Error);
@@ -81,7 +81,7 @@ describe('TableSeatTypeormRepository', () => {
 
       await expect(
         repository.update('11111111-1111-4111-8111-111111111111', { label: 'T2' }),
-      ).rejects.toBeInstanceOf(DuplicateSeatLabelException);
+      ).rejects.toBeInstanceOf(DuplicateSeatLabelError);
     });
   });
 

@@ -40,13 +40,6 @@ export interface SeatSortOrderItem {
   sortOrder: number;
 }
 
-export class DuplicateSeatLabelException extends Error {
-  public constructor(message = 'Duplicate active seat label') {
-    super(message);
-    this.name = 'DuplicateSeatLabelException';
-  }
-}
-
 export interface CreateSeatRecordInput {
   label: string;
   kind: TableSeatKind;

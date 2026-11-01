@@ -4,7 +4,7 @@ import type { TableSeatRepository } from '../domain/table-seat.repository.js';
 import type { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { NotificationsService } from '../../notifications/notifications.service.js';
 import type { SeatAdminRecord } from '../domain/table-seat.types.js';
-import { DuplicateSeatLabelException } from '../domain/table-seat.types.js';
+import { DuplicateSeatLabelError } from '../domain/table-seat.errors.js';
 
 vi.mock('@nestjs-cls/transactional', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@nestjs-cls/transactional')>();
@@ -120,8 +120,8 @@ describe('TableAdminService', () => {
       });
     });
 
-    it('translates repository DuplicateSeatLabelException to 409 SEAT_LABEL_TAKEN', async () => {
-      repo.create.mockRejectedValueOnce(new DuplicateSeatLabelException());
+    it('translates repository DuplicateSeatLabelError to 409 SEAT_LABEL_TAKEN', async () => {
+      repo.create.mockRejectedValueOnce(new DuplicateSeatLabelError());
       await expect(service.create({ label: 'T3', kind: 'table' })).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,
@@ -157,8 +157,8 @@ describe('TableAdminService', () => {
       });
     });
 
-    it('translates repository DuplicateSeatLabelException on update to 409', async () => {
-      repo.update.mockRejectedValueOnce(new DuplicateSeatLabelException());
+    it('translates repository DuplicateSeatLabelError on update to 409', async () => {
+      repo.update.mockRejectedValueOnce(new DuplicateSeatLabelError());
       await expect(service.update(SEAT_1.id, { label: 'T2' })).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,
@@ -259,9 +259,9 @@ describe('TableAdminService', () => {
       });
     });
 
-    it('translates repository DuplicateSeatLabelException on activate to 409', async () => {
+    it('translates repository DuplicateSeatLabelError on activate to 409', async () => {
       repo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
-      repo.update.mockRejectedValueOnce(new DuplicateSeatLabelException());
+      repo.update.mockRejectedValueOnce(new DuplicateSeatLabelError());
       await expect(service.activate(SEAT_1.id)).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,

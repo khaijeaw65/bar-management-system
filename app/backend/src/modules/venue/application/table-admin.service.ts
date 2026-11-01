@@ -12,11 +12,8 @@ import type { AuditFieldChange, AuditRecord } from '../../../common/audit/audit-
 import { DomainException } from '../../../common/domain-exception.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { TableSeatRepository } from '../domain/table-seat.repository.js';
-import {
-  DuplicateSeatLabelException,
-  type SeatAdminRecord,
-  type UpdateSeatRecordInput,
-} from '../domain/table-seat.types.js';
+import { DuplicateSeatLabelError } from '../domain/table-seat.errors.js';
+import type { SeatAdminRecord, UpdateSeatRecordInput } from '../domain/table-seat.types.js';
 import { newQrToken } from './qr-token.js';
 import type {
   CreateSeatInput,
@@ -125,7 +122,7 @@ export class TableAdminService {
       await this.auditLog.record(this.buildCreateAudit(created));
       return created;
     } catch (error) {
-      if (error instanceof DuplicateSeatLabelException) {
+      if (error instanceof DuplicateSeatLabelError) {
         throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
       }
       throw error;
@@ -147,7 +144,7 @@ export class TableAdminService {
       await this.auditLog.record(this.buildUpdateAudit(current, updated));
       return updated;
     } catch (error) {
-      if (error instanceof DuplicateSeatLabelException) {
+      if (error instanceof DuplicateSeatLabelError) {
         throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
       }
       throw error;
@@ -224,7 +221,7 @@ export class TableAdminService {
       await this.auditLog.record(this.buildActiveAudit(current.id, true));
       return updated;
     } catch (error) {
-      if (error instanceof DuplicateSeatLabelException) {
+      if (error instanceof DuplicateSeatLabelError) {
         throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
       }
       throw error;

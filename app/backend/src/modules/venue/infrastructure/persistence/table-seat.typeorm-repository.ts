@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
-import type { CallStaffReason, TableSeatKind } from '@bar/contracts';
+import { TableSeatKindSchema, type CallStaffReason, type TableSeatKind } from '@bar/contracts';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
 import { In, QueryFailedError, Repository } from 'typeorm';
 import type { TableSeatRepository } from '../../domain/table-seat.repository.js';
-import {
-  DuplicateSeatLabelException,
-  type CreateSeatRecordInput,
-  type SeatAdminRecord,
-  type SeatIdentity,
-  type SeatSortOrderItem,
-  type SeatWithLiveVisit,
-  type StaffCallRecord,
-  type UpdateSeatRecordInput,
+import { DuplicateSeatLabelError } from '../../domain/table-seat.errors.js';
+import type {
+  CreateSeatRecordInput,
+  SeatAdminRecord,
+  SeatIdentity,
+  SeatSortOrderItem,
+  SeatWithLiveVisit,
+  StaffCallRecord,
+  UpdateSeatRecordInput,
 } from '../../domain/table-seat.types.js';
 import { readDate, readOptionalText, readText } from '../../../../common/persistence/row-values.js';
 import { TableSeat } from './table-seat.entity.js';
@@ -22,6 +22,8 @@ import type { SeatAdminRow, SeatVisitRow } from './table-seat.types.js';
 
 const SEAT_LABEL_INDEX = 'uq_table_seat_label_active';
 
+// Lock the ringing row, clear it, and hand back the bell that was there.
+// A second clear waits on the lock, sees no bell, and changes nothing.
 const CLEAR_STAFF_CALL = `
   WITH previous AS (
     SELECT id, staff_called_at, staff_call_reason, staff_call_note
@@ -117,13 +119,20 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
   }
 
   public async findAdminById(id: string): Promise<SeatAdminRecord | null> {
-    const row = this.firstRow(await this.txHost.tx.query(ADMIN_SEAT_BY_ID, [id]));
-    return row ? this.toAdminSeat(row as unknown as SeatAdminRow) : null;
+    const rows: SeatAdminRow[] = await this.txHost.tx.query(ADMIN_SEAT_BY_ID, [id]);
+    const row = rows[0];
+    if (!row) return null;
+    return this.toAdminSeat(row);
   }
 
   public async findActiveByLabel(label: string, excludeId?: string): Promise<SeatAdminRecord | null> {
-    const row = this.firstRow(await this.txHost.tx.query(ACTIVE_SEAT_BY_LABEL, [label, excludeId ?? null]));
-    return row ? this.toAdminSeat(row as unknown as SeatAdminRow) : null;
+    const rows: SeatAdminRow[] = await this.txHost.tx.query(ACTIVE_SEAT_BY_LABEL, [
+      label,
+      excludeId ?? null,
+    ]);
+    const row = rows[0];
+    if (!row) return null;
+    return this.toAdminSeat(row);
   }
 
   public async getMaxSortOrder(kind: TableSeatKind): Promise<number> {
@@ -138,19 +147,21 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
 
   public async create(input: CreateSeatRecordInput): Promise<SeatAdminRecord> {
     try {
-      const seat = this.repo.create({ ...input, isActive: true });
+      const seat = this.repo.create({
+        label: input.label,
+        kind: input.kind,
+        sortOrder: input.sortOrder,
+        qrToken: input.qrToken,
+        isActive: true,
+      });
       const saved = await this.repo.save(seat);
       return {
-        id: saved.id,
-        label: saved.label,
-        kind: saved.kind,
-        sortOrder: Number(saved.sortOrder),
-        isActive: saved.isActive,
-        qrToken: input.qrToken,
-        hasLiveVisit: false,
+        id: saved.id, label: saved.label, kind: saved.kind,
+        sortOrder: Number(saved.sortOrder), isActive: saved.isActive,
+        qrToken: input.qrToken, hasLiveVisit: false,
       };
     } catch (error) {
-      if (this.isSeatLabelConflict(error)) throw new DuplicateSeatLabelException();
+      if (this.isSeatLabelConflict(error)) throw new DuplicateSeatLabelError();
       throw error;
     }
   }
@@ -166,7 +177,7 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
       await this.repo.save(seat);
       return await this.findAdminById(id);
     } catch (error) {
-      if (this.isSeatLabelConflict(error)) throw new DuplicateSeatLabelException();
+      if (this.isSeatLabelConflict(error)) throw new DuplicateSeatLabelError();
       throw error;
     }
   }
@@ -204,7 +215,7 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
     return {
       id: readText(row.id),
       label: readText(row.label),
-      kind: row.kind === 'counter' ? 'counter' : 'table',
+      kind: TableSeatKindSchema.parse(row.kind),
       sortOrder: Number(row.sort_order),
     };
   }
