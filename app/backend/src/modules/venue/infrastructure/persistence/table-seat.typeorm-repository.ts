@@ -19,20 +19,30 @@ import type { SeatVisitRow } from './table-seat.types.js';
 const CLEAR_STAFF_CALL = `
   WITH previous AS (
     SELECT id, staff_called_at, staff_call_reason, staff_call_note
-    FROM table_seat WHERE id = $1 AND staff_called_at IS NOT NULL
-      AND ($2::text IS NULL OR staff_call_reason = $2) FOR UPDATE
+    FROM table_seat
+    WHERE id = $1
+      AND staff_called_at IS NOT NULL
+      AND ($2::text IS NULL OR staff_call_reason = $2)
+    FOR UPDATE
   )
   UPDATE table_seat AS seat
-  SET staff_called_at = NULL, staff_call_reason = NULL, staff_call_note = NULL,
+  SET staff_called_at = NULL,
+      staff_call_reason = NULL,
+      staff_call_note = NULL,
       updated_by = COALESCE($3::uuid, seat.updated_by)
-  FROM previous WHERE seat.id = previous.id
+  FROM previous
+  WHERE seat.id = previous.id
   RETURNING previous.staff_called_at, previous.staff_call_reason, previous.staff_call_note
 `;
 
 const ACTIVE_SEATS = `
-  SELECT s.id, s.label, s.kind, s.sort_order, v.id AS visit_id, v.state, v.opened_at,
-         v.guest_label, s.staff_called_at, s.staff_call_reason, s.staff_call_note
-  FROM table_seat s LEFT JOIN visit v ON v.table_seat_id = s.id AND v.state IN ('open', 'active', 'idle')
+  SELECT s.id, s.label, s.kind, s.sort_order,
+         v.id AS visit_id, v.state, v.opened_at, v.guest_label,
+         s.staff_called_at, s.staff_call_reason, s.staff_call_note
+  FROM table_seat s
+  LEFT JOIN visit v
+    ON v.table_seat_id = s.id
+   AND v.state IN ('open', 'active', 'idle')
   WHERE s.is_active = true
   ORDER BY CASE s.kind WHEN 'counter' THEN 0 ELSE 1 END, s.sort_order, s.label
 `;

@@ -20,14 +20,22 @@ const SEAT_LABEL_INDEX = 'uq_table_seat_label_active';
 const ADMIN_SELECT = `
   SELECT s.id, s.label, s.kind, s.sort_order, s.is_active, s.qr_token,
          CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS has_live_visit
-  FROM table_seat s LEFT JOIN visit v ON v.table_seat_id = s.id AND v.state IN ('open', 'active', 'idle')
+  FROM table_seat s
+  LEFT JOIN visit v
+    ON v.table_seat_id = s.id
+   AND v.state IN ('open', 'active', 'idle')
 `;
 
 const ADMIN_SEATS = `${ADMIN_SELECT} ORDER BY CASE s.kind WHEN 'counter' THEN 0 ELSE 1 END, s.sort_order, s.label`;
 const ADMIN_SEAT_BY_ID = `${ADMIN_SELECT} WHERE s.id = $1`;
 const ACTIVE_SEAT_BY_LABEL = `${ADMIN_SELECT} WHERE s.is_active = true AND lower(trim(s.label)) = lower(trim($1)) AND ($2::uuid IS NULL OR s.id != $2)`;
 const ADMIN_SEATS_BY_KIND = `${ADMIN_SELECT} WHERE s.kind = $1::table_seat_kind ORDER BY s.sort_order, s.label`;
-const MAX_SORT_ORDER = `SELECT COALESCE(MAX(sort_order), -1) AS max_sort_order FROM table_seat WHERE kind = $1::table_seat_kind`;
+
+const MAX_SORT_ORDER = `
+  SELECT COALESCE(MAX(sort_order), -1) AS max_sort_order
+  FROM table_seat
+  WHERE kind = $1::table_seat_kind
+`;
 
 @Injectable()
 export class TableSeatAdminTypeormRepository implements ITableSeatAdminRepository {
