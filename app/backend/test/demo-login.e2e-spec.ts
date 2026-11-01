@@ -63,7 +63,7 @@ describe('Demo Login (e2e)', () => {
       .send({ role: 'owner' })
       .expect(200);
 
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body.data).toEqual({ ok: true });
     const cookies = setCookieHeaders(res);
     const accessToken = cookieValue(cookies, 'access_token');
     const refreshToken = cookieValue(cookies, 'refresh_token');
@@ -75,14 +75,15 @@ describe('Demo Login (e2e)', () => {
       .set('Cookie', [`access_token=${accessToken}`])
       .expect(200);
 
-    expect(meRes.body.displayName).toContain('เจ้าของ');
+    expect(meRes.body.data.displayName).toContain('เจ้าของ');
 
     const permRes = await request(app.getHttpServer())
       .get('/api/me/permissions')
       .set('Cookie', [`access_token=${accessToken}`])
       .expect(200);
 
-    expect(permRes.body.groups).toContain('เจ้าของ');
+    const ownerGroups = permRes.body.data.groups.map((g: { name: string }) => g.name);
+    expect(ownerGroups).toContain('เจ้าของ');
   });
 
   it('logs in as demo manager and has manager permissions', async () => {
@@ -99,7 +100,8 @@ describe('Demo Login (e2e)', () => {
       .set('Cookie', [`access_token=${accessToken}`])
       .expect(200);
 
-    expect(permRes.body.groups).toContain('ผู้จัดการ');
+    const managerGroups = permRes.body.data.groups.map((g: { name: string }) => g.name);
+    expect(managerGroups).toContain('ผู้จัดการ');
   });
 
   it('logs in as demo staff and has staff permissions', async () => {
@@ -116,7 +118,8 @@ describe('Demo Login (e2e)', () => {
       .set('Cookie', [`access_token=${accessToken}`])
       .expect(200);
 
-    expect(permRes.body.groups).toContain('พนักงาน');
+    const staffGroups = permRes.body.data.groups.map((g: { name: string }) => g.name);
+    expect(staffGroups).toContain('พนักงาน');
   });
 
   it('rejects invalid role with 400 Bad Request', async () => {
