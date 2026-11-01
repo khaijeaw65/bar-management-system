@@ -35,7 +35,6 @@ export class VisitService {
   ) {}
 
   public async open(input: OpenVisitInput): Promise<OpenVisitResult> {
-    await this.requireActiveSeat(input.tableSeatId);
     const result = await this.insertOrAttach(input);
     await this.emitOpened(result);
     return result;
@@ -98,7 +97,9 @@ export class VisitService {
     return this.visitRepository.closeIfLive(id);
   }
 
+  @Transactional()
   private async insertOrAttach(input: OpenVisitInput): Promise<OpenVisitResult> {
+    await this.requireActiveSeat(input.tableSeatId);
     const inserted = await this.visitRepository.insert(input);
     if (inserted.kind === 'taken') return this.attachedVisit(input.tableSeatId);
     return { visit: await this.toView(inserted.visit), attached: false };
@@ -157,7 +158,7 @@ export class VisitService {
   }
 
   private async requireActiveSeat(id: string): Promise<void> {
-    const seat = await this.tableSeatRepository.findActiveById(id);
+    const seat = await this.tableSeatRepository.lockActiveForShare(id);
     if (!seat) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
   }
 

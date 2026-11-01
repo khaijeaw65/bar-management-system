@@ -66,6 +66,7 @@ describe('VisitService', () => {
     listActive: vi.fn(),
     findById: vi.fn(),
     findActiveById: vi.fn(),
+    lockActiveForShare: vi.fn(),
     replaceQrToken: vi.fn(),
     clearStaffCall: vi.fn(),
   };
@@ -84,6 +85,7 @@ describe('VisitService', () => {
     vi.resetAllMocks();
     seats.findById.mockResolvedValue(SEAT);
     seats.findActiveById.mockResolvedValue(SEAT);
+    seats.lockActiveForShare.mockResolvedValue(SEAT);
     staff.findById.mockResolvedValue({
       id: visit().openedBy,
       displayName: 'Owner',
@@ -209,7 +211,7 @@ describe('VisitService', () => {
   });
 
   it('returns not found for an unknown seat', async () => {
-    seats.findActiveById.mockResolvedValue(null);
+    seats.lockActiveForShare.mockResolvedValue(null);
 
     await expect(
       service.open({

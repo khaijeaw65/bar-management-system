@@ -163,6 +163,33 @@ describe('Tables admin API (e2e)', () => {
       .send({ label: 'T1', kind: 'table' })
       .expect(201);
     expect(createT1AgainRes.body.data.label).toBe('T1');
+
+    // 4. Activating the old T1 now conflicts with the newly created active T1 -> 409 SEAT_LABEL_TAKEN
+    const activateConflict = await request(app.getHttpServer())
+      .post(`/api/tables/${t1Id}/activate`)
+      .set('Cookie', `access_token=${ownerToken}`)
+      .expect(409);
+    expect(activateConflict.body.code).toBe('SEAT_LABEL_TAKEN');
+
+    // 5. PATCH rename to an active label conflicts -> 409 SEAT_LABEL_TAKEN
+    const patchConflict = await request(app.getHttpServer())
+      .patch(`/api/tables/${createT1AgainRes.body.data.id}`)
+      .set('Cookie', `access_token=${ownerToken}`)
+      .send({ label: 'T2' })
+      .expect(409);
+    expect(patchConflict.body.code).toBe('SEAT_LABEL_TAKEN');
+
+    // 6. PATCH happy path: rename and move section -> placed at end of new section
+    const maxCounterRow = await dataSource.query(`SELECT COALESCE(MAX(sort_order), -1) AS m FROM table_seat WHERE kind = 'counter'`);
+    const expectedSortOrder = Number(maxCounterRow[0]?.m) + 1;
+    const patchRes = await request(app.getHttpServer())
+      .patch(`/api/tables/${createT1AgainRes.body.data.id}`)
+      .set('Cookie', `access_token=${ownerToken}`)
+      .send({ label: 'C-Extra', kind: 'counter' })
+      .expect(200);
+    expect(patchRes.body.data.label).toBe('C-Extra');
+    expect(patchRes.body.data.kind).toBe('counter');
+    expect(patchRes.body.data.sortOrder).toBe(expectedSortOrder);
   });
 
   it('AC-3: PUT /tables/order reorders section; missing, extra, or cross-section id rejected with 400', async () => {
@@ -219,6 +246,12 @@ describe('Tables admin API (e2e)', () => {
       .set('Cookie', `access_token=${ownerToken}`)
       .send({ kind: 'table', ids: wrongSectionIds })
       .expect(400);
+
+    // Verify order remains unchanged after all rejected reorders
+    const unchangedRows: TableSeatDbRow[] = await dataSource.query(
+      `SELECT id, sort_order FROM table_seat WHERE kind = 'table' ORDER BY sort_order`,
+    );
+    expect(unchangedRows.map((r) => r.id)).toEqual(reversed);
   });
 
   it('AC-4: Deactivate seat with live visit -> 409 SEAT_IN_USE; without live visit -> deactivates, stops QR, refuses guest session', async () => {
@@ -295,6 +328,14 @@ describe('Tables admin API (e2e)', () => {
       .send({ reason: 'other', note: 'เรียกพนักงาน' })
       .expect(401);
     expect(guestCall.body.code).toBe('GUEST_SESSION_INVALID');
+
+    // Opening a visit on the deactivated seat is refused at insert time
+    const inactiveOpen = await request(app.getHttpServer())
+      .post('/api/visits')
+      .set('Cookie', `access_token=${ownerToken}`)
+      .send({ tableSeatId: t1.id, guestLabel: 'ทดสอบ' })
+      .expect(404);
+    expect(inactiveOpen.body.code).toBe('NOT_FOUND');
   });
 
   it('AC-5: Activate brings seat back to GET /tables with same qrToken and printed QR works again', async () => {

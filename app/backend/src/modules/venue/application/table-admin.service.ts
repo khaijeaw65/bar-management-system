@@ -6,15 +6,17 @@ import {
   type SeatAdmin,
   type SeatAdminList,
   type TableSeatKind,
-  type TableStaffCallClearedPayload,
-  type TablesChangedPayload,
 } from '@bar/contracts';
 import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { AuditFieldChange, AuditRecord } from '../../../common/audit/audit-log.types.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { TableSeatRepository } from '../domain/table-seat.repository.js';
-import type { SeatAdminRecord, UpdateSeatRecordInput } from '../domain/table-seat.types.js';
+import {
+  DuplicateSeatLabelException,
+  type SeatAdminRecord,
+  type UpdateSeatRecordInput,
+} from '../domain/table-seat.types.js';
 import { newQrToken } from './qr-token.js';
 import type {
   CreateSeatInput,
@@ -93,8 +95,7 @@ export class TableAdminService {
   }
 
   private async validateUpdateLabel(current: SeatAdminRecord, label?: string): Promise<void> {
-    if (!label) return;
-    if (!current.isActive) return;
+    if (!label || !current.isActive) return;
     await this.validateUniqueActiveLabel(label, current.id);
   }
 
@@ -107,22 +108,28 @@ export class TableAdminService {
     current: SeatAdminRecord,
     newKind?: TableSeatKind,
   ): Promise<number | undefined> {
-    if (!newKind) return undefined;
-    if (newKind === current.kind) return undefined;
+    if (!newKind || newKind === current.kind) return undefined;
     return await this.calculateNextSortOrder(newKind);
   }
 
   @Transactional()
   private async insertSeat(input: CreateSeatInput, sortOrder: number): Promise<SeatAdminRecord> {
     const qrToken = newQrToken();
-    const created = await this.tableSeatRepository.create({
-      label: input.label.trim(),
-      kind: input.kind,
-      sortOrder,
-      qrToken,
-    });
-    await this.auditLog.record(this.buildCreateAudit(created));
-    return created;
+    try {
+      const created = await this.tableSeatRepository.create({
+        label: input.label.trim(),
+        kind: input.kind,
+        sortOrder,
+        qrToken,
+      });
+      await this.auditLog.record(this.buildCreateAudit(created));
+      return created;
+    } catch (error) {
+      if (error instanceof DuplicateSeatLabelException) {
+        throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
+      }
+      throw error;
+    }
   }
 
   @Transactional()
@@ -132,12 +139,19 @@ export class TableAdminService {
     sortOrder?: number,
   ): Promise<SeatAdminRecord> {
     const patch = this.buildUpdatePatch(input, sortOrder);
-    const updated = await this.tableSeatRepository.update(current.id, patch);
-    if (!updated) {
-      throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
+    try {
+      const updated = await this.tableSeatRepository.update(current.id, patch);
+      if (!updated) {
+        throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
+      }
+      await this.auditLog.record(this.buildUpdateAudit(current, updated));
+      return updated;
+    } catch (error) {
+      if (error instanceof DuplicateSeatLabelException) {
+        throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
+      }
+      throw error;
     }
-    await this.auditLog.record(this.buildUpdateAudit(current, updated));
-    return updated;
   }
 
   private buildUpdatePatch(input: UpdateSeatInput, sortOrder?: number): UpdateSeatRecordInput {
@@ -155,10 +169,7 @@ export class TableAdminService {
     const expected = new Set(sectionSeats.map((s) => s.id));
     const seen = new Set<string>();
     for (const id of ids) {
-      if (!expected.has(id)) {
-        throw new DomainException('VALIDATION_ERROR', 'รายการโต๊ะไม่ถูกต้อง', 400);
-      }
-      if (seen.has(id)) {
+      if (!expected.has(id) || seen.has(id)) {
         throw new DomainException('VALIDATION_ERROR', 'รายการโต๊ะไม่ถูกต้อง', 400);
       }
       seen.add(id);
@@ -177,6 +188,10 @@ export class TableAdminService {
 
   @Transactional()
   private async performDeactivation(id: string): Promise<DeactivationOutcome> {
+    const locked = await this.tableSeatRepository.lockForUpdate(id);
+    if (!locked) {
+      throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
+    }
     const seat = await this.requireSeat(id);
     if (seat.hasLiveVisit) {
       throw new DomainException('SEAT_IN_USE', 'มีแขกอยู่ที่โต๊ะนี้ ปิดโต๊ะก่อน', 409);
@@ -201,29 +216,33 @@ export class TableAdminService {
   @Transactional()
   private async performActivation(current: SeatAdminRecord): Promise<SeatAdminRecord> {
     if (current.isActive) return current;
-    const updated = await this.tableSeatRepository.update(current.id, { isActive: true });
-    if (!updated) {
-      throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
+    try {
+      const updated = await this.tableSeatRepository.update(current.id, { isActive: true });
+      if (!updated) {
+        throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
+      }
+      await this.auditLog.record(this.buildActiveAudit(current.id, true));
+      return updated;
+    } catch (error) {
+      if (error instanceof DuplicateSeatLabelException) {
+        throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
+      }
+      throw error;
     }
-    await this.auditLog.record(this.buildActiveAudit(current.id, true));
-    return updated;
   }
 
   private notifyDeactivation(outcome: DeactivationOutcome): void {
     if (outcome.bellCleared) {
-      this.emitBellCleared(outcome.seat.id);
+      this.notifications.emitToStaff(TABLE_STAFF_CALL_CLEARED, {
+        tableSeatId: outcome.seat.id,
+        acknowledgedBy: null,
+      });
     }
     this.emitTablesChanged([outcome.seat.id]);
   }
 
   private emitTablesChanged(seatIds: string[]): void {
-    const payload: TablesChangedPayload = { seatIds };
-    this.notifications.emitToStaff(TABLES_CHANGED, payload);
-  }
-
-  private emitBellCleared(tableSeatId: string): void {
-    const payload: TableStaffCallClearedPayload = { tableSeatId, acknowledgedBy: null };
-    this.notifications.emitToStaff(TABLE_STAFF_CALL_CLEARED, payload);
+    this.notifications.emitToStaff(TABLES_CHANGED, { seatIds });
   }
 
   private mapSeat(record: SeatAdminRecord): SeatAdmin {
@@ -244,31 +263,20 @@ export class TableAdminService {
       entityId: seat.id,
       action: 'CREATE',
       changedFields: {
-        label: { from: null, to: seat.label },
-        kind: { from: null, to: seat.kind },
-        sort_order: { from: null, to: String(seat.sortOrder) },
-        is_active: { from: null, to: 'true' },
+        label: { from: null, to: seat.label }, kind: { from: null, to: seat.kind },
+        sort_order: { from: null, to: String(seat.sortOrder) }, is_active: { from: null, to: 'true' },
       },
     };
   }
 
   private buildUpdateAudit(before: SeatAdminRecord, after: SeatAdminRecord): AuditRecord {
     const changedFields: Record<string, AuditFieldChange> = {};
-    if (before.label !== after.label) {
-      changedFields['label'] = { from: before.label, to: after.label };
-    }
-    if (before.kind !== after.kind) {
-      changedFields['kind'] = { from: before.kind, to: after.kind };
-    }
+    if (before.label !== after.label) changedFields['label'] = { from: before.label, to: after.label };
+    if (before.kind !== after.kind) changedFields['kind'] = { from: before.kind, to: after.kind };
     if (before.sortOrder !== after.sortOrder) {
       changedFields['sort_order'] = { from: String(before.sortOrder), to: String(after.sortOrder) };
     }
-    return {
-      entity: 'table_seat',
-      entityId: after.id,
-      action: 'UPDATE',
-      changedFields,
-    };
+    return { entity: 'table_seat', entityId: after.id, action: 'UPDATE', changedFields };
   }
 
   private buildReorderAudit(firstId: string, ids: readonly string[]): AuditRecord {
@@ -276,9 +284,7 @@ export class TableAdminService {
       entity: 'table_seat',
       entityId: firstId,
       action: 'UPDATE',
-      changedFields: {
-        sort_order: { from: null, to: ids.join(',') },
-      },
+      changedFields: { sort_order: { from: null, to: ids.join(',') } },
     };
   }
 
@@ -287,9 +293,7 @@ export class TableAdminService {
       entity: 'table_seat',
       entityId: id,
       action: 'UPDATE',
-      changedFields: {
-        is_active: { from: String(!isActive), to: String(isActive) },
-      },
+      changedFields: { is_active: { from: String(!isActive), to: String(isActive) } },
     };
   }
 }

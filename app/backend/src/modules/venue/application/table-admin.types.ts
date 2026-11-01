@@ -1,5 +1,5 @@
 import type { CreateSeatRequest, ReorderSeatsRequest, UpdateSeatRequest } from '@bar/contracts';
-import type { SeatAdminRecord } from '../domain/table-seat.types.js';
+import type { SeatAdminRecord, SeatSortOrderItem } from '../domain/table-seat.types.js';
 
 export type CreateSeatInput = CreateSeatRequest;
 export type UpdateSeatInput = UpdateSeatRequest;
@@ -10,7 +10,4 @@ export interface DeactivationOutcome {
   bellCleared: boolean;
 }
 
-export interface ReorderItem {
-  id: string;
-  sortOrder: number;
-}
+export type ReorderItem = SeatSortOrderItem;

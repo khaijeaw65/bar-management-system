@@ -3,6 +3,7 @@ import type {
   CreateSeatRecordInput,
   SeatAdminRecord,
   SeatIdentity,
+  SeatSortOrderItem,
   SeatWithLiveVisit,
   StaffCallRecord,
   UpdateSeatRecordInput,
@@ -26,5 +27,7 @@ export abstract class TableSeatRepository {
   public abstract listByKind(kind: TableSeatKind): Promise<SeatAdminRecord[]>;
   public abstract create(input: CreateSeatRecordInput): Promise<SeatAdminRecord>;
   public abstract update(id: string, input: UpdateSeatRecordInput): Promise<SeatAdminRecord | null>;
-  public abstract updateSortOrders(orders: Array<{ id: string; sortOrder: number }>): Promise<void>;
+  public abstract updateSortOrders(orders: SeatSortOrderItem[]): Promise<void>;
+  public abstract lockForUpdate(id: string): Promise<boolean>;
+  public abstract lockActiveForShare(id: string): Promise<SeatIdentity | null>;
 }

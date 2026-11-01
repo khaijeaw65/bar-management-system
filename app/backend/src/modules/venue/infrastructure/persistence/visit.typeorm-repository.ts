@@ -40,12 +40,19 @@ const ACTIVATE_VISIT = `
 
 const OPEN_FOR_GUEST = `
   INSERT INTO visit (table_seat_id, state, opened_via)
-  VALUES ($1, 'open', 'qr')
+  SELECT $1, 'open', 'qr'
+  WHERE EXISTS (
+    SELECT 1 FROM table_seat
+    WHERE id = $1 AND is_active = true
+    FOR SHARE
+  )
   ON CONFLICT (table_seat_id) WHERE state IN ('open', 'active', 'idle') DO NOTHING
   RETURNING id
 `;
 const LIVE_BY_SEAT = `
-  SELECT id FROM visit WHERE table_seat_id = $1 AND state IN ('open', 'active', 'idle')
+  SELECT v.id FROM visit v
+  INNER JOIN table_seat s ON s.id = v.table_seat_id AND s.is_active = true
+  WHERE v.table_seat_id = $1 AND v.state IN ('open', 'active', 'idle')
 `;
 
 @Injectable()
@@ -58,8 +65,9 @@ export class VisitTypeormRepository implements VisitRepository {
 
   public async insert(input: NewVisit): Promise<InsertVisitResult> {
     try {
-      const saved = await this.visitOrmRepository.save(
-        this.visitOrmRepository.create(this.newRow(input)),
+      const repo = this.txHost.tx.getRepository(Visit);
+      const saved = await repo.save(
+        repo.create(this.newRow(input)),
       );
       return { kind: 'created', visit: this.toRecord(saved) };
     } catch (error) {

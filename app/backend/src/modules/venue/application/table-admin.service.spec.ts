@@ -4,6 +4,7 @@ import type { TableSeatRepository } from '../domain/table-seat.repository.js';
 import type { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { NotificationsService } from '../../notifications/notifications.service.js';
 import type { SeatAdminRecord } from '../domain/table-seat.types.js';
+import { DuplicateSeatLabelException } from '../domain/table-seat.types.js';
 
 vi.mock('@nestjs-cls/transactional', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@nestjs-cls/transactional')>();
@@ -45,6 +46,7 @@ describe('TableAdminService', () => {
     update: ReturnType<typeof vi.fn>;
     updateSortOrders: ReturnType<typeof vi.fn>;
     clearStaffCall: ReturnType<typeof vi.fn>;
+    lockForUpdate: ReturnType<typeof vi.fn>;
   };
   let auditLog: { record: ReturnType<typeof vi.fn> };
   let notifications: { emitToStaff: ReturnType<typeof vi.fn> };
@@ -69,6 +71,7 @@ describe('TableAdminService', () => {
       })),
       updateSortOrders: vi.fn().mockResolvedValue(undefined),
       clearStaffCall: vi.fn().mockResolvedValue(null),
+      lockForUpdate: vi.fn().mockResolvedValue(true),
     };
     auditLog = { record: vi.fn().mockResolvedValue(undefined) };
     notifications = { emitToStaff: vi.fn() };
@@ -116,6 +119,14 @@ describe('TableAdminService', () => {
         status: 409,
       });
     });
+
+    it('translates repository DuplicateSeatLabelException to 409 SEAT_LABEL_TAKEN', async () => {
+      repo.create.mockRejectedValueOnce(new DuplicateSeatLabelException());
+      await expect(service.create({ label: 'T3', kind: 'table' })).rejects.toMatchObject({
+        code: 'SEAT_LABEL_TAKEN',
+        status: 409,
+      });
+    });
   });
 
   describe('update', () => {
@@ -140,6 +151,14 @@ describe('TableAdminService', () => {
 
     it('rejects if new label conflicts with another active seat', async () => {
       repo.findActiveByLabel.mockResolvedValueOnce(SEAT_2);
+      await expect(service.update(SEAT_1.id, { label: 'T2' })).rejects.toMatchObject({
+        code: 'SEAT_LABEL_TAKEN',
+        status: 409,
+      });
+    });
+
+    it('translates repository DuplicateSeatLabelException on update to 409', async () => {
+      repo.update.mockRejectedValueOnce(new DuplicateSeatLabelException());
       await expect(service.update(SEAT_1.id, { label: 'T2' })).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,
@@ -206,6 +225,7 @@ describe('TableAdminService', () => {
     it('deactivates seat and clears bell if ringing', async () => {
       repo.clearStaffCall.mockResolvedValueOnce({ calledAt: new Date(), reason: 'bill', note: null });
       const result = await service.deactivate(SEAT_1.id);
+      expect(repo.lockForUpdate).toHaveBeenCalledWith(SEAT_1.id);
       expect(repo.clearStaffCall).toHaveBeenCalledWith(SEAT_1.id);
       expect(repo.update).toHaveBeenCalledWith(SEAT_1.id, { isActive: false });
       expect(notifications.emitToStaff).toHaveBeenCalledWith('table.staff_call_cleared', {
@@ -233,6 +253,15 @@ describe('TableAdminService', () => {
     it('rejects activation if another active seat has same label', async () => {
       repo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
       repo.findActiveByLabel.mockResolvedValueOnce(SEAT_2);
+      await expect(service.activate(SEAT_1.id)).rejects.toMatchObject({
+        code: 'SEAT_LABEL_TAKEN',
+        status: 409,
+      });
+    });
+
+    it('translates repository DuplicateSeatLabelException on activate to 409', async () => {
+      repo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
+      repo.update.mockRejectedValueOnce(new DuplicateSeatLabelException());
       await expect(service.activate(SEAT_1.id)).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,

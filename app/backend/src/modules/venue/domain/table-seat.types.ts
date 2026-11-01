@@ -31,8 +31,20 @@ export interface SeatAdminRecord {
   kind: TableSeatKind;
   sortOrder: number;
   isActive: boolean;
-  qrToken: string;
+  qrToken: string | null;
   hasLiveVisit: boolean;
+}
+
+export interface SeatSortOrderItem {
+  id: string;
+  sortOrder: number;
+}
+
+export class DuplicateSeatLabelException extends Error {
+  public constructor(message = 'Duplicate active seat label') {
+    super(message);
+    this.name = 'DuplicateSeatLabelException';
+  }
 }
 
 export interface CreateSeatRecordInput {

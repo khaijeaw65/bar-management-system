@@ -15386,6 +15386,7 @@
                           "type": "string"
                         },
                         "qrToken": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "sortOrder": {
@@ -15535,6 +15536,7 @@
                                 "type": "string"
                               },
                               "qrToken": {
+                                "nullable": true,
                                 "type": "string"
                               },
                               "sortOrder": {
@@ -15724,6 +15726,7 @@
                                 "type": "string"
                               },
                               "qrToken": {
+                                "nullable": true,
                                 "type": "string"
                               },
                               "sortOrder": {
@@ -15913,6 +15916,7 @@
                           "type": "string"
                         },
                         "qrToken": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "sortOrder": {
@@ -16069,6 +16073,7 @@
                           "type": "string"
                         },
                         "qrToken": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "sortOrder": {
@@ -16225,6 +16230,7 @@
                           "type": "string"
                         },
                         "qrToken": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "sortOrder": {

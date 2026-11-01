@@ -8,7 +8,7 @@ export const SeatAdminSchema = z.object({
   kind: TableSeatKindSchema,
   sortOrder: z.number().int(),
   isActive: z.boolean(),
-  qrToken: z.string(),
+  qrToken: z.string().nullable(),
   hasLiveVisit: z.boolean(),
 });
 export type SeatAdmin = z.infer<typeof SeatAdminSchema>;

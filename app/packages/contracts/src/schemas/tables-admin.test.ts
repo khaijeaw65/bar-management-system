@@ -28,6 +28,19 @@ describe('SeatAdminSchema', () => {
     expect(parsed.hasLiveVisit).toBe(false);
   });
 
+  it('allows nullable qrToken', () => {
+    const parsed = SeatAdminSchema.parse({
+      id: UUID_1,
+      label: 'T7',
+      kind: 'table',
+      sortOrder: 1,
+      isActive: true,
+      qrToken: null,
+      hasLiveVisit: false,
+    });
+    expect(parsed.qrToken).toBeNull();
+  });
+
   it('rejects empty or overly long label', () => {
     expect(SeatAdminSchema.safeParse({
       id: UUID_1,
