@@ -50,7 +50,7 @@ UI exercised: n/a (backend refactor and tooling enforcement)
 
 ## Known Gaps / Follow-ups
 - Follow-up logged in SESSION_STATE.md: configure coverage report path in `sonar-project.properties` so Sonar coverage condition can pass.
-- Field amendment to `docs/rules/backend.md` regarding port naming convention (no `I` prefix in code).
+- Port naming (Field, 2026-11-01 11:24): `docs/rules/backend.md` keeps `abstract class I<Name>`; the 21 unprefixed ports are a known gap → later cleanup brief (rename to `I<Name>` + move to `domain/ports/*.port.ts`). New ports use `I<Name>`.
 
 ## AI Usage
 **High** — Antigravity used for AST class extraction, port abstract class migration, DI updates across services and e2e test modules, lint rule enforcement, audit findings fix, and test verification.
