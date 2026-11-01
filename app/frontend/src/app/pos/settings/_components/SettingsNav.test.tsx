@@ -56,4 +56,13 @@ test("owner sees both tabs", async () => {
   posMockControls.setRole("owner");
   renderWithClient(<SettingsNav />);
   expect(await screen.findByRole("link", { name: "ร้าน" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "โต๊ะและ QR" })).toBeInTheDocument();
+});
+
+test("tables:manage alone sees โต๊ะและ QR", async () => {
+  server.use(onlyPermissions("tables:manage", "tables:read"));
+  renderWithClient(<SettingsNav />);
+  expect(await screen.findByRole("link", { name: "โต๊ะและ QR" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "ร้าน" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: /พนักงาน/ })).not.toBeInTheDocument();
 });
