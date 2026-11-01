@@ -8,6 +8,7 @@ import { mockRoleCan, permissionHandlers, resetMockRole, setMockRole, type MockR
 import { reportHandlers } from "./reports";
 import { resetStaffMock, staffHandlers } from "./staff";
 import { tablesAdminHandlers } from "./tables-admin";
+import { createVoidCompHandlers, type VoidCompStore } from "./void-comp";
 
 export const staffMe = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -223,7 +224,13 @@ function boardTicket(n: number, seatId: string, label: string, status: Ticket["s
 
 function buildTickets(): Ticket[] {
   return [
-    boardTicket(1, seatIds.t3, "T3", "pending"),
+    boardTicket(1, seatIds.t3, "T3", "pending", {
+      items: [
+        boardLine("70000000-0000-4000-8000-000000000001", "สิงห์", 2, { unitPrice: "120.00", lineTotal: "240.00" }),
+        boardLine("70000000-0000-4000-8000-000000000002", "โมฮิโต้", 1, { unitPrice: "180.00", lineTotal: "180.00" }),
+        boardLine("70000000-0000-4000-8000-000000000009", "วิสกี้ซาวร์", 2, { unitPrice: "410.00", lineTotal: "820.00" }),
+      ],
+    }),
     boardTicket(2, seatIds.c4, "C4", "accepted", { acceptedBy: boardStaff }),
     boardTicket(3, seatIds.t2, "T2", "issue", {
       issue: {
@@ -279,6 +286,25 @@ const paymentByKey = new Map<string, { body: string; attempt: PaymentAttempt }>(
 const settlement = new Map<string, { paid: string; remaining: string; locked: boolean }>();
 let nextOrderNumber = 1;
 
+function seedInitialOrders(): void {
+  const t3Ticket = tickets.find((t) => t.seat.label === "T3");
+  if (t3Ticket) {
+    const visitId = "20000000-0000-4000-8000-000000000003";
+    const order: Order = {
+      id: t3Ticket.orderId,
+      visitId,
+      orderNumber: t3Ticket.orderNumber,
+      businessDate: "2026-10-30",
+      createdAt: t3Ticket.createdAt,
+      createdBy: null,
+      tickets: [t3Ticket],
+      total: "1240.00",
+    };
+    ordersByVisit.set(visitId, [order]);
+  }
+}
+seedInitialOrders();
+
 export function resetFloor(): void {
   resetMockRole();
   resetStaffMock();
@@ -292,7 +318,65 @@ export function resetFloor(): void {
   nextOrderNumber = 1;
   venueSettings = { ...initialVenue };
   paymentSettings = { ...initialPaymentSettings };
+  seedInitialOrders();
 }
+
+const voidCompStore: VoidCompStore = {
+  findOrderLine(itemId: string) {
+    for (const [visitId, orders] of ordersByVisit.entries()) {
+      for (const order of orders) {
+        for (const ticket of order.tickets) {
+          const line = ticket.items.find((item) => item.id === itemId);
+          if (line) {
+            return { order, ticket, line, visitId };
+          }
+        }
+      }
+    }
+    return null;
+  },
+  isPaymentInFlight(visitId: string) {
+    const row = seats.find((item) => item.currentVisit?.id === visitId);
+    return Boolean(row?.currentVisit?.paymentPending);
+  },
+  isVisitPaid(visitId: string) {
+    const extra = settlement.get(visitId);
+    if (!extra) return false;
+    return extra.remaining === "0.00" && extra.paid !== "0.00";
+  },
+  recalculate(visitId: string) {
+    const orders = ordersByVisit.get(visitId) ?? [];
+    for (const order of orders) {
+      const active = order.tickets.flatMap((t) => t.items).filter((l) => l.cancelledAt === null);
+      order.total = sumMoney(active.map((l) => l.lineTotal));
+    }
+    const total = sumMoney(orders.map((o) => o.total));
+    const itemCount = orders.reduce(
+      (sum, o) =>
+        sum +
+        o.tickets.reduce(
+          (cnt, t) => cnt + t.items.filter((l) => l.cancelledAt === null).reduce((q, l) => q + l.quantity, 0),
+          0,
+        ),
+      0,
+    );
+    seats = seats.map((row) =>
+      row.currentVisit?.id === visitId
+        ? { ...row, currentVisit: { ...row.currentVisit, total, itemCount } }
+        : row,
+    );
+    const extra = settlement.get(visitId);
+    if (extra) {
+      const paidSatang = toSatang(extra.paid);
+      const totalSatang = toSatang(total);
+      const remSatang = Math.max(0, totalSatang - paidSatang);
+      settlement.set(visitId, {
+        ...extra,
+        remaining: fromSatang(remSatang),
+      });
+    }
+  },
+};
 
 function asVisit(seatRow: TableSummary, visit: Pick<Visit, "id" | "guestLabel" | "openedAt" | "openedBy" | "openedVia">): Visit {
   return {
@@ -560,6 +644,7 @@ export const handlers = [
   ...permissionHandlers,
   ...staffHandlers,
   ...tablesAdminHandlers,
+  ...createVoidCompHandlers(voidCompStore),
   http.get("*/api/auth/me", () => json(staffMe)),
   http.post("*/api/auth/refresh", () => json({ ok: true })),
   http.post("*/api/auth/logout", () => json({ ok: true })),
