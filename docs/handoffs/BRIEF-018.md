@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-018-void-comp-pin` |
 | **Commit** | `6ff6377` |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS |
 
 ## Summary
 Implemented backend order line void and comp capabilities with manager PIN authorization (DR-016 A):
