@@ -132,19 +132,19 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
   }
 
   public async listAdmin(): Promise<SeatAdminRecord[]> {
-    const rows: SeatAdminRow[] = await this.tableSeatOrmRepository.query(ADMIN_SEATS);
+    const rows: SeatAdminRow[] = await this.txHost.tx.query(ADMIN_SEATS);
     return rows.map((row) => this.toAdminSeat(row));
   }
 
   public async findAdminById(id: string): Promise<SeatAdminRecord | null> {
-    const rows: SeatAdminRow[] = await this.tableSeatOrmRepository.query(ADMIN_SEAT_BY_ID, [id]);
+    const rows: SeatAdminRow[] = await this.txHost.tx.query(ADMIN_SEAT_BY_ID, [id]);
     const row = rows[0];
     if (!row) return null;
     return this.toAdminSeat(row);
   }
 
   public async findActiveByLabel(label: string, excludeId?: string): Promise<SeatAdminRecord | null> {
-    const rows: SeatAdminRow[] = await this.tableSeatOrmRepository.query(ACTIVE_SEAT_BY_LABEL, [
+    const rows: SeatAdminRow[] = await this.txHost.tx.query(ACTIVE_SEAT_BY_LABEL, [
       label,
       excludeId ?? null,
     ]);
@@ -154,26 +154,26 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
   }
 
   public async getMaxSortOrder(kind: TableSeatKind): Promise<number> {
-    const result: unknown = await this.tableSeatOrmRepository.query(MAX_SORT_ORDER, [kind]);
+    const result: unknown = await this.txHost.tx.query(MAX_SORT_ORDER, [kind]);
     const row = this.firstRow(result);
     if (!row || row.max_sort_order === undefined || row.max_sort_order === null) return -1;
     return Number(row.max_sort_order);
   }
 
   public async listByKind(kind: TableSeatKind): Promise<SeatAdminRecord[]> {
-    const rows: SeatAdminRow[] = await this.tableSeatOrmRepository.query(ADMIN_SEATS_BY_KIND, [kind]);
+    const rows: SeatAdminRow[] = await this.txHost.tx.query(ADMIN_SEATS_BY_KIND, [kind]);
     return rows.map((row) => this.toAdminSeat(row));
   }
 
   public async create(input: CreateSeatRecordInput): Promise<SeatAdminRecord> {
-    const seat = this.tableSeatOrmRepository.create({
+    const seat = this.repo.create({
       label: input.label,
       kind: input.kind,
       sortOrder: input.sortOrder,
       qrToken: input.qrToken,
       isActive: true,
     });
-    const saved = await this.tableSeatOrmRepository.save(seat);
+    const saved = await this.repo.save(seat);
     return {
       id: saved.id,
       label: saved.label,
@@ -186,24 +186,28 @@ export class TableSeatTypeormRepository implements TableSeatRepository {
   }
 
   public async update(id: string, input: UpdateSeatRecordInput): Promise<SeatAdminRecord | null> {
-    const seat = await this.tableSeatOrmRepository.findOne({ where: { id } });
+    const seat = await this.repo.findOne({ where: { id } });
     if (!seat) return null;
     if (input.label !== undefined) seat.label = input.label;
     if (input.kind !== undefined) seat.kind = input.kind;
     if (input.sortOrder !== undefined) seat.sortOrder = input.sortOrder;
     if (input.isActive !== undefined) seat.isActive = input.isActive;
-    await this.tableSeatOrmRepository.save(seat);
+    await this.repo.save(seat);
     return await this.findAdminById(id);
   }
 
   public async updateSortOrders(orders: Array<{ id: string; sortOrder: number }>): Promise<void> {
     for (const item of orders) {
-      const seat = await this.tableSeatOrmRepository.findOne({ where: { id: item.id } });
+      const seat = await this.repo.findOne({ where: { id: item.id } });
       if (seat) {
         seat.sortOrder = item.sortOrder;
-        await this.tableSeatOrmRepository.save(seat);
+        await this.repo.save(seat);
       }
     }
+  }
+
+  private get repo(): Repository<TableSeat> {
+    return this.txHost.tx.getRepository(TableSeat);
   }
 
   private toAdminSeat(row: SeatAdminRow): SeatAdminRecord {
