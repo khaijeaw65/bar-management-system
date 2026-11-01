@@ -3,7 +3,7 @@ Updated: 2026-11-01 · Agent: Antigravity (BRIEF-068 Audit PASS)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-068 Audit PASS** (Dev demo login & fast role switch). Work commit `f798fcc`. All 4 ACs pass, all gates green (unit + e2e + openapi). Next: /review or approve merge BRIEF-068 once CI is green on H.
+**BRIEF-068 Audit PASS** (Dev demo login & fast role switch). Work commit `f798fcc` + CI fix `8b3f1d8`. All 4 ACs pass, all gates green. Next: /review or approve merge BRIEF-068 once CI is green on H.
 
 ## Active
 - Brief: BRIEF-068 (Audit PASS, standalone) · Implementer: Antigravity · Auditor: Antigravity

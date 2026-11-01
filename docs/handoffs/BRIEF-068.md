@@ -6,7 +6,7 @@
 | **Date** | 2026-11-01 |
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-068-dev-demo-login` (PR opens after audit PASS) |
-| **Commit** | `f798fcc` (`f798fcc33d2cfa2e8afbca0212bcab4b357af968`) |
+| **Commit** | `8b3f1d8` (fix for CI runner timeout; work commit `f798fcc`) |
 | **Status** | Audit PASS |
 
 ## Summary

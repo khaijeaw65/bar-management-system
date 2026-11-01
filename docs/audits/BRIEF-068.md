@@ -74,3 +74,10 @@ BRIEF-068 is well-implemented and fully grounded in the specification. The backe
 - Handoff Sonar section present for scanned commit `f798fcc`: yes
 - Remaining issues have reasons; no unapproved "won't fix"/exclusions: yes (18 pre-existing issues in untouched files; 0 issues on files touched by BRIEF-068)
 - Learning mode respected: n/a (implemented by KJ/Antigravity)
+
+## Re-audit — 2026-11-01 · 8b3f1d8
+- **Trigger:** CI failed on `H` (`ef180b3`) with a 5000ms Vitest timeout on `PoliciesScreen.test.tsx:22` under shared runner load (pre-existing load flake noted in `SESSION_STATE.md`: *"if ci hits frontend timeouts → re-run once (038 audit F4)"*).
+- **Fix commit:** `8b3f1d8` (`fix(BRIEF-068): increase frontend vitest testTimeout to 15s to prevent CI load timeouts`).
+- **Diff inspected:** `git diff ef180b3..8b3f1d8` touches only `app/frontend/vitest.config.mts` (`+testTimeout: 15_000`, `+hookTimeout: 15_000`). Zero app/contracts logic changes.
+- **Verification:** `PoliciesScreen.test.tsx` (10/10 passed), frontend typecheck/lint clean.
+- **Result:** **PASS**. Zero Must fix.
