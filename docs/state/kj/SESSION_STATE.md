@@ -1,17 +1,17 @@
 # State — KJ
-Updated: 2026-11-01 · Agent: Antigravity (BRIEF-070 Audit PASS)
+Updated: 2026-11-02 · Agent: Antigravity (BRIEF-018 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-070 Audit PASS** (Web POS void/comp modal with PIN). Branch `feat/BRIEF-070-web-pos-void-comp`. Work SHA `0f8e405`. Opening PR. Next: `/review` / merge after CI green.
+**BRIEF-018 Implemented** (Backend void/comp with manager PIN, DR-016 A). Branch `feat/BRIEF-018-void-comp-pin`. Work SHA `6ff6377`. Awaiting audit. Next: in Cowork: `audit BRIEF-018`.
 
 ## Active
-- Brief: BRIEF-070 (Audit PASS — shipping) · Implementer: kj · Auditor: Cowork
-- Done 21 Oct–1 Nov: BRIEF-069 (#117) · BRIEF-068 (#116) · BRIEF-066 (#115) · BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
+- Brief: BRIEF-018 (Implemented — awaiting audit) · Implementer: kj · Auditor: Cowork
+- Done 21 Oct–1 Nov: BRIEF-070 (#118) · BRIEF-069 (#117) · BRIEF-068 (#116) · BRIEF-066 (#115) · BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
-1. Merge BRIEF-070 once CI green on H
-2. Backend BRIEF-018 void/comp + PIN (`feat/BRIEF-018-void-comp-pin`)
+1. In Cowork: `audit BRIEF-018`
+2. Merge BRIEF-018 once audit PASS + Field approval
 3. AI owner insight (DR-014) — needs CD + feature spec first
 
 ## Blockers / Coordination
