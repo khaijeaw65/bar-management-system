@@ -1,16 +1,16 @@
 # State — KJ
-Updated: 2026-11-01 · Agent: Antigravity (BRIEF-068 Implemented)
+Updated: 2026-11-01 · Agent: Antigravity (BRIEF-068 Audit PASS)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-068 Implemented** (Dev demo login & fast role switch). Work commit `f798fcc`. All 4 ACs pass, all gates green, real HTTP run proof on port 3011 verified. Next: in Antigravity (separate session): audit BRIEF-068.
+**BRIEF-068 Audit PASS** (Dev demo login & fast role switch). Work commit `f798fcc`. All 4 ACs pass, all gates green (unit + e2e + openapi). Next: /review or approve merge BRIEF-068 once CI is green on H.
 
 ## Active
-- Brief: BRIEF-068 (Implemented, standalone) · Implementer: Antigravity · Auditor: Antigravity (separate session)
+- Brief: BRIEF-068 (Audit PASS, standalone) · Implementer: Antigravity · Auditor: Antigravity
 - Done 21 Oct–1 Nov: BRIEF-066 (#115) · BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
-1. In Antigravity (separate session): audit BRIEF-068
+1. In Antigravity: /review or approve merge BRIEF-068 once CI green on H
 2. Back-office tables UI + QR print brief (web — BRIEF-066 *Out*; CD-13 tables·1–10, print·1–3)
 3. AI owner insight (DR-014) — needs CD + feature spec first; start early (tuning time)
 4. BRIEF-018 void/comp + PIN — redraft from DR-016 (`0406c18`)

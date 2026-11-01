@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-068-dev-demo-login` (PR opens after audit PASS) |
 | **Commit** | `f798fcc` (`f798fcc33d2cfa2e8afbca0212bcab4b357af968`) |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS |
 
 ## Summary
 Added `POST /api/auth/demo-login` in `AuthController` supporting `owner`, `manager`, and `staff` demo roles with production guard (404), self-provisioning via `DemoUserService`, and session cookie issuance via `TokenService`. Added `DemoLoginRoleSchema` and `DemoLoginRequestSchema` to `@bar/contracts`. Added `DemoLoginSection` to web `/login` and quick role switch items to `StaffAccount` dropdown in `/pos`, conditionally rendered in non-production environments (`process.env.NODE_ENV !== 'production'`).
