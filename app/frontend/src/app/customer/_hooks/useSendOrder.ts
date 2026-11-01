@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { placeOrder } from "@/lib/api/customer";
 import { sendFailure, type CartAction, type CartState } from "@/lib/order/cart";
 import { customerBody } from "../_lib/menu";
@@ -11,16 +11,21 @@ import { announceSent } from "../_lib/sent-toast";
 export function useSendOrder(state: CartState, dispatch: (action: CartAction) => void) {
   const router = useRouter();
   const sending = useRef(false);
+  const [redirecting, setRedirecting] = useState(false);
   const mutation = useMutation({
     // The key stays in the cart state until a 201, so a retry after a network error never duplicates the order.
     mutationFn: () => placeOrder(customerBody(state.lines), state.idempotencyKey),
     onMutate: () => dispatch({ type: "pending", value: true }),
     onSuccess: (order) => {
+      setRedirecting(true);
       dispatch({ type: "reset" });
       announceSent(order.orderNumber);
       router.replace("/customer/tab");
     },
-    onError: (error) => dispatch(sendFailure(error)),
+    onError: (error) => {
+      setRedirecting(false);
+      dispatch(sendFailure(error));
+    },
     onSettled: () => {
       sending.current = false;
       dispatch({ type: "pending", value: false });
@@ -35,5 +40,5 @@ export function useSendOrder(state: CartState, dispatch: (action: CartAction) =>
     mutation.mutate();
   }
 
-  return { send, pending: state.pending || mutation.isPending, blocked };
+  return { send, pending: state.pending || mutation.isPending || redirecting, redirecting, blocked };
 }
