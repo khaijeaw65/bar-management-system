@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuditLogService } from '../../common/audit/audit-log.service.js';
+import { PinThrottleService } from './application/pin-throttle.service.js';
+import { StaffPinService } from './application/staff-pin.service.js';
 import { AccessRequestService } from './application/access-request.service.js';
 import { IamEnforcement } from './application/iam-enforcement.service.js';
 import { IamVersion } from './application/iam-version.service.js';
@@ -37,9 +40,21 @@ import { StaffUserTypeormRepository } from './infrastructure/persistence/staff-u
     AccessRequestTypeormRepository,
     { provide: AccessRequestRepository, useExisting: AccessRequestTypeormRepository },
     StaffUserService,
+    StaffPinService,
+    PinThrottleService,
+    AuditLogService,
     StaffActivity,
     AccessRequestService,
   ],
-  exports: [StaffUserService, StaffActivity, AccessRequestService, PermissionResolver, IamEnforcement, IamVersion],
+  exports: [
+    StaffUserService,
+    StaffPinService,
+    PinThrottleService,
+    StaffActivity,
+    AccessRequestService,
+    PermissionResolver,
+    IamEnforcement,
+    IamVersion,
+  ],
 })
 export class IamModule {}

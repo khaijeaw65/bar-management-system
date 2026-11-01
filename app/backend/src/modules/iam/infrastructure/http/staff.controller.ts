@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Put } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   EffectivePermissionsSchema,
@@ -17,6 +17,7 @@ import { requireUuid, staffAccess } from '../../../../common/http/http-input.js'
 import { ApiEnvelopedOk } from '../../../../common/openapi/api-enveloped.js';
 import { zodToOpenApi } from '../../../../common/openapi/zod-to-openapi.js';
 import { StaffAdminService } from '../../application/staff-admin.service.js';
+import { StaffPinService } from '../../application/staff-pin.service.js';
 
 const ACCESS = staffAccess('staff:manage');
 const STAFF_NOT_FOUND = 'ไม่พบพนักงาน';
@@ -24,7 +25,10 @@ const STAFF_NOT_FOUND = 'ไม่พบพนักงาน';
 @ApiTags('staff')
 @Controller('staff')
 export class StaffController {
-  public constructor(private readonly staffAdmin: StaffAdminService) {}
+  public constructor(
+    private readonly staffAdmin: StaffAdminService,
+    private readonly staffPin: StaffPinService,
+  ) {}
 
   @Get()
   @RequirePermissions('staff:manage')
@@ -108,5 +112,17 @@ export class StaffController {
   @ApiEnvelopedOk(EffectivePermissionsSchema)
   public effectivePermissions(@Param('id') id: string): Promise<EffectivePermissions> {
     return this.staffAdmin.effectivePermissions(requireUuid(id, STAFF_NOT_FOUND));
+  }
+
+  @Delete(':id/pin')
+  @RequirePermissions('staff:manage')
+  @HttpCode(204)
+  @ApiOperation({
+    summary: 'Owner reset of a staff POS PIN',
+    description: `${ACCESS} Resets pos_pin_hash to null. Audited.`,
+  })
+  @ApiParam({ name: 'id', type: String })
+  public async resetPin(@Param('id') id: string): Promise<void> {
+    await this.staffPin.resetPin(requireUuid(id, STAFF_NOT_FOUND));
   }
 }
