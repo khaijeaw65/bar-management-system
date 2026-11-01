@@ -9,6 +9,8 @@ export const PERMISSION_CODES = [
   'orders:read',
   'orders:create',
   'orders:update_status',
+  'orders:void',
+  'orders:comp',
   'payments:read',
   'payments:create',
   'payments:mark_paid',
