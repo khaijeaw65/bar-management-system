@@ -5,6 +5,7 @@ import { toast } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
+import { useAcknowledgeCall } from "@/hooks/useStaffCalls";
 import { TABLES_KEY } from "@/lib/api/tables";
 import { callTitle, isGuestOrder, orderTag } from "@/lib/pos/alerts";
 import { playChime, unlockAudio } from "@/lib/sound/chime";
@@ -28,6 +29,7 @@ export function usePosAlerts(): void {
   const client = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
+  const acknowledge = useAcknowledgeCall();
   useAudioUnlock();
 
   const refreshTables = useCallback(() => {
@@ -41,9 +43,20 @@ export function usePosAlerts(): void {
       refreshTables();
       playChime("bell");
       const label = client.getQueryData<TableList>(TABLES_KEY)?.items.find((s) => s.id === parsed.data.tableSeatId)?.label;
-      toast.warning(callTitle(label ?? "โต๊ะ", parsed.data));
+      let toastId: string | number | undefined;
+      toastId = toast.warning(callTitle(label ?? "โต๊ะ", parsed.data), {
+        actionProps: {
+          children: "รับทราบ",
+          onPress: () => {
+            acknowledge.mutate(parsed.data.tableSeatId);
+            if (toastId !== undefined) {
+              toast.close(String(toastId));
+            }
+          },
+        },
+      });
     },
-    [client, refreshTables],
+    [acknowledge, client, refreshTables],
   );
 
   const onOrder = useCallback(
