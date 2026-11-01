@@ -165,7 +165,11 @@ export class NotificationsService {
     if (item.readAt !== null) {
       return item;
     }
-    return await this.repo.markRead(item, this.clock.now());
+    const updated = await this.repo.markRead(item, this.clock.now());
+    if (!updated) {
+      throw new DomainException('NOT_FOUND', 'ไม่พบการแจ้งเตือน', 404);
+    }
+    return updated;
   }
 
   private serialize(entity: NotificationRecord): Notification {

@@ -137,6 +137,25 @@ describe('NotificationsService', () => {
     expect(repo.markRead).toHaveBeenCalledWith(item, fixedNow);
   });
 
+  it('markAsRead throws 404 DomainException if markRead returns null', async () => {
+    const { service, repo } = createService();
+    const item: NotificationRecord = {
+      id: 'notif-1',
+      recipientId: 'user-1',
+      type: 'order_new',
+      title: 'ออเดอร์ใหม่',
+      body: null,
+      refType: null,
+      refId: null,
+      readAt: null,
+      createdAt: fixedNow,
+    };
+    vi.mocked(repo.findByIdAndRecipient).mockResolvedValue(item);
+    vi.mocked(repo.markRead).mockResolvedValue(null);
+
+    await expect(service.markAsRead('user-1', 'notif-1')).rejects.toThrow('ไม่พบการแจ้งเตือน');
+  });
+
   it('feed throws 400 DomainException if cursor is invalid UUID', async () => {
     const { service } = createService();
     await expect(service.feed('user-1', 'invalid-cursor')).rejects.toThrow('cursor ไม่ถูกต้อง');

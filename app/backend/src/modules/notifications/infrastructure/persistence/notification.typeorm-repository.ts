@@ -63,12 +63,15 @@ export class NotificationTypeOrmRepository implements NotificationRepository {
     return entity ? toNotificationRecord(entity) : null;
   }
 
-  public async markRead(item: NotificationRecord, readAt: Date): Promise<NotificationRecord> {
+  public async markRead(
+    item: NotificationRecord,
+    readAt: Date,
+  ): Promise<NotificationRecord | null> {
     const entity = await this.repo.findOne({
       where: { id: item.id, recipientId: item.recipientId },
     });
     if (!entity) {
-      return { ...item, readAt };
+      return null;
     }
     entity.readAt = readAt;
     const saved = await this.repo.save(entity);

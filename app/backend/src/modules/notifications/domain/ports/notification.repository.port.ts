@@ -34,6 +34,9 @@ export abstract class NotificationRepository {
     id: string,
     recipientId: string,
   ): Promise<NotificationRecord | null>;
-  public abstract markRead(item: NotificationRecord, readAt: Date): Promise<NotificationRecord>;
+  public abstract markRead(
+    item: NotificationRecord,
+    readAt: Date,
+  ): Promise<NotificationRecord | null>;
   public abstract markAllRead(recipientId: string, readAt: Date): Promise<number>;
 }
