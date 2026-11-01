@@ -28,9 +28,13 @@ export class OrderItemAdjustment1763600000000 implements MigrationInterface {
     );
     await queryRunner.query(
       `INSERT INTO policy_permission (policy_id, permission_id)
-       SELECT '00000000-0000-4000-8000-0000000a0002'::uuid, id
-       FROM permission
-       WHERE resource = 'orders' AND action IN ('void', 'comp')
+       SELECT p.id, perm.id
+       FROM (VALUES
+         ('00000000-0000-4000-8000-0000000a0001'::uuid),
+         ('00000000-0000-4000-8000-0000000a0002'::uuid)
+       ) AS p(id)
+       CROSS JOIN permission perm
+       WHERE perm.resource = 'orders' AND perm.action IN ('void', 'comp')
        ON CONFLICT (policy_id, permission_id) DO NOTHING`,
     );
   }
