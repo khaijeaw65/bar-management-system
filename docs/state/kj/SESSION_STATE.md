@@ -1,20 +1,21 @@
 # State — KJ
-Updated: 2026-11-01 · Agent: Antigravity (BRIEF-067 Shipped)
+Updated: 2026-11-01 · Agent: Antigravity (BRIEF-066 Implemented)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-067 Audit PASS** (Rev 1, work commit `0ff905d`). Next: approve merge BRIEF-067 once CI green.
+**BRIEF-066 Implemented** (Rev 1, work commit `193c1a4`). Next: audit BRIEF-066 in Cowork.
 
 ## Active
-- Brief: BRIEF-067 Rev 1 · Stage: Audit PASS · Work commit: `0ff905d` · Branch: `feat/BRIEF-067-backend-rules-cleanup`
+- Brief: BRIEF-066 Rev 1 · Stage: Implemented · Work commit: `193c1a4` · Branch: `feat/BRIEF-066-tables-admin-api`
 - Done 21 Oct–1 Nov: BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
-1. Approve merge BRIEF-067 once CI is green on head commit
-2. Next after 067: BRIEF-065 (Expo app push — Metee) · BRIEF-066 (tables admin API)
+1. Audit BRIEF-066 in Cowork (`audit BRIEF-066`)
+2. Once audit PASS: ship BRIEF-066 and open PR
+3. Next after 066: BRIEF-065 (Expo app push — Metee) · BRIEF-067 PR merge
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-061 PR · if `ci` hits frontend timeouts → re-run once (038 audit F4)
+- Shared files: none · Review queue: BRIEF-067 PR · if `ci` hits frontend timeouts → re-run once (038 audit F4)
 - e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e · frontend unit tests time out under heavy load
 - Dev servers and SonarQube stopped; Postgres + Redis (docker) left running · dev `bar` has 2 `table_seat` audit_log rows from BRIEF-061 run proof
 
