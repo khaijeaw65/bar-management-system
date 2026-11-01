@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
+import "@/lib/crypto-polyfill";
 import { Providers } from "./providers";
 import "./globals.css";
 

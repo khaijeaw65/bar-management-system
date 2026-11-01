@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { ApiError } from "@/lib/api/errors";
 import { createMenuItem, updateMenuItem } from "@/lib/api/menu";
+import { generateUuid } from "@/lib/utils/uuid";
 import { renamesOf, validate, type MenuDraft, type Rename } from "../_lib/draft";
 
 function staleCopy(error: unknown): MenuItem | null {
@@ -23,13 +24,13 @@ export function useMenuSave({ item, base, draft }: Readonly<{ item: MenuItem | u
   const [renames, setRenames] = useState<Rename[] | null>(null);
   const [stale, setStale] = useState<MenuItem | null>(null);
   // One key per payload: a retry of the same body replays, an edited body starts a new request.
-  const keyed = useRef({ body: "", key: crypto.randomUUID() });
+  const keyed = useRef({ body: "", key: generateUuid() });
 
   const mutation = useMutation({
     mutationFn: (payload: CreateMenuItem | UpdateMenuItem) => {
       if (item) return updateMenuItem(item.id, payload as UpdateMenuItem);
       const body = JSON.stringify(payload);
-      if (keyed.current.body !== body) keyed.current = { body, key: crypto.randomUUID() };
+      if (keyed.current.body !== body) keyed.current = { body, key: generateUuid() };
       return createMenuItem(payload as CreateMenuItem, keyed.current.key);
     },
     onSuccess: (saved) => {

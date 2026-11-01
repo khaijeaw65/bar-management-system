@@ -7,6 +7,7 @@ import {
   type MenuItem,
   type UpdateMenuItem,
 } from "@bar/contracts";
+import { generateUuid } from "@/lib/utils/uuid";
 
 export interface VariantDraft {
   // Local row key; `id` is the server id of an existing price option.
@@ -43,7 +44,7 @@ export const variantNameKey = (key: string) => `variant.${key}.name`;
 export const variantPriceKey = (key: string) => `variant.${key}.price`;
 
 export function newVariant(name = "", price = ""): VariantDraft {
-  return { key: crypto.randomUUID(), name, price };
+  return { key: generateUuid(), name, price };
 }
 
 export function emptyDraft(): MenuDraft {
