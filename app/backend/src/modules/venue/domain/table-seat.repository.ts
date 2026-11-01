@@ -1,12 +1,8 @@
-import type { CallStaffReason, TableSeatKind } from '@bar/contracts';
+import type { CallStaffReason } from '@bar/contracts';
 import type {
-  CreateSeatRecordInput,
-  SeatAdminRecord,
   SeatIdentity,
-  SeatSortOrderItem,
   SeatWithLiveVisit,
   StaffCallRecord,
-  UpdateSeatRecordInput,
 } from './table-seat.types.js';
 
 export abstract class TableSeatRepository {
@@ -19,15 +15,5 @@ export abstract class TableSeatRepository {
   public abstract setStaffCall(id: string, call: StaffCallRecord): Promise<void>;
   /** Clears a ringing bell and returns what it was. A second clear in flight gets null. */
   public abstract clearStaffCall(id: string, onlyReason?: CallStaffReason): Promise<StaffCallRecord | null>;
-
-  public abstract listAdmin(): Promise<SeatAdminRecord[]>;
-  public abstract findAdminById(id: string): Promise<SeatAdminRecord | null>;
-  public abstract findActiveByLabel(label: string, excludeId?: string): Promise<SeatAdminRecord | null>;
-  public abstract getMaxSortOrder(kind: TableSeatKind): Promise<number>;
-  public abstract listByKind(kind: TableSeatKind): Promise<SeatAdminRecord[]>;
-  public abstract create(input: CreateSeatRecordInput): Promise<SeatAdminRecord>;
-  public abstract update(id: string, input: UpdateSeatRecordInput): Promise<SeatAdminRecord | null>;
-  public abstract updateSortOrders(orders: SeatSortOrderItem[]): Promise<void>;
-  public abstract lockForUpdate(id: string): Promise<boolean>;
   public abstract lockActiveForShare(id: string): Promise<SeatIdentity | null>;
 }

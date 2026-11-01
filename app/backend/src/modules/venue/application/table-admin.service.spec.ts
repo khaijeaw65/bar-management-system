@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { TableAdminService } from './table-admin.service.js';
+import type { ITableSeatAdminRepository } from '../domain/table-seat-admin.repository.js';
 import type { TableSeatRepository } from '../domain/table-seat.repository.js';
 import type { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { NotificationsService } from '../../notifications/notifications.service.js';
@@ -36,7 +37,7 @@ const SEAT_2: SeatAdminRecord = {
 
 describe('TableAdminService', () => {
   let service: TableAdminService;
-  let repo: {
+  let adminRepo: {
     listAdmin: ReturnType<typeof vi.fn>;
     findAdminById: ReturnType<typeof vi.fn>;
     findActiveByLabel: ReturnType<typeof vi.fn>;
@@ -45,14 +46,16 @@ describe('TableAdminService', () => {
     create: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
     updateSortOrders: ReturnType<typeof vi.fn>;
-    clearStaffCall: ReturnType<typeof vi.fn>;
     lockForUpdate: ReturnType<typeof vi.fn>;
+  };
+  let seatRepo: {
+    clearStaffCall: ReturnType<typeof vi.fn>;
   };
   let auditLog: { record: ReturnType<typeof vi.fn> };
   let notifications: { emitToStaff: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    repo = {
+    adminRepo = {
       listAdmin: vi.fn().mockResolvedValue([SEAT_1, SEAT_2]),
       findAdminById: vi.fn().mockResolvedValue(SEAT_1),
       findActiveByLabel: vi.fn().mockResolvedValue(null),
@@ -70,14 +73,17 @@ describe('TableAdminService', () => {
         ...patch,
       })),
       updateSortOrders: vi.fn().mockResolvedValue(undefined),
-      clearStaffCall: vi.fn().mockResolvedValue(null),
       lockForUpdate: vi.fn().mockResolvedValue(true),
+    };
+    seatRepo = {
+      clearStaffCall: vi.fn().mockResolvedValue(null),
     };
     auditLog = { record: vi.fn().mockResolvedValue(undefined) };
     notifications = { emitToStaff: vi.fn() };
 
     service = new TableAdminService(
-      repo as unknown as TableSeatRepository,
+      adminRepo as unknown as ITableSeatAdminRepository,
+      seatRepo as unknown as TableSeatRepository,
       auditLog as unknown as AuditLogService,
       notifications as unknown as NotificationsService,
     );
@@ -95,8 +101,8 @@ describe('TableAdminService', () => {
   describe('create', () => {
     it('creates seat at end of section and emits tables.changed', async () => {
       const result = await service.create({ label: ' T3 ', kind: 'table' });
-      expect(repo.getMaxSortOrder).toHaveBeenCalledWith('table');
-      expect(repo.create).toHaveBeenCalledWith({
+      expect(adminRepo.getMaxSortOrder).toHaveBeenCalledWith('table');
+      expect(adminRepo.create).toHaveBeenCalledWith({
         label: 'T3',
         kind: 'table',
         sortOrder: 3,
@@ -113,7 +119,7 @@ describe('TableAdminService', () => {
     });
 
     it('rejects duplicate active label with 409 SEAT_LABEL_TAKEN', async () => {
-      repo.findActiveByLabel.mockResolvedValueOnce(SEAT_1);
+      adminRepo.findActiveByLabel.mockResolvedValueOnce(SEAT_1);
       await expect(service.create({ label: 't1', kind: 'table' })).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,
@@ -121,7 +127,7 @@ describe('TableAdminService', () => {
     });
 
     it('translates repository DuplicateSeatLabelError to 409 SEAT_LABEL_TAKEN', async () => {
-      repo.create.mockRejectedValueOnce(new DuplicateSeatLabelError());
+      adminRepo.create.mockRejectedValueOnce(new DuplicateSeatLabelError());
       await expect(service.create({ label: 'T3', kind: 'table' })).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,
@@ -132,7 +138,7 @@ describe('TableAdminService', () => {
   describe('update', () => {
     it('renames seat when valid', async () => {
       const result = await service.update(SEAT_1.id, { label: 'T1-new' });
-      expect(repo.update).toHaveBeenCalledWith(SEAT_1.id, { label: 'T1-new' });
+      expect(adminRepo.update).toHaveBeenCalledWith(SEAT_1.id, { label: 'T1-new' });
       expect(auditLog.record).toHaveBeenCalledWith(expect.objectContaining({
         action: 'UPDATE',
       }));
@@ -143,14 +149,14 @@ describe('TableAdminService', () => {
     });
 
     it('moves seat to end of new section when kind changes', async () => {
-      repo.getMaxSortOrder.mockResolvedValueOnce(8);
+      adminRepo.getMaxSortOrder.mockResolvedValueOnce(8);
       await service.update(SEAT_1.id, { kind: 'counter' });
-      expect(repo.getMaxSortOrder).toHaveBeenCalledWith('counter');
-      expect(repo.update).toHaveBeenCalledWith(SEAT_1.id, { kind: 'counter', sortOrder: 9 });
+      expect(adminRepo.getMaxSortOrder).toHaveBeenCalledWith('counter');
+      expect(adminRepo.update).toHaveBeenCalledWith(SEAT_1.id, { kind: 'counter', sortOrder: 9 });
     });
 
     it('rejects if new label conflicts with another active seat', async () => {
-      repo.findActiveByLabel.mockResolvedValueOnce(SEAT_2);
+      adminRepo.findActiveByLabel.mockResolvedValueOnce(SEAT_2);
       await expect(service.update(SEAT_1.id, { label: 'T2' })).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,
@@ -158,7 +164,7 @@ describe('TableAdminService', () => {
     });
 
     it('translates repository DuplicateSeatLabelError on update to 409', async () => {
-      repo.update.mockRejectedValueOnce(new DuplicateSeatLabelError());
+      adminRepo.update.mockRejectedValueOnce(new DuplicateSeatLabelError());
       await expect(service.update(SEAT_1.id, { label: 'T2' })).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,
@@ -166,7 +172,7 @@ describe('TableAdminService', () => {
     });
 
     it('rejects unknown seat with 404 NOT_FOUND', async () => {
-      repo.findAdminById.mockResolvedValueOnce(null);
+      adminRepo.findAdminById.mockResolvedValueOnce(null);
       await expect(service.update('00000000-0000-4000-8000-000000000000', { label: 'X' })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         status: 404,
@@ -180,7 +186,7 @@ describe('TableAdminService', () => {
         kind: 'table',
         ids: [SEAT_2.id, SEAT_1.id],
       });
-      expect(repo.updateSortOrders).toHaveBeenCalledWith([
+      expect(adminRepo.updateSortOrders).toHaveBeenCalledWith([
         { id: SEAT_2.id, sortOrder: 0 },
         { id: SEAT_1.id, sortOrder: 1 },
       ]);
@@ -215,7 +221,7 @@ describe('TableAdminService', () => {
 
   describe('deactivate', () => {
     it('rejects seat with live visit with 409 SEAT_IN_USE', async () => {
-      repo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, hasLiveVisit: true });
+      adminRepo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, hasLiveVisit: true });
       await expect(service.deactivate(SEAT_1.id)).rejects.toMatchObject({
         code: 'SEAT_IN_USE',
         status: 409,
@@ -223,11 +229,11 @@ describe('TableAdminService', () => {
     });
 
     it('deactivates seat and clears bell if ringing', async () => {
-      repo.clearStaffCall.mockResolvedValueOnce({ calledAt: new Date(), reason: 'bill', note: null });
+      seatRepo.clearStaffCall.mockResolvedValueOnce({ calledAt: new Date(), reason: 'bill', note: null });
       const result = await service.deactivate(SEAT_1.id);
-      expect(repo.lockForUpdate).toHaveBeenCalledWith(SEAT_1.id);
-      expect(repo.clearStaffCall).toHaveBeenCalledWith(SEAT_1.id);
-      expect(repo.update).toHaveBeenCalledWith(SEAT_1.id, { isActive: false });
+      expect(adminRepo.lockForUpdate).toHaveBeenCalledWith(SEAT_1.id);
+      expect(seatRepo.clearStaffCall).toHaveBeenCalledWith(SEAT_1.id);
+      expect(adminRepo.update).toHaveBeenCalledWith(SEAT_1.id, { isActive: false });
       expect(notifications.emitToStaff).toHaveBeenCalledWith('table.staff_call_cleared', {
         tableSeatId: SEAT_1.id,
         acknowledgedBy: null,
@@ -241,9 +247,9 @@ describe('TableAdminService', () => {
 
   describe('activate', () => {
     it('activates inactive seat when label is unique', async () => {
-      repo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
+      adminRepo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
       const result = await service.activate(SEAT_1.id);
-      expect(repo.update).toHaveBeenCalledWith(SEAT_1.id, { isActive: true });
+      expect(adminRepo.update).toHaveBeenCalledWith(SEAT_1.id, { isActive: true });
       expect(notifications.emitToStaff).toHaveBeenCalledWith('tables.changed', {
         seatIds: [SEAT_1.id],
       });
@@ -251,8 +257,8 @@ describe('TableAdminService', () => {
     });
 
     it('rejects activation if another active seat has same label', async () => {
-      repo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
-      repo.findActiveByLabel.mockResolvedValueOnce(SEAT_2);
+      adminRepo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
+      adminRepo.findActiveByLabel.mockResolvedValueOnce(SEAT_2);
       await expect(service.activate(SEAT_1.id)).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,
@@ -260,8 +266,8 @@ describe('TableAdminService', () => {
     });
 
     it('translates repository DuplicateSeatLabelError on activate to 409', async () => {
-      repo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
-      repo.update.mockRejectedValueOnce(new DuplicateSeatLabelError());
+      adminRepo.findAdminById.mockResolvedValueOnce({ ...SEAT_1, isActive: false });
+      adminRepo.update.mockRejectedValueOnce(new DuplicateSeatLabelError());
       await expect(service.activate(SEAT_1.id)).rejects.toMatchObject({
         code: 'SEAT_LABEL_TAKEN',
         status: 409,

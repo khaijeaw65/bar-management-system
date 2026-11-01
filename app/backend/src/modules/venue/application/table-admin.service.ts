@@ -11,6 +11,7 @@ import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { AuditFieldChange, AuditRecord } from '../../../common/audit/audit-log.types.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
+import { ITableSeatAdminRepository } from '../domain/table-seat-admin.repository.js';
 import { TableSeatRepository } from '../domain/table-seat.repository.js';
 import { DuplicateSeatLabelError } from '../domain/table-seat.errors.js';
 import type { SeatAdminRecord, UpdateSeatRecordInput } from '../domain/table-seat.types.js';
@@ -26,13 +27,14 @@ import type {
 @Injectable()
 export class TableAdminService {
   public constructor(
+    private readonly tableSeatAdminRepository: ITableSeatAdminRepository,
     private readonly tableSeatRepository: TableSeatRepository,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
   ) {}
 
   public async listManage(): Promise<SeatAdminList> {
-    const items = await this.tableSeatRepository.listAdmin();
+    const items = await this.tableSeatAdminRepository.listAdmin();
     return { items: items.map((item) => this.mapSeat(item)) };
   }
 
@@ -54,7 +56,7 @@ export class TableAdminService {
   }
 
   public async reorder(input: ReorderSeatsInput): Promise<SeatAdminList> {
-    const sectionSeats = await this.tableSeatRepository.listByKind(input.kind);
+    const sectionSeats = await this.tableSeatAdminRepository.listByKind(input.kind);
     this.validateReorderSection(sectionSeats, input.ids);
     await this.persistReorder(input.ids);
     this.emitTablesChanged(input.ids);
@@ -76,19 +78,15 @@ export class TableAdminService {
   }
 
   private async requireSeat(id: string): Promise<SeatAdminRecord> {
-    const seat = await this.tableSeatRepository.findAdminById(id);
-    if (!seat) {
-      throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
-    }
+    const seat = await this.tableSeatAdminRepository.findAdminById(id);
+    if (!seat) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
     return seat;
   }
 
   private async validateUniqueActiveLabel(label: string, excludeId?: string): Promise<void> {
     const trimmed = label.trim();
-    const existing = await this.tableSeatRepository.findActiveByLabel(trimmed, excludeId);
-    if (existing) {
-      throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
-    }
+    const existing = await this.tableSeatAdminRepository.findActiveByLabel(trimmed, excludeId);
+    if (existing) throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
   }
 
   private async validateUpdateLabel(current: SeatAdminRecord, label?: string): Promise<void> {
@@ -97,7 +95,7 @@ export class TableAdminService {
   }
 
   private async calculateNextSortOrder(kind: TableSeatKind): Promise<number> {
-    const max = await this.tableSeatRepository.getMaxSortOrder(kind);
+    const max = await this.tableSeatAdminRepository.getMaxSortOrder(kind);
     return max + 1;
   }
 
@@ -112,21 +110,16 @@ export class TableAdminService {
   @Transactional()
   private async insertSeat(input: CreateSeatInput, sortOrder: number): Promise<SeatAdminRecord> {
     const qrToken = newQrToken();
-    try {
-      const created = await this.tableSeatRepository.create({
+    const created = await this.withDuplicateLabelGuard(() =>
+      this.tableSeatAdminRepository.create({
         label: input.label.trim(),
         kind: input.kind,
         sortOrder,
         qrToken,
-      });
-      await this.auditLog.record(this.buildCreateAudit(created));
-      return created;
-    } catch (error) {
-      if (error instanceof DuplicateSeatLabelError) {
-        throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
-      }
-      throw error;
-    }
+      }),
+    );
+    await this.auditLog.record(this.buildCreateAudit(created));
+    return created;
   }
 
   @Transactional()
@@ -136,19 +129,12 @@ export class TableAdminService {
     sortOrder?: number,
   ): Promise<SeatAdminRecord> {
     const patch = this.buildUpdatePatch(input, sortOrder);
-    try {
-      const updated = await this.tableSeatRepository.update(current.id, patch);
-      if (!updated) {
-        throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
-      }
-      await this.auditLog.record(this.buildUpdateAudit(current, updated));
-      return updated;
-    } catch (error) {
-      if (error instanceof DuplicateSeatLabelError) {
-        throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
-      }
-      throw error;
-    }
+    const updated = await this.withDuplicateLabelGuard(() =>
+      this.tableSeatAdminRepository.update(current.id, patch),
+    );
+    if (!updated) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
+    await this.auditLog.record(this.buildUpdateAudit(current, updated));
+    return updated;
   }
 
   private buildUpdatePatch(input: UpdateSeatInput, sortOrder?: number): UpdateSeatRecordInput {
@@ -176,7 +162,7 @@ export class TableAdminService {
   @Transactional()
   private async persistReorder(ids: readonly string[]): Promise<void> {
     const orders: ReorderItem[] = ids.map((id, index) => ({ id, sortOrder: index }));
-    await this.tableSeatRepository.updateSortOrders(orders);
+    await this.tableSeatAdminRepository.updateSortOrders(orders);
     const firstId = ids[0];
     if (firstId) {
       await this.auditLog.record(this.buildReorderAudit(firstId, ids));
@@ -185,22 +171,16 @@ export class TableAdminService {
 
   @Transactional()
   private async performDeactivation(id: string): Promise<DeactivationOutcome> {
-    const locked = await this.tableSeatRepository.lockForUpdate(id);
-    if (!locked) {
-      throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
-    }
+    const locked = await this.tableSeatAdminRepository.lockForUpdate(id);
+    if (!locked) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
     const seat = await this.requireSeat(id);
     if (seat.hasLiveVisit) {
       throw new DomainException('SEAT_IN_USE', 'มีแขกอยู่ที่โต๊ะนี้ ปิดโต๊ะก่อน', 409);
     }
-    if (!seat.isActive) {
-      return { seat, bellCleared: false };
-    }
+    if (!seat.isActive) return { seat, bellCleared: false };
     const bell = await this.tableSeatRepository.clearStaffCall(seat.id);
-    const updated = await this.tableSeatRepository.update(seat.id, { isActive: false });
-    if (!updated) {
-      throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
-    }
+    const updated = await this.tableSeatAdminRepository.update(seat.id, { isActive: false });
+    if (!updated) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
     await this.auditLog.record(this.buildActiveAudit(seat.id, false));
     return { seat: updated, bellCleared: bell !== null };
   }
@@ -213,13 +193,17 @@ export class TableAdminService {
   @Transactional()
   private async performActivation(current: SeatAdminRecord): Promise<SeatAdminRecord> {
     if (current.isActive) return current;
+    const updated = await this.withDuplicateLabelGuard(() =>
+      this.tableSeatAdminRepository.update(current.id, { isActive: true }),
+    );
+    if (!updated) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
+    await this.auditLog.record(this.buildActiveAudit(current.id, true));
+    return updated;
+  }
+
+  private async withDuplicateLabelGuard<T>(action: () => Promise<T>): Promise<T> {
     try {
-      const updated = await this.tableSeatRepository.update(current.id, { isActive: true });
-      if (!updated) {
-        throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
-      }
-      await this.auditLog.record(this.buildActiveAudit(current.id, true));
-      return updated;
+      return await action();
     } catch (error) {
       if (error instanceof DuplicateSeatLabelError) {
         throw new DomainException('SEAT_LABEL_TAKEN', 'มีชื่อนี้แล้ว', 409);
@@ -260,8 +244,10 @@ export class TableAdminService {
       entityId: seat.id,
       action: 'CREATE',
       changedFields: {
-        label: { from: null, to: seat.label }, kind: { from: null, to: seat.kind },
-        sort_order: { from: null, to: String(seat.sortOrder) }, is_active: { from: null, to: 'true' },
+        label: { from: null, to: seat.label },
+        kind: { from: null, to: seat.kind },
+        sort_order: { from: null, to: String(seat.sortOrder) },
+        is_active: { from: null, to: 'true' },
       },
     };
   }
@@ -273,7 +259,12 @@ export class TableAdminService {
     if (before.sortOrder !== after.sortOrder) {
       changedFields['sort_order'] = { from: String(before.sortOrder), to: String(after.sortOrder) };
     }
-    return { entity: 'table_seat', entityId: after.id, action: 'UPDATE', changedFields };
+    return {
+      entity: 'table_seat',
+      entityId: after.id,
+      action: 'UPDATE',
+      changedFields,
+    };
   }
 
   private buildReorderAudit(firstId: string, ids: readonly string[]): AuditRecord {
@@ -290,7 +281,9 @@ export class TableAdminService {
       entity: 'table_seat',
       entityId: id,
       action: 'UPDATE',
-      changedFields: { is_active: { from: String(!isActive), to: String(isActive) } },
+      changedFields: {
+        is_active: { from: String(!isActive), to: String(isActive) },
+      },
     };
   }
 }
