@@ -5,7 +5,7 @@
 | **Auditor** | Antigravity (independent auditor session) |
 | **Assignment** | Field explicit approval (split Antigravity into executor and auditor sessions, 2026-11-01 / 2026-11-02) |
 | **Date** | 2026-11-02 |
-| **Branch / commit** | `feat/BRIEF-018-void-comp-pin` · `6ff6377` (the audited commit S) |
+| **Branch / commit** | `feat/BRIEF-018-void-comp-pin` · `93c997d` (the audited commit S) |
 | **Depth** | Full (money, fraud control, auth) |
 | **Brief revision** | 1 |
 | **Recommendation** | PASS |
@@ -62,7 +62,8 @@ Implementation is complete, high quality, and passes all 11 acceptance criteria 
 **Next → in kj (Antigravity executor):** `ship BRIEF-018`
 
 ## Evidence Coverage
-- Reviewed work SHA: `6ff6377` (seed SHA: `368df3a`)
+- Reviewed work SHA: `93c997d` (seed SHA: `368df3a`)
+- CI Run: #41337610976 (exit 0, all affected suites and e2e pass green)
 - Sources/diff inspected independently: `app/backend/src/modules/order/**`, `app/backend/src/modules/iam/**`, `app/packages/contracts/**`, `app/backend/test/void-comp.e2e-spec.ts`, `app/backend/test/staff-pin.e2e-spec.ts`, `1763600000000-OrderItemAdjustment.ts`
 - Tests run independently:
   - `pnpm --filter @bar/contracts test` (exit 0, 17 files / 146 tests passed)

@@ -6,7 +6,7 @@
 | **Date** | 2026-11-02 |
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-018-void-comp-pin` |
-| **Commit** | `6ff6377` |
+| **Commit** | `93c997d` |
 | **Status** | Audit PASS |
 
 ## Summary
@@ -15,6 +15,7 @@ Implemented backend order line void and comp capabilities with manager PIN autho
 - Staff PIN: `PUT /api/me/pin` and `DELETE /api/staff/:id/pin` with constant-time scrypt hashing, active staff uniqueness check, Redis 5-failure/5-min lockout rate limiting (`PIN_LOCKED`), never leaking PIN hash in responses.
 - Adjustment endpoints: `POST /api/order-items/:id/void` and `POST /api/order-items/:id/comp` with manager PIN authorization or manager self-approval (`approved_by=NULL`, `selfApproved: true`), blocking adjustments on in-flight or paid visits (`PAYMENT_IN_FLIGHT`, `VISIT_PAID`).
 - Totals calculation updated across order bills, payment amount calculation, reports SQL (`reports.sql.ts`), and customer tab (`customer-tab.ts`) to exclude void items and set comp items to ฿0.00.
+- CI fixes: synchronized 8 frontend mock test fixtures to supply new contract properties (`1bd7c5a`); restored `OrderItemAdjustment` down/up in `updated-at-trigger.e2e-spec.ts` (`93c997d`).
 
 ## Acceptance Criteria
 | AC | Result | Evidence |
