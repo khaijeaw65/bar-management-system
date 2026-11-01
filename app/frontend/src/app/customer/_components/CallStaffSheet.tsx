@@ -75,7 +75,7 @@ export function CallStaffSheet({
             {reason === "other" ? (
               <TextField value={note} isInvalid={tooLong} onChange={setNote}>
                 <Label>บอกพนักงานสั้นๆ</Label>
-                <TextArea placeholder="เช่น ขอน้ำแข็งเพิ่ม" />
+                <TextArea rows={4} className="resize-none" placeholder="เช่น ขอน้ำแข็งเพิ่ม" />
                 {tooLong ? <FieldError>ไม่เกิน {NOTE_MAX} ตัวอักษร</FieldError> : null}
               </TextField>
             ) : null}
