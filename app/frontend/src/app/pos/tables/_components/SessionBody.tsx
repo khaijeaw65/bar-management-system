@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert, Button } from "@heroui/react";
-import type { VisitDetail } from "@bar/contracts";
+import type { OrderLine, VisitDetail } from "@bar/contracts";
 import { usePermissions } from "@/lib/permissions/usePermissions";
 import { pendingPayment } from "./checkout/payment";
 import { BillFooter } from "./BillFooter";
@@ -19,6 +19,7 @@ export function SessionBody({
   onClose,
   onPay,
   onCloseTable,
+  onAdjust,
 }: Readonly<{
   titleId: string;
   visit: VisitDetail;
@@ -27,6 +28,7 @@ export function SessionBody({
   onClose: () => void;
   onPay: () => void;
   onCloseTable: () => void;
+  onAdjust?: (line: OrderLine) => void;
 }>) {
   const { can } = usePermissions();
   const settled = !paying && !hasMoney(visit.bill.remaining) && hasMoney(visit.bill.paid);
@@ -38,7 +40,16 @@ export function SessionBody({
       {paying ? <InFlight canPay={can("payments:create")} onPay={onPay} /> : null}
       {settled ? <Settled /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {groups.length === 0 ? <EmptyOrders visitId={visit.id} /> : <OrderList locked={late.locked} late={late.late} />}
+        {groups.length === 0 ? (
+          <EmptyOrders visitId={visit.id} />
+        ) : (
+          <OrderList
+            locked={late.locked}
+            late={late.late}
+            onAdjust={onAdjust}
+            disabled={paying}
+          />
+        )}
       </div>
       <BillFooter bill={visit.bill} locked={paying} canPay={can("payments:create")} canClose={can("visits:close")} onPay={onPay} onCloseTable={onCloseTable} />
     </>
@@ -78,12 +89,36 @@ function EmptyOrders({ visitId }: Readonly<{ visitId: string }>) {
   );
 }
 
-function OrderList({ locked, late }: Readonly<{ locked: SessionGroup[]; late: SessionGroup[] }>) {
+function OrderList({
+  locked,
+  late,
+  onAdjust,
+  disabled,
+}: Readonly<{
+  locked: SessionGroup[];
+  late: SessionGroup[];
+  onAdjust?: (line: OrderLine) => void;
+  disabled?: boolean;
+}>) {
   return (
     <>
-      {locked.map((group) => <OrderGroup key={group.key} group={group} />)}
+      {locked.map((group) => (
+        <OrderGroup
+          key={group.key}
+          group={group}
+          onAdjust={onAdjust}
+          disabled={disabled}
+        />
+      ))}
       {late.length > 0 ? <p className="text-small text-text-muted">ออเดอร์ใหม่หลังสร้าง QR — ไม่รวมในยอดนี้</p> : null}
-      {late.map((group) => <OrderGroup key={group.key} group={group} />)}
+      {late.map((group) => (
+        <OrderGroup
+          key={group.key}
+          group={group}
+          onAdjust={onAdjust}
+          disabled={disabled}
+        />
+      ))}
     </>
   );
 }
