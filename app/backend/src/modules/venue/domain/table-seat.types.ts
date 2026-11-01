@@ -24,3 +24,27 @@ export interface SeatWithLiveVisit extends SeatIdentity {
   currentVisit: LiveVisitCard | null;
   staffCall: StaffCallRecord | null;
 }
+
+export interface SeatAdminRecord {
+  id: string;
+  label: string;
+  kind: TableSeatKind;
+  sortOrder: number;
+  isActive: boolean;
+  qrToken: string;
+  hasLiveVisit: boolean;
+}
+
+export interface CreateSeatRecordInput {
+  label: string;
+  kind: TableSeatKind;
+  sortOrder: number;
+  qrToken: string;
+}
+
+export interface UpdateSeatRecordInput {
+  label?: string;
+  kind?: TableSeatKind;
+  sortOrder?: number;
+  isActive?: boolean;
+}
