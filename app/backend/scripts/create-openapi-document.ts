@@ -17,6 +17,7 @@ import { CustomerScanController } from '../dist/modules/customer/infrastructure/
 import { CustomerSessionController } from '../dist/modules/customer/infrastructure/http/customer-session.controller.js';
 import { IamAdminService } from '../dist/modules/iam/application/iam-admin.service.js';
 import { StaffAdminService } from '../dist/modules/iam/application/staff-admin.service.js';
+import { StaffPinService } from '../dist/modules/iam/application/staff-pin.service.js';
 import { AccessRequestsController } from '../dist/modules/iam/infrastructure/http/access-requests.controller.js';
 import { PermissionCatalogController } from '../dist/modules/iam/infrastructure/http/iam-admin.controller.js';
 import { PoliciesController } from '../dist/modules/iam/infrastructure/http/policies.controller.js';
@@ -35,10 +36,12 @@ import { ModifierGroupController } from '../dist/modules/menu/infrastructure/htt
 import { IdempotencyService } from '../dist/common/idempotency/idempotency.service.js';
 import { OrderQueryService } from '../dist/modules/order/application/order-query.service.js';
 import { OrderService } from '../dist/modules/order/application/order.service.js';
+import { OrderAdjustmentService } from '../dist/modules/order/application/order-adjustment.service.js';
 import { SoldOutService } from '../dist/modules/order/application/sold-out.service.js';
 import { TicketService } from '../dist/modules/order/application/ticket.service.js';
 import { MenuAvailabilityController } from '../dist/modules/order/infrastructure/http/menu-availability.controller.js';
 import { OrdersController } from '../dist/modules/order/infrastructure/http/orders.controller.js';
+import { OrderItemsController } from '../dist/modules/order/infrastructure/http/order-items.controller.js';
 import { TicketsController } from '../dist/modules/order/infrastructure/http/tickets.controller.js';
 import { BillService } from '../dist/modules/payment/application/bill.service.js';
 import { PaymentService } from '../dist/modules/payment/application/payment.service.js';
@@ -77,6 +80,7 @@ const documentedControllers = [
   MenuItemWriteController,
   ModifierGroupController,
   OrdersController,
+  OrderItemsController,
   TicketsController,
   MenuAvailabilityController,
   PaymentsController,
@@ -100,6 +104,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: AuthService, useValue: {} },
       { provide: PermissionResolver, useValue: {} },
       { provide: StaffAdminService, useValue: {} },
+      { provide: StaffPinService, useValue: {} },
       { provide: IamAdminService, useValue: {} },
       { provide: TableSeatService, useValue: {} },
       { provide: TableAdminService, useValue: {} },
@@ -109,6 +114,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: MenuWriteService, useValue: {} },
       { provide: ModifierGroupService, useValue: {} },
       { provide: OrderService, useValue: {} },
+      { provide: OrderAdjustmentService, useValue: {} },
       { provide: OrderQueryService, useValue: {} },
       { provide: TicketService, useValue: {} },
       { provide: SoldOutService, useValue: {} },

@@ -42,7 +42,11 @@
               "POLICY_NAME_TAKEN",
               "POLICY_IN_USE",
               "SEAT_IN_USE",
-              "SEAT_LABEL_TAKEN"
+              "SEAT_LABEL_TAKEN",
+              "PIN_INVALID",
+              "PIN_LOCKED",
+              "PIN_UNAVAILABLE",
+              "VISIT_PAID"
             ],
             "type": "string"
           },
@@ -516,6 +520,8 @@
                         "orders:read",
                         "orders:create",
                         "orders:update_status",
+                        "orders:void",
+                        "orders:comp",
                         "payments:read",
                         "payments:create",
                         "payments:mark_paid",
@@ -3416,6 +3422,10 @@
                                     "cancelled": {
                                       "type": "boolean"
                                     },
+                                    "isComp": {
+                                      "default": false,
+                                      "type": "boolean"
+                                    },
                                     "itemName": {
                                       "type": "string"
                                     },
@@ -3455,7 +3465,8 @@
                                     "unitPrice",
                                     "lineTotal",
                                     "orderedByName",
-                                    "cancelled"
+                                    "cancelled",
+                                    "isComp"
                                   ],
                                   "type": "object"
                                 },
@@ -3812,6 +3823,8 @@
                               "orders:read",
                               "orders:create",
                               "orders:update_status",
+                              "orders:void",
+                              "orders:comp",
                               "payments:read",
                               "payments:create",
                               "payments:mark_paid",
@@ -3914,6 +3927,144 @@
           }
         },
         "summary": "My effective permissions and groups",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/pin": {
+      "put": {
+        "description": "4 digits. currentPin required when a PIN exists. 409 PIN_UNAVAILABLE if taken by another staff.",
+        "operationId": "MeController_setPin",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "currentPin": {
+                    "pattern": "^\\d{4}$",
+                    "type": "string"
+                  },
+                  "pin": {
+                    "pattern": "^\\d{4}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "pin"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "ok": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "ok"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Set or change my POS PIN",
         "tags": [
           "me"
         ]
@@ -8795,6 +8946,758 @@
         ]
       }
     },
+    "/api/order-items/{id}/comp": {
+      "post": {
+        "description": "Permission: orders:update_status. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "OrderItemsController_compLine",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "maxLength": 100,
+                    "type": "string"
+                  },
+                  "pin": {
+                    "pattern": "^\\d{4}$",
+                    "type": "string"
+                  },
+                  "reason": {
+                    "enum": [
+                      "out_of_stock",
+                      "wrong_order",
+                      "guest_changed",
+                      "spoiled",
+                      "special_service",
+                      "other"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "cancellation": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "approvedBy": {
+                              "additionalProperties": false,
+                              "default": null,
+                              "nullable": true,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            },
+                            "at": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "by": {
+                              "additionalProperties": false,
+                              "nullable": true,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            },
+                            "reason": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "selfApproved": {
+                              "default": false,
+                              "type": "boolean"
+                            },
+                            "system": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "reason",
+                            "by",
+                            "system",
+                            "approvedBy",
+                            "selfApproved"
+                          ],
+                          "type": "object"
+                        },
+                        "cancelledAt": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "comp": {
+                          "additionalProperties": false,
+                          "default": null,
+                          "nullable": true,
+                          "properties": {
+                            "approvedBy": {
+                              "additionalProperties": false,
+                              "nullable": true,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            },
+                            "at": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "by": {
+                              "additionalProperties": false,
+                              "nullable": true,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            },
+                            "note": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "reason": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "selfApproved": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "by",
+                            "approvedBy",
+                            "selfApproved",
+                            "reason",
+                            "note"
+                          ],
+                          "type": "object"
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "lineTotal": {
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "modifiers": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "optionId": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              },
+                              "priceDelta": {
+                                "pattern": "^\\d+\\.\\d{2}$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "optionId",
+                              "name",
+                              "priceDelta"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "notes": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "orderedByName": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "unitPrice": {
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "variantId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "variantName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "variantId",
+                        "name",
+                        "variantName",
+                        "quantity",
+                        "unitPrice",
+                        "modifiers",
+                        "lineTotal",
+                        "orderedByName",
+                        "notes",
+                        "cancelledAt",
+                        "cancellation",
+                        "comp"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Comp an order item line (requires manager PIN or orders:comp permission)",
+        "tags": [
+          "OrderItems"
+        ]
+      }
+    },
+    "/api/order-items/{id}/void": {
+      "post": {
+        "description": "Permission: orders:update_status. Access token from the access_token cookie, or Authorization: Bearer.",
+        "operationId": "OrderItemsController_voidLine",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "maxLength": 100,
+                    "type": "string"
+                  },
+                  "pin": {
+                    "pattern": "^\\d{4}$",
+                    "type": "string"
+                  },
+                  "reason": {
+                    "enum": [
+                      "out_of_stock",
+                      "wrong_order",
+                      "guest_changed",
+                      "spoiled",
+                      "special_service",
+                      "other"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        ""
+                      ],
+                      "type": "string"
+                    },
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "cancellation": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "approvedBy": {
+                              "additionalProperties": false,
+                              "default": null,
+                              "nullable": true,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            },
+                            "at": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "by": {
+                              "additionalProperties": false,
+                              "nullable": true,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            },
+                            "reason": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "selfApproved": {
+                              "default": false,
+                              "type": "boolean"
+                            },
+                            "system": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "reason",
+                            "by",
+                            "system",
+                            "approvedBy",
+                            "selfApproved"
+                          ],
+                          "type": "object"
+                        },
+                        "cancelledAt": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                          "type": "string"
+                        },
+                        "comp": {
+                          "additionalProperties": false,
+                          "default": null,
+                          "nullable": true,
+                          "properties": {
+                            "approvedBy": {
+                              "additionalProperties": false,
+                              "nullable": true,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            },
+                            "at": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                              "type": "string"
+                            },
+                            "by": {
+                              "additionalProperties": false,
+                              "nullable": true,
+                              "properties": {
+                                "displayName": {
+                                  "type": "string"
+                                },
+                                "staffId": {
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "staffId",
+                                "displayName"
+                              ],
+                              "type": "object"
+                            },
+                            "note": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "reason": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "selfApproved": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "by",
+                            "approvedBy",
+                            "selfApproved",
+                            "reason",
+                            "note"
+                          ],
+                          "type": "object"
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "lineTotal": {
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "modifiers": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "optionId": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string"
+                              },
+                              "priceDelta": {
+                                "pattern": "^\\d+\\.\\d{2}$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "optionId",
+                              "name",
+                              "priceDelta"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "notes": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "orderedByName": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "unitPrice": {
+                          "pattern": "^\\d+\\.\\d{2}$",
+                          "type": "string"
+                        },
+                        "variantId": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "variantName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "variantId",
+                        "name",
+                        "variantName",
+                        "quantity",
+                        "unitPrice",
+                        "modifiers",
+                        "lineTotal",
+                        "orderedByName",
+                        "notes",
+                        "cancelledAt",
+                        "cancellation",
+                        "comp"
+                      ],
+                      "type": "object"
+                    },
+                    "message": {
+                      "enum": [
+                        "success"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standard success envelope"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing or expired access"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "State conflict"
+          }
+        },
+        "summary": "Void an order item line (requires manager PIN or orders:void permission)",
+        "tags": [
+          "OrderItems"
+        ]
+      }
+    },
     "/api/orders/{id}": {
       "get": {
         "description": "Permission: orders:read. Access token from the access_token cookie, or Authorization: Bearer.",
@@ -8963,6 +9866,26 @@
                                       "additionalProperties": false,
                                       "nullable": true,
                                       "properties": {
+                                        "approvedBy": {
+                                          "additionalProperties": false,
+                                          "default": null,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
                                         "at": {
                                           "format": "date-time",
                                           "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -8991,6 +9914,10 @@
                                           "nullable": true,
                                           "type": "string"
                                         },
+                                        "selfApproved": {
+                                          "default": false,
+                                          "type": "boolean"
+                                        },
                                         "system": {
                                           "type": "boolean"
                                         }
@@ -8999,7 +9926,9 @@
                                         "at",
                                         "reason",
                                         "by",
-                                        "system"
+                                        "system",
+                                        "approvedBy",
+                                        "selfApproved"
                                       ],
                                       "type": "object"
                                     },
@@ -9008,6 +9937,76 @@
                                       "nullable": true,
                                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                       "type": "string"
+                                    },
+                                    "comp": {
+                                      "additionalProperties": false,
+                                      "default": null,
+                                      "nullable": true,
+                                      "properties": {
+                                        "approvedBy": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "at": {
+                                          "format": "date-time",
+                                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                          "type": "string"
+                                        },
+                                        "by": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "note": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "reason": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "selfApproved": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "at",
+                                        "by",
+                                        "approvedBy",
+                                        "selfApproved",
+                                        "reason",
+                                        "note"
+                                      ],
+                                      "type": "object"
                                     },
                                     "id": {
                                       "format": "uuid",
@@ -9086,7 +10085,8 @@
                                     "orderedByName",
                                     "notes",
                                     "cancelledAt",
-                                    "cancellation"
+                                    "cancellation",
+                                    "comp"
                                   ],
                                   "type": "object"
                                 },
@@ -10403,6 +11403,8 @@
                                     "orders:read",
                                     "orders:create",
                                     "orders:update_status",
+                                    "orders:void",
+                                    "orders:comp",
                                     "payments:read",
                                     "payments:create",
                                     "payments:mark_paid",
@@ -10560,6 +11562,8 @@
                                 "orders:read",
                                 "orders:create",
                                 "orders:update_status",
+                                "orders:void",
+                                "orders:comp",
                                 "payments:read",
                                 "payments:create",
                                 "payments:mark_paid",
@@ -10736,6 +11740,8 @@
                         "orders:read",
                         "orders:create",
                         "orders:update_status",
+                        "orders:void",
+                        "orders:comp",
                         "payments:read",
                         "payments:create",
                         "payments:mark_paid",
@@ -10800,6 +11806,8 @@
                               "orders:read",
                               "orders:create",
                               "orders:update_status",
+                              "orders:void",
+                              "orders:comp",
                               "payments:read",
                               "payments:create",
                               "payments:mark_paid",
@@ -11138,6 +12146,8 @@
                               "orders:read",
                               "orders:create",
                               "orders:update_status",
+                              "orders:void",
+                              "orders:comp",
                               "payments:read",
                               "payments:create",
                               "payments:mark_paid",
@@ -11323,6 +12333,8 @@
                         "orders:read",
                         "orders:create",
                         "orders:update_status",
+                        "orders:void",
+                        "orders:comp",
                         "payments:read",
                         "payments:create",
                         "payments:mark_paid",
@@ -11377,6 +12389,8 @@
                               "orders:read",
                               "orders:create",
                               "orders:update_status",
+                              "orders:void",
+                              "orders:comp",
                               "payments:read",
                               "payments:create",
                               "payments:mark_paid",
@@ -13170,6 +14184,8 @@
                                     "orders:read",
                                     "orders:create",
                                     "orders:update_status",
+                                    "orders:void",
+                                    "orders:comp",
                                     "payments:read",
                                     "payments:create",
                                     "payments:mark_paid",
@@ -14627,6 +15643,8 @@
                                   "orders:read",
                                   "orders:create",
                                   "orders:update_status",
+                                  "orders:void",
+                                  "orders:comp",
                                   "payments:read",
                                   "payments:create",
                                   "payments:mark_paid",
@@ -15004,6 +16022,31 @@
           }
         },
         "summary": "Replace the person's whole set of group memberships",
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/staff/{id}/pin": {
+      "delete": {
+        "description": "Permission: staff:manage. Access token from the access_token cookie, or Authorization: Bearer. Resets pos_pin_hash to null. Audited.",
+        "operationId": "StaffController_resetPin",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Owner reset of a staff POS PIN",
         "tags": [
           "staff"
         ]
@@ -16865,6 +17908,26 @@
                                       "additionalProperties": false,
                                       "nullable": true,
                                       "properties": {
+                                        "approvedBy": {
+                                          "additionalProperties": false,
+                                          "default": null,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
                                         "at": {
                                           "format": "date-time",
                                           "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -16893,6 +17956,10 @@
                                           "nullable": true,
                                           "type": "string"
                                         },
+                                        "selfApproved": {
+                                          "default": false,
+                                          "type": "boolean"
+                                        },
                                         "system": {
                                           "type": "boolean"
                                         }
@@ -16901,7 +17968,9 @@
                                         "at",
                                         "reason",
                                         "by",
-                                        "system"
+                                        "system",
+                                        "approvedBy",
+                                        "selfApproved"
                                       ],
                                       "type": "object"
                                     },
@@ -16910,6 +17979,76 @@
                                       "nullable": true,
                                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                       "type": "string"
+                                    },
+                                    "comp": {
+                                      "additionalProperties": false,
+                                      "default": null,
+                                      "nullable": true,
+                                      "properties": {
+                                        "approvedBy": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "at": {
+                                          "format": "date-time",
+                                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                          "type": "string"
+                                        },
+                                        "by": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "note": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "reason": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "selfApproved": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "at",
+                                        "by",
+                                        "approvedBy",
+                                        "selfApproved",
+                                        "reason",
+                                        "note"
+                                      ],
+                                      "type": "object"
                                     },
                                     "id": {
                                       "format": "uuid",
@@ -16988,7 +18127,8 @@
                                     "orderedByName",
                                     "notes",
                                     "cancelledAt",
-                                    "cancellation"
+                                    "cancellation",
+                                    "comp"
                                   ],
                                   "type": "object"
                                 },
@@ -17292,6 +18432,26 @@
                                 "additionalProperties": false,
                                 "nullable": true,
                                 "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "default": null,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
                                   "at": {
                                     "format": "date-time",
                                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -17320,6 +18480,10 @@
                                     "nullable": true,
                                     "type": "string"
                                   },
+                                  "selfApproved": {
+                                    "default": false,
+                                    "type": "boolean"
+                                  },
                                   "system": {
                                     "type": "boolean"
                                   }
@@ -17328,7 +18492,9 @@
                                   "at",
                                   "reason",
                                   "by",
-                                  "system"
+                                  "system",
+                                  "approvedBy",
+                                  "selfApproved"
                                 ],
                                 "type": "object"
                               },
@@ -17337,6 +18503,76 @@
                                 "nullable": true,
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                 "type": "string"
+                              },
+                              "comp": {
+                                "additionalProperties": false,
+                                "default": null,
+                                "nullable": true,
+                                "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "note": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "selfApproved": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "by",
+                                  "approvedBy",
+                                  "selfApproved",
+                                  "reason",
+                                  "note"
+                                ],
+                                "type": "object"
                               },
                               "id": {
                                 "format": "uuid",
@@ -17415,7 +18651,8 @@
                               "orderedByName",
                               "notes",
                               "cancelledAt",
-                              "cancellation"
+                              "cancellation",
+                              "comp"
                             ],
                             "type": "object"
                           },
@@ -17744,6 +18981,26 @@
                                 "additionalProperties": false,
                                 "nullable": true,
                                 "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "default": null,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
                                   "at": {
                                     "format": "date-time",
                                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -17772,6 +19029,10 @@
                                     "nullable": true,
                                     "type": "string"
                                   },
+                                  "selfApproved": {
+                                    "default": false,
+                                    "type": "boolean"
+                                  },
                                   "system": {
                                     "type": "boolean"
                                   }
@@ -17780,7 +19041,9 @@
                                   "at",
                                   "reason",
                                   "by",
-                                  "system"
+                                  "system",
+                                  "approvedBy",
+                                  "selfApproved"
                                 ],
                                 "type": "object"
                               },
@@ -17789,6 +19052,76 @@
                                 "nullable": true,
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                 "type": "string"
+                              },
+                              "comp": {
+                                "additionalProperties": false,
+                                "default": null,
+                                "nullable": true,
+                                "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "note": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "selfApproved": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "by",
+                                  "approvedBy",
+                                  "selfApproved",
+                                  "reason",
+                                  "note"
+                                ],
+                                "type": "object"
                               },
                               "id": {
                                 "format": "uuid",
@@ -17867,7 +19200,8 @@
                               "orderedByName",
                               "notes",
                               "cancelledAt",
-                              "cancellation"
+                              "cancellation",
+                              "comp"
                             ],
                             "type": "object"
                           },
@@ -18163,6 +19497,26 @@
                                 "additionalProperties": false,
                                 "nullable": true,
                                 "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "default": null,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
                                   "at": {
                                     "format": "date-time",
                                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -18191,6 +19545,10 @@
                                     "nullable": true,
                                     "type": "string"
                                   },
+                                  "selfApproved": {
+                                    "default": false,
+                                    "type": "boolean"
+                                  },
                                   "system": {
                                     "type": "boolean"
                                   }
@@ -18199,7 +19557,9 @@
                                   "at",
                                   "reason",
                                   "by",
-                                  "system"
+                                  "system",
+                                  "approvedBy",
+                                  "selfApproved"
                                 ],
                                 "type": "object"
                               },
@@ -18208,6 +19568,76 @@
                                 "nullable": true,
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                 "type": "string"
+                              },
+                              "comp": {
+                                "additionalProperties": false,
+                                "default": null,
+                                "nullable": true,
+                                "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "note": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "selfApproved": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "by",
+                                  "approvedBy",
+                                  "selfApproved",
+                                  "reason",
+                                  "note"
+                                ],
+                                "type": "object"
                               },
                               "id": {
                                 "format": "uuid",
@@ -18286,7 +19716,8 @@
                               "orderedByName",
                               "notes",
                               "cancelledAt",
-                              "cancellation"
+                              "cancellation",
+                              "comp"
                             ],
                             "type": "object"
                           },
@@ -18609,6 +20040,26 @@
                                 "additionalProperties": false,
                                 "nullable": true,
                                 "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "default": null,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
                                   "at": {
                                     "format": "date-time",
                                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -18637,6 +20088,10 @@
                                     "nullable": true,
                                     "type": "string"
                                   },
+                                  "selfApproved": {
+                                    "default": false,
+                                    "type": "boolean"
+                                  },
                                   "system": {
                                     "type": "boolean"
                                   }
@@ -18645,7 +20100,9 @@
                                   "at",
                                   "reason",
                                   "by",
-                                  "system"
+                                  "system",
+                                  "approvedBy",
+                                  "selfApproved"
                                 ],
                                 "type": "object"
                               },
@@ -18654,6 +20111,76 @@
                                 "nullable": true,
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                 "type": "string"
+                              },
+                              "comp": {
+                                "additionalProperties": false,
+                                "default": null,
+                                "nullable": true,
+                                "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "note": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "selfApproved": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "by",
+                                  "approvedBy",
+                                  "selfApproved",
+                                  "reason",
+                                  "note"
+                                ],
+                                "type": "object"
                               },
                               "id": {
                                 "format": "uuid",
@@ -18732,7 +20259,8 @@
                               "orderedByName",
                               "notes",
                               "cancelledAt",
-                              "cancellation"
+                              "cancellation",
+                              "comp"
                             ],
                             "type": "object"
                           },
@@ -19028,6 +20556,26 @@
                                 "additionalProperties": false,
                                 "nullable": true,
                                 "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "default": null,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
                                   "at": {
                                     "format": "date-time",
                                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -19056,6 +20604,10 @@
                                     "nullable": true,
                                     "type": "string"
                                   },
+                                  "selfApproved": {
+                                    "default": false,
+                                    "type": "boolean"
+                                  },
                                   "system": {
                                     "type": "boolean"
                                   }
@@ -19064,7 +20616,9 @@
                                   "at",
                                   "reason",
                                   "by",
-                                  "system"
+                                  "system",
+                                  "approvedBy",
+                                  "selfApproved"
                                 ],
                                 "type": "object"
                               },
@@ -19073,6 +20627,76 @@
                                 "nullable": true,
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                 "type": "string"
+                              },
+                              "comp": {
+                                "additionalProperties": false,
+                                "default": null,
+                                "nullable": true,
+                                "properties": {
+                                  "approvedBy": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "at": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                    "type": "string"
+                                  },
+                                  "by": {
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "properties": {
+                                      "displayName": {
+                                        "type": "string"
+                                      },
+                                      "staffId": {
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "staffId",
+                                      "displayName"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "note": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "reason": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "selfApproved": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "at",
+                                  "by",
+                                  "approvedBy",
+                                  "selfApproved",
+                                  "reason",
+                                  "note"
+                                ],
+                                "type": "object"
                               },
                               "id": {
                                 "format": "uuid",
@@ -19151,7 +20775,8 @@
                               "orderedByName",
                               "notes",
                               "cancelledAt",
-                              "cancellation"
+                              "cancellation",
+                              "comp"
                             ],
                             "type": "object"
                           },
@@ -20515,6 +22140,26 @@
                                             "additionalProperties": false,
                                             "nullable": true,
                                             "properties": {
+                                              "approvedBy": {
+                                                "additionalProperties": false,
+                                                "default": null,
+                                                "nullable": true,
+                                                "properties": {
+                                                  "displayName": {
+                                                    "type": "string"
+                                                  },
+                                                  "staffId": {
+                                                    "format": "uuid",
+                                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "staffId",
+                                                  "displayName"
+                                                ],
+                                                "type": "object"
+                                              },
                                               "at": {
                                                 "format": "date-time",
                                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -20543,6 +22188,10 @@
                                                 "nullable": true,
                                                 "type": "string"
                                               },
+                                              "selfApproved": {
+                                                "default": false,
+                                                "type": "boolean"
+                                              },
                                               "system": {
                                                 "type": "boolean"
                                               }
@@ -20551,7 +22200,9 @@
                                               "at",
                                               "reason",
                                               "by",
-                                              "system"
+                                              "system",
+                                              "approvedBy",
+                                              "selfApproved"
                                             ],
                                             "type": "object"
                                           },
@@ -20560,6 +22211,76 @@
                                             "nullable": true,
                                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                             "type": "string"
+                                          },
+                                          "comp": {
+                                            "additionalProperties": false,
+                                            "default": null,
+                                            "nullable": true,
+                                            "properties": {
+                                              "approvedBy": {
+                                                "additionalProperties": false,
+                                                "nullable": true,
+                                                "properties": {
+                                                  "displayName": {
+                                                    "type": "string"
+                                                  },
+                                                  "staffId": {
+                                                    "format": "uuid",
+                                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "staffId",
+                                                  "displayName"
+                                                ],
+                                                "type": "object"
+                                              },
+                                              "at": {
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                "type": "string"
+                                              },
+                                              "by": {
+                                                "additionalProperties": false,
+                                                "nullable": true,
+                                                "properties": {
+                                                  "displayName": {
+                                                    "type": "string"
+                                                  },
+                                                  "staffId": {
+                                                    "format": "uuid",
+                                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "staffId",
+                                                  "displayName"
+                                                ],
+                                                "type": "object"
+                                              },
+                                              "note": {
+                                                "nullable": true,
+                                                "type": "string"
+                                              },
+                                              "reason": {
+                                                "nullable": true,
+                                                "type": "string"
+                                              },
+                                              "selfApproved": {
+                                                "type": "boolean"
+                                              }
+                                            },
+                                            "required": [
+                                              "at",
+                                              "by",
+                                              "approvedBy",
+                                              "selfApproved",
+                                              "reason",
+                                              "note"
+                                            ],
+                                            "type": "object"
                                           },
                                           "id": {
                                             "format": "uuid",
@@ -20638,7 +22359,8 @@
                                           "orderedByName",
                                           "notes",
                                           "cancelledAt",
-                                          "cancellation"
+                                          "cancellation",
+                                          "comp"
                                         ],
                                         "type": "object"
                                       },
@@ -21488,6 +23210,26 @@
                                       "additionalProperties": false,
                                       "nullable": true,
                                       "properties": {
+                                        "approvedBy": {
+                                          "additionalProperties": false,
+                                          "default": null,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
                                         "at": {
                                           "format": "date-time",
                                           "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -21516,6 +23258,10 @@
                                           "nullable": true,
                                           "type": "string"
                                         },
+                                        "selfApproved": {
+                                          "default": false,
+                                          "type": "boolean"
+                                        },
                                         "system": {
                                           "type": "boolean"
                                         }
@@ -21524,7 +23270,9 @@
                                         "at",
                                         "reason",
                                         "by",
-                                        "system"
+                                        "system",
+                                        "approvedBy",
+                                        "selfApproved"
                                       ],
                                       "type": "object"
                                     },
@@ -21533,6 +23281,76 @@
                                       "nullable": true,
                                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                                       "type": "string"
+                                    },
+                                    "comp": {
+                                      "additionalProperties": false,
+                                      "default": null,
+                                      "nullable": true,
+                                      "properties": {
+                                        "approvedBy": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "at": {
+                                          "format": "date-time",
+                                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                          "type": "string"
+                                        },
+                                        "by": {
+                                          "additionalProperties": false,
+                                          "nullable": true,
+                                          "properties": {
+                                            "displayName": {
+                                              "type": "string"
+                                            },
+                                            "staffId": {
+                                              "format": "uuid",
+                                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "staffId",
+                                            "displayName"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "note": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "reason": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        },
+                                        "selfApproved": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "at",
+                                        "by",
+                                        "approvedBy",
+                                        "selfApproved",
+                                        "reason",
+                                        "note"
+                                      ],
+                                      "type": "object"
                                     },
                                     "id": {
                                       "format": "uuid",
@@ -21611,7 +23429,8 @@
                                     "orderedByName",
                                     "notes",
                                     "cancelledAt",
-                                    "cancellation"
+                                    "cancellation",
+                                    "comp"
                                   ],
                                   "type": "object"
                                 },
