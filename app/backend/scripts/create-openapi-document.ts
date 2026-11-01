@@ -45,6 +45,7 @@ import { PaymentService } from '../dist/modules/payment/application/payment.serv
 import { PaymentsController } from '../dist/modules/payment/infrastructure/http/payments.controller.js';
 import { ReportsService } from '../dist/modules/reports/application/reports.service.js';
 import { ReportsController } from '../dist/modules/reports/infrastructure/http/reports.controller.js';
+import { TableAdminService } from '../dist/modules/venue/application/table-admin.service.js';
 import { TableSeatService } from '../dist/modules/venue/application/table-seat.service.js';
 import { VenueSettingsService } from '../dist/modules/venue/application/venue-settings.service.js';
 import { VisitService } from '../dist/modules/venue/application/visit.service.js';
@@ -101,6 +102,7 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: StaffAdminService, useValue: {} },
       { provide: IamAdminService, useValue: {} },
       { provide: TableSeatService, useValue: {} },
+      { provide: TableAdminService, useValue: {} },
       { provide: VisitService, useValue: {} },
       { provide: VenueSettingsService, useValue: {} },
       { provide: MenuCatalogService, useValue: {} },
