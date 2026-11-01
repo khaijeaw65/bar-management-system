@@ -280,9 +280,9 @@ describe('Reports (e2e)', () => {
     values: { quantity: number; price: string; cancelled?: boolean },
   ): Promise<string> {
     const [row] = await dataSource.query(
-      `INSERT INTO order_item (ticket_id, menu_item_variant_id, item_name_snapshot, variant_name_snapshot, line_no, quantity, unit_price_snapshot, cancelled_at)
-       VALUES ($1, $2, $6, 'ปกติ', 1, $3, $4, $5) RETURNING id`,
-      [ticketId, menu[`${item}Variant`], values.quantity, values.price, values.cancelled ? NOW : null, item],
+      `INSERT INTO order_item (ticket_id, menu_item_variant_id, item_name_snapshot, variant_name_snapshot, line_no, quantity, unit_price_snapshot, cancelled_at, cancel_kind)
+       VALUES ($1, $2, $6, 'ปกติ', 1, $3, $4, $5, $7) RETURNING id`,
+      [ticketId, menu[`${item}Variant`], values.quantity, values.price, values.cancelled ? NOW : null, item, values.cancelled ? 'void' : null],
     );
     return row.id;
   }

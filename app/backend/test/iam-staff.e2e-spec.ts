@@ -416,7 +416,7 @@ describe('IAM staff API (e2e)', () => {
     const before = await iamVersion();
     await api().put(`/staff/${staffId}/memberships`, approveBody('permanent', GROUPS.owner)).expect(200);
     expect(await iamVersion()).toBe(before + 1);
-    expect((await api(token).get('/me/permissions').expect(200)).body.data.permissions).toHaveLength(20);
+    expect((await api(token).get('/me/permissions').expect(200)).body.data.permissions).toHaveLength(22);
 
     await api().patch(`/staff/${staffId}`, { displayName: 'บีม 2' }).expect(200);
     expect(await iamVersion()).toBe(before + 2);

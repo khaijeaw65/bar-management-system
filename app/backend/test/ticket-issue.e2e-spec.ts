@@ -98,7 +98,7 @@ describe('Ticket issues (e2e)', () => {
     expect(foreign.status).toBe(400);
     expect(foreign.body.code).toBe('VALIDATION_ERROR');
 
-    await dataSource.query(`UPDATE order_item SET cancelled_at = NOW() WHERE id = $1`, [lineId(ticket)]);
+    await dataSource.query(`UPDATE order_item SET cancelled_at = NOW(), cancel_kind = 'void' WHERE id = $1`, [lineId(ticket)]);
     const cancelledLine = await post(`/api/tickets/${ticket.id}/flag-issue`, {
       reason: 'out_of_stock',
       itemId: lineId(ticket),

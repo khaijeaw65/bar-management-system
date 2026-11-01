@@ -178,12 +178,12 @@ describe('IAM guard (e2e)', () => {
     const until = new Date(Date.now() + 3_600_000);
     await dataSource.query(`UPDATE user_group_membership SET valid_until = $2 WHERE user_id = $1`, [manager, until]);
     const body = (await me(await tokenOf(manager)).expect(200)).body.data;
-    expect(body.permissions).toHaveLength(18);
+    expect(body.permissions).toHaveLength(20);
     expect(body.permissions).not.toContain('staff:manage');
     expect(body.groups).toEqual([
       { id: DEFAULT_GROUP_IDS.manager, name: 'ผู้จัดการ', validUntil: until.toISOString() },
     ]);
-    expect((await me(await tokenOf(owner)).expect(200)).body.data.permissions).toHaveLength(20);
+    expect((await me(await tokenOf(owner)).expect(200)).body.data.permissions).toHaveLength(22);
     await request(app.getHttpServer()).get('/api/me/permissions').expect(401);
   });
 
