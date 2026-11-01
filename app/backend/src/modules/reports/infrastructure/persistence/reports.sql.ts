@@ -65,12 +65,16 @@ export const DAILY_TOTALS_SQL = `
 const ITEM_SALES = `
   SELECT v.menu_item_id,
          SUM(i.quantity) AS quantity,
-         SUM(i.unit_price_snapshot * i.quantity) AS revenue
+         SUM(
+           CASE WHEN i.cancel_kind = 'comp' THEN 0
+                ELSE i.unit_price_snapshot * i.quantity
+           END
+         ) AS revenue
   FROM order_item i
   JOIN order_ticket t ON t.id = i.ticket_id
   JOIN order_record o ON o.id = t.order_id
   JOIN menu_item_variant v ON v.id = i.menu_item_variant_id
-  WHERE i.cancelled_at IS NULL AND o.business_date BETWEEN $1::date AND $2::date
+  WHERE (i.cancel_kind IS NULL OR i.cancel_kind = 'comp') AND o.business_date BETWEEN $1::date AND $2::date
   GROUP BY v.menu_item_id
 `;
 
@@ -116,7 +120,9 @@ export const OPEN_SEATS_SQL = `
   ),
   lines AS (
     SELECT o.visit_id,
-           i.quantity * (i.unit_price_snapshot + COALESCE(mods.delta, 0)) AS amount
+           CASE WHEN i.cancel_kind = 'comp' THEN 0
+                ELSE i.quantity * (i.unit_price_snapshot + COALESCE(mods.delta, 0))
+           END AS amount
     FROM order_item i
     JOIN order_ticket t ON t.id = i.ticket_id
     JOIN order_record o ON o.id = t.order_id
@@ -125,7 +131,7 @@ export const OPEN_SEATS_SQL = `
       FROM order_item_modifier
       GROUP BY order_item_id
     ) mods ON mods.order_item_id = i.id
-    WHERE i.cancelled_at IS NULL AND o.visit_id IN (SELECT id FROM live)
+    WHERE (i.cancel_kind IS NULL OR i.cancel_kind = 'comp') AND o.visit_id IN (SELECT id FROM live)
   )
   SELECT s.label AS seat_label, live.opened_at, COALESCE(SUM(l.amount), 0)::text AS total
   FROM live

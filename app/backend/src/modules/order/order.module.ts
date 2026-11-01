@@ -3,16 +3,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { IamModule } from '../iam/iam.module.js';
 import { MenuModule } from '../menu/menu.module.js';
 import { VenueModule } from '../venue/venue.module.js';
+import { AuditLogService } from '../../common/audit/audit-log.service.js';
 import { Clock } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { RedisModule } from '../../providers/redis/redis.module.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
+import { ApprovalService } from './application/approval.service.js';
+import { OrderAdjustmentService } from './application/order-adjustment.service.js';
 import { OrderQueryService } from './application/order-query.service.js';
 import { OrderService } from './application/order.service.js';
 import { SoldOutService } from './application/sold-out.service.js';
 import { TicketService } from './application/ticket.service.js';
 import { OrderRepository } from './domain/order.repository.js';
 import { MenuAvailabilityController } from './infrastructure/http/menu-availability.controller.js';
+import { OrderItemsController } from './infrastructure/http/order-items.controller.js';
 import { OrdersController } from './infrastructure/http/orders.controller.js';
 import { TicketsController } from './infrastructure/http/tickets.controller.js';
 import { OrderItemModifier } from './infrastructure/persistence/order-item-modifier.entity.js';
@@ -29,17 +33,20 @@ import { OrderTypeormRepository } from './infrastructure/persistence/order.typeo
     IamModule,
     RedisModule,
   ],
-  controllers: [OrdersController, TicketsController, MenuAvailabilityController],
+  controllers: [OrdersController, TicketsController, MenuAvailabilityController, OrderItemsController],
   providers: [
     OrderTypeormRepository,
     { provide: OrderRepository, useExisting: OrderTypeormRepository },
     { provide: Clock, useClass: SystemClock },
     IdempotencyService,
+    AuditLogService,
+    ApprovalService,
+    OrderAdjustmentService,
     OrderQueryService,
     OrderService,
     TicketService,
     SoldOutService,
   ],
-  exports: [OrderQueryService, OrderService],
+  exports: [OrderQueryService, OrderService, OrderAdjustmentService],
 })
 export class OrderModule {}

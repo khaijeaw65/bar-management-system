@@ -28,6 +28,7 @@ CREATE TYPE inv_tx_type         AS ENUM ('purchase', 'usage', 'adjustment', 'voi
 CREATE TYPE audit_action        AS ENUM ('CREATE', 'UPDATE', 'REJECT');
 CREATE TYPE actor_type          AS ENUM ('user', 'system');
 CREATE TYPE notification_type   AS ENUM ('table_idle', 'table_opened', 'restock_request', 'low_stock', 'payment_confirmed', 'order_new', 'food_ready', 'call_staff');  -- DR-003 (+ Am. 2: order_new replaces qr_order_new)
+CREATE TYPE item_adjustment     AS ENUM ('void', 'comp');  -- DR-016 A: how an order_item left full price
 
 -- ============================================================
 -- 1. VENUE & TABLES
@@ -427,10 +428,13 @@ CREATE TABLE order_item (
   cancelled_by          UUID REFERENCES staff_user(id),
   cancel_reason         VARCHAR(50),            -- ของหมด / สั่งผิด / ของเสีย … (CD-15 R3)
   cancel_note           TEXT,
+  cancel_kind           item_adjustment,        -- DR-016 A: NULL = active · void = off the bill · comp = served at ฿0 (cancelled_* then describe the comp)
+  approved_by           UUID REFERENCES staff_user(id),  -- PIN approver; NULL with cancelled_by set = self-approved (flagged); cancelled_by NULL = system (sold-out)
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by            UUID REFERENCES staff_user(id),
-  updated_by            UUID REFERENCES staff_user(id)
+  updated_by            UUID REFERENCES staff_user(id),
+  CONSTRAINT chk_order_item_adjustment CHECK ((cancel_kind IS NULL) = (cancelled_at IS NULL))  -- DR-016
 );
 
 ALTER TABLE order_ticket ADD CONSTRAINT fk_ticket_issue_item

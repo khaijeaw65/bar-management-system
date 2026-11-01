@@ -11,6 +11,7 @@ import { IamCore1763200000000 } from './migrations/1763200000000-IamCore.js';
 import { NotificationFeed1763300000000 } from './migrations/1763300000000-NotificationFeed.js';
 import { StaffPushToken1763400000000 } from './migrations/1763400000000-StaffPushToken.js';
 import { TableSeatLabelUnique1763500000000 } from './migrations/1763500000000-TableSeatLabelUnique.js';
+import { OrderItemAdjustment1763600000000 } from './migrations/1763600000000-OrderItemAdjustment.js';
 import { CustomerPayment1763100000000 } from './migrations/1763100000000-CustomerPayment.js';
 import { Orders1762100000000 } from './migrations/1762100000000-Orders.js';
 import { UpdatedAtTrigger1762500000000 } from './migrations/1762500000000-UpdatedAtTrigger.js';
@@ -38,5 +39,6 @@ export const migrations = [
   NotificationFeed1763300000000,
   StaffPushToken1763400000000,
   TableSeatLabelUnique1763500000000,
+  OrderItemAdjustment1763600000000,
 ];
 

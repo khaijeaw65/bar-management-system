@@ -31,6 +31,9 @@ export interface OrderRow {
   cancelledAt: Date | null;
   cancelledBy: string | null;
   cancelReason: string | null;
+  cancelNote: string | null;
+  cancelKind: 'void' | 'comp' | null;
+  approvedBy: string | null;
   optionId: string | null;
   optionName: string | null;
   priceDelta: string | null;

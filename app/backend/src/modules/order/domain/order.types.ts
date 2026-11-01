@@ -92,3 +92,23 @@ export interface PendingItemLine {
   orderNumber: number;
   seatLabel: string;
 }
+
+export interface LockedItemAdjustment {
+  itemId: string;
+  ticketId: string;
+  orderId: string;
+  visitId: string;
+  visitState: string;
+  cancelledAt: Date | null;
+  cancelKind: 'void' | 'comp' | null;
+}
+
+export interface LineAdjustmentWrite {
+  itemId: string;
+  kind: 'void' | 'comp';
+  at: Date;
+  cancelledBy: string;
+  approvedBy: string | null;
+  reason: string;
+  note: string | null;
+}

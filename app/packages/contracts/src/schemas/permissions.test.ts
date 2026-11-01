@@ -1,13 +1,13 @@
 import { MyPermissionsSchema, PERMISSION_CODES, PermissionCodeSchema } from './permissions.js';
 
 describe('PermissionCodeSchema', () => {
-  it('has the 20 catalog codes, all resource:action', () => {
-    expect(PERMISSION_CODES).toHaveLength(20);
+  it('has the 22 catalog codes, all resource:action', () => {
+    expect(PERMISSION_CODES).toHaveLength(22);
     for (const code of PERMISSION_CODES) expect(code).toMatch(/^[a-z]+:[a-z_]+$/);
   });
 
   it('rejects a code outside the catalog', () => {
-    expect(PermissionCodeSchema.safeParse('orders:comp').success).toBe(false);
+    expect(PermissionCodeSchema.safeParse('orders:nonexistent').success).toBe(false);
   });
 });
 

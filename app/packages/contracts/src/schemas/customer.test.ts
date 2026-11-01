@@ -5,6 +5,7 @@ import {
   CustomerPaymentSchema,
   CustomerPlaceOrderSchema,
   CustomerSessionSchema,
+  CustomerTabLineSchema,
   CustomerTabSchema,
   StartCustomerSessionSchema,
   UpdateCustomerSessionSchema,
@@ -109,5 +110,32 @@ describe('customer order, tab and call staff (BRIEF-048)', () => {
     };
     expect(CustomerPaymentSchema.safeParse(payment).success).toBe(true);
     expect(CustomerPaymentSchema.safeParse({ ...payment, staffId: ID }).success).toBe(false);
+  });
+
+  it('CustomerTabLineSchema parses isComp defaulting to false', () => {
+    const line = CustomerTabLineSchema.parse({
+      itemName: 'เบียร์',
+      variantName: 'แก้ว',
+      modifiers: [],
+      quantity: 1,
+      unitPrice: '100.00',
+      lineTotal: '100.00',
+      orderedByName: null,
+      cancelled: false,
+    });
+    expect(line.isComp).toBe(false);
+
+    const compLine = CustomerTabLineSchema.parse({
+      itemName: 'เบียร์',
+      variantName: 'แก้ว',
+      modifiers: [],
+      quantity: 1,
+      unitPrice: '100.00',
+      lineTotal: '0.00',
+      orderedByName: null,
+      cancelled: false,
+      isComp: true,
+    });
+    expect(compLine.isComp).toBe(true);
   });
 });

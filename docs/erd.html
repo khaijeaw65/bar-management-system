@@ -817,6 +817,8 @@ erDiagram
         text notes
         timestamp cancelled_at
         string cancel_reason
+        string cancel_kind
+        uuid approved_by FK
         timestamp created_at
     }
     order_item_modifier {
@@ -1533,10 +1535,12 @@ erDiagram
             <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> cancelled_by</span><span class="field-type">uuid</span></div>
             <div class="field-row"><span class="field-name">cancel_reason</span><span class="field-type">varchar(50)</span></div>
             <div class="field-row"><span class="field-name">cancel_note</span><span class="field-type">text</span></div>
+            <div class="field-row"><span class="field-name">cancel_kind</span><span class="field-type">enum?</span></div>
+            <div class="field-row"><span class="field-name"><span class="badge badge-fk">FK</span> approved_by</span><span class="field-type">uuid?</span></div>
             <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamptz</span></div>
             <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
           </div>
-          <div class="field-note">Belongs to one ticket (DR-013). No per-item progress status — cancelled_at NULL = active. unit_price_snapshot and the name snapshots frozen at order time (DR-022); line_no = 1 … n per order, request order. Cancelled items stay visible, struck-through, with who / when / why (audit principle).</div>
+          <div class="field-note">DR-016 A: cancel_kind void = off the bill, comp = served at ฿0 (cancelled_* then describe the comp); approved_by = PIN approver, NULL with cancelled_by set = self-approved (flagged), cancelled_by NULL = system. Belongs to one ticket (DR-013). No per-item progress status — cancelled_at NULL = active. unit_price_snapshot and the name snapshots frozen at order time (DR-022); line_no = 1 … n per order, request order. Cancelled items stay visible, struck-through, with who / when / why (audit principle).</div>
         </div>
 
         <div class="entity-card">

@@ -3,6 +3,7 @@ import {
   ListAccessRequestsQuerySchema,
   MembershipInputSchema,
   ReplaceMembershipsSchema,
+  SetPinRequestSchema,
   UpdateStaffSchema,
 } from './staff.js';
 
@@ -47,5 +48,14 @@ describe('other staff bodies', () => {
   it('access-request status defaults to pending and refuses approved', () => {
     expect(ListAccessRequestsQuerySchema.parse({}).status).toBe('pending');
     expect(ListAccessRequestsQuerySchema.safeParse({ status: 'approved' }).success).toBe(false);
+  });
+
+  it('SetPinRequestSchema requires 4-digit pin and accepts optional 4-digit currentPin', () => {
+    expect(SetPinRequestSchema.safeParse({ pin: '1234' }).success).toBe(true);
+    expect(SetPinRequestSchema.safeParse({ pin: '1234', currentPin: '5678' }).success).toBe(true);
+    expect(SetPinRequestSchema.safeParse({ pin: '123' }).success).toBe(false);
+    expect(SetPinRequestSchema.safeParse({ pin: '12345' }).success).toBe(false);
+    expect(SetPinRequestSchema.safeParse({ pin: 'abcd' }).success).toBe(false);
+    expect(SetPinRequestSchema.safeParse({ pin: '1234', currentPin: '99' }).success).toBe(false);
   });
 });

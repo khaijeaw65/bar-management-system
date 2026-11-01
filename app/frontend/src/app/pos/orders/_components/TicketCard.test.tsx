@@ -38,7 +38,14 @@ test("shows four lines and a remainder count", () => {
 test("strikes cancelled lines and labels an automatic cancel", () => {
   const cancelled = orderLine("70000000-0000-4000-8000-000000000201", "วิสกี้ซาวร์", {
     cancelledAt: "2026-10-21T12:05:00.000Z",
-    cancellation: { at: "2026-10-21T12:05:00.000Z", reason: "ของหมด", by: null, system: true },
+    cancellation: {
+      at: "2026-10-21T12:05:00.000Z",
+      reason: "ของหมด",
+      by: null,
+      system: true,
+      approvedBy: null,
+      selfApproved: false,
+    },
   });
   renderCard({}, [cancelled]);
   expect(screen.getByText("1× วิสกี้ซาวร์")).toHaveClass("line-through");

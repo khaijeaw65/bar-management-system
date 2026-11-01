@@ -19,6 +19,7 @@ const mockLine: OrderLine = {
   notes: null,
   cancelledAt: null,
   cancellation: null,
+  comp: null,
 };
 
 function createWrapper() {

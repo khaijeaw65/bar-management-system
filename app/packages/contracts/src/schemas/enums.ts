@@ -102,6 +102,9 @@ export type AuditAction = z.infer<typeof AuditActionSchema>;
 export const ActorTypeSchema = z.enum(['user', 'system']);
 export type ActorType = z.infer<typeof ActorTypeSchema>;
 
+export const ItemAdjustmentSchema = z.enum(['void', 'comp']);
+export type ItemAdjustment = z.infer<typeof ItemAdjustmentSchema>;
+
 export const NotificationTypeSchema = z.enum([
   'table_idle',
   'table_opened',
@@ -134,4 +137,5 @@ export const schemaEnumBySqlName = {
   audit_action: AuditActionSchema,
   actor_type: ActorTypeSchema,
   notification_type: NotificationTypeSchema,
+  item_adjustment: ItemAdjustmentSchema,
 } as const;

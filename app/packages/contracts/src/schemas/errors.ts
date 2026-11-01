@@ -39,6 +39,10 @@ export const ErrorCodeSchema = z.enum([
   'POLICY_IN_USE',
   'SEAT_IN_USE',
   'SEAT_LABEL_TAKEN',
+  'PIN_INVALID',
+  'PIN_LOCKED',
+  'PIN_UNAVAILABLE',
+  'VISIT_PAID',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;

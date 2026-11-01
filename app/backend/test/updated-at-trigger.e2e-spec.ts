@@ -15,6 +15,7 @@ import { CustomerOrderCallStaff1763000000000 } from '../src/providers/database/m
 import { GuestSession1762900000000 } from '../src/providers/database/migrations/1762900000000-GuestSession.js';
 import { CustomerPayment1763100000000 } from '../src/providers/database/migrations/1763100000000-CustomerPayment.js';
 import { IamCore1763200000000 } from '../src/providers/database/migrations/1763200000000-IamCore.js';
+import { OrderItemAdjustment1763600000000 } from '../src/providers/database/migrations/1763600000000-OrderItemAdjustment.js';
 import { UpdatedAtTrigger1762500000000 } from '../src/providers/database/migrations/1762500000000-UpdatedAtTrigger.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
@@ -196,9 +197,11 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
     const customerOrder = new CustomerOrderCallStaff1763000000000();
     const customerPayment = new CustomerPayment1763100000000();
     const iamCore = new IamCore1763200000000();
+    const orderItemAdjustment = new OrderItemAdjustment1763600000000();
     const runner = dataSource.createQueryRunner();
     try {
       // guest_session's trigger depends on the function, so it goes first and comes back last.
+      await orderItemAdjustment.down(runner);
       await iamCore.down(runner); // staff_group and policy triggers depend on the function too
       await customerPayment.down(runner); // payment points at guest_session too
       await customerOrder.down(runner); // order_record points at guest_session
@@ -212,6 +215,7 @@ describe('Database-owned updated_at (e2e, DR-023)', () => {
       await customerOrder.up(runner);
       await customerPayment.up(runner);
       await iamCore.up(runner);
+      await orderItemAdjustment.up(runner);
       expect(await triggerCount()).toBe(TRIGGERED_TABLES.length);
     } finally {
       await runner.release();

@@ -9,3 +9,10 @@ export interface StaffUserLookup {
   id: string;
   isActive?: boolean;
 }
+
+export interface StaffPinRecord {
+  id: string;
+  displayName: string;
+  isActive: boolean;
+  posPinHash: string | null;
+}

@@ -67,6 +67,10 @@ export function createVoidCompHandlers(store: VoidCompStore) {
           ? null
           : { staffId: "11111111-1111-4111-8111-111111111111", displayName: "ผู้จัดการ" },
         system: false,
+        approvedBy: body.pin
+          ? { staffId: "11111111-1111-4111-8111-111111111111", displayName: "ผู้จัดการ" }
+          : null,
+        selfApproved: !body.pin,
       };
 
       store.recalculate(match.visitId);
