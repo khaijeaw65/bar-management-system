@@ -44,3 +44,14 @@ export type MobileTokenResult =
   | { kind: 'unauthorized' };
 
 export type MobileAuthError = 'login_failed' | 'not_registered';
+
+export type DemoRoleTarget = {
+  lineUserId: string;
+  displayName: string;
+  groupId: string;
+};
+
+export type DemoLoginResult = {
+  accessToken: string;
+  refreshToken: string;
+};
