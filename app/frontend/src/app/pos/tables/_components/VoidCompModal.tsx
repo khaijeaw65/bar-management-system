@@ -7,8 +7,6 @@ import {
   Label,
   ListBox,
   Modal,
-  Radio,
-  RadioGroup,
   Select,
   TextArea,
   TextField,
@@ -138,29 +136,32 @@ export function VoidCompModal({
 
           <div className="flex flex-col gap-4">
             {/* Action Selector */}
-            <RadioGroup
-              aria-label="ประเภทการปรับยอด"
-              value={actionType}
-              onChange={(val) => setActionType(val as "void" | "comp")}
-              className="flex gap-4"
-            >
-              <Radio value="void" aria-label="ยกเลิก">
-                <Radio.Content>
-                  <Radio.Control>
-                    <Radio.Indicator />
-                  </Radio.Control>
-                  ยกเลิก
-                </Radio.Content>
-              </Radio>
-              <Radio value="comp" aria-label="Comp ฟรี">
-                <Radio.Content>
-                  <Radio.Control>
-                    <Radio.Indicator />
-                  </Radio.Control>
-                  Comp ฟรี
-                </Radio.Content>
-              </Radio>
-            </RadioGroup>
+            <div className="flex gap-4" role="radiogroup" aria-label="ประเภทการปรับยอด">
+              <label className="flex cursor-pointer items-center gap-2 rounded-btn border border-line-hairline bg-surface px-4 py-2 hover:bg-surface-hover">
+                <input
+                  type="radio"
+                  name="action-type"
+                  value="void"
+                  checked={actionType === "void"}
+                  onChange={() => setActionType("void")}
+                  aria-label="ยกเลิก"
+                  className="h-4 w-4 accent-accent"
+                />
+                <span className="text-body font-medium">ยกเลิก</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-btn border border-line-hairline bg-surface px-4 py-2 hover:bg-surface-hover">
+                <input
+                  type="radio"
+                  name="action-type"
+                  value="comp"
+                  checked={actionType === "comp"}
+                  onChange={() => setActionType("comp")}
+                  aria-label="Comp ฟรี"
+                  className="h-4 w-4 accent-accent"
+                />
+                <span className="text-body font-medium">Comp ฟรี</span>
+              </label>
+            </div>
 
             {/* Reason Selector */}
             <Select
@@ -209,7 +210,6 @@ export function VoidCompModal({
             {isManagerOrOwner ? (
               <Alert status="accent" role="status">
                 <Alert.Content>
-                  <Alert.Title>อนุมัติด้วยตนเอง</Alert.Title>
                   <Alert.Description>
                     อนุมัติด้วยตนเอง — บันทึกให้เจ้าของตรวจสอบ
                   </Alert.Description>
