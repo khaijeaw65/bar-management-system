@@ -48,7 +48,11 @@ export const ORDER_ROWS_SQL = `
 
 export const BILL_SQL = `
   SELECT o.visit_id,
-         COALESCE(SUM(i.quantity * (i.unit_price_snapshot + COALESCE(mods.delta, 0))), 0)::text AS total,
+         COALESCE(SUM(
+           CASE WHEN i.cancel_kind = 'comp' THEN 0
+                ELSE i.quantity * (i.unit_price_snapshot + COALESCE(mods.delta, 0))
+           END
+         ), 0)::text AS total,
          COALESCE(SUM(i.quantity), 0)::int AS item_count
   FROM order_item i
   JOIN order_ticket t ON t.id = i.ticket_id
@@ -58,13 +62,17 @@ export const BILL_SQL = `
     FROM order_item_modifier
     GROUP BY order_item_id
   ) mods ON mods.order_item_id = i.id
-  WHERE i.cancelled_at IS NULL AND o.visit_id = ANY($1::uuid[])
+  WHERE (i.cancel_kind IS NULL OR i.cancel_kind = 'comp') AND o.visit_id = ANY($1::uuid[])
   GROUP BY o.visit_id
 `;
 
 export const ORDER_TOTALS_SQL = `
   SELECT o.id AS order_id,
-         COALESCE(SUM(i.quantity * (i.unit_price_snapshot + COALESCE(mods.delta, 0))), 0)::text AS total
+         COALESCE(SUM(
+           CASE WHEN i.cancel_kind = 'comp' THEN 0
+                ELSE i.quantity * (i.unit_price_snapshot + COALESCE(mods.delta, 0))
+           END
+         ), 0)::text AS total
   FROM order_record o
   JOIN order_ticket t ON t.order_id = o.id
   JOIN order_item i ON i.ticket_id = t.id
@@ -73,7 +81,7 @@ export const ORDER_TOTALS_SQL = `
     FROM order_item_modifier
     GROUP BY order_item_id
   ) mods ON mods.order_item_id = i.id
-  WHERE i.cancelled_at IS NULL AND o.visit_id = $1
+  WHERE (i.cancel_kind IS NULL OR i.cancel_kind = 'comp') AND o.visit_id = $1
   GROUP BY o.id
 `;
 
@@ -126,10 +134,33 @@ export const PENDING_PAYMENT_SQL = `
 export const ACTIVE_LINE_COUNT_SQL = `
   SELECT count(*)::int AS count
   FROM order_item
-  WHERE ticket_id = $1 AND cancelled_at IS NULL
+  WHERE ticket_id = $1 AND (cancel_kind IS NULL OR cancel_kind = 'comp')
 `;
 
 export const GUEST_SESSION_IDS_SQL = `
   SELECT id, guest_session_id FROM order_record
   WHERE visit_id = $1::uuid AND guest_session_id IS NOT NULL
+`;
+
+export const LOCK_ITEM_ADJUSTMENT_SQL = `
+  SELECT i.id AS item_id,
+         i.ticket_id,
+         t.order_id,
+         o.visit_id,
+         v.state AS visit_state,
+         i.cancelled_at,
+         i.cancel_kind
+  FROM order_item i
+  JOIN order_ticket t ON t.id = i.ticket_id
+  JOIN order_record o ON o.id = t.order_id
+  JOIN visit v ON v.id = o.visit_id
+  WHERE i.id = $1
+  FOR UPDATE OF i, v
+`;
+
+export const PAYMENT_STATUS_MOVING_SQL = `
+  SELECT status
+  FROM payment
+  WHERE visit_id = $1 AND status IN ('pending', 'completed')
+  FOR UPDATE
 `;

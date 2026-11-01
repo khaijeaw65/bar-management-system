@@ -1,5 +1,7 @@
 import type {
   BillRow,
+  LineAdjustmentWrite,
+  LockedItemAdjustment,
   LockedTicket,
   NewOrder,
   OrderQuery,
@@ -27,4 +29,7 @@ export abstract class OrderRepository {
   public abstract hasPendingPayment(visitId: string): Promise<boolean>;
   public abstract cancelLines(ids: readonly string[], at: Date, reason: string): Promise<void>;
   public abstract countActiveLines(ticketId: string): Promise<number>;
+  public abstract lockItemForAdjustment(itemId: string): Promise<LockedItemAdjustment | null>;
+  public abstract paymentStatusOnVisit(visitId: string): Promise<'pending' | 'completed' | null>;
+  public abstract adjustLine(input: LineAdjustmentWrite): Promise<void>;
 }
