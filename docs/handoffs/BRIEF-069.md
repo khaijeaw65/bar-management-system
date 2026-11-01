@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-069-web-tables-admin` (PR opens after audit PASS) |
 | **Commit** | `6ad751f` (work commit S) |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS |
 
 ## Summary
 Implemented the POS Settings back-office tables and counter seats management interface at `/pos/settings/tables`, guarded by `tables:manage` permission with new "โต๊ะและ QR" tab in `SettingsNav`. Features sectioned listing for "โต๊ะ" and "เคาน์เตอร์" with status chips ("ใช้งาน", "มีแขก", "ปิดอยู่"), active switches guarded against guest tabs with 409 `SEAT_IN_USE` toast feedback, sort order adjustment within sections calling `PUT /tables/order`, modal for adding and editing seats with 409 `SEAT_LABEL_TAKEN` duplicate label inline validation, and high-contrast printable table QR sticker preview with `qrcode.react` vector SVG and confirmation dialog for QR token regeneration.
