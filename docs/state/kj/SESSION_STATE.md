@@ -7,18 +7,19 @@ Updated: 2026-11-01 · Agent: Antigravity (BRIEF-066 Shipped)
 
 ## Active
 - Brief: BRIEF-066 Rev 1 · Stage: Shipped · Work commit: `8446cc7` · Branch: `feat/BRIEF-066-tables-admin-api`
-- Done 21 Oct–1 Nov: BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
+- Done 21 Oct–1 Nov: BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
 1. Approve merge BRIEF-066 once CI is green (`อนุมัติ merge BRIEF-066`)
-2. Next after 066: BRIEF-065 (Expo app push — Metee) · BRIEF-067 PR merge
+2. Next after 066: BRIEF-065 (Expo app push — Metee)
 
 ## Blockers / Coordination
-- Shared files: none · Review queue: BRIEF-067 PR · if `ci` hits frontend timeouts → re-run once (038 audit F4)
+- Shared files: none · Review queue: BRIEF-066 PR · if `ci` hits frontend timeouts → re-run once (038 audit F4)
 - e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e · frontend unit tests time out under heavy load
 - Dev servers and SonarQube stopped; Postgres + Redis (docker) left running · dev `bar` has 2 `table_seat` audit_log rows from BRIEF-061 run proof
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
+- Port naming (Field 1 Nov): rule = `abstract class I<Name>`; 21 ports in code are unprefixed (BRIEF-067) → cleanup brief after backend phase (rename + `domain/ports/*.port.ts` + 067 S6/S7/S9). Until then: new ports use `I<Name>` — say so in each backend brief
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)
 - Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete branches: merged (#45, #46, #48–#52, #54–#72 + `feat/BRIEF-017-void-comp-issues`, `feat/BRIEF-027-sold-out-auto-void`, `feat/BRIEF-028-web-login-real-api`, `feat/BRIEF-029-pos-floor-open-table`, `feat/BRIEF-030-pos-session-panel-close`, `feat/BRIEF-031-pos-order-entry` + local `docs/workflow-rev19`, `docs/rules-class-helpers`) and stale `docs/state-1018` (#53 closed), `docs/planning-1017-evening`, `docs/schema-38-tables`; optional auto-delete head branches

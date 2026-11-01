@@ -61,7 +61,7 @@ Solid, wide mechanical refactor: the lint gate is now real (config passed, AST c
 ## Field decisions (2026-11-01, in session)
 - **Fix round scope:** Must fix #1–#3 **plus Suggestions #4 and #8** (approved by Field). #4 = `NotificationTypeOrmRepository` maps to `NotificationRecord` with explicit fields (no entity instances returned; `markRead` re-reads by id + recipient). #8 = `vi.mocked(...)` in `notifications.service.spec.ts`. Both become required for PASS at re-audit.
 - **Not in this brief:** #6, #7, #9 — stay Suggestions (follow-up / when module is next touched).
-- **#5 port naming:** no `I`-prefix stands (matches AC-3 and the 21 ports in code). Executor renames nothing. `docs/rules/backend.md` gets a Field-approved amendment (protected file — exact diff shown to Field; lands with `Approved-by: Field (session)`).
+- **#5 port naming:** ~~no `I`-prefix stands; amend `backend.md`~~ → **superseded 11:24 (Field): `backend.md` keeps `abstract class I<Name>` (house style) — no rule edit.** The 21 unprefixed ports in code are accepted for BRIEF-067 (AC-3 as written); the rename to `I<Name>` (+ `domain/ports/*.port.ts`, #6) goes in a later cleanup brief after the backend phase.
 
 ## Evidence Coverage
 - Reviewed work SHA: `ae3347b` (seed SHA: `6fce319`); `a39f968` checked = handoff + state only
@@ -117,7 +117,7 @@ Solid, wide mechanical refactor: the lint gate is now real (config passed, AST c
 | 10 | ✅ Fixed | `NotificationRepository.markRead` → `Promise<NotificationRecord \| null>` (`notification.repository.port.ts:37-40`); adapter returns `null` when the row is gone (no spread, no fake record); `NotificationsService.persistReadTimestamp` throws `DomainException('NOT_FOUND', 'ไม่พบการแจ้งเตือน', 404)` — same code/message as `findRecipientNotification`. New unit case `markAsRead throws 404 DomainException if markRead returns null` asserts the thrown outcome |
 | 11 | ✅ Closed by auditor run | Independent G1 at `0ff905d` (below) — e2e, migration round-trip and run proof all from this SHA |
 | 12 | Open — Suggestion | Optional; not required for PASS |
-| 4–9 | as recorded | #4, #8 fixed (`ba7f67a`); #5 Field decision (no `I` prefix; `backend.md` amendment pending Field's OK on the shown diff — separate from this brief); #6, #7, #9 stay Suggestions |
+| 4–9 | as recorded | #4, #8 fixed (`ba7f67a`); #5 Field decision (rule keeps `I<Name>`; code rename → later cleanup brief, not 067); #6, #7, #9 stay Suggestions |
 
 ### Gates re-run by auditor at `0ff905d` (Linux sandbox; checkout tarball + fix-commit files; local Postgres 17 + Redis)
 | Command | Exit | Result |
@@ -133,6 +133,6 @@ Solid, wide mechanical refactor: the lint gate is now real (config passed, AST c
 Seeded/regression e2e: `git diff ba7f67a..0ff905d -- app/backend/test` empty. No new dependencies or protected-file edits in either fix commit.
 
 ### Recommendation to Field
-All Must fix items (#1–#4, #8, #10) are resolved and every gate is green from the audited SHA, including an independent e2e run and run proof. Remaining items are Suggestions or Field-owned follow-ups (#5 rule amendment, #6/#7/#9 later cleanup, #12 optional).
+All Must fix items (#1–#4, #8, #10) are resolved and every gate is green from the audited SHA, including an independent e2e run and run proof. Remaining items are Suggestions or Field-owned follow-ups (#5 `I<Name>` rename brief, #6/#7/#9 later cleanup, #12 optional).
 
 **Next → in Antigravity:** `ship BRIEF-067` (S = `0ff905d`; commit this report unchanged + final handoff with the `0ff905d` gate table + state)
