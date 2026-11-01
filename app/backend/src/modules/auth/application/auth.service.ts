@@ -4,14 +4,16 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { AuthMe, MobileTokenRequest } from '@bar/contracts';
+import type { AuthMe, DemoLoginRole, MobileTokenRequest } from '@bar/contracts';
 import { AccessRequestService } from '../../iam/application/access-request.service.js';
+import { IamVersion } from '../../iam/application/iam-version.service.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { AppConfigService } from '../../../providers/config/app/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
 import { LineClient } from '../domain/ports/line-client.port.js';
 import type { LineProfile } from '../domain/line-client.types.js';
 import type {
+  DemoLoginResult,
   LineLoginCallbackInput,
   LineLoginStart,
   LoginResult,
@@ -21,6 +23,7 @@ import type {
   OauthState,
   RefreshResult,
 } from './auth.types.js';
+import { DemoUserService } from './demo-user.service.js';
 import {
   mobileCodeChallenge,
   parseMobileCode,
@@ -44,7 +47,23 @@ export class AuthService {
     private readonly staffUserService: StaffUserService,
     private readonly accessRequestService: AccessRequestService,
     private readonly appConfigService: AppConfigService,
+    private readonly iamVersion: IamVersion,
+    private readonly demoUserService: DemoUserService,
   ) {}
+
+  public async demoLogin(role: DemoLoginRole): Promise<DemoLoginResult> {
+    const userId = await this.demoUserService.findOrProvision(role);
+    await this.iamVersion.bump();
+    return await this.issueDemoSession(userId);
+  }
+
+  private async issueDemoSession(userId: string): Promise<DemoLoginResult> {
+    const session = await this.tokenService.createSession(userId);
+    return {
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    };
+  }
 
   public async startLineLogin(input: LineLoginStart): Promise<string> {
     const codeChallenge = mobileCodeChallenge(input);

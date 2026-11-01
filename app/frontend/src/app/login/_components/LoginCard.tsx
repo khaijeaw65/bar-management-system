@@ -3,6 +3,7 @@
 import { Button, Card } from "@heroui/react";
 import { useState } from "react";
 import { lineLoginUrl } from "@/lib/api/auth";
+import { DemoLoginSection } from "./DemoLoginSection";
 import { LoginAlert } from "./LoginAlert";
 
 export function LoginCard({ failed }: Readonly<{ failed: boolean }>) {
@@ -38,6 +39,7 @@ export function LoginCard({ failed }: Readonly<{ failed: boolean }>) {
           {pending ? "กำลังเปลี่ยนเส้นทาง..." : "เข้าสู่ระบบด้วย LINE"}
         </Button>
         <p className="text-center text-small text-text-muted">เฉพาะพนักงานที่ลงทะเบียนแล้ว</p>
+        {process.env.NODE_ENV !== "production" ? <DemoLoginSection /> : null}
       </Card.Content>
     </Card>
   );

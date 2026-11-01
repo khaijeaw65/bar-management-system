@@ -38,3 +38,11 @@ export const MobileTokenResponseSchema = z.object({
 });
 
 export type MobileTokenResponse = z.infer<typeof MobileTokenResponseSchema>;
+
+export const DemoLoginRoleSchema = z.enum(['owner', 'manager', 'staff']);
+export type DemoLoginRole = z.infer<typeof DemoLoginRoleSchema>;
+
+export const DemoLoginRequestSchema = z.object({
+  role: DemoLoginRoleSchema,
+});
+export type DemoLoginRequest = z.infer<typeof DemoLoginRequestSchema>;
