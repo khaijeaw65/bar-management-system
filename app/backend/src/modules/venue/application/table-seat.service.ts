@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   TABLE_STAFF_CALLED,
@@ -12,22 +12,15 @@ import {
 import { ClsService } from 'nestjs-cls';
 import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 import { BillService } from '../../payment/application/bill.service.js';
 import { OrderQueryService } from '../../order/application/order-query.service.js';
-import {
-  TABLE_SEAT_REPOSITORY,
-  type TableSeatRepository,
-} from '../domain/table-seat.repository.js';
-import type { SeatWithLiveVisit } from '../domain/table-seat.types.js';
-import {
-  VISIT_REPOSITORY,
-  type VisitRepository,
-} from '../domain/visit.repository.js';
-import type { SeatIdentity } from '../domain/table-seat.types.js';
+import { TableSeatRepository } from '../domain/table-seat.repository.js';
+import type { SeatIdentity, SeatWithLiveVisit } from '../domain/table-seat.types.js';
+import { VisitRepository } from '../domain/visit.repository.js';
 import { newQrToken } from './qr-token.js';
 import { money } from '../../../common/money.js';
 import { toTableSummary } from './table-summary.js';
@@ -38,9 +31,8 @@ export class TableSeatService {
   private readonly logger = new Logger(TableSeatService.name);
 
   public constructor(
-    @Inject(TABLE_SEAT_REPOSITORY)
     private readonly tableSeatRepository: TableSeatRepository,
-    @Inject(VISIT_REPOSITORY) private readonly visitRepository: VisitRepository,
+    private readonly visitRepository: VisitRepository,
     private readonly orders: OrderQueryService,
     private readonly bills: BillService,
     private readonly notifications: NotificationsService,
@@ -48,7 +40,7 @@ export class TableSeatService {
     private readonly auditLog: AuditLogService,
     private readonly staffUsers: StaffUserService,
     private readonly cls: ClsService,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
   ) {}
 
   public async list(): Promise<TableSummary[]> {

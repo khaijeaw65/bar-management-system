@@ -1,5 +1,5 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { PERMISSION_SOURCE, type PermissionSource } from '../domain/permission-source.js';
+import { Injectable, Logger } from '@nestjs/common';
+import { PermissionSource } from '../domain/permission-source.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
 import { IamVersion } from './iam-version.service.js';
 
@@ -15,7 +15,7 @@ export class StaffActivity {
   private readonly logger = new Logger(StaffActivity.name);
 
   public constructor(
-    @Inject(PERMISSION_SOURCE) private readonly source: PermissionSource,
+    private readonly source: PermissionSource,
     private readonly redis: RedisService,
     private readonly version: IamVersion,
   ) {}

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   AccessRequest,
   ApproveAccessRequest,
@@ -10,10 +10,7 @@ import type {
 import { DomainException } from '../../../common/domain-exception.js';
 import { TokenService } from '../../auth/application/token.service.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
-import {
-  STAFF_ADMIN_REPOSITORY,
-  type StaffAdminRepository,
-} from '../domain/staff-admin.repository.js';
+import { StaffAdminRepository } from '../domain/staff-admin.repository.js';
 import type {
   MembershipWrite,
   StaffWriteOutcome,
@@ -28,7 +25,7 @@ const LOCKOUT_MESSAGE = 'ต้องมีผู้ดูแลสิทธิ�
 @Injectable()
 export class StaffAdminService {
   public constructor(
-    @Inject(STAFF_ADMIN_REPOSITORY) private readonly repository: StaffAdminRepository,
+    private readonly repository: StaffAdminRepository,
     private readonly iamVersion: IamVersion,
     private readonly tokens: TokenService,
     private readonly venueSettings: VenueSettingsService,

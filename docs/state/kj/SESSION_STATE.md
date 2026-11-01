@@ -1,17 +1,17 @@
 # State — KJ
-Updated: 2026-11-01 · Agent: Claude Code (BRIEF-064 Audit PASS)
+Updated: 2026-11-01 · Agent: Antigravity (BRIEF-067 Shipped)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-064 Audit PASS** (S `2d8175e`) — PR open. Next: CI green on H → merge (Field's own PR) → BRIEF-065.
+**BRIEF-067 Audit PASS** (Rev 1, work commit `0ff905d`). Next: approve merge BRIEF-067 once CI green.
 
 ## Active
-- Brief: BRIEF-064 Rev 1 · Stage: Audit PASS · Branch: `feat/BRIEF-064-push-delivery` · Work commit: `2d8175e`
-- Done 21–31 Oct: BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
+- Brief: BRIEF-067 Rev 1 · Stage: Audit PASS · Work commit: `0ff905d` · Branch: `feat/BRIEF-067-backend-rules-cleanup`
+- Done 21 Oct–1 Nov: BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
-1. CI green on H → merge BRIEF-064 (Section 7)
-2. Next: BRIEF-065 (Expo app push — Metee) · stop the `nest start --watch` dev backend before backend `test:e2e`
+1. Approve merge BRIEF-067 once CI is green on head commit
+2. Next after 067: BRIEF-065 (Expo app push — Metee) · BRIEF-066 (tables admin API)
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: BRIEF-061 PR · if `ci` hits frontend timeouts → re-run once (038 audit F4)

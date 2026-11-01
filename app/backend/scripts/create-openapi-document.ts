@@ -13,21 +13,15 @@ import { GuestSessionService } from '../dist/modules/customer/application/guest-
 import { CustomerOrderController } from '../dist/modules/customer/infrastructure/http/customer-order.controller.js';
 import { CustomerPaymentController } from '../dist/modules/customer/infrastructure/http/customer-payment.controller.js';
 import { CustomerMenuController } from '../dist/modules/customer/infrastructure/http/customer-menu.controller.js';
-import {
-  CustomerScanController,
-  CustomerSessionController,
-} from '../dist/modules/customer/infrastructure/http/customer-session.controller.js';
+import { CustomerScanController } from '../dist/modules/customer/infrastructure/http/customer-qr.controller.js';
+import { CustomerSessionController } from '../dist/modules/customer/infrastructure/http/customer-session.controller.js';
 import { IamAdminService } from '../dist/modules/iam/application/iam-admin.service.js';
 import { StaffAdminService } from '../dist/modules/iam/application/staff-admin.service.js';
-import {
-  AccessRequestsController,
-  StaffController,
-} from '../dist/modules/iam/infrastructure/http/staff.controller.js';
-import {
-  PermissionCatalogController,
-  PoliciesController,
-  StaffGroupsController,
-} from '../dist/modules/iam/infrastructure/http/iam-admin.controller.js';
+import { AccessRequestsController } from '../dist/modules/iam/infrastructure/http/access-requests.controller.js';
+import { PermissionCatalogController } from '../dist/modules/iam/infrastructure/http/iam-admin.controller.js';
+import { PoliciesController } from '../dist/modules/iam/infrastructure/http/policies.controller.js';
+import { StaffGroupsController } from '../dist/modules/iam/infrastructure/http/staff-groups.controller.js';
+import { StaffController } from '../dist/modules/iam/infrastructure/http/staff.controller.js';
 import { MeController } from '../dist/modules/iam/infrastructure/http/me.controller.js';
 import { PermissionResolver } from '../dist/modules/iam/application/permission-resolver.service.js';
 import { HealthController } from '../dist/modules/health/health.controller.js';

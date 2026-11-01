@@ -3,14 +3,9 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { PermissionCode } from '@bar/contracts';
 import { DataSource } from 'typeorm';
 import { DEFAULT_GROUP_IDS } from '../../domain/default-groups.js';
-import type { MembershipRow, PermissionSource } from '../../domain/permission-source.js';
-
-interface MembershipSql {
-  group_id: string;
-  group_name: string;
-  valid_from: Date;
-  valid_until: Date | null;
-}
+import type { PermissionSource } from '../../domain/permission-source.js';
+import type { MembershipRow } from '../../domain/permission-source.types.js';
+import type { MembershipSql } from './permission-source.typeorm.types.js';
 
 @Injectable()
 export class PermissionSourceTypeorm implements PermissionSource {

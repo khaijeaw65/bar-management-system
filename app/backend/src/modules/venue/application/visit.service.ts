@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   TABLE_STAFF_CALL_CLEARED,
@@ -10,14 +10,8 @@ import {
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
-import {
-  TABLE_SEAT_REPOSITORY,
-  type TableSeatRepository,
-} from '../domain/table-seat.repository.js';
-import {
-  VISIT_REPOSITORY,
-  type VisitRepository,
-} from '../domain/visit.repository.js';
+import { TableSeatRepository } from '../domain/table-seat.repository.js';
+import { VisitRepository } from '../domain/visit.repository.js';
 import type { VisitRecord } from '../domain/visit.types.js';
 import { PaymentGuard } from '../../payment/application/payment-guard.js';
 import { toTableSummary } from './table-summary.js';
@@ -33,8 +27,7 @@ import type {
 @Injectable()
 export class VisitService {
   public constructor(
-    @Inject(VISIT_REPOSITORY) private readonly visitRepository: VisitRepository,
-    @Inject(TABLE_SEAT_REPOSITORY)
+    private readonly visitRepository: VisitRepository,
     private readonly tableSeatRepository: TableSeatRepository,
     private readonly staffUserService: StaffUserService,
     private readonly notificationsService: NotificationsService,

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Transactional } from '@nestjs-cls/transactional';
 import type { Queue } from 'bullmq';
@@ -11,7 +11,7 @@ import {
 } from '@bar/contracts';
 import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { AuditFieldChange } from '../../../common/audit/audit-log.types.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { toSatang } from '../../../common/money.js';
 import { PaymentConfigService } from '../../../providers/config/payment/config.service.js';
@@ -20,13 +20,9 @@ import { VenueSettingsService } from '../../venue/application/venue-settings.ser
 import type { VenuePaymentAccount } from '../../venue/domain/venue.repository.js';
 import { TableSeatService } from '../../venue/application/table-seat.service.js';
 import { VisitService } from '../../venue/application/visit.service.js';
+import { PaymentRepository } from '../domain/ports/payment.repository.port.js';
 import {
-  PAYMENT_REPOSITORY,
-  type PaymentRepository,
-} from '../domain/ports/payment.repository.port.js';
-import {
-  SLIP_VERIFIER,
-  type SlipVerifier,
+  SlipVerifier,
   type SlipVerifyResult,
 } from '../domain/ports/slip-verifier.port.js';
 import type { NewPayment, PaymentRecord } from '../domain/payment.types.js';
@@ -34,7 +30,15 @@ import { BillService } from './bill.service.js';
 import type { BillSnapshot, CreatePaymentInput, MarkPaidInput, PaymentExpiryJob, VerifySlipInput } from './payment.types.js';
 import { PAYMENT_EXPIRY_QUEUE } from './payment.types.js';
 import { promptPayPayload } from './promptpay-payload.js';
-import { groupAttempts, statusChanged, toAttempt, toPayment } from './present-payment.js';
+import {
+  completedRecord,
+  groupAttempts,
+  providerRejection,
+  statusChanged,
+  toAttempt,
+  toPayment,
+  verifiedRecord,
+} from './present-payment.js';
 
 const REJECTION_CODES = new Set([
   'SLIP_WRONG_RECEIVER',
@@ -48,8 +52,8 @@ export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
 
   public constructor(
-    @Inject(PAYMENT_REPOSITORY) private readonly payments: PaymentRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly payments: PaymentRepository,
+    private readonly clock: Clock,
     @InjectQueue(PAYMENT_EXPIRY_QUEUE) private readonly expiryQueue: Queue<PaymentExpiryJob>,
     private readonly visits: VisitService,
     private readonly bills: BillService,
@@ -57,7 +61,7 @@ export class PaymentService {
     private readonly seats: TableSeatService,
     private readonly notifications: NotificationsService,
     private readonly ttl: PaymentConfigService,
-    @Inject(SLIP_VERIFIER) private readonly slips: SlipVerifier,
+    private readonly slips: SlipVerifier,
     private readonly audit: AuditLogService,
   ) {}
 
@@ -101,7 +105,7 @@ export class PaymentService {
     }
     const result = await this.slips.verify(input.slip, { expectedAmount: current.amount });
     if (result.kind !== 'verified') {
-      const rejected = this.providerRejection(result);
+      const rejected = providerRejection(result);
       await this.recordRejection(current.id, rejected.code, {});
       throw rejected;
     }
@@ -146,7 +150,7 @@ export class PaymentService {
   @Transactional()
   private async completePending(input: MarkPaidInput): Promise<Payment> {
     const locked = await this.requirePending(input.paymentId);
-    return toPayment(await this.payments.save(this.completed(locked, input)));
+    return toPayment(await this.payments.save(completedRecord(locked, input, this.clock.now())));
   }
 
   @Transactional()
@@ -167,7 +171,7 @@ export class PaymentService {
     if (toSatang(result.amount) < toSatang(locked.amount)) {
       throw new DomainException('SLIP_AMOUNT_SHORT', 'ยอดในสลิปน้อยกว่าบิล', 422);
     }
-    return toPayment(await this.payments.save(this.verified(locked, result)));
+    return toPayment(await this.payments.save(verifiedRecord(locked, result, this.clock.now())));
   }
 
   @Transactional()
@@ -192,7 +196,7 @@ export class PaymentService {
   @Transactional()
   private async expirePending(paymentId: string): Promise<Payment | null> {
     const locked = await this.payments.lockById(paymentId);
-    if (!locked || locked.status !== 'pending' || !this.isDue(locked)) return null;
+    if (locked?.status !== 'pending' || !this.isDue(locked)) return null;
     locked.status = 'cancelled';
     locked.statusReason = 'expired';
     return toPayment(await this.payments.save(locked));
@@ -247,44 +251,6 @@ export class PaymentService {
       expiresAt: promptpay ? this.expiresAt(now) : null,
       paidAt: promptpay ? null : now,
       guestSessionId: input.guestSessionId ?? null,
-    };
-  }
-
-  private verified(
-    locked: PaymentRecord,
-    result: Extract<SlipVerifyResult, { kind: 'verified' }>,
-  ): PaymentRecord {
-    return {
-      ...locked,
-      status: 'completed',
-      confirmedVia: 'slip_verify',
-      slipTransRef: result.transRef,
-      slipAmount: result.amount,
-      paidAt: this.clock.now(),
-      statusReason: null,
-      statusNote: null,
-    };
-  }
-
-  private providerRejection(result: Exclude<SlipVerifyResult, { kind: 'verified' }>): DomainException {
-    if (result.kind === 'invalid') {
-      return new DomainException('SLIP_INVALID', 'อ่านสลิปไม่ได้ — สแกนใหม่หรือถ่ายรูป', 422);
-    }
-    if (result.kind === 'pending') {
-      return new DomainException('SLIP_PENDING', 'สลิปกรุงเทพฯ ยังไม่พร้อม — รอ 5 นาทีแล้วสแกนใหม่', 409);
-    }
-    return new DomainException('SLIP_SERVICE_UNAVAILABLE', 'ตรวจสลิปไม่ได้ชั่วคราว', 503);
-  }
-
-  private completed(locked: PaymentRecord, input: MarkPaidInput): PaymentRecord {
-    const manual = input.via === 'manual';
-    return {
-      ...locked,
-      status: 'completed',
-      confirmedVia: input.via,
-      paidAt: this.clock.now(),
-      statusReason: manual ? input.reason : null,
-      statusNote: manual ? input.note : null,
     };
   }
 

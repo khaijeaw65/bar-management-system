@@ -6,9 +6,9 @@ import { IamVersion } from './application/iam-version.service.js';
 import { PermissionResolver } from './application/permission-resolver.service.js';
 import { StaffActivity } from './application/staff-activity.service.js';
 import { StaffUserService } from './application/staff-user.service.js';
-import { ACCESS_REQUEST_REPOSITORY } from './domain/access-request.repository.js';
-import { PERMISSION_SOURCE } from './domain/permission-source.js';
-import { STAFF_USER_REPOSITORY } from './domain/staff-user.repository.js';
+import { AccessRequestRepository } from './domain/access-request.repository.js';
+import { PermissionSource } from './domain/permission-source.js';
+import { StaffUserRepository } from './domain/staff-user.repository.js';
 import { MeController } from './infrastructure/http/me.controller.js';
 import { AccessRequestTypeormRepository } from './infrastructure/persistence/access-request.typeorm-repository.js';
 import { PermissionSourceTypeorm } from './infrastructure/persistence/permission-source.typeorm.js';
@@ -28,14 +28,14 @@ import { StaffUserTypeormRepository } from './infrastructure/persistence/staff-u
   controllers: [MeController],
   providers: [
     PermissionSourceTypeorm,
-    { provide: PERMISSION_SOURCE, useExisting: PermissionSourceTypeorm },
+    { provide: PermissionSource, useExisting: PermissionSourceTypeorm },
     IamVersion,
     PermissionResolver,
     IamEnforcement,
     StaffUserTypeormRepository,
-    { provide: STAFF_USER_REPOSITORY, useExisting: StaffUserTypeormRepository },
+    { provide: StaffUserRepository, useExisting: StaffUserTypeormRepository },
     AccessRequestTypeormRepository,
-    { provide: ACCESS_REQUEST_REPOSITORY, useExisting: AccessRequestTypeormRepository },
+    { provide: AccessRequestRepository, useExisting: AccessRequestTypeormRepository },
     StaffUserService,
     StaffActivity,
     AccessRequestService,

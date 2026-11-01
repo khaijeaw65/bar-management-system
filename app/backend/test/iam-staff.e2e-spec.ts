@@ -7,11 +7,8 @@ import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
 import { TokenService } from '../src/modules/auth/application/token.service.js';
-import {
-  LINE_CLIENT,
-  buildLineAuthorizeUrl,
-  type LineClient,
-} from '../src/modules/auth/domain/line-client.js';
+import { buildLineAuthorizeUrl } from '../src/modules/auth/domain/line-client.js';
+import { LineClient } from '../src/modules/auth/domain/ports/line-client.port.js';
 import type { LineAuthorizeInput, LineProfile, LineTokenExchange } from '../src/modules/auth/domain/line-client.types.js';
 import { IAM_VERSION_KEY } from '../src/modules/iam/application/iam-version.service.js';
 import { nextCutoff } from '../src/modules/iam/application/membership-until.js';
@@ -70,7 +67,7 @@ describe('IAM staff API (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(LINE_CLIENT)
+      .overrideProvider(LineClient)
       .useValue(line)
       .compile();
     app = moduleRef.createNestApplication();

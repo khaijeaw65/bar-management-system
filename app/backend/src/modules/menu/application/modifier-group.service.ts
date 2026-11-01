@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   MENU_CHANGED,
@@ -10,7 +10,7 @@ import {
 } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
-import { MODIFIER_GROUP_REPOSITORY, type ModifierGroupRepository } from '../domain/modifier-group.repository.js';
+import { ModifierGroupRepository } from '../domain/modifier-group.repository.js';
 
 /**
  * Manager edits of add-on groups (BRIEF-044). One transaction per write; `menu.changed` goes out
@@ -19,7 +19,7 @@ import { MODIFIER_GROUP_REPOSITORY, type ModifierGroupRepository } from '../doma
 @Injectable()
 export class ModifierGroupService {
   public constructor(
-    @Inject(MODIFIER_GROUP_REPOSITORY) private readonly groups: ModifierGroupRepository,
+    private readonly groups: ModifierGroupRepository,
     private readonly notifications: NotificationsService,
   ) {}
 

@@ -1,6 +1,9 @@
 import type { Payment, PaymentAttempt, PaymentStatusChangedPayload } from '@bar/contracts';
+import { DomainException } from '../../../common/domain-exception.js';
 import { money, sumSatang } from '../../../common/money.js';
+import type { SlipVerifyResult } from '../domain/ports/slip-verifier.port.js';
 import type { PaymentRecord } from '../domain/payment.types.js';
+import type { MarkPaidInput } from './payment.types.js';
 
 export function toPayment(record: PaymentRecord): Payment {
   return {
@@ -56,6 +59,45 @@ export function statusChanged(payment: Payment): PaymentStatusChangedPayload {
     partNo: payment.partNo,
     partCount: payment.partCount,
   };
+}
+
+export function verifiedRecord(
+  locked: PaymentRecord,
+  result: Extract<SlipVerifyResult, { kind: 'verified' }>,
+  paidAt: Date,
+): PaymentRecord {
+  return {
+    ...locked,
+    status: 'completed',
+    confirmedVia: 'slip_verify',
+    slipTransRef: result.transRef,
+    slipAmount: result.amount,
+    paidAt,
+    statusReason: null,
+    statusNote: null,
+  };
+}
+
+export function completedRecord(locked: PaymentRecord, input: MarkPaidInput, paidAt: Date): PaymentRecord {
+  const manual = input.via === 'manual';
+  return {
+    ...locked,
+    status: 'completed',
+    confirmedVia: input.via,
+    paidAt,
+    statusReason: manual ? input.reason : null,
+    statusNote: manual ? input.note : null,
+  };
+}
+
+export function providerRejection(result: Exclude<SlipVerifyResult, { kind: 'verified' }>): DomainException {
+  if (result.kind === 'invalid') {
+    return new DomainException('SLIP_INVALID', 'อ่านสลิปไม่ได้ — สแกนใหม่หรือถ่ายรูป', 422);
+  }
+  if (result.kind === 'pending') {
+    return new DomainException('SLIP_PENDING', 'สลิปกรุงเทพฯ ยังไม่พร้อม — รอ 5 นาทีแล้วสแกนใหม่', 409);
+  }
+  return new DomainException('SLIP_SERVICE_UNAVAILABLE', 'ตรวจสลิปไม่ได้ชั่วคราว', 503);
 }
 
 function pushPart(groups: Map<string, Payment[]>, payment: Payment): void {

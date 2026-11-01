@@ -1,13 +1,12 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import type { JobsOptions, Queue } from 'bullmq';
 import type { Notification } from '@bar/contracts';
 import { PushTokenService } from './push-token.service.js';
 import {
-  PUSH_SENDER,
+  PushSender,
   type PushMessage,
   type PushReceipt,
-  type PushSender,
   type PushTicket,
 } from './ports/push-sender.port.js';
 import type { RecipientToken } from './ports/staff-push-token.repository.port.js';
@@ -38,7 +37,7 @@ export class PushDeliveryService {
   public constructor(
     @InjectQueue(NOTIFICATION_PUSH_QUEUE) private readonly queue: Queue<PushJobData>,
     private readonly pushTokens: PushTokenService,
-    @Inject(PUSH_SENDER) private readonly sender: PushSender,
+    private readonly sender: PushSender,
   ) {}
 
   public async enqueue(notifications: Notification[]): Promise<void> {

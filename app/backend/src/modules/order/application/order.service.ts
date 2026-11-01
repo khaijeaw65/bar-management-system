@@ -1,23 +1,18 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { ORDER_CREATED, VISIT_STATE_CHANGED, type Order } from '@bar/contracts';
-import {
-  MenuCatalogService,
-  type OrderableLookup,
-} from '../../menu/application/menu-catalog.service.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { MenuCatalogService } from '../../menu/application/menu-catalog.service.js';
+import type { OrderableLookup } from '../../menu/application/menu-catalog.types.js';
+import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import {
-  ORDER_REPOSITORY,
-  type OrderRepository,
-} from '../domain/order.repository.js';
+import { OrderRepository } from '../domain/order.repository.js';
 import type { NewOrder, NewTicket, PricedLine, TicketBucket } from '../domain/order.types.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
 import { VisitService } from '../../venue/application/visit.service.js';
 import { businessDateUnder } from './business-date.js';
 import { bucketFor, priceLines } from './order-lines.js';
-import type { GuestOrderInput, PlaceOrderInput } from './order.types.js';
+import type { GuestOrderInput, PlacedOrder, PlaceOrderInput } from './order.types.js';
 import { OrderQueryService } from './order-query.service.js';
 import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 
@@ -26,8 +21,8 @@ export class OrderService {
   private readonly logger = new Logger(OrderService.name);
 
   public constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly orders: OrderRepository,
+    private readonly clock: Clock,
     private readonly visits: VisitService,
     private readonly venues: VenueSettingsService,
     private readonly menu: MenuCatalogService,
@@ -144,12 +139,4 @@ export class OrderService {
     }
     return [...groups.entries()].map(([bucket, grouped]) => ({ bucket, lines: grouped }));
   }
-}
-
-interface PlacedOrder {
-  orderId: string;
-  activated: boolean;
-  opened: boolean;
-  visitId: string;
-  tableSeatId: string;
 }

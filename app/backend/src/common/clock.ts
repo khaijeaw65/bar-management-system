@@ -1,5 +1,3 @@
-export interface Clock {
-  now(): Date;
+export abstract class Clock {
+  public abstract now(): Date;
 }
-
-export const CLOCK = Symbol('CLOCK');

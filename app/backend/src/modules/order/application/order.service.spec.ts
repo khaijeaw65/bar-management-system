@@ -2,7 +2,7 @@ import type { MenuModifierGroup } from '@bar/contracts';
 import type {
   OrderableLookup,
   OrderableVariant,
-} from '../../menu/application/menu-catalog.service.js';
+} from '../../menu/application/menu-catalog.types.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { priceLines } from './order-lines.js';
 import type { RequestedLine } from './order.types.js';

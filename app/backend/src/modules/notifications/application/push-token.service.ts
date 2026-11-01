@@ -1,20 +1,19 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { Ok, RegisterPushToken } from '@bar/contracts';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import { PUSH_SENDER, type PushSender } from './ports/push-sender.port.js';
+import { PushSender } from './ports/push-sender.port.js';
 import {
-  STAFF_PUSH_TOKEN_REPOSITORY,
+  StaffPushTokenRepository,
   type RecipientToken,
-  type StaffPushTokenRepository,
 } from './ports/staff-push-token.repository.port.js';
 
 @Injectable()
 export class PushTokenService {
   public constructor(
-    @Inject(STAFF_PUSH_TOKEN_REPOSITORY) private readonly tokens: StaffPushTokenRepository,
-    @Inject(PUSH_SENDER) private readonly sender: PushSender,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly tokens: StaffPushTokenRepository,
+    private readonly sender: PushSender,
+    private readonly clock: Clock,
   ) {}
 
   /** A token already held by another staff member is reassigned to the caller (shared phones). */

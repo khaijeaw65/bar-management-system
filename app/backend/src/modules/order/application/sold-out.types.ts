@@ -12,6 +12,8 @@ export interface ToggleOutcome {
   voidedVisits: string[];
 }
 
+export type VoidTicketsOutcome = Pick<ToggleOutcome, 'autoVoided' | 'notVoided' | 'cancelled'>;
+
 export interface SeatRef {
   seatLabel: string;
   ticketId: string;

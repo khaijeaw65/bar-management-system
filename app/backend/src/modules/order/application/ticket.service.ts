@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   TICKET_ISSUE_ESCALATED,
@@ -17,31 +17,21 @@ import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
-import {
-  ORDER_REPOSITORY,
-  type OrderRepository,
-} from '../domain/order.repository.js';
+import { Clock } from '../../../common/clock.js';
+import { OrderRepository } from '../domain/order.repository.js';
 import type { LockedTicket, TicketIssueWrite, TicketLineState } from '../domain/order.types.js';
 import { OrderQueryService } from './order-query.service.js';
 import { withoutVisit, type TicketView } from './present-order.js';
 import { issueStatus, nextTicketStatus, readyStepApplies, type TicketAction } from './ticket-transition.js';
-
-type TicketEvent = 'status' | 'escalated';
-
-interface ResolvedTicket {
-  ticket: TicketView;
-  kind: TicketEvent;
-  written: TicketIssueWrite;
-}
+import type { ResolvedTicket, TicketEvent } from './ticket.types.js';
 
 @Injectable()
 export class TicketService {
   private readonly logger = new Logger(TicketService.name);
 
   public constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly orders: OrderRepository,
+    private readonly clock: Clock,
     private readonly venues: VenueSettingsService,
     private readonly query: OrderQueryService,
     private readonly staff: StaffUserService,

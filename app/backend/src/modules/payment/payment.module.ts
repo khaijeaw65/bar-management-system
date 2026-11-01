@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CLOCK } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { AuditLogService } from '../../common/audit/audit-log.service.js';
@@ -14,8 +14,8 @@ import { BillService } from './application/bill.service.js';
 import { PaymentGuard } from './application/payment-guard.js';
 import { PaymentService } from './application/payment.service.js';
 import { PAYMENT_EXPIRY_QUEUE } from './application/payment.types.js';
-import { PAYMENT_REPOSITORY } from './domain/ports/payment.repository.port.js';
-import { SLIP_VERIFIER } from './domain/ports/slip-verifier.port.js';
+import { PaymentRepository } from './domain/ports/payment.repository.port.js';
+import { SlipVerifier } from './domain/ports/slip-verifier.port.js';
 import { EasySlipSlipVerifier } from './infrastructure/easyslip/easyslip-slip-verifier.js';
 import { PaymentsController } from './infrastructure/http/payments.controller.js';
 import { PaymentOrderLink } from './infrastructure/persistence/payment-order.entity.js';
@@ -36,8 +36,8 @@ import { PaymentExpiryProcessor } from './infrastructure/queue/payment-expiry.pr
   controllers: [PaymentsController],
   providers: [
     PaymentTypeormRepository,
-    { provide: PAYMENT_REPOSITORY, useExisting: PaymentTypeormRepository },
-    { provide: CLOCK, useClass: SystemClock },
+    { provide: PaymentRepository, useExisting: PaymentTypeormRepository },
+    { provide: Clock, useClass: SystemClock },
     IdempotencyService,
     BillService,
     PaymentGuard,
@@ -45,7 +45,7 @@ import { PaymentExpiryProcessor } from './infrastructure/queue/payment-expiry.pr
     PaymentExpiryProcessor,
     AuditLogService,
     EasySlipSlipVerifier,
-    { provide: SLIP_VERIFIER, useExisting: EasySlipSlipVerifier },
+    { provide: SlipVerifier, useExisting: EasySlipSlipVerifier },
   ],
   exports: [BillService, PaymentGuard, PaymentService],
 })

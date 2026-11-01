@@ -11,7 +11,7 @@ import { seedVenue } from '../src/cli/seed-venue.js';
 import { seedStaffMember } from '../src/cli/seed-iam.js';
 import { IamVersion } from '../src/modules/iam/application/iam-version.service.js';
 import { DEFAULT_GROUP_IDS } from '../src/modules/iam/domain/default-groups.js';
-import { PERMISSION_SOURCE, type PermissionSource } from '../src/modules/iam/domain/permission-source.js';
+import { PermissionSource } from '../src/modules/iam/domain/permission-source.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
 
@@ -122,7 +122,7 @@ describe('IAM guard (e2e)', () => {
 
   it('AC-5: the second request reads the cache; a version bump recomputes; Redis down still authorises', async () => {
     const token = await tokenOf(staff);
-    const source = app.get<PermissionSource>(PERMISSION_SOURCE);
+    const source = app.get(PermissionSource);
     const loads = vi.spyOn(source, 'codesFor');
     await me(token).expect(200);
     await me(token).expect(200);

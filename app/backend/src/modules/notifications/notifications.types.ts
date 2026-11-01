@@ -12,3 +12,9 @@ export interface NotifyInput {
   refId?: string | null;
 }
 
+/** The guest socket lives in the Customer module; it registers here so Notifications never imports it. */
+export type TabChangedSink = (visitId: string, sessionEnded: boolean) => void;
+
+export type SeatVisitOpenedSink = (tableSeatId: string, visitId: string) => void;
+
+

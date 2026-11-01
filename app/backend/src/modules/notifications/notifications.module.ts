@@ -1,15 +1,17 @@
 import { Global, Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CLOCK } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { IamModule } from '../iam/iam.module.js';
 import { ExpoConfigModule } from '../../providers/config/expo/config.module.js';
+import { NotificationRepository } from './domain/ports/notification.repository.port.js';
 import { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
+import { NotificationTypeOrmRepository } from './infrastructure/persistence/notification.typeorm-repository.js';
 import { StaffPushTokenEntity } from './infrastructure/persistence/staff-push-token.entity.js';
-import { PUSH_SENDER } from './application/ports/push-sender.port.js';
-import { STAFF_PUSH_TOKEN_REPOSITORY } from './application/ports/staff-push-token.repository.port.js';
+import { PushSender } from './application/ports/push-sender.port.js';
+import { StaffPushTokenRepository } from './application/ports/staff-push-token.repository.port.js';
 import { StaffPushTokenTypeormRepository } from './infrastructure/persistence/staff-push-token.typeorm-repository.js';
 import { PushDeliveryService } from './application/push-delivery.service.js';
 import { NOTIFICATION_PUSH_QUEUE } from './application/push.types.js';
@@ -38,11 +40,13 @@ import { NotificationsController } from './infrastructure/http/notifications.con
     PushTokenService,
     PushDeliveryService,
     NotificationPushProcessor,
+    NotificationTypeOrmRepository,
+    { provide: NotificationRepository, useExisting: NotificationTypeOrmRepository },
     StaffPushTokenTypeormRepository,
-    { provide: STAFF_PUSH_TOKEN_REPOSITORY, useExisting: StaffPushTokenTypeormRepository },
+    { provide: StaffPushTokenRepository, useExisting: StaffPushTokenTypeormRepository },
     ExpoPushSenderAdapter,
-    { provide: PUSH_SENDER, useExisting: ExpoPushSenderAdapter },
-    { provide: CLOCK, useClass: SystemClock },
+    { provide: PushSender, useExisting: ExpoPushSenderAdapter },
+    { provide: Clock, useClass: SystemClock },
   ],
   exports: [NotificationsService, NotificationRecipients],
 })

@@ -1,6 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
 import {
   NOTIFICATION_NEW,
   type Notification,
@@ -8,17 +6,15 @@ import {
   type NotificationType,
   UuidSchema,
 } from '@bar/contracts';
-import { CLOCK, type Clock } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { DomainException } from '../../common/domain-exception.js';
 import { PushDeliveryService } from './application/push-delivery.service.js';
-import { NotificationEntity } from './infrastructure/persistence/notification.entity.js';
+import {
+  NotificationRepository,
+  type NotificationRecord,
+} from './domain/ports/notification.repository.port.js';
 import { NotificationsGateway } from './notifications.gateway.js';
-import type { NotifyInput } from './notifications.types.js';
-
-/** The guest socket lives in the Customer module; it registers here so Notifications never imports it. */
-export type TabChangedSink = (visitId: string, sessionEnded: boolean) => void;
-
-export type SeatVisitOpenedSink = (tableSeatId: string, visitId: string) => void;
+import type { NotifyInput, SeatVisitOpenedSink, TabChangedSink } from './notifications.types.js';
 
 const PAGE_SIZE = 20;
 
@@ -28,10 +24,9 @@ export class NotificationsService {
   private seatSink: SeatVisitOpenedSink | null = null;
 
   public constructor(
-    @InjectRepository(NotificationEntity)
-    private readonly repo: Repository<NotificationEntity>,
+    private readonly repo: NotificationRepository,
     private readonly notificationsGateway: NotificationsGateway,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
     private readonly pushDelivery: PushDeliveryService,
   ) {}
 
@@ -89,9 +84,7 @@ export class NotificationsService {
   }
 
   public async unreadCount(recipientId: string): Promise<number> {
-    return await this.repo.count({
-      where: { recipientId, readAt: IsNull() },
-    });
+    return await this.repo.countUnread(recipientId);
   }
 
   public async markAsRead(recipientId: string, id: string): Promise<Notification> {
@@ -101,35 +94,27 @@ export class NotificationsService {
   }
 
   public async markAllAsRead(recipientId: string): Promise<number> {
-    const result = await this.repo
-      .createQueryBuilder()
-      .update(NotificationEntity)
-      .set({ readAt: this.clock.now() })
-      .where('recipient_id = :recipientId AND read_at IS NULL', { recipientId })
-      .execute();
-    return result.affected ?? 0;
+    return await this.repo.markAllRead(recipientId, this.clock.now());
   }
 
   private async insertRows(
     type: NotificationType,
     recipientIds: string[],
     payload: NotifyInput,
-  ): Promise<NotificationEntity[]> {
-    const entities = recipientIds.map((recipientId) =>
-      this.repo.create({
-        recipientId,
-        type,
-        title: payload.title,
-        body: payload.body ?? null,
-        refType: payload.refType ?? null,
-        refId: payload.refId ?? null,
-        readAt: null,
-      }),
-    );
-    return await this.repo.save(entities);
+  ): Promise<NotificationRecord[]> {
+    const rows = recipientIds.map((recipientId) => ({
+      recipientId,
+      type,
+      title: payload.title,
+      body: payload.body ?? null,
+      refType: payload.refType ?? null,
+      refId: payload.refId ?? null,
+      readAt: null,
+    }));
+    return await this.repo.insertMany(rows);
   }
 
-  private broadcastNotifications(items: NotificationEntity[]): Notification[] {
+  private broadcastNotifications(items: NotificationRecord[]): Notification[] {
     const serialized = items.map((item) => this.serialize(item));
     for (const item of serialized) {
       this.notificationsGateway.emitToUser(
@@ -144,25 +129,12 @@ export class NotificationsService {
   private async queryFeedPage(
     recipientId: string,
     cursor?: string,
-  ): Promise<NotificationEntity[]> {
+  ): Promise<NotificationRecord[]> {
     const cursorId = this.parseCursor(cursor);
-    const qb = this.repo
-      .createQueryBuilder('n')
-      .where('n.recipient_id = :recipientId', { recipientId })
-      .orderBy('n.created_at', 'DESC')
-      .addOrderBy('n.id', 'DESC')
-      .take(PAGE_SIZE + 1);
-
-    if (cursorId) {
-      qb.andWhere(
-        '(n.created_at, n.id) < (SELECT sub.created_at, sub.id FROM notification sub WHERE sub.id = :cursorId)',
-        { cursorId },
-      );
-    }
-    return await qb.getMany();
+    return await this.repo.findPage(recipientId, cursorId, PAGE_SIZE + 1);
   }
 
-  private buildFeedPage(rows: NotificationEntity[]): NotificationPage {
+  private buildFeedPage(rows: NotificationRecord[]): NotificationPage {
     const hasMore = rows.length > PAGE_SIZE;
     const pageRows = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
     const nextCursor =
@@ -179,8 +151,8 @@ export class NotificationsService {
   private async findRecipientNotification(
     recipientId: string,
     id: string,
-  ): Promise<NotificationEntity> {
-    const item = await this.repo.findOne({ where: { id, recipientId } });
+  ): Promise<NotificationRecord> {
+    const item = await this.repo.findByIdAndRecipient(id, recipientId);
     if (!item) {
       throw new DomainException('NOT_FOUND', 'ไม่พบการแจ้งเตือน', 404);
     }
@@ -188,16 +160,19 @@ export class NotificationsService {
   }
 
   private async persistReadTimestamp(
-    item: NotificationEntity,
-  ): Promise<NotificationEntity> {
+    item: NotificationRecord,
+  ): Promise<NotificationRecord> {
     if (item.readAt !== null) {
       return item;
     }
-    item.readAt = this.clock.now();
-    return await this.repo.save(item);
+    const updated = await this.repo.markRead(item, this.clock.now());
+    if (!updated) {
+      throw new DomainException('NOT_FOUND', 'ไม่พบการแจ้งเตือน', 404);
+    }
+    return updated;
   }
 
-  private serialize(entity: NotificationEntity): Notification {
+  private serialize(entity: NotificationRecord): Notification {
     return {
       id: entity.id,
       recipientId: entity.recipientId,
@@ -220,7 +195,7 @@ export class NotificationsService {
     return parsed.data;
   }
 
-  private createCursor(item: NotificationEntity): string {
+  private createCursor(item: NotificationRecord): string {
     return item.id;
   }
 }

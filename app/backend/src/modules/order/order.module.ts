@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { IamModule } from '../iam/iam.module.js';
 import { MenuModule } from '../menu/menu.module.js';
 import { VenueModule } from '../venue/venue.module.js';
-import { CLOCK } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { RedisModule } from '../../providers/redis/redis.module.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
@@ -11,7 +11,7 @@ import { OrderQueryService } from './application/order-query.service.js';
 import { OrderService } from './application/order.service.js';
 import { SoldOutService } from './application/sold-out.service.js';
 import { TicketService } from './application/ticket.service.js';
-import { ORDER_REPOSITORY } from './domain/order.repository.js';
+import { OrderRepository } from './domain/order.repository.js';
 import { MenuAvailabilityController } from './infrastructure/http/menu-availability.controller.js';
 import { OrdersController } from './infrastructure/http/orders.controller.js';
 import { TicketsController } from './infrastructure/http/tickets.controller.js';
@@ -32,8 +32,8 @@ import { OrderTypeormRepository } from './infrastructure/persistence/order.typeo
   controllers: [OrdersController, TicketsController, MenuAvailabilityController],
   providers: [
     OrderTypeormRepository,
-    { provide: ORDER_REPOSITORY, useExisting: OrderTypeormRepository },
-    { provide: CLOCK, useClass: SystemClock },
+    { provide: OrderRepository, useExisting: OrderTypeormRepository },
+    { provide: Clock, useClass: SystemClock },
     IdempotencyService,
     OrderQueryService,
     OrderService,

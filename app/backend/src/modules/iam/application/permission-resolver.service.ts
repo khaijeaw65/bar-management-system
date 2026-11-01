@@ -1,7 +1,7 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MyPermissionsSchema, type MyPermissions, type PermissionCode } from '@bar/contracts';
 import { activeGroups, cacheTtlSeconds } from '../domain/effective-access.js';
-import { PERMISSION_SOURCE, type PermissionSource } from '../domain/permission-source.js';
+import { PermissionSource } from '../domain/permission-source.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
 import { IamVersion } from './iam-version.service.js';
 
@@ -16,7 +16,7 @@ export class PermissionResolver {
   private readonly logger = new Logger(PermissionResolver.name);
 
   public constructor(
-    @Inject(PERMISSION_SOURCE) private readonly source: PermissionSource,
+    private readonly source: PermissionSource,
     private readonly redis: RedisService,
     private readonly version: IamVersion,
   ) {}

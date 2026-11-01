@@ -1,6 +1,5 @@
 import { randomBytes } from 'node:crypto';
 import {
-  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -10,7 +9,7 @@ import { AccessRequestService } from '../../iam/application/access-request.servi
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { AppConfigService } from '../../../providers/config/app/config.service.js';
 import { RedisService } from '../../../providers/redis/redis.service.js';
-import { LINE_CLIENT, type LineClient } from '../domain/line-client.js';
+import { LineClient } from '../domain/ports/line-client.port.js';
 import type { LineProfile } from '../domain/line-client.types.js';
 import type {
   LineLoginCallbackInput,
@@ -22,7 +21,11 @@ import type {
   OauthState,
   RefreshResult,
 } from './auth.types.js';
-import { mobileCodeChallenge } from './mobile-login.js';
+import {
+  mobileCodeChallenge,
+  parseMobileCode,
+  parseOauthState,
+} from './mobile-login.js';
 import { verifyPkceS256 } from './pkce.js';
 import { TokenService } from './token.service.js';
 
@@ -35,7 +38,7 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   public constructor(
-    @Inject(LINE_CLIENT) private readonly lineClient: LineClient,
+    private readonly lineClient: LineClient,
     private readonly redisService: RedisService,
     private readonly tokenService: TokenService,
     private readonly staffUserService: StaffUserService,
@@ -218,7 +221,7 @@ export class AuthService {
   private async takeOauthState(state: string | undefined): Promise<OauthState | null> {
     if (!state) return null;
     const raw = await this.redisService.client.getdel(this.oauthKey(state));
-    return this.parseOauthState(raw) ?? this.missingMobileState(state);
+    return parseOauthState(raw) ?? this.missingMobileState(state);
   }
 
   // No Redis record can succeed. The m. prefix only picks the app's error URL.
@@ -261,7 +264,7 @@ export class AuthService {
 
   private async takeMobileCode(code: string): Promise<MobileCodeRecord | null> {
     const raw = await this.redisService.client.getdel(this.mauthKey(code));
-    return this.parseMobileCode(raw);
+    return parseMobileCode(raw);
   }
 
   private createLoginFailedRedirect(): LoginResult {
@@ -319,58 +322,5 @@ export class AuthService {
 
   private mauthKey(code: string): string {
     return `mauth:${code}`;
-  }
-
-  private parseOauthState(raw: string | null): OauthState | null {
-    if (!raw) return null;
-    try {
-      return this.readOauthState(JSON.parse(raw));
-    } catch {
-      return null;
-    }
-  }
-
-  private readOauthState(parsed: unknown): OauthState | null {
-    if (!this.isRecord(parsed)) return null;
-    if (typeof parsed.nonce !== 'string' || parsed.nonce.length === 0) return null;
-    if (parsed.client !== 'mobile') return { nonce: parsed.nonce };
-    return this.mobileOauthState(parsed.nonce, parsed.codeChallenge);
-  }
-
-  private mobileOauthState(nonce: string, codeChallenge: unknown): OauthState {
-    if (typeof codeChallenge !== 'string' || codeChallenge.length === 0) {
-      return { nonce, client: 'mobile', codeChallenge: '' };
-    }
-    return { nonce, client: 'mobile', codeChallenge };
-  }
-
-  private parseMobileCode(raw: string | null): MobileCodeRecord | null {
-    if (!raw) return null;
-    try {
-      return this.readMobileCode(JSON.parse(raw));
-    } catch {
-      return null;
-    }
-  }
-
-  private readMobileCode(parsed: unknown): MobileCodeRecord | null {
-    if (!this.isRecord(parsed)) return null;
-    if (!this.isMobileCode(parsed)) return null;
-    return { userId: parsed.userId, codeChallenge: parsed.codeChallenge };
-  }
-
-  private isMobileCode(
-    parsed: Record<string, unknown>,
-  ): parsed is MobileCodeRecord {
-    return (
-      typeof parsed.userId === 'string' &&
-      parsed.userId.length > 0 &&
-      typeof parsed.codeChallenge === 'string' &&
-      parsed.codeChallenge.length > 0
-    );
-  }
-
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
   }
 }

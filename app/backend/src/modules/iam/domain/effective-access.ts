@@ -1,4 +1,4 @@
-import type { MembershipRow } from './permission-source.js';
+import type { MembershipRow } from './permission-source.types.js';
 
 export const CACHE_TTL_CAP_SECONDS = 15 * 60;
 

@@ -1,11 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { Order, Ticket, TicketListQuery } from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
-import {
-  ORDER_REPOSITORY,
-  type OrderRepository,
-} from '../domain/order.repository.js';
+import { OrderRepository } from '../domain/order.repository.js';
 import type { OrderQuery, OrderTotal } from '../domain/order.types.js';
 import { foldOrders } from './fold-orders.js';
 import type { FoldedOrder } from './folded-order.types.js';
@@ -16,7 +13,7 @@ import { listFilter } from './ticket-query.js';
 @Injectable()
 export class OrderQueryService {
   public constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
+    private readonly orders: OrderRepository,
     private readonly staff: StaffUserService,
   ) {}
 
@@ -85,17 +82,14 @@ export class OrderQueryService {
   }
 
   private staffIds(orders: readonly FoldedOrder[]): string[] {
-    const ids = new Set<string>();
-    for (const order of orders) {
-      if (order.createdById) ids.add(order.createdById);
-      for (const ticket of order.tickets) {
-        if (ticket.updatedById) ids.add(ticket.updatedById);
-        if (ticket.issueReportedById) ids.add(ticket.issueReportedById);
-        for (const item of ticket.items) {
-          if (item.cancelledById) ids.add(item.cancelledById);
-        }
-      }
-    }
-    return [...ids];
+    const tickets = orders.flatMap((order) => order.tickets);
+    const items = tickets.flatMap((ticket) => ticket.items);
+    const raw = [
+      ...orders.map((order) => order.createdById),
+      ...tickets.map((ticket) => ticket.updatedById),
+      ...tickets.map((ticket) => ticket.issueReportedById),
+      ...items.map((item) => item.cancelledById),
+    ];
+    return [...new Set(raw.filter((id): id is string => id !== null))];
   }
 }
