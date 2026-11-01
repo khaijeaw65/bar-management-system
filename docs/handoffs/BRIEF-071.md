@@ -6,8 +6,8 @@
 | **Date** | 2026-11-02 |
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-071-demo-defects-polish` (PR opens after audit PASS) |
-| **Commit** | `da5a4ac` |
-| **Status** | Implemented — awaiting audit |
+| **Commit** | `25c59d5` |
+| **Status** | Audit PASS |
 
 > Created at Implemented (one docs commit). Updated once in the PASS commit. Frozen at merge.
 
