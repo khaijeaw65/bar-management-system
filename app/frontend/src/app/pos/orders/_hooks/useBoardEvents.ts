@@ -35,15 +35,14 @@ export function useBoardEvents(onSelectTicket?: (ticketId: string) => void): Rea
       timers.current.add(timer);
       const seats = [...new Set(parsed.data.tickets.map((ticket) => ticket.seat.label))];
       const firstTicketId = parsed.data.tickets[0]?.id;
-      let toastId: string | number | undefined;
-      toastId = toast.success(`ออเดอร์ใหม่ ${seats.join(", ")}`, {
+      const toastId = toast.success(`ออเดอร์ใหม่ ${seats.join(", ")}`, {
         actionProps:
           firstTicketId && onSelectTicket
             ? {
                 children: "ดูออเดอร์",
                 onPress: () => {
                   onSelectTicket(firstTicketId);
-                  if (toastId !== undefined) toast.close(String(toastId));
+                  toast.close(String(toastId));
                 },
               }
             : undefined,

@@ -3,7 +3,7 @@
 import { Button, Chip } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LoadError } from "@/components/ui/LoadError";
 import { useDisconnected } from "@/hooks/useSocketEvent";
 import { useTicketBoard } from "@/hooks/useTicketBoard";
@@ -30,14 +30,10 @@ export function OrdersBoard() {
   const searchParams = useSearchParams();
   const ticketParam = searchParams.get("ticketId");
   const [station, setStation] = useState<StationFilter>("all");
-  const [openId, setOpenId] = useState<string | null>(ticketParam);
+  const [openId, setOpenId] = useState<string | null>(() => ticketParam);
   const fresh = useBoardEvents(setOpenId);
   const actions = useTicketActions();
   const disconnected = useDisconnected(() => void board.refetch());
-
-  useEffect(() => {
-    if (ticketParam) setOpenId(ticketParam);
-  }, [ticketParam]);
 
   const kitchenOn = venue.data?.kitchenDisplayEnabled === true;
   const columns = columnsFor(kitchenOn);

@@ -43,15 +43,12 @@ export function usePosAlerts(): void {
       refreshTables();
       playChime("bell");
       const label = client.getQueryData<TableList>(TABLES_KEY)?.items.find((s) => s.id === parsed.data.tableSeatId)?.label;
-      let toastId: string | number | undefined;
-      toastId = toast.warning(callTitle(label ?? "โต๊ะ", parsed.data), {
+      const toastId = toast.warning(callTitle(label ?? "โต๊ะ", parsed.data), {
         actionProps: {
           children: "รับทราบ",
           onPress: () => {
             acknowledge.mutate(parsed.data.tableSeatId);
-            if (toastId !== undefined) {
-              toast.close(String(toastId));
-            }
+            toast.close(String(toastId));
           },
         },
       });
