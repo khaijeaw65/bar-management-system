@@ -6,8 +6,8 @@
 | **Date** | 2026-11-01 |
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-070-web-pos-void-comp` (PR opens after audit PASS) |
-| **Commit** | `34da64e` (work commit before handoff docs) |
-| **Status** | Implemented — awaiting audit |
+| **Commit** | `0f8e405` (work commit S) |
+| **Status** | Audit PASS |
 
 ## Summary
 Implemented the POS void and comp modal on active session drawers (`SessionDrawer.tsx`) to resolve DEF-07. Staff and managers can adjust active order lines directly from the drawer by tapping "ยกเลิก / Comp". The modal (`VoidCompModal.tsx`) provides radio selection for "ยกเลิก" (strikes out item and removes it from bill) or "Comp ฟรี" (sets price to ฿0.00 while item remains active), a structured reason picker matching CD-02/CD-15 with mandatory note validation on "อื่นๆ" (AC-6), and touch-friendly 4-digit PIN pad authentication (`PinPadInput.tsx`) for staff or self-approval notice with optional PIN bypass for managers/owners (AC-4). Client API (`void-comp.ts`) and full MSW handlers (`src/mocks/void-comp.ts`) simulate void/comp endpoints, PIN verification, and dynamic bill recalculation.
