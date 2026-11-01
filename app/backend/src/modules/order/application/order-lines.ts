@@ -3,7 +3,7 @@ import { DomainException } from '../../../common/domain-exception.js';
 import type {
   OrderableLookup,
   OrderableVariant,
-} from '../../menu/application/menu-catalog.service.js';
+} from '../../menu/application/menu-catalog.types.js';
 import type { ChosenModifier, PricedLine, TicketBucket } from '../domain/order.types.js';
 import type { RequestedLine } from './order.types.js';
 

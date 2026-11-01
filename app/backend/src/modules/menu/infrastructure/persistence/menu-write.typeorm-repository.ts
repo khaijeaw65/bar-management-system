@@ -4,12 +4,12 @@ import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-t
 import { ClsService } from 'nestjs-cls';
 import { In, QueryFailedError, Repository } from 'typeorm';
 import type { MenuVariantInput } from '@bar/contracts';
+import type { MenuWriteRepository } from '../../domain/menu-write.repository.js';
 import type {
   CategoryOrderRow,
   LockedMenuItem,
   MenuItemFields,
-  MenuWriteRepository,
-} from '../../domain/menu-write.repository.js';
+} from '../../domain/menu-write.types.js';
 import type { MenuCategoryRecord } from '../../domain/menu.types.js';
 import { DomainException } from '../../../../common/domain-exception.js';
 import { MenuCategory } from './menu-category.entity.js';

@@ -111,7 +111,7 @@ describe('NotificationsService', () => {
 
   it('markAsRead throws 404 DomainException if notification not found or belongs to another user', async () => {
     const { service, repo } = createService();
-    (repo.findByIdAndRecipient as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    vi.mocked(repo.findByIdAndRecipient).mockResolvedValue(null);
 
     await expect(service.markAsRead('user-1', 'notif-999')).rejects.toThrow('ไม่พบการแจ้งเตือน');
   });
@@ -129,7 +129,7 @@ describe('NotificationsService', () => {
       readAt: null,
       createdAt: fixedNow,
     };
-    (repo.findByIdAndRecipient as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(item);
+    vi.mocked(repo.findByIdAndRecipient).mockResolvedValue(item);
 
     const updated = await service.markAsRead('user-1', 'notif-1');
     expect(item.readAt).toEqual(fixedNow);
@@ -155,7 +155,7 @@ describe('NotificationsService', () => {
       readAt: null,
       createdAt: fixedNow,
     }));
-    (repo.findPage as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(rows);
+    vi.mocked(repo.findPage).mockResolvedValue(rows);
 
     const validCursor = '123e4567-e89b-42d3-a456-426614174099';
     const page = await service.feed('user-1', validCursor);

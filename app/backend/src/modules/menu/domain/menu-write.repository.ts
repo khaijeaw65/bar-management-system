@@ -2,8 +2,6 @@ import type { MenuVariantInput } from '@bar/contracts';
 import type { MenuCategoryRecord } from './menu.types.js';
 import type { CategoryOrderRow, LockedMenuItem, MenuItemFields } from './menu-write.types.js';
 
-export type { CategoryOrderRow, LockedMenuItem, MenuItemFields } from './menu-write.types.js';
-
 /** Every method runs on the caller's transaction. */
 export abstract class MenuWriteRepository {
   /** Locks the category `FOR KEY SHARE`, so a concurrent delete waits for this write. */

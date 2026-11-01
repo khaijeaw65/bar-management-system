@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { ORDER_CREATED, VISIT_STATE_CHANGED, type Order } from '@bar/contracts';
-import {
-  MenuCatalogService,
-  type OrderableLookup,
-} from '../../menu/application/menu-catalog.service.js';
+import { MenuCatalogService } from '../../menu/application/menu-catalog.service.js';
+import type { OrderableLookup } from '../../menu/application/menu-catalog.types.js';
 import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { OrderRepository } from '../domain/order.repository.js';

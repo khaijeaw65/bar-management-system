@@ -3,9 +3,8 @@ import type { ImageContentType } from '@bar/contracts';
 import {
   IMAGE_EXTENSION,
   type StorageService,
-  type StoredObject,
 } from '../src/common/storage/storage.service.js';
-import type { PresignedUpload } from '../src/common/storage/storage.types.js';
+import type { PresignedUpload, StoredObject } from '../src/common/storage/storage.types.js';
 
 type StorageApi = Pick<StorageService, 'presignUpload' | 'head' | 'copy' | 'remove' | 'presignRead'>;
 

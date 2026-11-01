@@ -18,7 +18,7 @@ import { VisitService } from '../../venue/application/visit.service.js';
 import { OrderRepository } from '../domain/order.repository.js';
 import type { PendingItemLine } from '../domain/order.types.js';
 import type { TicketView } from './present-order.js';
-import type { SeatRef, ToggleOutcome } from './sold-out.types.js';
+import type { SeatRef, ToggleOutcome, VoidTicketsOutcome } from './sold-out.types.js';
 import { TicketService } from './ticket.service.js';
 
 const SOLD_OUT_REASON = 'ของหมด';
@@ -99,7 +99,7 @@ export class SoldOutService {
     this.cls.set('userId', undefined);
     try {
       for (const group of this.groups(lines)) {
-        await this.voidTicketGroup(group, now, autoVoided, notVoided, cancelled);
+        await this.voidTicketGroup(group, now, { autoVoided, notVoided, cancelled });
       }
     } finally {
       if (typeof actor === 'string') this.cls.set('userId', actor);
@@ -110,21 +110,19 @@ export class SoldOutService {
   private async voidTicketGroup(
     group: PendingItemLine[],
     now: Date,
-    autoVoided: AvailabilityTicket[],
-    notVoided: NotVoidedTicket[],
-    cancelled: TicketView[],
+    outcome: VoidTicketsOutcome,
   ): Promise<void> {
     const ticketId = group[0]?.ticketId;
     if (!ticketId) return;
     const locked = await this.orders.lockTicket(ticketId);
     if (locked?.status !== 'pending') {
-      notVoided.push(this.held(group, 'in_progress'));
+      outcome.notVoided.push(this.held(group, 'in_progress'));
       return;
     }
     await this.orders.cancelLines(group.map((line) => line.itemId), now, SOLD_OUT_REASON);
     const emptied = await this.tickets.cancelWhenEmpty(ticketId);
-    if (emptied) cancelled.push(emptied);
-    autoVoided.push(this.voided(group, emptied ? 'cancelled' : 'pending'));
+    if (emptied) outcome.cancelled.push(emptied);
+    outcome.autoVoided.push(this.voided(group, emptied ? 'cancelled' : 'pending'));
   }
 
   private untouched(item: MenuItem, available: boolean, changed: boolean): ToggleOutcome {

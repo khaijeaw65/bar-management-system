@@ -1,8 +1,6 @@
 import type { PermissionCode } from '@bar/contracts';
 import type { MembershipRow } from './permission-source.types.js';
 
-export type { MembershipRow } from './permission-source.types.js';
-
 /** The only reader of the IAM tables for authorisation (BRIEF-053 §6). */
 export abstract class PermissionSource {
   public abstract isActiveStaff(userId: string): Promise<boolean>;

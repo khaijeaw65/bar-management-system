@@ -16,8 +16,6 @@ import {
 import { NotificationsGateway } from './notifications.gateway.js';
 import type { NotifyInput, SeatVisitOpenedSink, TabChangedSink } from './notifications.types.js';
 
-export type { SeatVisitOpenedSink, TabChangedSink } from './notifications.types.js';
-
 const PAGE_SIZE = 20;
 
 @Injectable()

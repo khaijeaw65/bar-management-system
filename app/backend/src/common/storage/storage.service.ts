@@ -13,8 +13,6 @@ import { IMAGE_MAX_BYTES, type ImageContentType } from '@bar/contracts';
 import { StorageConfigService } from '../../providers/config/storage/config.service.js';
 import type { PresignedUpload, StoredObject } from './storage.types.js';
 
-export type { PresignedUpload, StoredObject } from './storage.types.js';
-
 /** Presigned POST lifetime (DR-020). */
 export const UPLOAD_URL_TTL_SECONDS = 300;
 /** Presigned GET lifetime (DR-020). */

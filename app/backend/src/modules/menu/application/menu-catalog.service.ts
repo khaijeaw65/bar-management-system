@@ -19,8 +19,6 @@ import { menuAvailability } from './menu-availability.js';
 import type { MenuListQuery, OrderableLookup, OrderableVariant } from './menu-catalog.types.js';
 import { money } from '../../../common/money.js';
 
-export type { MenuListQuery, OrderableLookup, OrderableVariant } from './menu-catalog.types.js';
-
 @Injectable()
 export class MenuCatalogService {
   private readonly logger = new Logger(MenuCatalogService.name);

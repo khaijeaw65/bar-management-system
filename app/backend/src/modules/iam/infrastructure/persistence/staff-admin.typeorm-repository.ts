@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { AccessRequestStatus, PermissionCode } from '@bar/contracts';
 import { DataSource, EntityManager } from 'typeorm';
 import { IamWriteGuard } from './iam-write-guard.js';
-import type { MembershipRow } from '../../domain/permission-source.js';
+import type { MembershipRow } from '../../domain/permission-source.types.js';
 import type { StaffAdminRepository } from '../../domain/staff-admin.repository.js';
 import type {
   AccessRequestRow,

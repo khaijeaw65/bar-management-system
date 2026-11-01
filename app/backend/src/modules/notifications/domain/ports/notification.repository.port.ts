@@ -37,5 +37,3 @@ export abstract class NotificationRepository {
   public abstract markRead(item: NotificationRecord, readAt: Date): Promise<NotificationRecord>;
   public abstract markAllRead(recipientId: string, readAt: Date): Promise<number>;
 }
-
-export { NotificationRepository as INotificationRepository };

@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { StorageCredentials } from './config.types.js';
 
-export type { StorageCredentials } from './config.types.js';
-
 @Injectable()
 export class StorageConfigService {
   public constructor(private readonly configService: ConfigService) {}

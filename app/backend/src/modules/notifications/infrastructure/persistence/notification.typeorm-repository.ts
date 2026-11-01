@@ -7,6 +7,7 @@ import {
   type NotificationRecord,
 } from '../../domain/ports/notification.repository.port.js';
 import { NotificationEntity } from './notification.entity.js';
+import { toNotificationRecord } from './notification.mapper.js';
 
 @Injectable()
 export class NotificationTypeOrmRepository implements NotificationRepository {
@@ -17,7 +18,8 @@ export class NotificationTypeOrmRepository implements NotificationRepository {
 
   public async insertMany(rows: NewNotificationRow[]): Promise<NotificationRecord[]> {
     const entities = rows.map((row) => this.repo.create(row));
-    return await this.repo.save(entities);
+    const saved = await this.repo.save(entities);
+    return saved.map((entity) => toNotificationRecord(entity));
   }
 
   public async findPage(
@@ -34,11 +36,12 @@ export class NotificationTypeOrmRepository implements NotificationRepository {
         { cursorId },
       );
     }
-    return await qb
+    const entities = await qb
       .orderBy('n.created_at', 'DESC')
       .addOrderBy('n.id', 'DESC')
       .take(limit)
       .getMany();
+    return entities.map((entity) => toNotificationRecord(entity));
   }
 
   public async countUnread(recipientId: string): Promise<number> {
@@ -54,14 +57,22 @@ export class NotificationTypeOrmRepository implements NotificationRepository {
     id: string,
     recipientId: string,
   ): Promise<NotificationRecord | null> {
-    return await this.repo.findOne({
+    const entity = await this.repo.findOne({
       where: { id, recipientId },
     });
+    return entity ? toNotificationRecord(entity) : null;
   }
 
   public async markRead(item: NotificationRecord, readAt: Date): Promise<NotificationRecord> {
-    item.readAt = readAt;
-    return await this.repo.save(item);
+    const entity = await this.repo.findOne({
+      where: { id: item.id, recipientId: item.recipientId },
+    });
+    if (!entity) {
+      return { ...item, readAt };
+    }
+    entity.readAt = readAt;
+    const saved = await this.repo.save(entity);
+    return toNotificationRecord(saved);
   }
 
   public async markAllRead(recipientId: string, readAt: Date): Promise<number> {

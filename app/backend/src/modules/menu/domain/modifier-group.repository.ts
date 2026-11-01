@@ -1,8 +1,6 @@
 import type { ModifierGroupAdmin } from '@bar/contracts';
 import type { ModifierGroupFields, ModifierOptionFields } from './modifier-group.types.js';
 
-export type { ModifierGroupFields, ModifierOptionFields } from './modifier-group.types.js';
-
 /** Writes run on the caller's transaction (DR-024 locks). */
 export abstract class ModifierGroupRepository {
   /** Active groups with every option (active and switched off), by name. */
