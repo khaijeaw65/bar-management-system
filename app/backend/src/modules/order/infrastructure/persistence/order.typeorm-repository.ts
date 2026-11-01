@@ -141,6 +141,7 @@ export class OrderTypeormRepository implements OrderRepository {
       item.cancelledAt = at;
       item.cancelledBy = null;
       item.cancelReason = reason;
+      item.cancelKind = 'void';
       await items.save(item);
     }
   }

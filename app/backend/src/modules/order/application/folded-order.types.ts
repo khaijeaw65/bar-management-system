@@ -22,6 +22,7 @@ export interface FoldedTicket {
 
 export interface FoldedLine extends OrderLine {
   cancelledById: string | null;
+  approvedById: string | null;
 }
 
 export interface FoldedOrder {

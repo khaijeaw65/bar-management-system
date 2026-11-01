@@ -32,6 +32,9 @@ export const ORDER_ROWS_SQL = `
     i.cancelled_at,
     i.cancelled_by,
     i.cancel_reason,
+    i.cancel_note,
+    i.cancel_kind,
+    i.approved_by,
     m.modifier_option_id AS option_id,
     m.option_name_snapshot AS option_name,
     m.price_delta_snapshot AS price_delta

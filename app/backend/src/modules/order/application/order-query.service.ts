@@ -89,6 +89,7 @@ export class OrderQueryService {
       ...tickets.map((ticket) => ticket.updatedById),
       ...tickets.map((ticket) => ticket.issueReportedById),
       ...items.map((item) => item.cancelledById),
+      ...items.map((item) => item.approvedById),
     ];
     return [...new Set(raw.filter((id): id is string => id !== null))];
   }
