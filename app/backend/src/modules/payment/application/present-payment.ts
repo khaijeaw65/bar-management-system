@@ -1,8 +1,14 @@
-import type { Payment, PaymentAttempt, PaymentStatusChangedPayload } from '@bar/contracts';
+import type {
+  Payment,
+  PaymentAttempt,
+  PaymentStatusChangedPayload,
+  TodayPaymentItem,
+  TodayPaymentsResponse,
+} from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
-import { money, sumSatang } from '../../../common/money.js';
+import { fromSatang, money, sumSatang, toSatang } from '../../../common/money.js';
 import type { SlipVerifyResult } from '../domain/ports/slip-verifier.port.js';
-import type { PaymentRecord } from '../domain/payment.types.js';
+import type { PaymentRecord, TodayPaymentRecord } from '../domain/payment.types.js';
 import type { MarkPaidInput } from './payment.types.js';
 
 export function toPayment(record: PaymentRecord): Payment {
@@ -106,4 +112,65 @@ function pushPart(groups: Map<string, Payment[]>, payment: Payment): void {
 
 function iso(value: Date | null): string | null {
   return value ? value.toISOString() : null;
+}
+
+export function toTodayPaymentItem(record: TodayPaymentRecord): TodayPaymentItem {
+  return {
+    id: record.id,
+    visitId: record.visitId,
+    seatLabel: record.seatLabel,
+    partNo: record.partNo,
+    partCount: record.partCount,
+    amount: money(record.amount),
+    method: record.method,
+    status: record.status,
+    confirmedVia: record.confirmedVia,
+    slipTransRef: record.slipTransRef,
+    statusReason: record.statusReason,
+    paidAt: iso(record.paidAt),
+    createdAt: record.createdAt.toISOString(),
+  };
+}
+
+export function summarizeTodayPayments(
+  businessDate: string,
+  records: readonly TodayPaymentRecord[],
+): TodayPaymentsResponse {
+  let totalRevenueSatang = 0;
+  let promptpayTotalSatang = 0;
+  let cashTotalSatang = 0;
+  let completedCount = 0;
+  let pendingCount = 0;
+  let cancelledCount = 0;
+
+  for (const item of records) {
+    if (item.status === 'completed') {
+      completedCount += 1;
+      const satang = toSatang(item.amount);
+      totalRevenueSatang += satang;
+      if (item.method === 'promptpay') promptpayTotalSatang += satang;
+      if (item.method === 'cash') cashTotalSatang += satang;
+      continue;
+    }
+    if (item.status === 'pending') {
+      pendingCount += 1;
+      continue;
+    }
+    if (item.status === 'cancelled') {
+      cancelledCount += 1;
+    }
+  }
+
+  return {
+    businessDate,
+    summary: {
+      totalRevenue: fromSatang(totalRevenueSatang),
+      promptpayTotal: fromSatang(promptpayTotalSatang),
+      cashTotal: fromSatang(cashTotalSatang),
+      completedCount,
+      pendingCount,
+      cancelledCount,
+    },
+    items: records.map(toTodayPaymentItem),
+  };
 }

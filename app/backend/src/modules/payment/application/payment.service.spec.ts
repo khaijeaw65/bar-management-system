@@ -159,6 +159,146 @@ describe('PaymentService verifySlip', () => {
   });
 });
 
+describe('PaymentService getToday', () => {
+  it('computes summary metrics and maps items', async () => {
+    const repo = new MemoryPayments(null);
+    repo.todayRows = [
+      {
+        id: 'pay-1',
+        visitId: 'visit-1',
+        seatLabel: 'T1',
+        partNo: 1,
+        partCount: 1,
+        amount: '840.00',
+        method: 'promptpay',
+        status: 'completed',
+        confirmedVia: 'webhook',
+        slipTransRef: 'TR1',
+        statusReason: null,
+        paidAt: new Date('2026-11-02T13:00:00.000Z'),
+        createdAt: new Date('2026-11-02T12:50:00.000Z'),
+      },
+      {
+        id: 'pay-2',
+        visitId: 'visit-2',
+        seatLabel: 'T2',
+        partNo: 1,
+        partCount: 1,
+        amount: '400.00',
+        method: 'cash',
+        status: 'completed',
+        confirmedVia: 'cash',
+        slipTransRef: null,
+        statusReason: null,
+        paidAt: new Date('2026-11-02T14:00:00.000Z'),
+        createdAt: new Date('2026-11-02T13:55:00.000Z'),
+      },
+      {
+        id: 'pay-3',
+        visitId: 'visit-3',
+        seatLabel: 'Bar 1',
+        partNo: 1,
+        partCount: 1,
+        amount: '200.00',
+        method: 'promptpay',
+        status: 'pending',
+        confirmedVia: null,
+        slipTransRef: null,
+        statusReason: null,
+        paidAt: null,
+        createdAt: new Date('2026-11-02T14:30:00.000Z'),
+      },
+      {
+        id: 'pay-4',
+        visitId: 'visit-4',
+        seatLabel: 'T3',
+        partNo: 1,
+        partCount: 1,
+        amount: '150.00',
+        method: 'promptpay',
+        status: 'cancelled',
+        confirmedVia: null,
+        slipTransRef: null,
+        statusReason: 'staff_cancel',
+        paidAt: null,
+        createdAt: new Date('2026-11-02T14:10:00.000Z'),
+      },
+    ];
+
+    const venues = {
+      businessDayRule: async () => ({ cutoff: '06:00', previous: null }),
+    } as unknown as VenueSettingsService;
+
+    const clock = new FixedClock(new Date('2026-11-02T15:00:00.000Z'));
+    const service = new PaymentService(
+      repo,
+      clock,
+      {} as Queue,
+      {} as VisitService,
+      {} as BillService,
+      venues,
+      {} as TableSeatService,
+      {} as NotificationsService,
+      {} as PaymentConfigService,
+      {} as SlipVerifier,
+      {} as AuditLogService,
+    );
+
+    const result = await service.getToday();
+    expect(result.businessDate).toBe('2026-11-02');
+    expect(result.summary).toEqual({
+      totalRevenue: '1240.00',
+      promptpayTotal: '840.00',
+      cashTotal: '400.00',
+      completedCount: 2,
+      pendingCount: 1,
+      cancelledCount: 1,
+    });
+    expect(result.items).toHaveLength(4);
+    expect(result.items[0]).toMatchObject({
+      id: 'pay-1',
+      seatLabel: 'T1',
+      amount: '840.00',
+      method: 'promptpay',
+      status: 'completed',
+    });
+  });
+
+  it('returns zero totals when there are no payments', async () => {
+    const repo = new MemoryPayments(null);
+    repo.todayRows = [];
+    const venues = {
+      businessDayRule: async () => ({ cutoff: '06:00', previous: null }),
+    } as unknown as VenueSettingsService;
+
+    const clock = new FixedClock(new Date('2026-11-02T15:00:00.000Z'));
+    const service = new PaymentService(
+      repo,
+      clock,
+      {} as Queue,
+      {} as VisitService,
+      {} as BillService,
+      venues,
+      {} as TableSeatService,
+      {} as NotificationsService,
+      {} as PaymentConfigService,
+      {} as SlipVerifier,
+      {} as AuditLogService,
+    );
+
+    const result = await service.getToday();
+    expect(result.summary).toEqual({
+      totalRevenue: '0.00',
+      promptpayTotal: '0.00',
+      cashTotal: '0.00',
+      completedCount: 0,
+      pendingCount: 0,
+      cancelledCount: 0,
+    });
+    expect(result.items).toEqual([]);
+  });
+});
+
 function harnessOf(row: PaymentRecord): { service: PaymentService; repo: MemoryPayments; events: unknown[] } {
   const repo = new MemoryPayments(row);
   const events: unknown[] = [];
