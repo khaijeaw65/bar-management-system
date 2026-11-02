@@ -769,6 +769,49 @@ export const handlers = [
     else settle(visitId, "0.00", bill.remaining, true);
     return json(attempt, 201);
   }),
+  http.get("*/api/payments/today", () => {
+    const seats = currentSeats();
+    const all = Array.from(paymentById.values());
+    const items = all.map((p) => {
+      const seat = seats.find((s) => s.currentVisit?.id === p.visitId);
+      return {
+        id: p.id,
+        visitId: p.visitId,
+        seatLabel: seat?.label ?? "T1",
+        partNo: p.partNo,
+        partCount: p.partCount,
+        amount: p.amount,
+        method: p.method,
+        status: p.status,
+        confirmedVia: p.confirmedVia,
+        slipTransRef: p.slipTransRef,
+        statusReason: p.statusReason,
+        paidAt: p.paidAt,
+        createdAt: p.createdAt,
+      };
+    });
+    const completed = items.filter((i) => i.status === "completed");
+    const totalSatang = completed.reduce((sum, i) => sum + Math.round(Number(i.amount) * 100), 0);
+    const promptpaySatang = completed
+      .filter((i) => i.method === "promptpay")
+      .reduce((sum, i) => sum + Math.round(Number(i.amount) * 100), 0);
+    const cashSatang = completed
+      .filter((i) => i.method === "cash")
+      .reduce((sum, i) => sum + Math.round(Number(i.amount) * 100), 0);
+
+    return json({
+      businessDate: "2026-11-02",
+      items,
+      summary: {
+        totalRevenue: (totalSatang / 100).toFixed(2),
+        promptpayTotal: (promptpaySatang / 100).toFixed(2),
+        cashTotal: (cashSatang / 100).toFixed(2),
+        completedCount: completed.length,
+        pendingCount: items.filter((i) => i.status === "pending").length,
+        cancelledCount: items.filter((i) => i.status === "cancelled").length,
+      },
+    });
+  }),
   http.get("*/api/payments/:id", ({ params }) => {
     const payment = paymentById.get(String(params.id));
     if (!payment) return json(null, 404, "NOT_FOUND", "ไม่พบการชำระเงิน");

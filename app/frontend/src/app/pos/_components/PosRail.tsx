@@ -24,13 +24,13 @@ interface RailItem {
   key: string;
   label: string;
   icon: LucideIcon;
-  href?: "/pos/menu" | "/pos/orders" | "/pos/reports" | "/pos/settings" | "/pos/tables";
+  href?: "/pos/menu" | "/pos/orders" | "/pos/payment" | "/pos/reports" | "/pos/settings" | "/pos/tables";
 }
 
 const items: RailItem[] = [
   { key: "tables", label: "โต๊ะ", icon: Grid2x2, href: "/pos/tables" },
   { key: "orders", label: "ออเดอร์", icon: ReceiptText, href: "/pos/orders" },
-  { key: "pay", label: "ชำระเงิน", icon: Banknote },
+  { key: "pay", label: "ชำระเงิน", icon: Banknote, href: "/pos/payment" },
   { key: "menu", label: "เมนู", icon: BookOpen, href: "/pos/menu" },
   { key: "guests", label: "แขก", icon: Users },
   { key: "reports", label: "รายงาน", icon: ChartColumn, href: "/pos/reports" },

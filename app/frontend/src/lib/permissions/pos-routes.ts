@@ -5,6 +5,7 @@ const RULES: ReadonlyArray<{ pattern: RegExp; needs: PermissionCode }> = [
   { pattern: /^\/pos\/tables\/[^/]+\/order\/?$/, needs: "orders:create" },
   { pattern: /^\/pos\/tables\/?$/, needs: "tables:read" },
   { pattern: /^\/pos\/orders(\/|$)/, needs: "orders:read" },
+  { pattern: /^\/pos\/payment(\/|$)/, needs: "payments:read" },
   { pattern: /^\/pos\/menu\/modifiers\/?$/, needs: "menu:read" },
   { pattern: /^\/pos\/menu\/[^/]+\/?$/, needs: "menu:write" },
   { pattern: /^\/pos\/menu\/?$/, needs: "menu:read" },
@@ -20,6 +21,7 @@ const RULES: ReadonlyArray<{ pattern: RegExp; needs: PermissionCode }> = [
 export const POS_START_PAGES = [
   { href: "/pos/tables", label: "โต๊ะ" },
   { href: "/pos/orders", label: "ออเดอร์" },
+  { href: "/pos/payment", label: "ชำระเงิน" },
   { href: "/pos/menu", label: "เมนู" },
   { href: "/pos/reports", label: "รายงาน" },
   { href: "/pos/settings", label: "ตั้งค่า" },

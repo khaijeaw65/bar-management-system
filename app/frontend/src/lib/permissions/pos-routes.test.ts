@@ -5,6 +5,7 @@ test("every POS page maps to one permission", () => {
   expect(permissionForPath("/pos/tables")).toBe("tables:read");
   expect(permissionForPath("/pos/tables/abc/order")).toBe("orders:create");
   expect(permissionForPath("/pos/orders")).toBe("orders:read");
+  expect(permissionForPath("/pos/payment")).toBe("payments:read");
   expect(permissionForPath("/pos/menu")).toBe("menu:read");
   expect(permissionForPath("/pos/menu/modifiers")).toBe("menu:read");
   expect(permissionForPath("/pos/menu/new")).toBe("menu:write");
