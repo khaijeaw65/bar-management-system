@@ -123,18 +123,18 @@ export function VoidCompModal({
         <Modal.Dialog aria-label="ยกเลิกรายการ / Comp">
           <Modal.Heading className="text-heading">ยกเลิกรายการ / Comp</Modal.Heading>
 
-          {/* Item details */}
-          <div className="flex items-center justify-between rounded-card bg-surface-raised p-3">
-            <div>
-              <p className="text-body-md font-medium">{line.name}</p>
-              {line.variantName && line.variantName !== "ปกติ" ? (
-                <p className="text-small text-text-muted">{line.variantName}</p>
-              ) : null}
-            </div>
-            <span className="text-price tabular-nums">{formatTHB(line.lineTotal)}</span>
-          </div>
-
           <div className="flex flex-col gap-4">
+            {/* Item details */}
+            <div className="flex items-center justify-between rounded-card bg-surface-raised p-3">
+              <div>
+                <p className="text-body-md font-medium">{line.name}</p>
+                {line.variantName && line.variantName !== "ปกติ" ? (
+                  <p className="text-small text-text-muted">{line.variantName}</p>
+                ) : null}
+              </div>
+              <span className="text-price tabular-nums">{formatTHB(line.lineTotal)}</span>
+            </div>
+
             {/* Action Selector */}
             <div className="flex gap-4" role="radiogroup" aria-label="ประเภทการปรับยอด">
               <label className="flex cursor-pointer items-center gap-2 rounded-btn border border-line-hairline bg-surface px-4 py-2 hover:bg-surface-hover">

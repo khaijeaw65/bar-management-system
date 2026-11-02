@@ -171,4 +171,21 @@ describe("VoidCompModal", () => {
 
     expect(screen.getByRole("button", { name: "ยืนยัน Comp" })).toBeDefined();
   });
+
+  it("DEF-14 / AC-8: item details card is wrapped in a container with gap-4 spacing above action radios", () => {
+    render(
+      <VoidCompModal
+        line={mockLine}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSuccess={vi.fn()}
+      />,
+      { wrapper: createWrapper() },
+    );
+
+    const itemName = screen.getByText("สิงห์");
+    const card = itemName.closest(".rounded-card");
+    expect(card).toBeInTheDocument();
+    expect(card?.parentElement).toHaveClass("flex", "flex-col", "gap-4");
+  });
 });
