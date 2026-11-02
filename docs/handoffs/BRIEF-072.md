@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-072-payments-today-api` (PR opens after audit PASS) |
 | **Commit** | `fcedcde` |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS |
 
 > Created at Implemented (one docs commit). Updated once in the PASS commit. Frozen at merge.
 
