@@ -39,7 +39,7 @@ describe('Payments Today (e2e)', () => {
     const cashierId = await insertStaff(dataSource, 'แคชเชียร์');
     cashierToken = (await staffSession(app, cashierId)).accessToken;
 
-    const unprivilegedId = await insertStaff(dataSource, 'ไม่มีสิทธิ์');
+    const unprivilegedId = await insertStaff(dataSource, 'ไม่มีสิทธิ์', null);
     unprivilegedToken = (await staffSession(app, unprivilegedId)).accessToken;
   });
 
