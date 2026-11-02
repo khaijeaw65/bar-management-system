@@ -130,7 +130,7 @@ app/backend/src/modules/payment/
 └── infrastructure/http/
     ├── payments.controller.ts
     └── payments.openapi.ts
-app/backend/test/payment-today.e2e-spec.ts
+app/backend/test/payments-today.e2e-spec.ts
 ```
 
 ### BRIEF-073 (Frontend Web POS UI)

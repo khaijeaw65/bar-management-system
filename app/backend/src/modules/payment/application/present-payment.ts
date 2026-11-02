@@ -1,6 +1,7 @@
 import type {
   Payment,
   PaymentAttempt,
+  PaymentMethod,
   PaymentStatusChangedPayload,
   TodayPaymentItem,
   TodayPaymentsResponse,
@@ -132,44 +133,64 @@ export function toTodayPaymentItem(record: TodayPaymentRecord): TodayPaymentItem
   };
 }
 
+interface SummaryTotals {
+  revenueSatang: number;
+  promptpaySatang: number;
+  cashSatang: number;
+  completedCount: number;
+  pendingCount: number;
+  cancelledCount: number;
+}
+
+function initialTotals(): SummaryTotals {
+  return {
+    revenueSatang: 0,
+    promptpaySatang: 0,
+    cashSatang: 0,
+    completedCount: 0,
+    pendingCount: 0,
+    cancelledCount: 0,
+  };
+}
+
+function accumulateMethod(totals: SummaryTotals, method: PaymentMethod, satang: number): void {
+  if (method === 'promptpay') totals.promptpaySatang += satang;
+  if (method === 'cash') totals.cashSatang += satang;
+}
+
+function accumulateItem(totals: SummaryTotals, item: TodayPaymentRecord): void {
+  if (item.status === 'completed') {
+    totals.completedCount += 1;
+    const satang = toSatang(item.amount);
+    totals.revenueSatang += satang;
+    accumulateMethod(totals, item.method, satang);
+    return;
+  }
+  if (item.status === 'pending') {
+    totals.pendingCount += 1;
+    return;
+  }
+  if (item.status === 'cancelled') {
+    totals.cancelledCount += 1;
+  }
+}
+
 export function summarizeTodayPayments(
   businessDate: string,
   records: readonly TodayPaymentRecord[],
 ): TodayPaymentsResponse {
-  let totalRevenueSatang = 0;
-  let promptpayTotalSatang = 0;
-  let cashTotalSatang = 0;
-  let completedCount = 0;
-  let pendingCount = 0;
-  let cancelledCount = 0;
-
-  for (const item of records) {
-    if (item.status === 'completed') {
-      completedCount += 1;
-      const satang = toSatang(item.amount);
-      totalRevenueSatang += satang;
-      if (item.method === 'promptpay') promptpayTotalSatang += satang;
-      if (item.method === 'cash') cashTotalSatang += satang;
-      continue;
-    }
-    if (item.status === 'pending') {
-      pendingCount += 1;
-      continue;
-    }
-    if (item.status === 'cancelled') {
-      cancelledCount += 1;
-    }
-  }
+  const totals = initialTotals();
+  for (const item of records) accumulateItem(totals, item);
 
   return {
     businessDate,
     summary: {
-      totalRevenue: fromSatang(totalRevenueSatang),
-      promptpayTotal: fromSatang(promptpayTotalSatang),
-      cashTotal: fromSatang(cashTotalSatang),
-      completedCount,
-      pendingCount,
-      cancelledCount,
+      totalRevenue: fromSatang(totals.revenueSatang),
+      promptpayTotal: fromSatang(totals.promptpaySatang),
+      cashTotal: fromSatang(totals.cashSatang),
+      completedCount: totals.completedCount,
+      pendingCount: totals.pendingCount,
+      cancelledCount: totals.cancelledCount,
     },
     items: records.map(toTodayPaymentItem),
   };
