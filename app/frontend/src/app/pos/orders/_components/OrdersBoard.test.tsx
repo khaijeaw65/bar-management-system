@@ -14,6 +14,7 @@ import { OrdersBoard } from "./OrdersBoard";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const created = vi.hoisted(() => {
@@ -188,6 +189,25 @@ test("order.created adds a highlighted card, toasts and raises the count", async
   const card = await screen.findByRole("article", { name: "ออเดอร์ #0060 T3" });
   expect(card.className).toContain("ring-2");
   expect(screen.getByLabelText("pending")).toHaveTextContent("1");
+});
+
+test("DEF-01 / AC-1: clicking ดูออเดอร์ on order arrival toast opens that ticket's drawer directly", async () => {
+  const fresh = ticket("60000000-0000-4000-8000-000000000021", 60, [orderLine("70000000-0000-4000-8000-000000000021", "เหล้า")]);
+  const placed = order("30000000-0000-4000-8000-000000000021", 60, fresh.createdAt, [fresh], "120.00");
+  const user = userEvent.setup();
+  renderBoard();
+  await screen.findByRole("article", { name: "ออเดอร์ #0041 T3" });
+
+  server.use(
+    http.get("*/api/tickets", () => HttpResponse.json(apiEnvelope({ items: [fresh] }))),
+  );
+  emit("order.created", placed);
+
+  const viewButton = await screen.findByRole("button", { name: "ดูออเดอร์" });
+  expect(viewButton).toBeInTheDocument();
+
+  await user.click(viewButton);
+  expect(await screen.findByRole("heading", { name: /#0060 · T3/ })).toBeInTheDocument();
 });
 
 test("menu.availability_changed toasts the tables and the voided card leaves", async () => {

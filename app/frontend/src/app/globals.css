@@ -372,3 +372,15 @@ body {
   color: var(--text-body);
   font-family: var(--font-sans);
 }
+
+/* DEF-06: Always-visible toast close button with touch target >= 44px for tablet POS */
+.toast[data-frontmost="true"]:not([data-exiting="true"]) .toast__close-button,
+.toast[data-expanded="true"]:not([data-exiting="true"]) .toast__close-button {
+  pointer-events: auto;
+  opacity: 1;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

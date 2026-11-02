@@ -1,4 +1,4 @@
-import { TAB_CHANGED, TabChangedPayloadSchema } from "@bar/contracts";
+import { TAB_CHANGED, TABLE_STAFF_CALL_CLEARED, TabChangedPayloadSchema } from "@bar/contracts";
 import { io } from "socket.io-client";
 
 export interface CustomerSocketHandlers {
@@ -7,6 +7,7 @@ export interface CustomerSocketHandlers {
   onLost: () => void;
   /** The handshake was refused: the cookie is gone — same signal as a 401. */
   onRejected: () => void;
+  onCallAcknowledged?: () => void;
 }
 
 function customerSocketUrl(): string {
@@ -36,6 +37,12 @@ export function connectCustomerSocket(handlers: CustomerSocketHandlers): () => v
   socket.on(TAB_CHANGED, (payload: unknown) => {
     const parsed = TabChangedPayloadSchema.safeParse(payload);
     if (parsed.success) handlers.onTabChanged(parsed.data.sessionEnded === true);
+  });
+  socket.on(TABLE_STAFF_CALL_CLEARED, () => {
+    handlers.onCallAcknowledged?.();
+  });
+  socket.on("table.staff_call_cleared", () => {
+    handlers.onCallAcknowledged?.();
   });
   return () => {
     socket.removeAllListeners();

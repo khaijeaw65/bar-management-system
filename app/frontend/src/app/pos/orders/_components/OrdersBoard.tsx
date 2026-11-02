@@ -2,6 +2,7 @@
 
 import { Button, Chip } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { LoadError } from "@/components/ui/LoadError";
 import { useDisconnected } from "@/hooks/useSocketEvent";
@@ -26,16 +27,18 @@ export function OrdersBoard() {
   const board = useTicketBoard();
   const canAct = usePermissions().can("orders:update_status");
   const venue = useQuery({ queryKey: ["venue"], queryFn: getVenue, staleTime: 60_000, retry: false });
-  const fresh = useBoardEvents();
+  const searchParams = useSearchParams();
+  const ticketParam = searchParams.get("ticketId");
+  const [station, setStation] = useState<StationFilter>("all");
+  const [openId, setOpenId] = useState<string | null>(() => ticketParam);
+  const fresh = useBoardEvents(setOpenId);
   const actions = useTicketActions();
   const disconnected = useDisconnected(() => void board.refetch());
-  const [station, setStation] = useState<StationFilter>("all");
-  const [openId, setOpenId] = useState<string | null>(null);
 
   const kitchenOn = venue.data?.kitchenDisplayEnabled === true;
   const columns = columnsFor(kitchenOn);
   const items = board.data?.items ?? [];
-  const opened = items.find((ticket) => ticket.id === openId) ?? null;
+  const opened = items.find((ticket) => ticket.id === openId || ticket.orderId === openId) ?? null;
   const loading = board.isPending || venue.isPending;
 
   if (board.isError || venue.isError) {

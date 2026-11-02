@@ -10,7 +10,7 @@ import { BOARD_KEY } from "@/hooks/useTicketBoard";
 const HIGHLIGHT_MS = 3_000;
 
 // Refetching is the shared hook's job; this adds what only the board shows: toasts and the new-card highlight.
-export function useBoardEvents(): ReadonlySet<string> {
+export function useBoardEvents(onSelectTicket?: (ticketId: string) => void): ReadonlySet<string> {
   const client = useQueryClient();
   const [fresh, setFresh] = useState<ReadonlySet<string>>(new Set());
   const timers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
@@ -22,19 +22,34 @@ export function useBoardEvents(): ReadonlySet<string> {
     };
   }, []);
 
-  const onCreated = useCallback((payload: unknown) => {
-    const parsed = OrderCreatedPayloadSchema.safeParse(payload);
-    if (!parsed.success) return;
-    const ids = parsed.data.tickets.map((ticket) => ticket.id);
-    setFresh((current) => new Set([...current, ...ids]));
-    const timer = setTimeout(() => {
-      timers.current.delete(timer);
-      setFresh((current) => new Set([...current].filter((id) => !ids.includes(id))));
-    }, HIGHLIGHT_MS);
-    timers.current.add(timer);
-    const seats = [...new Set(parsed.data.tickets.map((ticket) => ticket.seat.label))];
-    toast.success(`ออเดอร์ใหม่ ${seats.join(", ")}`);
-  }, []);
+  const onCreated = useCallback(
+    (payload: unknown) => {
+      const parsed = OrderCreatedPayloadSchema.safeParse(payload);
+      if (!parsed.success) return;
+      const ids = parsed.data.tickets.map((ticket) => ticket.id);
+      setFresh((current) => new Set([...current, ...ids]));
+      const timer = setTimeout(() => {
+        timers.current.delete(timer);
+        setFresh((current) => new Set([...current].filter((id) => !ids.includes(id))));
+      }, HIGHLIGHT_MS);
+      timers.current.add(timer);
+      const seats = [...new Set(parsed.data.tickets.map((ticket) => ticket.seat.label))];
+      const firstTicketId = parsed.data.tickets[0]?.id;
+      const toastId = toast.success(`ออเดอร์ใหม่ ${seats.join(", ")}`, {
+        actionProps:
+          firstTicketId && onSelectTicket
+            ? {
+                children: "ดูออเดอร์",
+                onPress: () => {
+                  onSelectTicket(firstTicketId);
+                  toast.close(String(toastId));
+                },
+              }
+            : undefined,
+      });
+    },
+    [onSelectTicket],
+  );
 
   const onAvailability = useCallback(
     (payload: unknown) => {
