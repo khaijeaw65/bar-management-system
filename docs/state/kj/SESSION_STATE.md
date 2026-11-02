@@ -1,20 +1,19 @@
 # State — KJ
-Updated: 2026-11-02 · Agent: Antigravity (BRIEF-071 Shipped / PR open)
+Updated: 2026-11-02 · Agent: Antigravity (BRIEF-072 Shipped / PR open)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-071 Audit PASS — PR open**. Branch `feat/BRIEF-071-demo-defects-polish`. Next: merge BRIEF-071, then start BRIEF-072.
+**BRIEF-072 Audit PASS — PR open**. Branch `feat/BRIEF-072-payments-today-api`. Next: merge BRIEF-072, then start BRIEF-073.
 
 ## Active
-- Brief: BRIEF-071 (Audit PASS — PR open) · Implementer: kj / Antigravity · Auditor: Antigravity
-- Done 21 Oct–2 Nov: BRIEF-018 (#119) · BRIEF-070 (#118) · BRIEF-069 (#117) · BRIEF-068 (#116) · BRIEF-066 (#115) · BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
+- Brief: BRIEF-072 (Audit PASS — PR open) · Implementer: kj / Antigravity · Auditor: Antigravity
+- Done 21 Oct–2 Nov: BRIEF-071 (#120) · BRIEF-018 (#119) · BRIEF-070 (#118) · BRIEF-069 (#117) · BRIEF-068 (#116) · BRIEF-066 (#115) · BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
 
 ## Next steps
-1. merge BRIEF-071
-2. BRIEF-072 (Backend `GET /payments/today` API & contracts — Ready)
-3. BRIEF-073 (Web POS `/pos/payment` UI page — Ready, depends on 072)
-4. AI owner insight (DR-014) — needs CD + feature spec first
-5. BRIEF-065 (Metee)
+1. merge BRIEF-072
+2. BRIEF-073 (Web POS `/pos/payment` UI page — Ready, depends on 072)
+3. AI owner insight (DR-014) — needs CD + feature spec first
+4. BRIEF-065 (Metee)
 
 ## Blockers / Coordination
 - Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4)

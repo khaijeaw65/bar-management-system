@@ -144,3 +144,38 @@ function isPng(bytes: Uint8Array): boolean {
     bytes[7] === 0x0a
   );
 }
+
+export const TodayPaymentItemSchema = z.object({
+  id: UuidSchema,
+  visitId: UuidSchema,
+  seatLabel: z.string(),
+  partNo: z.number().int().positive(),
+  partCount: z.number().int().positive(),
+  amount: MoneySchema,
+  method: PaymentMethodSchema,
+  status: PaymentStatusSchema,
+  confirmedVia: PaymentConfirmedViaSchema.nullable(),
+  slipTransRef: z.string().nullable(),
+  statusReason: PaymentStatusReasonSchema.nullable(),
+  paidAt: IsoDateTimeSchema.nullable(),
+  createdAt: IsoDateTimeSchema,
+});
+export type TodayPaymentItem = z.infer<typeof TodayPaymentItemSchema>;
+
+export const TodayPaymentsSummarySchema = z.object({
+  totalRevenue: MoneySchema,
+  promptpayTotal: MoneySchema,
+  cashTotal: MoneySchema,
+  completedCount: z.number().int().nonnegative(),
+  pendingCount: z.number().int().nonnegative(),
+  cancelledCount: z.number().int().nonnegative(),
+});
+export type TodayPaymentsSummary = z.infer<typeof TodayPaymentsSummarySchema>;
+
+export const TodayPaymentsResponseSchema = z.object({
+  businessDate: z.string(),
+  summary: TodayPaymentsSummarySchema,
+  items: z.array(TodayPaymentItemSchema),
+});
+export type TodayPaymentsResponse = z.infer<typeof TodayPaymentsResponseSchema>;
+

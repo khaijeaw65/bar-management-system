@@ -1,8 +1,15 @@
-import type { Payment, PaymentAttempt, PaymentStatusChangedPayload } from '@bar/contracts';
+import type {
+  Payment,
+  PaymentAttempt,
+  PaymentMethod,
+  PaymentStatusChangedPayload,
+  TodayPaymentItem,
+  TodayPaymentsResponse,
+} from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
-import { money, sumSatang } from '../../../common/money.js';
+import { fromSatang, money, sumSatang, toSatang } from '../../../common/money.js';
 import type { SlipVerifyResult } from '../domain/ports/slip-verifier.port.js';
-import type { PaymentRecord } from '../domain/payment.types.js';
+import type { PaymentRecord, TodayPaymentRecord } from '../domain/payment.types.js';
 import type { MarkPaidInput } from './payment.types.js';
 
 export function toPayment(record: PaymentRecord): Payment {
@@ -106,4 +113,85 @@ function pushPart(groups: Map<string, Payment[]>, payment: Payment): void {
 
 function iso(value: Date | null): string | null {
   return value ? value.toISOString() : null;
+}
+
+export function toTodayPaymentItem(record: TodayPaymentRecord): TodayPaymentItem {
+  return {
+    id: record.id,
+    visitId: record.visitId,
+    seatLabel: record.seatLabel,
+    partNo: record.partNo,
+    partCount: record.partCount,
+    amount: money(record.amount),
+    method: record.method,
+    status: record.status,
+    confirmedVia: record.confirmedVia,
+    slipTransRef: record.slipTransRef,
+    statusReason: record.statusReason,
+    paidAt: iso(record.paidAt),
+    createdAt: record.createdAt.toISOString(),
+  };
+}
+
+interface SummaryTotals {
+  revenueSatang: number;
+  promptpaySatang: number;
+  cashSatang: number;
+  completedCount: number;
+  pendingCount: number;
+  cancelledCount: number;
+}
+
+function initialTotals(): SummaryTotals {
+  return {
+    revenueSatang: 0,
+    promptpaySatang: 0,
+    cashSatang: 0,
+    completedCount: 0,
+    pendingCount: 0,
+    cancelledCount: 0,
+  };
+}
+
+function accumulateMethod(totals: SummaryTotals, method: PaymentMethod, satang: number): void {
+  if (method === 'promptpay') totals.promptpaySatang += satang;
+  if (method === 'cash') totals.cashSatang += satang;
+}
+
+function accumulateItem(totals: SummaryTotals, item: TodayPaymentRecord): void {
+  if (item.status === 'completed') {
+    totals.completedCount += 1;
+    const satang = toSatang(item.amount);
+    totals.revenueSatang += satang;
+    accumulateMethod(totals, item.method, satang);
+    return;
+  }
+  if (item.status === 'pending') {
+    totals.pendingCount += 1;
+    return;
+  }
+  if (item.status === 'cancelled') {
+    totals.cancelledCount += 1;
+  }
+}
+
+export function summarizeTodayPayments(
+  businessDate: string,
+  records: readonly TodayPaymentRecord[],
+): TodayPaymentsResponse {
+  const totals = initialTotals();
+  for (const item of records) accumulateItem(totals, item);
+
+  return {
+    businessDate,
+    summary: {
+      totalRevenue: fromSatang(totals.revenueSatang),
+      promptpayTotal: fromSatang(totals.promptpaySatang),
+      cashTotal: fromSatang(totals.cashSatang),
+      completedCount: totals.completedCount,
+      pendingCount: totals.pendingCount,
+      cancelledCount: totals.cancelledCount,
+    },
+    items: records.map(toTodayPaymentItem),
+  };
 }

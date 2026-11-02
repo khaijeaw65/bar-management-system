@@ -8,9 +8,11 @@ import {
   type Payment,
   type PaymentAttempt,
   type PaymentMethod,
+  type TodayPaymentsResponse,
 } from '@bar/contracts';
 import { AuditLogService } from '../../../common/audit/audit-log.service.js';
 import type { AuditFieldChange } from '../../../common/audit/audit-log.types.js';
+import { addDays, businessDate, businessDayStart } from '../../../common/business-date.js';
 import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { toSatang } from '../../../common/money.js';
@@ -35,6 +37,7 @@ import {
   groupAttempts,
   providerRejection,
   statusChanged,
+  summarizeTodayPayments,
   toAttempt,
   toPayment,
   verifiedRecord,
@@ -80,6 +83,22 @@ export class PaymentService {
 
   public async attemptsFor(visitId: string): Promise<PaymentAttempt[]> {
     return groupAttempts(await this.payments.listByVisit(visitId));
+  }
+
+  public async getToday(now?: Date): Promise<TodayPaymentsResponse> {
+    const target = now ?? this.clock.now();
+    const rule = await this.venues.businessDayRule();
+    const date = businessDate(target, rule.cutoff);
+    const [from, to] = this.dayBounds(date, rule.cutoff);
+    const records = await this.payments.findToday(from, to);
+    return summarizeTodayPayments(date, records);
+  }
+
+  private dayBounds(date: string, cutoff: string): [Date, Date] {
+    return [
+      businessDayStart(date, cutoff),
+      businessDayStart(addDays(date, 1), cutoff),
+    ];
   }
 
   /** `staff_cancel` from the POS; the guest route passes `guest_cancel` so reports can tell them apart. */

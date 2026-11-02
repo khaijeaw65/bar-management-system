@@ -1,4 +1,4 @@
-import type { NewPayment, PaymentRecord } from '../payment.types.js';
+import type { NewPayment, PaymentRecord, TodayPaymentRecord } from '../payment.types.js';
 
 export abstract class PaymentRepository {
   public abstract insert(payment: NewPayment, orderIds: readonly string[]): Promise<PaymentRecord>;
@@ -10,4 +10,5 @@ export abstract class PaymentRepository {
   public abstract listByVisit(visitId: string): Promise<PaymentRecord[]>;
   public abstract coveredOrderIds(visitId: string): Promise<string[]>;
   public abstract pendingVisitIds(visitIds: readonly string[]): Promise<string[]>;
+  public abstract findToday(from: Date, to: Date): Promise<TodayPaymentRecord[]>;
 }
