@@ -11,7 +11,7 @@ import type { VenueSettingsService } from '../../venue/application/venue-setting
 import type { VisitService } from '../../venue/application/visit.service.js';
 import type { PaymentRepository } from '../domain/ports/payment.repository.port.js';
 import type { SlipVerifier, SlipVerifyResult } from '../domain/ports/slip-verifier.port.js';
-import type { PaymentRecord } from '../domain/payment.types.js';
+import type { PaymentRecord, TodayPaymentRecord } from '../domain/payment.types.js';
 import { BillService } from './bill.service.js';
 import { PaymentService } from './payment.service.js';
 
@@ -321,5 +321,11 @@ class MemoryPayments implements PaymentRepository {
 
   public async pendingVisitIds(): Promise<string[]> {
     return [];
+  }
+
+  public todayRows: TodayPaymentRecord[] = [];
+
+  public async findToday(): Promise<TodayPaymentRecord[]> {
+    return this.todayRows;
   }
 }

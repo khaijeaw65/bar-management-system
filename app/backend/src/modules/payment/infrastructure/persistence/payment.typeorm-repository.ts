@@ -2,10 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { QueryFailedError, type EntityManager } from 'typeorm';
+import type {
+  PaymentConfirmedVia,
+  PaymentMethod,
+  PaymentStatus,
+  PaymentStatusReason,
+} from '@bar/contracts';
 import { DomainException } from '../../../../common/domain-exception.js';
-import { readText } from '../../../../common/persistence/row-values.js';
+import { money } from '../../../../common/money.js';
+import {
+  readDate,
+  readOptionalDate,
+  readOptionalText,
+  readText,
+} from '../../../../common/persistence/row-values.js';
 import type { PaymentRepository } from '../../domain/ports/payment.repository.port.js';
-import type { NewPayment, PaymentRecord } from '../../domain/payment.types.js';
+import type { NewPayment, PaymentRecord, TodayPaymentRecord } from '../../domain/payment.types.js';
 import { PaymentOrderLink } from './payment-order.entity.js';
 import { Payment } from './payment.entity.js';
 
@@ -20,6 +32,27 @@ const PENDING_VISITS = `
   SELECT DISTINCT visit_id
   FROM payment
   WHERE status = 'pending' AND visit_id = ANY($1::uuid[])
+`;
+const TODAY_PAYMENTS = `
+  SELECT
+    p.id,
+    p.visit_id,
+    COALESCE(ts.label, '') AS seat_label,
+    p.part_no,
+    p.part_count,
+    p.amount,
+    p.method,
+    p.status,
+    p.confirmed_via,
+    p.slip_trans_ref,
+    p.status_reason,
+    p.paid_at,
+    p.created_at
+  FROM payment p
+  JOIN visit v ON v.id = p.visit_id
+  LEFT JOIN table_seat ts ON ts.id = v.table_seat_id
+  WHERE p.created_at >= $1 AND p.created_at < $2
+  ORDER BY p.created_at DESC, p.part_no DESC
 `;
 
 @Injectable()
@@ -81,6 +114,12 @@ export class PaymentTypeormRepository implements PaymentRepository {
     return this.ids(rows, 'visit_id');
   }
 
+  public async findToday(from: Date, to: Date): Promise<TodayPaymentRecord[]> {
+    const rows: unknown = await this.manager.query(TODAY_PAYMENTS, [from, to]);
+    if (!Array.isArray(rows)) return [];
+    return rows.map((row) => this.toTodayRecord(row as Record<string, unknown>));
+  }
+
   private async link(paymentId: string, orderId: string): Promise<void> {
     const links = this.manager.getRepository(PaymentOrderLink);
     await links.save(links.create({ paymentId, orderId }));
@@ -118,6 +157,24 @@ export class PaymentTypeormRepository implements PaymentRepository {
       createdBy: entity.createdBy,
       updatedBy: entity.updatedBy,
       createdAt: entity.createdAt,
+    };
+  }
+
+  private toTodayRecord(raw: Record<string, unknown>): TodayPaymentRecord {
+    return {
+      id: readText(raw.id),
+      visitId: readText(raw.visit_id),
+      seatLabel: typeof raw.seat_label === 'string' ? raw.seat_label : '',
+      partNo: Number(raw.part_no),
+      partCount: Number(raw.part_count),
+      amount: money(readText(raw.amount)),
+      method: readText(raw.method) as PaymentMethod,
+      status: readText(raw.status) as PaymentStatus,
+      confirmedVia: (readOptionalText(raw.confirmed_via) as PaymentConfirmedVia | null) ?? null,
+      slipTransRef: readOptionalText(raw.slip_trans_ref),
+      statusReason: (readOptionalText(raw.status_reason) as PaymentStatusReason | null) ?? null,
+      paidAt: readOptionalDate(raw.paid_at),
+      createdAt: readDate(raw.created_at),
     };
   }
 
