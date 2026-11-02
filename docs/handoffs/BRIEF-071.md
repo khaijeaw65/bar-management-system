@@ -4,9 +4,9 @@
 |---|---|
 | **Implementer** | kj (Antigravity) |
 | **Date** | 2026-11-02 |
-| **Brief revision** | 1 |
+| **Brief revision** | 2 |
 | **Branch** | `feat/BRIEF-071-demo-defects-polish` (PR opens after audit PASS) |
-| **Commit** | `25c59d5` |
+| **Commit** | `0537f4d` |
 | **Status** | Audit PASS |
 
 > Created at Implemented (one docs commit). Updated once in the PASS commit. Frozen at merge.
@@ -22,6 +22,8 @@ Resolved UI defects and touchscreen ergonomics discovered during hands-on testin
 - **DEF-09:** Eliminated empty cart flash during order submission redirect (AC-4).
 - **DEF-10:** Fixed POS Settings "QR ที่เคาน์เตอร์" switch click responsiveness (AC-5).
 - **DEF-11:** Aligned POS Settings payment radio buttons horizontally beside labels (AC-6).
+- **DEF-12:** Toast action buttons feature right-margin clearance (`mr-8`) from close button (AC-7).
+- **DEF-14:** Void/Comp modal wraps item details card in `gap-4` container above action options (AC-8).
 
 ## Acceptance Criteria
 | AC | Result | Evidence |
@@ -32,16 +34,18 @@ Resolved UI defects and touchscreen ergonomics discovered during hands-on testin
 | AC-4 | ✅ pass | `src/app/customer/cart/_components/CartScreen.test.tsx` ("DEF-09 / AC-4: submitting cart shows submitting state without flashing ตะกร้ายังว่าง before redirect") |
 | AC-5 | ✅ pass | `src/app/pos/settings/_components/VenueSettingsScreen.test.tsx` ("DEF-10 / AC-5: toggling QR ที่เคาน์เตอร์ toggles state reliably and enables บันทึก button") |
 | AC-6 | ✅ pass | `src/app/pos/settings/_components/VenueSettingsScreen.test.tsx` ("DEF-11 / AC-6: payment radio buttons have horizontal flex alignment classes") |
+| AC-7 | ✅ pass | `src/hooks/usePosAlerts.test.tsx` ("DEF-12 / AC-7: order arrival toast action button maintains mr-8 clearance") & `OrdersBoard.test.tsx` |
+| AC-8 | ✅ pass | `src/app/pos/tables/_components/VoidCompModal.test.tsx` ("DEF-14 / AC-8: item details card is wrapped in a container with gap-4 spacing above action radios") |
 
 ## Gate Evidence (G1)
 | Command | Exit | Result |
 |---|---|---|
 | `pnpm --filter @bar/frontend lint` | 0 | pass (0 errors, 0 warnings) |
 | `pnpm --filter @bar/frontend typecheck` | 0 | pass (0 errors) |
-| `pnpm --filter @bar/frontend test` | 0 | 77 passed · 360 passed · 0 failed |
-| `pnpm --filter @bar/frontend build` | 0 | pass (21 pages compiled successfully) |
+| `pnpm --filter @bar/frontend test` | 0 | 78 passed · 368 passed · 0 failed |
+| `pnpm --filter @bar/frontend build` | 0 | pass (22 pages compiled successfully) |
 
-UI exercised: Rebuilt Next.js 16 app with Turbopack production build; verified ticket drawer opening from order arrival toast, inline staff call acknowledgment toast action, customer live socket acknowledgment banner, fixed note textarea, 44px close button CSS, submitting cart spinner transition, and POS settings switch and radio layouts.
+UI exercised: Rebuilt Next.js 16 app with Turbopack production build; verified ticket drawer opening from order arrival toast, inline staff call acknowledgment toast action, customer live socket acknowledgment banner, fixed note textarea, 44px close button CSS, submitting cart spinner transition, POS settings switch and radio layouts, toast action button `mr-8` margin clearance from close icon, and Void/Comp modal `gap-4` spacing.
 
 ## Sonar (local scan)
 - Scanned commit: n/a (Frontend polish brief on developer kj session)
@@ -60,9 +64,5 @@ UI exercised: Rebuilt Next.js 16 app with Turbopack production build; verified t
 **Medium** — Antigravity used for executing implementation build steps, unit testing, and verification.
 
 ## Notes for Reviewer
-- Check `useBoardEvents.ts` and `OrdersBoard.tsx` for toast action drawer navigation.
-- Check `usePosAlerts.ts` for inline staff call "รับทราบ" button.
-- Check `useCustomerLive.ts` and `CustomerFrame.tsx` for staff call acknowledgment banner.
-- Check `globals.css` for `.toast[data-frontmost="true"]:not([data-exiting="true"]) .toast__close-button` 44px styling.
-- Check `useSendOrder.ts` and `CartScreen.tsx` for redirecting transition state.
-- Check `SettingSwitch.tsx` and `PaymentSection.tsx` for switch toggle click handling and flex-row radio layout.
+- Check `useBoardEvents.ts` and `usePosAlerts.ts` for toast action `mr-8` classes and `globals.css` margin rule.
+- Check `VoidCompModal.tsx` for item details container placement inside `flex flex-col gap-4`.

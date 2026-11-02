@@ -40,6 +40,7 @@ export function useBoardEvents(onSelectTicket?: (ticketId: string) => void): Rea
           firstTicketId && onSelectTicket
             ? {
                 children: "ดูออเดอร์",
+                className: "mr-8",
                 onPress: () => {
                   onSelectTicket(firstTicketId);
                   toast.close(String(toastId));

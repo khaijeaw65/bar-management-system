@@ -10,8 +10,7 @@ describe("generateUuid", () => {
   it("falls back gracefully when crypto.randomUUID is undefined", () => {
     const originalRandomUUID = crypto.randomUUID;
     // Simulate non-secure context (e.g. LAN HTTP) where randomUUID is absent
-    // @ts-expect-error intentionally testing fallback
-    delete crypto.randomUUID;
+    Reflect.deleteProperty(crypto, "randomUUID");
 
     try {
       const id = generateUuid();

@@ -7,11 +7,11 @@
 | **Assigned auditor** | Antigravity (different session) — Field instruction 2026-11-02 |
 | **Affected apps** | frontend |
 | **Feature** | `standalone — single-slice brief` |
-| **References** | `docs/defects/DEF-01.md`, `DEF-03.md`, `DEF-04.md`, `DEF-05.md`, `DEF-06.md`, `DEF-09.md`, `DEF-10.md`, `DEF-11.md` |
+| **References** | `docs/defects/DEF-01.md`, `DEF-03.md`, `DEF-04.md`, `DEF-05.md`, `DEF-06.md`, `DEF-09.md`, `DEF-10.md`, `DEF-11.md`, `DEF-12.md`, `DEF-14.md` |
 | **Status** | Ready — Field approved 2026-11-02 |
-| **Revision** | 1 |
+| **Revision** | 2 |
 | **Depends on** | none · **Unblocks** demo rehearsal |
-| **Size** | ACs 6 (≤8) · flows 1 (≤1) · files 7 (≤10) · migrations 0 (≤1) · new patterns 0 (≤1) → OK |
+| **Size** | ACs 8 (≤8) · flows 1 (≤1) · files 8 (≤10) · migrations 0 (≤1) · new patterns 0 (≤1) → OK |
 | **Audit depth** | Compact (UI polish & interaction fixes) |
 
 ---
@@ -28,6 +28,8 @@ Fix critical UI defects and touchscreen ergonomic issues discovered during hands
 - **DEF-06:** POS toast close button is always visible (`opacity-100`, touch target ≥ 44px) instead of hover-only for tablet use.
 - **DEF-09:** Cart screen eliminates the brief empty-cart ("ตะกร้ายังว่าง") flicker while redirecting to `/customer/tab`.
 - **DEF-10 & DEF-11:** Settings page "QR ที่เคาน์เตอร์" switch responsiveness and payment radio button alignment (horizontal label).
+- **DEF-12:** Toast action button ("ดูออเดอร์") adds margin clearance (`mr-8`) so close button does not overlap it.
+- **DEF-14:** Void/Comp modal wraps item details and action chips with standard vertical gap (`gap-4`).
 
 ### Out
 - Backend void/comp & cancellation logic (`BRIEF-018` / `BRIEF-070`).
@@ -63,6 +65,8 @@ Fix critical UI defects and touchscreen ergonomic issues discovered during hands
 | 4 | Customer submits cart order | Cart displays submitting state and smoothly transitions to `/customer/tab` without flashing "ตะกร้ายังว่าง". |
 | 5 | Staff toggles "QR ที่เคาน์เตอร์" on POS Settings | The switch toggles state reliably and enables the "บันทึก" button. |
 | 6 | Staff views payment section in POS Settings | Radio button labels sit horizontally to the right of the radio circle. |
+| 7 | An alert toast renders an action button | The action button maintains clear right-margin (`mr-8`) and does not overlap with the close button. |
+| 8 | Staff opens the Void/Comp dialog | The selected item card has a clean `gap-4` spacing separating it from the adjustment radio options. |
 
 ---
 

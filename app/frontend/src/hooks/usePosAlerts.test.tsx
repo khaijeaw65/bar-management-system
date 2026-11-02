@@ -70,8 +70,55 @@ describe("usePosAlerts", () => {
 
     const ackButton = await screen.findByRole("button", { name: "รับทราบ" });
     expect(ackButton).toBeInTheDocument();
+    expect(ackButton).toHaveClass("mr-8");
 
     await user.click(ackButton);
     expect(acknowledgedSeatId).toBe(seatId);
+  });
+
+  it("DEF-12 / AC-7: order arrival toast action button maintains mr-8 clearance", async () => {
+    function Wrapper({ children }: { children: ReactNode }) {
+      return (
+        <QueryClientProvider client={queryClient}>
+          <Toast.Provider placement="top end" />
+          {children}
+        </QueryClientProvider>
+      );
+    }
+
+    renderHook(() => usePosAlerts(), { wrapper: Wrapper });
+
+    act(() => {
+      const onOrder = listeners.get("order.created");
+      onOrder?.({
+        id: "30000000-0000-4000-8000-000000000021",
+        visitId: "11111111-1111-4111-8111-111111111111",
+        orderNumber: 2,
+        businessDate: "2026-10-21",
+        createdAt: new Date().toISOString(),
+        createdBy: null,
+        tickets: [
+          {
+            id: "60000000-0000-4000-8000-000000000021",
+            orderId: "30000000-0000-4000-8000-000000000021",
+            orderNumber: 2,
+            station: "bar",
+            status: "pending",
+            seat: { id: "11111111-1111-4111-8111-111111111111", label: "T2", kind: "table" },
+            items: [],
+            issue: null,
+            acceptedBy: null,
+            sentAt: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+        total: "120.00",
+      });
+    });
+
+    const viewOrderBtn = await screen.findByRole("button", { name: "ดูออเดอร์" });
+    expect(viewOrderBtn).toBeInTheDocument();
+    expect(viewOrderBtn).toHaveClass("mr-8");
   });
 });
