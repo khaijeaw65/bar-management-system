@@ -7,7 +7,7 @@
 | **Brief revision** | 1 |
 | **Branch** | `feat/BRIEF-073-pos-payment-page-ui` (PR opens after audit PASS) |
 | **Commit** | `e3fbdc6` |
-| **Status** | Implemented — awaiting audit |
+| **Status** | Audit PASS |
 
 > Created at Implemented (one docs commit). Updated once in the PASS commit. Frozen at merge.
 
