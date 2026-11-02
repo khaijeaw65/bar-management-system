@@ -205,6 +205,7 @@ test("DEF-01 / AC-1: clicking ดูออเดอร์ on order arrival toast
 
   const viewButton = await screen.findByRole("button", { name: "ดูออเดอร์" });
   expect(viewButton).toBeInTheDocument();
+  expect(viewButton).toHaveClass("mr-8");
 
   await user.click(viewButton);
   expect(await screen.findByRole("heading", { name: /#0060 · T3/ })).toBeInTheDocument();

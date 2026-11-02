@@ -46,6 +46,7 @@ export function usePosAlerts(): void {
       const toastId = toast.warning(callTitle(label ?? "โต๊ะ", parsed.data), {
         actionProps: {
           children: "รับทราบ",
+          className: "mr-8",
           onPress: () => {
             acknowledge.mutate(parsed.data.tableSeatId);
             toast.close(String(toastId));
@@ -65,7 +66,11 @@ export function usePosAlerts(): void {
       if (pathname === "/pos/orders") return;
       const label = parsed.data.tickets[0]?.seat.label ?? "โต๊ะ";
       toast.success(`ออเดอร์ใหม่จาก QR · ${label} · ${orderTag(parsed.data.orderNumber)}`, {
-        actionProps: { children: "ดูออเดอร์", onPress: () => router.push("/pos/orders") },
+        actionProps: {
+          children: "ดูออเดอร์",
+          className: "mr-8",
+          onPress: () => router.push("/pos/orders"),
+        },
       });
     },
     [pathname, router],

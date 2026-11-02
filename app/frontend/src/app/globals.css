@@ -384,3 +384,9 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+/* DEF-12: Action button right margin clearance from close button */
+.toast [data-slot="toast-action-button"],
+.toast .toast__action-button {
+  margin-right: 2rem;
+}
