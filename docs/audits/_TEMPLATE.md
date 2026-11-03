@@ -22,16 +22,13 @@
 | Rule | OK? | Note |
 |---|---|---|
 | Scope — nothing outside the brief | | |
-| Seeded `.e2e-spec.ts` files untouched by executor (`git diff <seed>..<S> -- <e2e-files>` empty) | | |
-| Feature `design.md` / `requirements.md` synced if code map or contracts changed (no spec drift) | | |
+| Seeded `.e2e-spec.ts` untouched (`git diff <seed>..<S>` empty, or `Approved-by: Field (e2e-typo-fix)` trailer present per QA Patch 5, or legacy n/a per #54) | | |
+| Feature `design.md` or living docs (`docs/api/README.md`) synced if code map or contracts changed (no spec drift #55) | | |
 | No unapproved deviations / dependencies | | |
 | Locked architecture rules (`CLAUDE.md`) respected | | |
-| `PermissionsGuard` only, no inline checks | | |
-| `save()` not `update()` on audited entities | | |
-| ESM `.js` imports · `@bar/contracts` as source of truth · OpenAPI regenerated | | |
 | Scoped rule file & coding style (`docs/rules/<kind>.md` + `core.md` anti-patterns) respected | | |
 | Agent boundaries respected (only Section 7 *Unlocked protected files* touched) | | |
-| Runs in the real runtime — run proof from the audited SHA `S` (rebuilt, not restarted; UI exercised on the real screen, not just a 200 or a green build) | | |
+| Hardened Run proof from audited SHA `S` (rebuilt; real auth request + dynamic timestamp #57; UI exercised on screen) | | |
 
 ## Test Quality
 <Do the seeded `.e2e-spec.ts` and unit `*.spec.ts` tests pass and assert real outcomes/state without over-mocking? Missing edge cases?>
@@ -51,11 +48,8 @@
 
 ## Evidence Coverage
 - Reviewed work SHA: `<S>` (seed SHA: `<seed>`)
-- Sources/diff inspected independently: `<paths, ACs>`
-- Tests run or inspected: `<commands, SHA, results, limitations>`
-- Written uncommitted; the executor commits it unchanged at PASS (`H`). Pre-merge check (`/review`) verifies `S..H` contains evidence-only changes (workflow Section 7).
-
-## Sonar (local scan)
-- Handoff Sonar section present for the scanned commit = S (or later scan): <yes / no>
-- Remaining issues have reasons; no unapproved "won't fix"/exclusions: <yes / findings>
-- Learning mode respected (Metee fixed his own issues): <yes / notes>
+- Independent CI (Grade A): `<green / gh run list --commit S / n/a>`
+- Local Gates (Grade B): Verified via handoff receipt (exit codes 0)
+- Run Proof (Grade B): Verified via raw HTTP response / dynamic server timestamp
+- Auditor Environment: Sandboxed VM (runtime not re-run locally; verified via Grade A & B artifacts)
+- Written uncommitted; the executor commits it unchanged at PASS (`H`). Pre-merge check (`pr-review`) verifies `S..H` contains evidence-only changes (workflow Section 7).

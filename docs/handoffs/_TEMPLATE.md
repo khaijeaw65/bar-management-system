@@ -6,49 +6,83 @@
 | **Date** | YYYY-MM-DD |
 | **Brief revision** | <n> |
 | **Branch** | `feat/BRIEF-###-<slug>` (PR opens after audit PASS) |
-| **Commit** | `<sha>` (the commit the evidence below was produced on) |
-| **Status** | Implemented — awaiting audit · Changes requested · Audit PASS (merged PR determines Done) |
+| **Work Commit** | `<sha>` (work SHA S — commit evidence below was produced on) |
+| **Status** | Implemented — awaiting audit · Changes requested · Audit PASS |
 
-> Created at Implemented (one docs commit). Updated once in the PASS commit. Frozen at merge.
+> Created at Implemented (commit S). Updated once in the PASS commit (head H). Frozen at merge.
 
-## Summary
-<What now works, in 3–5 lines. Facts, not effort.>
+---
 
-## Acceptance Criteria
-| AC | Result | Evidence |
+## Part 1: Objective Receipts (Gate G1 & Run Proof)
+
+### Gate Execution Results
+| Gate | Command | Exit | Counts / Result |
+|---|---|---|---|
+| Pre-Commit / Lint | `.githooks/pre-commit` | 0 | Staged files clean, zero anti-patterns |
+| Typecheck | `npx tsc --noEmit` | 0 | Zero compiler errors |
+| Scoped Unit Tests | `<unit-command>` | 0 | <n> passed |
+| Feature E2E | `<e2e-command>` | 0 | <n> passed (including repro test) |
+| Project Build | `<build-command>` | 0 | dist/ rebuilt cleanly from SHA <sha> |
+
+### Hardened Run Proof (#57)
+- **Environment:** Stack up (`docker compose up -d` / local server) · Migrations applied · Health check 200
+- **Authenticated Request:**
+```bash
+curl -i -X <METHOD> http://localhost:<port>/<new-or-modified-endpoint> \
+  -H "Authorization: Bearer <session-token>" \
+  -H "Content-Type: application/json"
+```
+- **Raw Response Output (with dynamic server timestamp):**
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: <RFC-7231 timestamp matching commit window ±15min>
+
+{
+  "id": "<dynamic-id>",
+  "status": "<status>"
+}
+```
+*(For UI/Mobile: path to screenshot artifact or emulator screen verification).*
+
+---
+
+## Part 2: Field Intelligence & Disclosures
+
+### Gaps Found (Spec vs. Reality)
+- <e.g. Mismatches between brief assumptions and actual code/schema, unhandled edge cases discovered>
+
+### Issues & Compromises From Work
+- <e.g. Performance trade-offs, concurrency/locking choices, tricky refactors>
+
+### Caller & Boundary Impact (#66)
+- **Shared services/repositories modified:** `<file paths>`
+- **Untouched callers identified:** `<caller services/controllers>`
+- **Verification:** <which caller test suites were re-run>
+
+### Unrun Gates & Conscious Skips (#67, #68)
+- <e.g. Full repo E2E suite skipped per #68 (scoped feature E2E run locally; full regression left for CI)>
+
+### Out-of-Scope Defects Discovered (Parked) (#69)
+- <none, or logged to `docs/defects/DEFECT-###-<slug>.md` without touching in this brief>
+
+### Operational & Living Docs Sync (#55)
+- **Living docs updated:** `<e.g. docs/api/README.md, or n/a>`
+- **New environment keys needed:** `<e.g. .env.example keys, or none>`
+- **Database migrations to run on deploy:** `<migration file or none>`
+
+---
+
+## Acceptance Criteria Verification
+| AC | Met? | Evidence (test name / curl line) |
 |---|---|---|
-| AC-1 | ✅ / ❌ / BLOCKED | <test name, run link, file> |
+| AC-1 | ✅ / ❌ | `<file:line>` |
 
-## Gate Evidence (G1)
-| Command | Exit | Result |
-|---|---|---|
-| `pnpm --filter @bar/<pkg> lint` | 0 | pass |
-| `pnpm --filter @bar/<pkg> typecheck` | 0 | pass |
-| `pnpm --filter @bar/<pkg> test` | 0 | <n> passed · 0 failed · <n> skipped |
-| `pnpm --filter @bar/<pkg> test:e2e` | 0 | <n> passed · 0 failed · <n> skipped |
-| `<run proof: start/rebuild + health>` | 0 | <rebuilt from this commit · migrations applied · health 200 (mobile: installed + launched) — or not available yet> |
+---
 
-UI exercised: <screen + action → result, or n/a>
-
-Not run is never pass — write BLOCKED + reason.
-
-## Sonar (local scan)
-- Scanned commit: <sha> · Quality Gate: <passed / failed>
-- Issues by severity: <Blocker n · High n · Medium n · Low n · Info n> (paste `pnpm sonar:report` output)
-- Remaining issues + reason: <none, or list>
-- Who fixed: <developer / agent-assisted on blocker: what>
-
-## Decisions Raised
-- <DR-### — status, or none>
-
-## Deviations from Brief
-- <none, or exact deviation + approving DR>
-
-## Known Gaps / Follow-ups
-- <…>
-
-## AI Usage
-**Low / Medium / High** — <tool: what it was used for>
-
-## Notes for Reviewer
-- <where to look first>
+<!-- Appended during fix rounds:
+### Fix Round <N> — <SHA>
+- Gate-Results: lint=0, typecheck=0, unit=<n>(pass), e2e=<n>(pass)
+- Caller tests re-run: <caller-spec> (pass)
+- Work-Commit: <SHA>
+-->

@@ -337,6 +337,8 @@ No magic strings for column types.
 - No `eager: true` on any relation. Load relations explicitly.
 - `@JoinColumn({ name: 'snake_case_fk' })` on the owning (`@ManyToOne`) side; both sides declared where bidirectional.
 - **Use `save()` not `update()` on audited entities** — `AuditSubscriber` needs `databaseEntity`.
+- **Batch updates on audited rows:** fetch via `find({ where: { id: In(ids) } })` and pass the modified entities to `save(entities)` — never use bulk `update()` which bypasses subscribers and leaves empty audit logs (#60).
+- **Unique constraint violations (`23505`):** catch Postgres error code `23505` in persistence/repository methods and translate to domain conflict exceptions (`ConflictException` / 409) naming the duplicated field, rather than letting raw database errors leak as 500s (#59).
 - `updated_at` belongs to the database (DR-023): never set it in app code or raw SQL; a migration that creates a table with `updated_at` attaches `trg_<table>_updated_at`; return the stored value (re-read in the same transaction), not the in-memory copy.
 - Soft delete: filter `IS NULL` on `deletedAt` in every active-record query.
 - **No N+1 queries or unbounded reads:** Never call a repository/DB query inside a loop (`for`, `.map`) — batch with `In(...)` or a join. Every list query must have pagination or an explicit limit.
