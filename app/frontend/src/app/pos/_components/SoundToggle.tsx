@@ -10,15 +10,11 @@ export function SoundToggle() {
   const { muted, locked } = useSoundState();
   // The unlock listener resolves before onPress, so remember whether this tap found the sound locked.
   const wasLocked = useRef(false);
-  const hint = locked && !muted;
-  let label = "ปิดเสียง";
-  if (muted) label = "เปิดเสียง";
-  else if (hint) label = "แตะเพื่อเปิดเสียง";
+  const label = muted ? "เปิดเสียง" : "ปิดเสียง";
   const Icon = muted ? VolumeX : Volume2;
 
   return (
     <div className="flex items-center gap-2">
-      {hint ? <span className="text-small text-text-muted">แตะเพื่อเปิดเสียง</span> : null}
       <Button
         isIconOnly
         variant="ghost"
