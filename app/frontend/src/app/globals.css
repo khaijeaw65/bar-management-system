@@ -386,7 +386,8 @@ body {
 }
 
 /* DEF-12: Action button right margin clearance from close button */
+.toast .toast__action,
 .toast [data-slot="toast-action-button"],
 .toast .toast__action-button {
-  margin-right: 2rem;
+  margin-right: 2.5rem !important;
 }

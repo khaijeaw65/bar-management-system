@@ -12,7 +12,10 @@ export interface CustomerSocketHandlers {
 
 function customerSocketUrl(): string {
   const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3011/api";
-  return `${new URL(api).origin}/customer`;
+  const url = api.startsWith("http")
+    ? new URL(api)
+    : new URL(api, typeof window !== "undefined" ? window.location.origin : "http://localhost:3010");
+  return `${url.origin}/customer`;
 }
 
 /** One guest socket for the customer layout (DR-028: own path keeps the `/api/customer` cookie on the handshake). */
@@ -23,7 +26,11 @@ export function connectCustomerSocket(handlers: CustomerSocketHandlers): () => v
     handlers.onConnected();
     return () => undefined;
   }
-  const socket = io(customerSocketUrl(), { path: "/api/customer/socket.io", withCredentials: true });
+  const socket = io(customerSocketUrl(), {
+    path: "/api/customer/socket.io",
+    withCredentials: true,
+    ...(process.env.NODE_ENV !== "test" ? { transports: ["polling"], upgrade: false } : {}),
+  });
   socket.on("connect", handlers.onConnected);
   socket.on("disconnect", handlers.onLost);
   socket.on("connect_error", (error: Error) => {

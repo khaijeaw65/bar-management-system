@@ -23,7 +23,9 @@ export function QrPrintModal({
 
   const title = seat.kind === "counter" ? `QR เคาน์เตอร์ ${seat.label}` : `QR โต๊ะ ${seat.label}`;
   const seatDisplayName = seat.kind === "counter" ? `เคาน์เตอร์ ${seat.label}` : `โต๊ะ ${seat.label}`;
-  const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3010";
+  const origin =
+    process.env.NEXT_PUBLIC_SCAN_BASE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "http://localhost:3010");
   const scanUrl = `${origin}/scan/${seat.qrToken ?? ""}`;
 
   async function handleRegenerate() {

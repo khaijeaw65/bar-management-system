@@ -19,8 +19,15 @@ function useAudioUnlock(): void {
   useEffect(() => {
     if (!locked) return;
     const unlock = () => unlockAudio();
-    document.addEventListener("pointerdown", unlock, { once: true, capture: true });
-    return () => document.removeEventListener("pointerdown", unlock, { capture: true });
+    const events = ["pointerdown", "click", "touchstart", "keydown"] as const;
+    for (const event of events) {
+      document.addEventListener(event, unlock, { once: true, capture: true });
+    }
+    return () => {
+      for (const event of events) {
+        document.removeEventListener(event, unlock, { capture: true });
+      }
+    };
   }, [locked]);
 }
 
