@@ -3,16 +3,15 @@
 | | |
 |---|---|
 | **Owner** | Field |
-| **Implementer** | kj / methee |
-| **Assigned auditor** | Cowork (default) / Codex (Field-assigned fallback) — Field instruction/date; fallback reason or none |
-| **Affected apps** | backend / frontend / mobile / contracts / tooling (select all in scope) |
+| **Implementer** | kj / methee (<Tool>) · **Auditor** Cowork (<Tool>) (fallback: Codex) |
 | **Feature** | [`<feature>` requirements](../features/<feature>/requirements.md) · [design](../features/<feature>/design.md) · [ui](../features/<feature>/ui.md) *(if it has screens)* *(or `standalone — single-slice brief`)* |
-| **References** | FRD §<n> · schema tables: <…> · UI brief: <…> · DRs: <…> |
+| **Backlog / Defect** | <ClickUp link, `DEFECT-###`, or none> |
 | **Status** | Draft · Ready — approval status; merged PR is authoritative for Done |
 | **Revision** | 1 |
 | **Depends on** | <`BRIEF-###` (<endpoints/contract>) — merged / not merged · or `none`> · **Unblocks** <`BRIEF-###` or `none`> |
+| **Docs to update** | <`docs/api/README.md` (living doc sync for standalone briefs) or `n/a`> |
 | **Size** | ACs <n> (≤8) · flows <n> (≤1) · files <n> (≤10) · migrations <n> (≤1) · new patterns <n> (≤1) → OK / SPLIT / owner-accepted oversize |
-| **Audit depth** | Full (backend / core flow / auth-payment-PDPA) · Compact (low-risk UI, chores) |
+| **Audit depth** | Full (backend / core flow / auth-payment-personal data) · Compact (low-risk UI, chores) |
 
 ## 1. Goal
 
@@ -43,29 +42,22 @@
 
 | ACs | Kind | Who writes | File |
 |---|---|---|---|
-| <1..n> | e2e / acceptance | **Cowork** (in seed commit, protected) | `app/backend/test/<m>.e2e-spec.ts` · `app/frontend/e2e/<screen>.spec.ts` |
+| <1..n> | e2e / acceptance | **Cowork** (in seed commit, protected) | `<test-path>.e2e-spec.ts` |
 | <steps> | unit (`*.spec.ts`) | **Executor** (per build step) | `<src-path>/**/*.spec.ts` |
 
 - Seeded `.e2e-spec.ts` files hit only public contracts and port tokens (`design.md → Contracts & Code map`). Executor may **not** edit them without Field's OK or a DR.
 - Gate commands (all must pass):
   ```bash
-  pnpm --filter <pkg> lint
-  pnpm --filter <pkg> typecheck
-  pnpm --filter <pkg> test
-  pnpm --filter <pkg> test:e2e   # seeded e2e
-  pnpm --filter @bar/backend openapi:check   # backend API changes
+  <lint command>
+  <typecheck / build command>
+  <unit + e2e test commands>
   ```
-- Run proof (backend/frontend/mobile changes; docs/tooling-only → `n/a`):
+- Run proof (part of G1 once the project has a runtime; before that, `not available yet`):
   ```bash
-  docker compose -f infra/docker-compose.yml up -d postgres redis
-  pnpm --filter @bar/backend migration:run
-  pnpm --filter @bar/backend start:dev   # separate shell, started fresh on the work SHA
-  curl -fsS localhost:3011/api/health
+  <start/rebuild command, e.g. docker compose up -d --build · native Android: ./gradlew installDebug>
+  <health / screen check, e.g. curl -fsS localhost:<port>/health · native Android: adb shell am start -n <pkg>/<activity>>
   ```
-  UI change: <screen + action to exercise in the browser / Expo app, or `n/a`>
-- A required script that doesn't exist yet = **BLOCKED** — report it, never skip silently.
-- **Local Sonar scan:** required for this brief: yes (always for Metee) / optional — <reason> · approved exclusions / "won't fix": <none, or Field-approved reference>
-- **Constraints:** <rules that matter most — e.g. `save()` not `update()`, `.js` import extensions, `PermissionsGuard` only, Thai hardcoded strings>
+  UI change: <screen + action to exercise in a browser / emulator / device, or `n/a`>
 
 ## 6. Planner Dry Run (completed before Ready)
 
@@ -80,12 +72,12 @@ Every row must cite a real `path:line` or manifest check from the repo before Fi
 | E2e harness, imports & isolation | `<test config / sample test:line>` | <seeded `.e2e-spec.ts` imports match project test helper · own test DB, Redis DB/prefix, random port — or isolation added as Build step 1> |
 | Dependencies merged · parallel overlap | `git log main` · other active brief's code map | <all `Depends on` briefs merged to `main`, or stays Draft · if another brief runs in parallel: zero shared files, else wait> |
 | UI tokens & components *(UI briefs; else `n/a`)* | `<globals.css / theme:line · components dir>` | <every token and component in `ui.md` exists in the repo, or the gap is a build step / DR> |
+| Contract Nullability vs DB Schema (#58) | `schema.sql:line` vs contract/DTO | <nullable column maps to `.nullable()` in contract; zero `?? ''` fallbacks> |
 
 ## 7. Unlocked Protected Files & Pre-Decided Items
 
 - **Unlocked protected files** (exact paths from Dry Run, never rules files; or `none`):
   - `none`
-- **Likely DRs:** <known unknowns — raise a DR if hit>
 - **Pre-decided packages / endpoints** (exact `package@version`, path, endpoint, each with `Source: Field, <interview/DR>, <date>` — an item without a Source naming Field is not approved; anything else needs a DR):
   - `none`
 

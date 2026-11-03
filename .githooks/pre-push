@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# field-kit: pre-push hook (typecheck + scoped feature tests; emergency WIP bypass)
+set -e
+
+# 1. Emergency session push bypass (Patch 1: /handoff or WIP pushes never blocked)
+LAST_MSG=$(git log -1 --pretty=%B || true)
+if echo "$LAST_MSG" | grep -q -E '^(docs\(.*\): handoff|wip:)'; then
+  echo "⚠️ [field-kit] Emergency WIP/handoff commit detected. Bypassing pre-push checks to preserve session state."
+  exit 0
+fi
+
+# 2. Delegate to ops/gates/pre-push.sh if present
+if [ -f "ops/gates/pre-push.sh" ]; then
+  sh ops/gates/pre-push.sh
+fi
+
+exit 0

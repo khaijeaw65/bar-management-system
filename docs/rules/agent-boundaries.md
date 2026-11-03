@@ -32,6 +32,9 @@ Exception: `app/frontend/AGENTS.md` + `app/frontend/CLAUDE.md` are regenerated b
 ```
 infra/**                     ← Terraform, docker-compose.yml, all infra files (DR-001)
 .github/**                   ← workflows, CODEOWNERS, PR template
+.githooks/**                 ← mechanical git hooks (pre-commit, pre-push, commit-msg)
+ops/gates/**                 ← gate scripts (pre-commit.sh, pre-push.sh)
+scripts/field-kit/**         ← code checks (check-class-files.mjs)
 ```
 
 ### Schema (ERD locked — 38 tables, 10 domains)
@@ -46,6 +49,7 @@ docs/features/**          ← Spec-Anchored feature requirements & design + INVA
 docs/briefs/**            ← Field only. Cowork creates Draft briefs (uncommitted in the main checkout) and sets Ready after Field approves in the session — all uncommitted; the executor seeds the brief's branch (workflow.md §3). Executors never edit briefs (packaging commits only)
 seeded acceptance e2e     ← the e2e files a Ready brief lists as seeded (app/backend/test/**/*.e2e-spec.ts, app/frontend/e2e/**/*.spec.ts). Written by Cowork at brief time, LOCKED during execution. Executors write `*.spec.ts` unit tests only and never edit seeded e2e files without Field's explicit OK or an Approved DR
 docs/decisions/**         ← anyone may CREATE a new DR (Pending). Only Field writes Decision/Status — Cowork may record a decision Field states explicitly in the session (workflow.md §5)
+docs/defects/**           ← anyone may triage and CREATE an incident record (DEFECT-###-<slug>.md). Triaged into incident dossiers or standalone regression briefs
 docs/audits/**            ← assigned Cowork/Codex auditor, or explicitly requested cross-check, only. The executor commits the report unchanged at PASS (packaging only)
 docs/state/<person>/SESSION_STATE.md    ← only the state file of the person running the session
 docs/handoff.md           ← frozen legacy log — do not edit

@@ -19,5 +19,3 @@ Cowork writes `docs/state/kj/SESSION_STATE.md` into the main checkout, uncommitt
 5. After merge, the PR establishes Done. Closure reaches state in the next seed commit (kj) or the first commit of the member's next task branch.
 
 **Expect `main` to be one step behind.** The snapshot on `main` is the last pre-merge state. Treat merged PRs as the truth.
-
-No CLAIMS file, shared root session log or account-based auto-assignment. Brief Implementer and the task branch identify ownership; state holds resume details.

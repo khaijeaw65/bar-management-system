@@ -1,7 +1,7 @@
 # Workflow — Roles, Spec-Driven Lifecycle, Gates, Field Guard
 
-> Rev 22 — 2026-11-01: adopted field-kit 0.4.0 workflow (two-tier SDD, Planner Dry Run, Cowork-seeded locked `.e2e-spec.ts`, executor seed commit, inside→out build steps, `start`/`fix`/`ship`/`/checkpoint`/`/autopilot`), keeping project-specific sections (Sonar, rulesets, deploy, legacy) — Field-approved. Rev 21 and earlier remain in Git history.
-> Owned by Field — protected file (see `agent-boundaries.md`). Generated from field-kit 0.4.0, merged with the project's Rev 21.
+> Rev 23 — 2026-11-03: synced field-kit 0.4.1 (mechanical git hooks, pr-review gatekeeper, two-tier defect system, receipt-based handoffs, row 8 contract nullability Dry Run, AST single-class check), keeping project-specific sections (bar team, Sonar, AWS deploy schedule, rulesets, port naming, legacy maps) — Field-approved. Rev 22 and earlier remain in Git history.
+> Owned by Field — protected file (see `agent-boundaries.md`). Generated from field-kit 0.4.1, merged with project Rev 22.
 > This file governs execution. Feature specs define long-lived requirements and design; thin briefs define execution slices; scoped rules define code conventions. History lives in Git.
 
 ## 1. People, Roles, Session Types
@@ -86,7 +86,7 @@ Feature Spec (if multi-slice) → Draft Brief + Acceptance .e2e-spec.ts + Planne
 Audit BLOCKED → Field decision / missing evidence → resume the affected step
 ```
 
-Before asking Field for `Ready`, Cowork checks the brief names the implementer and the **Assigned auditor (Cowork, or Codex only on Field's explicit instruction)**, exact gate commands incl. run proof (Section 6), dependencies with completion conditions, and no unresolved decision blocking the main outcome — and completes the **7-row Planner Dry Run** against the real repo (Section 6 of the brief template) with `path:line` evidence:
+Before asking Field for `Ready`, Cowork checks the brief names the implementer and the **Assigned auditor (Cowork, or Codex only on Field's explicit instruction)**, exact gate commands incl. run proof (Section 6), dependencies with completion conditions, and no unresolved decision blocking the main outcome — and completes the **8-row Planner Dry Run** against the real repo (Section 6 of the brief template) with `path:line` evidence:
 1. **Existing schema / entities checked now:** Never push a repo-readable check into `Assumed` for Executor Step 0. Read the actual entities/migrations now. Only external/runtime facts stay in `Assumed`.
 2. **Step-by-step wiring trace & protected-file unlocks:** Trace every existing file the executor will touch (e.g. `main.ts`, `app.module.ts`, `package.json`) and list any protected files in Section 7 *Unlocked protected files* so the executor never stops mid-build on a missing unlock.
 3. **Packages & peer versions verified** against the repo's `package.json` files.
@@ -94,6 +94,7 @@ Before asking Field for `Ready`, Cowork checks the brief names the implementer a
 5. **Acceptance `.e2e-spec.ts` written by Cowork** (black-box against `design.md → Contracts` and port tokens only; imports verified against the repo's test harness) — and e2e isolated from the dev server (own DB, Redis DB/prefix, random port).
 6. **Every *Depends on* brief verified merged to `main`** (`git log main`) — "done" on a branch is not enough. Unmerged dependency → brief stays Draft.
 7. **UI tokens & components** (UI briefs): everything `ui.md` names exists in the repo, or the gap is a build step / DR.
+8. **Contract Nullability vs DB Schema:** verify contract DTOs match database column nullability and enum constraints.
 
 Executors never turn a Draft into Ready. Record approval date in the brief changelog; bump the revision on content changes. Briefs already Ready or In Progress before Rev 22 finish under the Rev 21 flow (no seeded e2e, no Planner Dry Run).
 
@@ -161,14 +162,16 @@ At start of **every** session (or via `/resume`): read own `SESSION_STATE.md` fi
 |---|---|
 | `onboard <kj\|methee>` | Read rules/state, inspect checkout (including untracked source files), save identity, initialise missing own state, summarise setup gaps and one eligible Ready brief. No automatic install, branch switch or feature implementation. |
 | `/new-feature` | Structured interview (Round 0 `As-is` with `path:line` → Modules → Deps → Where code lives → Constraints → Edge cases + invariants → ACs) → writes `docs/features/<f>/{requirements,design}.md` (+ `ui.md` with screens, `INVARIANTS.md` rows) uncommitted. |
-| `/new-brief` | Drafts thin `BRIEF-###` (from feature folder or standalone), writes locked `.e2e-spec.ts` files, completes the 7-row Planner Dry Run with `path:line` evidence, and handles `Ready` approval. |
+| `/new-brief` | Drafts thin `BRIEF-###` (from feature folder or standalone), writes locked `.e2e-spec.ts` files, completes the 8-row Planner Dry Run with `path:line` evidence, and handles `Ready` approval. |
+| `/new-defect` | Triages bugs and creates incident records (`docs/defects/DEFECT-###-<slug>.md`) or routes micro-defects directly to standalone bugfix briefs with regression tests. |
 | `/new-dr` | Raises `DR-###` with mini *Under the hood* flow/tx/failure per option and flags patterns new to Field. Auto-triggered when work hits a Section 5 guard boundary. |
 | `execute BRIEF-###` / `ทำ BRIEF-###` (`/execute`) | Includes resume. Verify identity, Ready revision, implementer, merged dependencies, DRs, unlocks, and checkout. Create branch + seed commit if new; run Step 0 + inside→out build steps (`1 step = 1 commit`); run `G1` proof; commit handoff (`S`), push, and output `Next → in Cowork: audit BRIEF-###`. Idempotent: continues WIP, reports waiting review, or reports Done for a merged PR; never duplicate branches/PRs. |
 | `start BRIEF-###` (`/execute`) | Hand-coded brief (learning-mode implementer): runs `execute` pre-checks and seed/branch switch, then acts as copilot only (Section 8) — explain, review, debug; no app code. |
 | `fix BRIEF-### (#…)` (`/execute`) | After CHANGES REQUIRED: fix only the listed `Must fix` findings, commit, push, report the new `S` (Section 3 step 5). |
 | `ship BRIEF-###` (`/execute`) | After PASS: commit the uncommitted audit unchanged + final handoff + state (`H`), push, and open the PR (Section 3 step 6). For hand-coded briefs before audit: runs gates, drafts handoff, and commits/pushes the person's work (`S`). |
 | `audit BRIEF-###` / `ตรวจ BRIEF-###` (`/audit`) | Assigned auditor only (hard-refuses if run in a session that implemented, seeded, fixed, or paired on the brief; wrong tool for the assignment → explain the handoff, never pretend a review happened). Verifies seeded `.e2e-spec.ts` untouched, checks ACs, `design.md` sync, stack rules/style, and `G1` proof → writes `docs/audits/BRIEF-###.md` uncommitted. |
-| `/review` / `approve merge BRIEF-###` (`อนุมัติ merge`) | Lightweight review (no audit file): **(a)** mid-coding diff check against stack rules & contracts, or **(b)** post-PR merge check verifying `S..H` contains only audit/handoff/state files + CI green on `H` (`G2`), then merges under Section 7. For Metee's PRs, `อนุมัติ merge BRIEF-###` is Field's authorization of the presented PR/head. |
+| `/review` | In-flight code review copilot: fast mid-coding diff check against stack rules, house coding style, and contracts before `Implemented`. |
+| `pr-review` / `approve merge BRIEF-###` (`อนุมัติ merge`) | Post-PR delivery gatekeeper: verifies CI (`G2`), mathematical `S..H` commit integrity, handles GitHub self-review 422 bypass, and executes PR merge under Section 7. For Metee's PRs, `อนุมัติ merge BRIEF-###` is Field's authorization of the presented PR/head. |
 | `/checkpoint` (`/save-session`) | Flushes in-chat answers into uncommitted draft files and writes `Locked / Rejected in chat` + `Paused at` into `SESSION_STATE.md` for zero-loss session rotation. |
 | `resume` (`/resume`) | Reads `SESSION_STATE.md` + listed active files only, prints a 3-line summary, and immediately executes/asks the next step in the same turn. Missing/ambiguous state → evidence-based reconstruction, not a guessed task. |
 | `/autopilot` | Unattended/overnight run: short interview → `docs/PLAN.md` (with Dry Run unlocks) → branch `auto/YYYY-MM-DD-<slug>` → 1 green commit + push per step; 2 failures → revert + log `⛔` + continue independent steps; guard trigger → log `⏸ needs owner` + skip; opens 1 PR at end of run. |
