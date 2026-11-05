@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import {
   MENU_CHANGED,
@@ -15,18 +15,16 @@ import {
   type UpdateMenuCategory,
   type UpdateMenuItem,
 } from '@bar/contracts';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
 import { fromSatang, toSatang } from '../../../common/money.js';
 import { StorageService, UPLOAD_URL_TTL_SECONDS } from '../../../common/storage/storage.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
-import {
-  MENU_WRITE_REPOSITORY,
-  type MenuItemFields,
-  type MenuWriteRepository,
-} from '../domain/menu-write.repository.js';
+import { MenuWriteRepository } from '../domain/menu-write.repository.js';
+import type { MenuItemFields } from '../domain/menu-write.types.js';
 import { MenuCatalogService } from './menu-catalog.service.js';
-import { MenuPhotoService, type AttachedPhoto } from './menu-photo.service.js';
+import { MenuPhotoService } from './menu-photo.service.js';
+import type { AttachedPhoto } from './menu-photo.types.js';
 
 /**
  * Manager menu edits (BRIEF-038). Each write is one transaction; `menu.changed` goes out after the
@@ -35,12 +33,12 @@ import { MenuPhotoService, type AttachedPhoto } from './menu-photo.service.js';
 @Injectable()
 export class MenuWriteService {
   public constructor(
-    @Inject(MENU_WRITE_REPOSITORY) private readonly menu: MenuWriteRepository,
+    private readonly menu: MenuWriteRepository,
     private readonly catalog: MenuCatalogService,
     private readonly notifications: NotificationsService,
     private readonly photos: MenuPhotoService,
     private readonly storage: StorageService,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
   ) {}
 
   /** A 5-minute presigned POST into `tmp/`; no DB write, no event. */

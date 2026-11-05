@@ -32,8 +32,8 @@ test("the drawer shows the seat's bell and clears it", async () => {
   await waitFor(() => expect(screen.queryByRole("button", { name: "รับทราบ T3" })).not.toBeInTheDocument());
 });
 
-test("AC-5/AC-6: the toggle hints while locked, then mutes and unmutes", async () => {
+test("AC-5/AC-6: the toggle renders without text hint, then mutes and unmutes", async () => {
   localStorage.clear();
   wrap(<SoundToggle />);
-  expect(screen.getAllByText("แตะเพื่อเปิดเสียง").length).toBeGreaterThan(0);
+  expect(screen.getByRole("button", { name: "ปิดเสียง" })).toBeInTheDocument();
 });

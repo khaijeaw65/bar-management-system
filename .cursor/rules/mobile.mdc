@@ -1,0 +1,7 @@
+---
+description: Expo (React Native) — Mobile app structure, API client, auth storage and testing.
+globs: app/mobile/**
+alwaysApply: false
+---
+
+@/docs/rules/mobile.md

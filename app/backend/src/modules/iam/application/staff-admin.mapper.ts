@@ -1,5 +1,5 @@
 import type { AccessRequest, StaffMember, StaffMembership } from '@bar/contracts';
-import type { MembershipRow } from '../domain/permission-source.js';
+import type { MembershipRow } from '../domain/permission-source.types.js';
 import type { AccessRequestRow, StaffRow } from '../domain/staff-admin.types.js';
 
 export function toAccessRequest(row: AccessRequestRow): AccessRequest {

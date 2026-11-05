@@ -1,5 +1,5 @@
-import { Inject, Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
-import { PERMISSION_SOURCE, type PermissionSource } from '../domain/permission-source.js';
+import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
+import { PermissionSource } from '../domain/permission-source.js';
 
 const RECHECK_MS = 60_000;
 
@@ -16,7 +16,7 @@ export class IamEnforcement implements OnApplicationBootstrap, OnModuleDestroy {
   private lastWarnAt = 0;
   private timer: NodeJS.Timeout | undefined;
 
-  public constructor(@Inject(PERMISSION_SOURCE) private readonly source: PermissionSource) {}
+  public constructor(private readonly source: PermissionSource) {}
 
   public async onApplicationBootstrap(): Promise<void> {
     await this.refresh(new Date());

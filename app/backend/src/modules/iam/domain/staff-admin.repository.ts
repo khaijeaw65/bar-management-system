@@ -14,9 +14,9 @@ import type {
  * transaction that re-reads the database after applying it (never the Redis cache) and refuses with
  * `lockout` when nobody would be left holding `staff:manage` for good (BRIEF-054 lockout rule).
  */
-export interface StaffAdminRepository {
-  listRequests(status: 'pending' | 'rejected'): Promise<AccessRequestRow[]>;
-  approveRequest(
+export abstract class StaffAdminRepository {
+  public abstract listRequests(status: 'pending' | 'rejected'): Promise<AccessRequestRow[]>;
+  public abstract approveRequest(
     requestId: string,
     displayName: string,
     memberships: MembershipWrite[],
@@ -24,28 +24,26 @@ export interface StaffAdminRepository {
     now: Date,
   ): Promise<ApproveOutcome>;
   /** Moves a request from `from` to `to`; `to = pending` clears the decision. */
-  decideRequest(
+  public abstract decideRequest(
     requestId: string,
     from: AccessRequestStatus,
     to: AccessRequestStatus,
     decidedBy: string,
     now: Date,
   ): Promise<DecideOutcome>;
-  listStaff(): Promise<StaffRow[]>;
-  findStaff(id: string): Promise<StaffRow | null>;
-  updateStaff(
+  public abstract listStaff(): Promise<StaffRow[]>;
+  public abstract findStaff(id: string): Promise<StaffRow | null>;
+  public abstract updateStaff(
     id: string,
     patch: { displayName?: string; isActive?: boolean },
     now: Date,
   ): Promise<StaffWriteOutcome>;
-  replaceMemberships(
+  public abstract replaceMemberships(
     id: string,
     memberships: MembershipWrite[],
     now: Date,
   ): Promise<StaffWriteOutcome>;
   /** Replaces the person's direct (user) policies. */
-  replacePolicies(id: string, policyIds: string[], now: Date): Promise<StaffWriteOutcome>;
-  permissionSources(userId: string, now: Date): Promise<PermissionSourceRow[]>;
+  public abstract replacePolicies(id: string, policyIds: string[], now: Date): Promise<StaffWriteOutcome>;
+  public abstract permissionSources(userId: string, now: Date): Promise<PermissionSourceRow[]>;
 }
-
-export const STAFF_ADMIN_REPOSITORY = Symbol('STAFF_ADMIN_REPOSITORY');

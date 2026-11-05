@@ -3,14 +3,13 @@ import { AuthModule } from '../auth/auth.module.js';
 import { VenueModule } from '../venue/venue.module.js';
 import { IamAdminService } from './application/iam-admin.service.js';
 import { StaffAdminService } from './application/staff-admin.service.js';
-import { IAM_ADMIN_REPOSITORY } from './domain/iam-admin.repository.js';
-import { STAFF_ADMIN_REPOSITORY } from './domain/staff-admin.repository.js';
-import {
-  PermissionCatalogController,
-  PoliciesController,
-  StaffGroupsController,
-} from './infrastructure/http/iam-admin.controller.js';
-import { AccessRequestsController, StaffController } from './infrastructure/http/staff.controller.js';
+import { IamAdminRepository } from './domain/iam-admin.repository.js';
+import { StaffAdminRepository } from './domain/staff-admin.repository.js';
+import { AccessRequestsController } from './infrastructure/http/access-requests.controller.js';
+import { PermissionCatalogController } from './infrastructure/http/iam-admin.controller.js';
+import { PoliciesController } from './infrastructure/http/policies.controller.js';
+import { StaffGroupsController } from './infrastructure/http/staff-groups.controller.js';
+import { StaffController } from './infrastructure/http/staff.controller.js';
 import { IamAdminTypeormRepository } from './infrastructure/persistence/iam-admin.typeorm-repository.js';
 import { StaffAdminTypeormRepository } from './infrastructure/persistence/staff-admin.typeorm-repository.js';
 import { IamModule } from './iam.module.js';
@@ -32,10 +31,10 @@ import { IamModule } from './iam.module.js';
   ],
   providers: [
     StaffAdminTypeormRepository,
-    { provide: STAFF_ADMIN_REPOSITORY, useExisting: StaffAdminTypeormRepository },
+    { provide: StaffAdminRepository, useExisting: StaffAdminTypeormRepository },
     StaffAdminService,
     IamAdminTypeormRepository,
-    { provide: IAM_ADMIN_REPOSITORY, useExisting: IamAdminTypeormRepository },
+    { provide: IamAdminRepository, useExisting: IamAdminTypeormRepository },
     IamAdminService,
   ],
 })

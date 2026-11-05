@@ -11,8 +11,17 @@ let authTried = false;
 const statusListeners = new Set<StatusListener>();
 
 function staffSocketUrl(): string {
+  if (
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ) {
+    return "http://localhost:3011/staff";
+  }
   const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3011/api";
-  return `${new URL(api).origin}/staff`;
+  const url = api.startsWith("http")
+    ? new URL(api)
+    : new URL(api, typeof window !== "undefined" ? window.location.origin : "http://localhost:3010");
+  return `${url.origin}/staff`;
 }
 
 function emitStatus(connected: boolean): void {

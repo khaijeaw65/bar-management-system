@@ -5,7 +5,7 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
-import { CLOCK } from '../src/common/clock.js';
+import { Clock } from '../src/common/clock.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
@@ -28,7 +28,7 @@ describe('Reports (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(CLOCK)
+      .overrideProvider(Clock)
       .useValue({ now: () => NOW })
       .compile();
     app = moduleRef.createNestApplication();
@@ -280,9 +280,9 @@ describe('Reports (e2e)', () => {
     values: { quantity: number; price: string; cancelled?: boolean },
   ): Promise<string> {
     const [row] = await dataSource.query(
-      `INSERT INTO order_item (ticket_id, menu_item_variant_id, item_name_snapshot, variant_name_snapshot, line_no, quantity, unit_price_snapshot, cancelled_at)
-       VALUES ($1, $2, $6, 'ปกติ', 1, $3, $4, $5) RETURNING id`,
-      [ticketId, menu[`${item}Variant`], values.quantity, values.price, values.cancelled ? NOW : null, item],
+      `INSERT INTO order_item (ticket_id, menu_item_variant_id, item_name_snapshot, variant_name_snapshot, line_no, quantity, unit_price_snapshot, cancelled_at, cancel_kind)
+       VALUES ($1, $2, $6, 'ปกติ', 1, $3, $4, $5, $7) RETURNING id`,
+      [ticketId, menu[`${item}Variant`], values.quantity, values.price, values.cancelled ? NOW : null, item, values.cancelled ? 'void' : null],
     );
     return row.id;
   }

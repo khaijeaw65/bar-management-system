@@ -17,7 +17,7 @@ export function PaymentSection({ canEdit }: Readonly<{ canEdit: boolean }>) {
   return (
     <SettingsSection title="การชำระเงิน">
       <RadioGroup value="own_promptpay" aria-label="วิธีรับเงิน">
-        <Radio value="own_promptpay">
+        <Radio value="own_promptpay" className="flex items-center gap-2.5">
           <Radio.Control>
             <Radio.Indicator />
           </Radio.Control>
@@ -25,7 +25,7 @@ export function PaymentSection({ canEdit }: Readonly<{ canEdit: boolean }>) {
             <Label>PromptPay ของร้าน</Label>
           </Radio.Content>
         </Radio>
-        <Radio value="gateway" isDisabled>
+        <Radio value="gateway" isDisabled className="flex items-center gap-2.5">
           <Radio.Control>
             <Radio.Indicator />
           </Radio.Control>

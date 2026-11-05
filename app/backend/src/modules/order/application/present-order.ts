@@ -44,9 +44,28 @@ export function withoutVisit(ticket: TicketView): Ticket {
 }
 
 function presentLine(line: FoldedLine, names: ReadonlyMap<string, string>): OrderLine {
-  const { cancelledById, cancellation, ...body } = line;
-  if (!cancellation) return { ...body, cancellation: null };
-  return { ...body, cancellation: { ...cancellation, by: staffRef(cancelledById, names) } };
+  const { cancelledById, approvedById, cancellation, comp, ...body } = line;
+  if (comp) {
+    return {
+      ...body,
+      cancellation: null,
+      comp: {
+        ...comp,
+        by: staffRef(cancelledById, names),
+        approvedBy: staffRef(approvedById, names),
+      },
+    };
+  }
+  if (!cancellation) return { ...body, cancellation: null, comp: null };
+  return {
+    ...body,
+    cancellation: {
+      ...cancellation,
+      by: staffRef(cancelledById, names),
+      approvedBy: staffRef(approvedById, names),
+    },
+    comp: null,
+  };
 }
 
 function presentIssue(ticket: FoldedTicket, names: ReadonlyMap<string, string>): Ticket['issue'] {

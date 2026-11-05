@@ -6,6 +6,7 @@ import {
   type UpdateModifierGroup,
 } from "@bar/contracts";
 import { normalizePrice } from "../../_lib/draft";
+import { generateUuid } from "@/lib/utils/uuid";
 
 export interface OptionDraft {
   key: string;
@@ -31,7 +32,7 @@ export const optionNameKey = (key: string) => `option.${key}.name`;
 export const optionPriceKey = (key: string) => `option.${key}.priceDelta`;
 
 export function newOption(): OptionDraft {
-  return { key: crypto.randomUUID(), name: "", priceDelta: "0", on: true };
+  return { key: generateUuid(), name: "", priceDelta: "0", on: true };
 }
 
 export function emptyGroup(): GroupDraft {

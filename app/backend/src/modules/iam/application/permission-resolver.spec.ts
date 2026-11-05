@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { PermissionCode } from '@bar/contracts';
-import type { MembershipRow, PermissionSource } from '../domain/permission-source.js';
+import type { PermissionSource } from '../domain/permission-source.js';
+import type { MembershipRow } from '../domain/permission-source.types.js';
 import type { RedisService } from '../../../providers/redis/redis.service.js';
 import { IamVersion } from './iam-version.service.js';
 import { PermissionResolver } from './permission-resolver.service.js';
@@ -44,6 +45,9 @@ class FakeSource implements PermissionSource {
   }
   public codesFor(_userId: string, groupIds: string[]): Promise<PermissionCode[]> {
     return Promise.resolve(groupIds.length > 0 ? this.codes : []);
+  }
+  public staffHolding(): Promise<string[]> {
+    return Promise.resolve([]);
   }
   public everHadOwner(): Promise<boolean> {
     return Promise.resolve(true);

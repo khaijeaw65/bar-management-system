@@ -1,5 +1,5 @@
 import { activeGroups, cacheTtlSeconds } from './effective-access.js';
-import type { MembershipRow } from './permission-source.js';
+import type { MembershipRow } from './permission-source.types.js';
 
 const NOW = new Date('2026-10-30T10:00:00.000Z');
 const at = (iso: string): Date => new Date(iso);

@@ -1,0 +1,6 @@
+---
+description: Protected files agents must not modify, and what to do instead.
+alwaysApply: true
+---
+
+@/docs/rules/agent-boundaries.md

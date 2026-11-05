@@ -5,10 +5,13 @@ const RULES: ReadonlyArray<{ pattern: RegExp; needs: PermissionCode }> = [
   { pattern: /^\/pos\/tables\/[^/]+\/order\/?$/, needs: "orders:create" },
   { pattern: /^\/pos\/tables\/?$/, needs: "tables:read" },
   { pattern: /^\/pos\/orders(\/|$)/, needs: "orders:read" },
+  { pattern: /^\/pos\/payment(\/|$)/, needs: "payments:read" },
   { pattern: /^\/pos\/menu\/modifiers\/?$/, needs: "menu:read" },
   { pattern: /^\/pos\/menu\/[^/]+\/?$/, needs: "menu:write" },
   { pattern: /^\/pos\/menu\/?$/, needs: "menu:read" },
   { pattern: /^\/pos\/reports(\/|$)/, needs: "reports:read" },
+  // Tables administration (BRIEF-069, CD-13)
+  { pattern: /^\/pos\/settings\/tables(\/|$)/, needs: "tables:manage" },
   // Before the general settings rule (first match wins): staff:manage alone reaches these (BRIEF-057, DR-029).
   { pattern: /^\/pos\/settings\/(staff|groups|policies)(\/|$)/, needs: "staff:manage" },
   // DR-029 (Field 2026-10-31): the settings page is back-office; พนักงาน holds venue:read but must not see it.
@@ -18,6 +21,7 @@ const RULES: ReadonlyArray<{ pattern: RegExp; needs: PermissionCode }> = [
 export const POS_START_PAGES = [
   { href: "/pos/tables", label: "โต๊ะ" },
   { href: "/pos/orders", label: "ออเดอร์" },
+  { href: "/pos/payment", label: "ชำระเงิน" },
   { href: "/pos/menu", label: "เมนู" },
   { href: "/pos/reports", label: "รายงาน" },
   { href: "/pos/settings", label: "ตั้งค่า" },

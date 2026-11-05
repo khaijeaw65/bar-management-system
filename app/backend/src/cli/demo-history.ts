@@ -180,6 +180,7 @@ function orderItem(line: DemoLine, context: DemoItemContext): Partial<OrderItem>
     cancelledAt,
     cancelledBy: line.cancelled ? context.staffId : null,
     cancelReason: line.cancelled ? 'สั่งผิด' : null,
+    cancelKind: line.cancelled ? 'void' : null,
   };
 }
 

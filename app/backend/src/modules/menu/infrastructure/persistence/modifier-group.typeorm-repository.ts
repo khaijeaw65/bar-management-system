@@ -3,11 +3,11 @@ import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { In } from 'typeorm';
 import type { ModifierGroupAdmin } from '@bar/contracts';
+import type { ModifierGroupRepository } from '../../domain/modifier-group.repository.js';
 import type {
   ModifierGroupFields,
-  ModifierGroupRepository,
   ModifierOptionFields,
-} from '../../domain/modifier-group.repository.js';
+} from '../../domain/modifier-group.types.js';
 import { ModifierGroup } from './modifier-group.entity.js';
 import { ModifierOption } from './modifier-option.entity.js';
 

@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# field-kit: commit-msg hook (enforces conventional commit format)
+set -e
+
+MSG_FILE="$1"
+FIRST_LINE=$(head -n 1 "$MSG_FILE")
+
+# Allow merge commits, fixup/squash, initial commits, or version tags
+if echo "$FIRST_LINE" | grep -q -E '^(Merge|fixup!|squash!|v[0-9]|wip:)'; then
+  exit 0
+fi
+
+# field-kit pattern: <type>(<scope>): <subject>
+# Allowed types: feat, fix, docs, refactor, test, chore
+# Scope: BRIEF-###, DEFECT-###, BUG-###, or alphanumeric
+PATTERN="^(feat|fix|docs|refactor|test|chore)\((BRIEF-[0-9]+|DEFECT-[0-9]+|BUG-[0-9]+|[a-zA-Z0-9_\-\.]+)\): .+"
+
+if ! echo "$FIRST_LINE" | grep -q -E "$PATTERN"; then
+  echo "❌ [field-kit] Invalid commit message format: \"$FIRST_LINE\""
+  echo "Expected format: <type>(<scope>): <description>"
+  echo "Examples:"
+  echo "  feat(BRIEF-066): add seat deactivation endpoint"
+  echo "  fix(BRIEF-066): address audit findings #1, #2"
+  echo "  docs(BRIEF-066): Ready — Rev 1 approved by kj"
+  echo "  test(DEFECT-001): reproduce table lock timeout"
+  exit 1
+fi
+
+exit 0

@@ -1,0 +1,7 @@
+---
+description: Next.js — Frontend structure, styling, state, API client and component limits.
+globs: app/frontend/**
+alwaysApply: false
+---
+
+@/docs/rules/frontend.md

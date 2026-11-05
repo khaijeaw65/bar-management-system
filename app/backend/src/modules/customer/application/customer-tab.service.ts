@@ -1,6 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { CustomerTab } from '@bar/contracts';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { OrderQueryService } from '../../order/application/order-query.service.js';
 import type { GuestSessionView } from '../domain/guest-session.types.js';
 import { emptyCustomerTab, foldCustomerTab } from './customer-tab.js';
@@ -9,7 +9,7 @@ import { emptyCustomerTab, foldCustomerTab } from './customer-tab.js';
 export class CustomerTabService {
   public constructor(
     private readonly orders: OrderQueryService,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
   ) {}
 
   public async get(guest: GuestSessionView): Promise<CustomerTab> {

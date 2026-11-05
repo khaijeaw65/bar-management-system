@@ -7,6 +7,7 @@ import {
 import { z } from "zod";
 import { ApiError } from "@/lib/api/errors";
 import { scaleMoney, sumMoney } from "@/lib/utils/money";
+import { generateUuid } from "@/lib/utils/uuid";
 import type { OrderableItem } from "./orderable";
 
 export interface NewLine {
@@ -61,7 +62,7 @@ const detailsSchema = z.object({ details: z.array(UnavailableLineSchema) });
 
 export function createCart(): CartState {
   return {
-    idempotencyKey: crypto.randomUUID(),
+    idempotencyKey: generateUuid(),
     nextId: 1,
     lines: [],
     names: [],

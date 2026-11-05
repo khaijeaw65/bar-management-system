@@ -2,15 +2,16 @@
 
 | | |
 |---|---|
-| **Auditor** | <actual Cowork / Codex reviewer; session reference> |
-| **Assignment** | <brief auditor + Field instruction/date; fallback/reassignment reason> |
+| **Auditor** | <actual reviewer; session reference> |
+| **Assignment** | <brief auditor + Field instruction/date; fallback reason> |
 | **Date** | YYYY-MM-DD |
-| **Branch / commit** | <branch> · `<sha>` (the audited commit) |
+| **Branch / commit** | `<branch>` · `<sha>` (the audited commit `S`) |
 | **Depth** | Full · Compact |
 | **Brief revision** | <n> |
 | **Recommendation** | PASS · CHANGES REQUIRED · BLOCKED  ← Field makes the final call |
 
 > Findings describe code and documents, not people. Use "Current → Updated" framing.
+> Hard rule: an agent session that implemented, seeded, fixed, or paired on this brief must never run or write this audit.
 
 ## Acceptance Criteria
 | AC | Met? | Evidence (test / file) | Note |
@@ -21,15 +22,16 @@
 | Rule | OK? | Note |
 |---|---|---|
 | Scope — nothing outside the brief | | |
-| No unapproved deviations / deps | | |
-| `PermissionsGuard` only, no inline checks | | |
-| `save()` not `update()` on audited entities | | |
-| ESM `.js` imports · contracts as source of truth | | |
-| Agent boundaries respected | | |
-| Run proof on the audited SHA — migrations run, `/api/health` 200, UI exercised (not just a 200) | | |
+| Seeded `.e2e-spec.ts` untouched (`git diff <seed>..<S>` empty, or `Approved-by: Field (e2e-typo-fix)` trailer present per QA Patch 5, or legacy n/a per #54) | | |
+| Feature `design.md` or living docs (`docs/api/README.md`) synced if code map or contracts changed (no spec drift #55) | | |
+| No unapproved deviations / dependencies | | |
+| Locked architecture rules (`CLAUDE.md`) respected | | |
+| Scoped rule file & coding style (`docs/rules/<kind>.md` + `core.md` anti-patterns) respected | | |
+| Agent boundaries respected (only Section 7 *Unlocked protected files* touched) | | |
+| Hardened Run proof from audited SHA `S` (rebuilt; real auth request + dynamic timestamp #57; UI exercised on screen) | | |
 
 ## Test Quality
-<Do the tests actually assert the ACs? Anything mocked away that should be real? Missing edge cases?>
+<Do the seeded `.e2e-spec.ts` and unit `*.spec.ts` tests pass and assert real outcomes/state without over-mocking? Missing edge cases?>
 
 ## Findings
 | # | Must fix / Suggestion | Severity | Evidence · Current → Updated |
@@ -39,19 +41,15 @@
 ## Recommendation to Field
 <one paragraph>
 
-**Next command:** <CHANGES REQUIRED → `execute BRIEF-###` — fix Must fix #… · PASS → `execute BRIEF-###` (PASS commit + PR) · BLOCKED → the DR or Field decision needed>
+**Next → in <Executor>:** <CHANGES REQUIRED → `fix BRIEF-### (#…)` · PASS → `ship BRIEF-###` · BLOCKED → the DR or Field decision needed>
 
-> Compact audits: retain reviewer/assignment/commit metadata and Evidence Coverage; shorten the body to AC table + Findings + Recommendation.
-> Re-audit after changes: append `## Re-audit — <date> · <sha>` below; don't rewrite the original.
+> Compact audits: keep metadata and Evidence Coverage; shorten the body to AC table + Findings + Recommendation.
+> Re-audit: append `## Re-audit — <date> · <sha>` below; don't rewrite the original.
 
 ## Evidence Coverage
-- Reviewed work SHA: <S>
-- Sources/diff inspected independently: <paths, ACs>
-- Tests run or independently inspected: <commands, SHA, results, limitations>
-- Written uncommitted; the executor commits it unchanged at PASS (H). Pre-merge summary must verify S..H contains evidence-only changes (§7).
-- Repeated blocker: <attempts/evidence and decision needed, or none>
-
-## Sonar (local scan)
-- Handoff Sonar section present for the scanned commit = S (or later scan): <yes / no>
-- Remaining issues have reasons; no unapproved "won't fix"/exclusions: <yes / findings>
-- Learning mode respected (Metee fixed his own issues): <yes / notes>
+- Reviewed work SHA: `<S>` (seed SHA: `<seed>`)
+- Independent CI (Grade A): `<green / gh run list --commit S / n/a>`
+- Local Gates (Grade B): Verified via handoff receipt (exit codes 0)
+- Run Proof (Grade B): Verified via raw HTTP response / dynamic server timestamp
+- Auditor Environment: Sandboxed VM (runtime not re-run locally; verified via Grade A & B artifacts)
+- Written uncommitted; the executor commits it unchanged at PASS (`H`). Pre-merge check (`pr-review`) verifies `S..H` contains evidence-only changes (workflow Section 7).

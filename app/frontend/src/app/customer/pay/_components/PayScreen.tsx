@@ -36,7 +36,9 @@ export function PayScreen() {
   const { bill, pending } = payment.data;
   const create = () => {
     setWatching(true);
-    actions.create.mutate();
+    actions.create.mutate(undefined, {
+      onError: () => setWatching(false),
+    });
   };
 
   if (watching && pending) {

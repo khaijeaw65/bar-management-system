@@ -5,12 +5,14 @@ test("every POS page maps to one permission", () => {
   expect(permissionForPath("/pos/tables")).toBe("tables:read");
   expect(permissionForPath("/pos/tables/abc/order")).toBe("orders:create");
   expect(permissionForPath("/pos/orders")).toBe("orders:read");
+  expect(permissionForPath("/pos/payment")).toBe("payments:read");
   expect(permissionForPath("/pos/menu")).toBe("menu:read");
   expect(permissionForPath("/pos/menu/modifiers")).toBe("menu:read");
   expect(permissionForPath("/pos/menu/new")).toBe("menu:write");
   expect(permissionForPath("/pos/menu/7f2c")).toBe("menu:write");
   expect(permissionForPath("/pos/reports")).toBe("reports:read");
   expect(permissionForPath("/pos/settings")).toBe("venue:update");
+  expect(permissionForPath("/pos/settings/tables")).toBe("tables:manage");
   expect(permissionForPath("/pos/settings/staff")).toBe("staff:manage");
   expect(permissionForPath("/pos/settings/staff/7f2c")).toBe("staff:manage");
   expect(permissionForPath("/pos/settings/groups")).toBe("staff:manage");

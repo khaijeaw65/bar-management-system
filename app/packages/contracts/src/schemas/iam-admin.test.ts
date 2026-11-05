@@ -20,7 +20,7 @@ describe('PERMISSION_CATALOG', () => {
 
 describe('IAM admin inputs', () => {
   it('rejects a code outside the catalog in a matrix write', () => {
-    expect(CreatePolicySchema.safeParse({ name: 'รับเงิน', codes: ['orders:comp'] }).success).toBe(false);
+    expect(CreatePolicySchema.safeParse({ name: 'รับเงิน', codes: ['orders:nonexistent'] }).success).toBe(false);
   });
 
   it('trims names and rejects a blank one', () => {
