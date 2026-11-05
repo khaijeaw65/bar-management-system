@@ -7,7 +7,7 @@
 ## 1. People, Roles, Session Types
 
 - **Field — KJ (`kj`):** decision authority, backend lead, final merge approver. Cursor is the primary executor; Claude Code is a fallback. Field may authorize an agent to perform the approved merge.
-- **Metee (เมธี) (`methee`):** frontend/web and mobile developer; learning mode (Section 8) applies.
+- **Metee (เมธี) (`methee`):** frontend/web and mobile developer; executor like KJ (learning mode retired — DR-030).
 - **Executors (Cursor, Claude Code, Antigravity, Codex):** write scoped app code and unit tests (`*.spec.ts`), own state, handoffs, Pending DRs, brief-unlocked paths, and `design.md` status/code-map syncs listed in the brief. Never approve their own work, never edit seeded `.e2e-spec.ts` files, and never change brief scope/status, DR decisions, or rules on their own initiative.
 - **Cowork:** planning partner, QA test author, and default auditor. Interviews Field to create feature specs (`docs/features/<f>/{requirements,design,ui}.md`), Draft briefs, and acceptance `.e2e-spec.ts` files; runs the Planner Dry Run against the repo; records explicit Field decisions; and sets Ready after Field reviews and explicitly approves. No app implementation code.
 - **Codex auditor:** fallback only when Cowork usage is exhausted and Field explicitly assigns it; never switch automatically. Field may also request an additional cross-check. If Codex implemented the work, use a separate audit session.
@@ -166,7 +166,7 @@ At start of **every** session (or via `/resume`): read own `SESSION_STATE.md` fi
 | `/new-defect` | Triages bugs and creates incident records (`docs/defects/DEFECT-###-<slug>.md`) or routes micro-defects directly to standalone bugfix briefs with regression tests. |
 | `/new-dr` | Raises `DR-###` with mini *Under the hood* flow/tx/failure per option and flags patterns new to Field. Auto-triggered when work hits a Section 5 guard boundary. |
 | `execute BRIEF-###` / `ทำ BRIEF-###` (`/execute`) | Includes resume. Verify identity, Ready revision, implementer, merged dependencies, DRs, unlocks, and checkout. Create branch + seed commit if new; run Step 0 + inside→out build steps (`1 step = 1 commit`); run `G1` proof; commit handoff (`S`), push, and output `Next → in Cowork: audit BRIEF-###`. Idempotent: continues WIP, reports waiting review, or reports Done for a merged PR; never duplicate branches/PRs. |
-| `start BRIEF-###` (`/execute`) | Hand-coded brief (learning-mode implementer): runs `execute` pre-checks and seed/branch switch, then acts as copilot only (Section 8) — explain, review, debug; no app code. |
+| `start BRIEF-###` (`/execute`) | Hand-coded brief (learning-mode implementer): runs `execute` pre-checks and seed/branch switch, then acts as copilot only (Section 8) — explain, review, debug; no app code. Optional — for anyone who wants to hand-code; no default user since DR-030. |
 | `fix BRIEF-### (#…)` (`/execute`) | After CHANGES REQUIRED: fix only the listed `Must fix` findings, commit, push, report the new `S` (Section 3 step 5). |
 | `ship BRIEF-###` (`/execute`) | After PASS: commit the uncommitted audit unchanged + final handoff + state (`H`), push, and open the PR (Section 3 step 6). For hand-coded briefs before audit: runs gates, drafts handoff, and commits/pushes the person's work (`S`). |
 | `audit BRIEF-###` / `ตรวจ BRIEF-###` (`/audit`) | Assigned auditor only (hard-refuses if run in a session that implemented, seeded, fixed, or paired on the brief; wrong tool for the assignment → explain the handoff, never pretend a review happened). Verifies seeded `.e2e-spec.ts` untouched, checks ACs, `design.md` sync, stack rules/style, and `G1` proof → writes `docs/audits/BRIEF-###.md` uncommitted. |
@@ -235,13 +235,13 @@ Only the planner/auditor role (Cowork) records a DR Decision, and only when Fiel
 
 - **G1:** exact commands in the Ready brief (lint / typecheck / unit + seeded e2e tests for affected packages) **plus the run proof** for backend/frontend/mobile changes: the app starts in its real runtime from the work SHA `S` (backend: stack up → `migration:run` succeeds → `/api/health` returns 200; native mobile: build + install on an emulator/device → launch the app), and a UI/flow change is exercised on the real screen/browser — a 200 from the server or a green build alone is not proof. Start fresh on the work SHA; a server left running from earlier is not evidence. Code changed → rebuild (image or app); a restart reuses the old build. Docs/tooling-only briefs: `n/a`.
 - **G2:** required CI checks (`ci`) green on the current PR head `H`, including the brief's integration/e2e coverage. Verify current workflows and scripts; historical setup notes are not evidence that CI exists or passes.
-- **G3:** assigned audit PASS, all ACs supported, seeded `.e2e-spec.ts` untouched in `git diff <seed>..<S>`, `design.md` synced (no spec drift), no unresolved Must fix or unapproved deviation, handoff/state present, Field review. Metee also gives the Section 8 walkthrough.
+- **G3:** assigned audit PASS, all ACs supported, seeded `.e2e-spec.ts` untouched in `git diff <seed>..<S>`, `design.md` synced (no spec drift), no unresolved Must fix or unapproved deviation, handoff/state present, Field review.
 
 ### Local SonarQube scan (pre-commit habit, not a CI gate)
 Field decided 2026-09-25: **local SonarQube Community Build** in Docker. Every developer — **required for Metee's work** — scans before committing and fixes what it flags; Field reads the result in the PR. Not enforced by CI. Hosting a shared SonarQube (EC2 or a cloud plan) is reconsidered with cloud provisioning in November.
 - **Before each commit that changes code:** start SonarQube, run `pnpm sonar`, fix findings, re-scan until the Quality Gate passes **or** every remaining issue has a written reason.
 - **Handoff → Sonar section:** gate result, issue counts by severity, remaining issues + reason (output of `pnpm sonar:report`). Field reviews it in the PR.
-- **Who fixes:** an agent may **run** the scan and **explain** each issue. In Metee's sessions **Metee fixes the issues himself**; the agent helps with code only when he is blocked, and that help counts toward his ≤ 20% (Section 8).
+- **Who fixes:** an agent may **run** the scan and **explain** each issue. The agent may fix issues in any session.
 - Never mark issues "won't fix"/"false positive", add exclusions or change the gate to get a pass without Field's approval.
 - Setup and procedure: `docs/quality/README.md`.
 
@@ -269,7 +269,7 @@ The audit reviews implementation commit `S`; the audit file lands later at head 
 
 ### Merge authority
 - **Field's own PRs** (brief Implementer = kj): pre-approved. The agent may merge once the assigned audit is PASS with zero Must fix, `S..H` is evidence-only, and required checks are green on `H`. Report PR, `H`, and merge SHA afterwards.
-- **Metee's PRs:** always need Field's explicit `อนุมัติ merge BRIEF-###` for the exact head `H`, plus the Section 8 walkthrough. Before approval present exact PR, brief revision, head `H`, assigned audit/result, G1/G2 evidence, zero unresolved Must fix findings, and remaining limitations.
+- **Metee's PRs:** always need Field's explicit `อนุมัติ merge BRIEF-###` for the exact head `H`. Before approval present exact PR, brief revision, head `H`, assigned audit/result, G1/G2 evidence, zero unresolved Must fix findings, and remaining limitations.
 
 Immediately before merging, verify head `H` is unchanged, applicable gates pass, no unresolved conflicts/reviews and no new blocker. If head changes after approval (including state/docs), show the delta and request approval for the new head; code-affecting changes also need re-audit. Never silently merge a different head or bypass failing checks.
 
@@ -292,18 +292,9 @@ After merge: report merge SHA and **Done**; the git hand switches the checkout b
 - Vercel auto-deploy of `main` is disabled (`git.deploymentEnabled.main: false`); PR previews stay on.
 - The deploy workflow is its own brief, scheduled with cloud setup (late November).
 
-## 8. Learning / Hand-Coding Mode — เมธี
+## 8. Learning / Hand-Coding Mode — retired (DR-030, 2026-11-05)
 
-Applies to: **Metee (เมธี)**. Goal: build real skill. Agents support, they don't author.
-
-- **Agents ≤ 20%** — for explaining, debugging, reviewing. Not for generating whole components, pages or features.
-- **The learner writes the tests.** Tests are where the learning is.
-- **AI usage** in every handoff: `Low / Medium / High` + one line on what for. No fake-precise percentages.
-- **G3 walkthrough:** the learner explains one non-trivial part of the PR. Can't explain it → PR goes back.
-- **Sonar issues:** agents may run the scan and explain findings; Metee fixes them himself — agents write code only to unblock him (counts toward the 20%).
-- **Agents in a learner's session:** if asked to generate a whole file, feature or test file, remind them of this rule once, then offer an explanation, a skeleton or a review instead.
-- **Commands:** the learner's brief starts with `start BRIEF-###` (pre-checks + branch, then copilot only) and goes out with `ship BRIEF-###` (gates, handoff, commit/push of the learner's work). No AI co-author trailer on hand-typed code.
-- **Pairing vs audit:** a session that paired on the code never audits it — use a separate audit session.
+Metee works as an executor like KJ; quality comes from the Cowork audit + Field review. `start BRIEF-###` stays available for anyone who wants to hand-code a brief.
 
 ## 9. Why This Process Exists
 
