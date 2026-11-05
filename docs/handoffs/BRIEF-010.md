@@ -6,7 +6,7 @@
 | **Date** | 2026-11-05 |
 | **Brief revision** | 3 |
 | **Branch** | `feat/BRIEF-010-mobile-shell-queue` (PR opens after audit PASS) |
-| **Work Commit** | `<pending commit>` |
+| **Work Commit** | `71c4210` |
 | **Status** | Implemented — awaiting audit |
 
 > Created at Implemented. Updated once in the PASS commit. Frozen at merge.
