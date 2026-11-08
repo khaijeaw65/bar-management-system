@@ -1,27 +1,28 @@
 # State — KJ
-Updated: 2026-11-02 · Agent: Antigravity (BRIEF-071 Rev 2 Shipped / PR open)
+Updated: 2026-11-08 15:50 · Agent: Cowork (re-scope planning — DR-031/032/033 Approved)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-071 Rev 2 Audit PASS — PR open**. Branch `feat/BRIEF-071-demo-defects-polish`. Next: merge BRIEF-071, then proceed to AI owner insight (DR-014).
-
+DR-031 / 032 / 033 Approved 2026-11-08 → git hand ships `docs/dr-031-033-rescope` (ship line in chat) →
+next: 10 Nov advisor deck (`docs/bar_management_v3.pptx`).
 ## Active
-- Brief: BRIEF-071 Rev 2 (Audit PASS — PR open) · Implementer: kj / Antigravity · Auditor: Antigravity
-- Done 21 Oct–2 Nov: BRIEF-073 (#122) · BRIEF-072 (#121) · BRIEF-071 (#120) · BRIEF-018 (#119) · BRIEF-070 (#118) · BRIEF-069 (#117) · BRIEF-068 (#116) · BRIEF-066 (#115) · BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
-
+- Mode: Planning (re-scope after advisor review) · Brief: none · Branch: `main` · PR: none · BRIEF-071 merged (#123)
+- Uncommitted to read on `/resume`: `docs/decisions/DR-031-full-shop-management-scope.md`, `DR-032-own-ml-no-llm.md`,
+  `DR-033-aws-ecs-service-split.md` (all Approved) · source: `docs/research/2026-11-08-feature-interview-notes.md`
+## Session checkpoint (written by `/checkpoint` — do not re-ask in next session)
+- **Locked / Rejected in chat:** 8-topic interview complete, tiers, ECS infra, rejected list → all in the notes file
+- **Paused at:** DRs approved (P&L subtracts loss; worker split has an in-`api` fallback) → start the 10 Nov deck · 8–9 Nov = documents, timeline, UI update
+- **Checks:** not run (docs only)
 ## Next steps
-1. merge BRIEF-071
-2. AI owner insight (DR-014) — needs CD + feature spec first
-3. BRIEF-065 (Metee)
-
+1. Git hand ships `docs/dr-031-033-rescope` (PR same day)
+2. 10 Nov deck (`docs/bar_management_v3.pptx`): feature map, café-vs-bar, ML plan, ask advisor K1 alcohol-law rules
+3. Confirm timeline in notes → FRD v2 + schema / ERD → CD-16…CD-23 briefs (UI) · BRIEF-065 (Metee) continues
 ## Blockers / Coordination
-- Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4)
-- e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e
-- Dev servers stopped; Postgres + Redis (docker) left running
+- K1 legal rules → advisor (10 Nov) · CLAUDE.md / AGENTS.md / infra.md / DR-002 updates per DR-031–033 locks (protected — Field OKs exact diff) · Metee drafts BRIEF-074–077 (untracked) untouched
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
 - Port naming (Field 1 Nov): rule = `abstract class I<Name>`; 21 ports in code are unprefixed (BRIEF-067) → cleanup brief after backend phase (rename + `domain/ports/*.port.ts` + 067 S6/S7/S9). Until then: new ports use `I<Name>` — say so in each backend brief
-- Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
+- Milestones: gate 8 Nov (order → pay → close) · advisor 2nd update 10 Nov · AWS 9–20 Nov (ECS split, DR-033) · exam prep 21–29 Nov · exams 3 / 4 / 8 Dec · **S1 project final exam 14 Dec** · feature freeze 15 Mar (proposed) · final Apr 2027 · build order + tiers → `docs/research/2026-11-08-feature-interview-notes.md` · Metee ~1 mobile brief/wk (≤ 10 h)
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)
 - Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete branches: merged (#45, #46, #48–#52, #54–#72 + `feat/BRIEF-017-void-comp-issues`, `feat/BRIEF-027-sold-out-auto-void`, `feat/BRIEF-028-web-login-real-api`, `feat/BRIEF-029-pos-floor-open-table`, `feat/BRIEF-030-pos-session-panel-close`, `feat/BRIEF-031-pos-order-entry` + local `docs/workflow-rev19`, `docs/rules-class-helpers`) and stale `docs/state-1018` (#53 closed), `docs/planning-1017-evening`, `docs/schema-38-tables`; optional auto-delete head branches
 - Dev env isolation (Field 23 Oct — after 036–038): e2e still shares Redis with the dev backend (BullMQ payments queue steals test expiry jobs; e2e flushdb signs out dev sessions) → own Redis DB index / queue prefix for tests, together with BRIEF-013 S2 (BullMQ drops the DB index) · until then stop the dev backend before backend test:e2e · after any e2e/seed reset: re-run seed:staff with Field's LINE sub (dev DB staff is "Field (demo)" / U-demo-owner since BRIEF-036) · demo menu needs created_at ≥ 7 days for "ขายน้อย" (BRIEF-036 run proof backdated it by hand)
