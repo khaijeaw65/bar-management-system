@@ -45,6 +45,22 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
+jest.mock('expo-secure-store', () => {
+  const store = new Map();
+  return {
+    setItemAsync: jest.fn(async (key, value) => {
+      store.set(key, String(value));
+    }),
+    getItemAsync: jest.fn(async (key) => {
+      return store.has(key) ? store.get(key) : null;
+    }),
+    deleteItemAsync: jest.fn(async (key) => {
+      store.delete(key);
+    }),
+    __store: store,
+  };
+});
+
 jest.mock('expo-crypto', () => {
   const nodeCrypto = require('node:crypto');
   return {
