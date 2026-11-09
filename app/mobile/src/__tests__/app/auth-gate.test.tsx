@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, waitFor, cleanup } from '@testing-library/react-native';
-import { AuthGate } from '../../app/_layout';
+import { AuthGate } from '../../components/auth/AuthGate';
 import { resetSession, signIn } from '../../lib/auth/session';
 
 const mockReplace = jest.fn();

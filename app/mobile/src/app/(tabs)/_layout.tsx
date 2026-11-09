@@ -2,11 +2,15 @@ import { Tabs } from 'expo-router';
 import { ClipboardList, Menu } from 'lucide-react-native';
 import { useCSSVariable } from 'uniwind';
 
+function asColor(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
 export default function TabsLayout() {
-  const bg = useCSSVariable('--surface-overlay') as string;
-  const border = useCSSVariable('--line') as string;
-  const activeTint = useCSSVariable('--accent') as string;
-  const inactiveTint = useCSSVariable('--text-muted') as string;
+  const bg = asColor(useCSSVariable('--surface-overlay'));
+  const border = asColor(useCSSVariable('--line'));
+  const activeTint = asColor(useCSSVariable('--accent'));
+  const inactiveTint = asColor(useCSSVariable('--text-muted'));
 
   return (
     <Tabs
