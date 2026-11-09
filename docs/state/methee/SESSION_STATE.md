@@ -1,31 +1,35 @@
 # State — Methee
-Updated: 2026-11-09 16:05 · Agent: Antigravity
+Updated: 2026-11-09 19:05 · Agent: Antigravity
 > Tracked branch snapshot, ≤ 40 lines. Write only your own state; refresh at session end/before changing tools.
 
 ## Resume
-BRIEF-010 shipped (audit PASS at S = dd34580, PR #128 ready for review).
+Executing BRIEF-022 on branch `feat/BRIEF-022-mobile-line-login`.
 
 ## Active
-- Brief: BRIEF-010 — Staff app: shell, mock login, order queue (read-only, mocks) · Revision: 3
-- Brief file: docs/briefs/BRIEF-010-mobile-shell-queue.md
-- Stage: Shipped
-- Branch: feat/BRIEF-010-mobile-shell-queue
-- Work commit: dd34580
-- PR: #128 (ready for Field review & merge)
+- Brief: BRIEF-022 — Staff app: real LINE login, secure session, API client · Revision: 2
+- Brief file: docs/briefs/BRIEF-022-mobile-line-login.md
+- Stage: In Progress
+- Branch: feat/BRIEF-022-mobile-line-login
+- Work commit: pending
+- PR: none (opens after audit PASS)
 
 ## Working tree
 - Uncommitted: clean
-- Checks: lint=0, typecheck=0, test=0 (8 suites, 21 passed), export:check=0, Sonar=0 (OK, 0 issues in mobile)
+- Checks: lint=0, typecheck=0, test=0 (8 suites, 21 passed), export:check=0, Sonar=0
 
 ## Progress
-- Completed: AC-1–AC-9. Providers, AuthGate, mock session, mock tickets, OrderCard, login screen, tabs layout, order queue with status filters/states, utils, tests, status bar auto, run proof (emulator), local Sonar scan (Quality Gate PASSED).
-- Remaining: Field review & merge PR #128.
+- Completed: Pre-checks passed (identity methee, BRIEF-010/021 merged, branch merged with main).
+- In progress: Step 1 (Install approved dependencies: expo-web-browser, expo-secure-store, expo-crypto, axios).
+- Remaining: PKCE, TokenStorage, API Client, Session & AuthGate, Login states 1–5, Logout, Gates & Run proof.
 
 ## Next steps
-1. Field reviews and merges PR #128.
-2. Advance to next brief in roadmap.
+1. Install pre-decided dependencies and update app/mobile/.env.example.
+2. Build PKCE helper + unit test (AC-1).
+3. Build TokenStorage + API client with 401 refresh handler + tests (AC-5, AC-6).
+4. Update session, AuthGate and screens with CD-08 states 1–5.
+5. Run gates & proof.
 
 ## Blockers / Coordination
 - none
 - Shared files: none
-- Review queue: PR #128 awaiting Field approval
+- Review queue: BRIEF-022 in progress
