@@ -87,9 +87,7 @@ describe('OrdersScreen (AC-3, AC-4, AC-5)', () => {
     // Cancelled item rendered with strike-through
     const cancelledItem = screen.getByTestId('cancelled-order-item');
     expect(cancelledItem).toBeTruthy();
-    expect(cancelledItem.props.style).toEqual(
-      expect.objectContaining({ textDecorationLine: 'line-through' }),
-    );
+    expect(cancelledItem.props.className).toContain('line-through');
   });
 
   it('filters by status, never shows sent/cancelled, and shows dot on issue tab (AC-4)', async () => {
@@ -105,7 +103,7 @@ describe('OrdersScreen (AC-3, AC-4, AC-5)', () => {
             orderId: 'sent-id',
             orderNumber: 99,
             station: 'bar',
-            status: 'sent' as any,
+            status: 'sent',
             seat: { id: 's99', label: 'T99', kind: 'table' },
             items: [],
             issue: null,
@@ -119,7 +117,7 @@ describe('OrdersScreen (AC-3, AC-4, AC-5)', () => {
             orderId: 'cancelled-id',
             orderNumber: 98,
             station: 'bar',
-            status: 'cancelled' as any,
+            status: 'cancelled',
             seat: { id: 's98', label: 'T98', kind: 'table' },
             items: [],
             issue: null,

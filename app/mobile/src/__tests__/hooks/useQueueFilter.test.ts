@@ -2,7 +2,12 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useQueueFilter } from '../../hooks/useQueueFilter';
 import type { Ticket, TicketList } from '@bar/contracts';
 
-function makeTicket(id: string, orderNumber: number, status: any, createdAt: string): Ticket {
+function makeTicket(
+  id: string,
+  orderNumber: number,
+  status: Ticket['status'],
+  createdAt: string,
+): Ticket {
   return {
     id,
     orderId: '00000000-0000-0000-0000-000000000000',
@@ -50,7 +55,7 @@ describe('useQueueFilter (AC-3, AC-4)', () => {
     expect(result.current.tickets.map((t) => t.orderNumber)).toEqual([1, 4]);
   });
 
-  it('detects hasIssue when any issue ticket exists (AC-4)', async () => {
+  it('detects hasIssue when an issue ticket exists (AC-4)', async () => {
     const listWithIssue: TicketList = {
       items: [
         makeTicket('1', 1, 'pending', '2026-11-09T10:10:00Z'),

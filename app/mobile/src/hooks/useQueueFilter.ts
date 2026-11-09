@@ -15,10 +15,9 @@ export function useQueueFilter(ticketList?: TicketList) {
     );
 
     // Exclude sent and cancelled orders from the queue
-    const validTickets = sorted.filter((t: Ticket) => {
-      const statusStr = t.status as string;
-      return statusStr !== 'sent' && statusStr !== 'cancelled';
-    });
+    const validTickets = sorted.filter(
+      (t: Ticket) => t.status !== 'sent' && t.status !== 'cancelled',
+    );
 
     const anyIssue = validTickets.some((t) => t.status === 'issue');
 

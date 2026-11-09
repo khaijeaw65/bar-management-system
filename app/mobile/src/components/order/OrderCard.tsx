@@ -25,11 +25,7 @@ const STATUS_MAP: Record<TicketStatus, StatusMeta> = {
 };
 
 function getStatusMeta(status: TicketStatus): StatusMeta {
-  return STATUS_MAP[status] ?? {
-    label: status,
-    bgClass: 'bg-status-neutral-bg',
-    textClass: 'text-status-neutral-fg',
-  };
+  return STATUS_MAP[status];
 }
 
 export function OrderCard({ ticket }: OrderCardProps) {
@@ -68,7 +64,6 @@ export function OrderCard({ ticket }: OrderCardProps) {
               className={`text-sm font-sans ${
                 isCancelled ? 'line-through text-text-faint' : 'text-text-body'
               }`}
-              style={isCancelled ? { textDecorationLine: 'line-through' } : undefined}
             >
               {item.quantity}× {item.name}
             </Text>
