@@ -1,5 +1,4 @@
 import React from 'react';
-import crypto from 'node:crypto';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as WebBrowser from 'expo-web-browser';
@@ -12,6 +11,7 @@ import {
 } from '../../lib/auth/session';
 import { readTokens } from '../../lib/auth/token-storage';
 import * as authApi from '../../lib/api/auth';
+import { createPkceChallenge } from '../../lib/auth/pkce';
 
 const mockReplace = jest.fn();
 let mockSearchParams: { reason?: string } = {};
@@ -142,10 +142,7 @@ describe('LoginScreen (AC-2, AC-3, AC-4, CD-08 states 1–5)', () => {
       const challengeMatch = /code_challenge=([^&]+)/.exec(calledAuthUrl);
       const passedChallenge = challengeMatch?.[1];
 
-      const expectedChallenge = crypto
-        .createHash('sha256')
-        .update(receivedVerifier as string)
-        .digest('base64url');
+      const expectedChallenge = await createPkceChallenge(receivedVerifier as string);
       expect(passedChallenge).toBe(expectedChallenge);
 
       const tokens = await readTokens();
