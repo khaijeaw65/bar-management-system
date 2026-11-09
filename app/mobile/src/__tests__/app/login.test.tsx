@@ -1,4 +1,5 @@
 import React from 'react';
+import crypto from 'node:crypto';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as WebBrowser from 'expo-web-browser';
@@ -102,15 +103,16 @@ describe('LoginScreen (AC-2, AC-3, AC-4, CD-08 states 1–5)', () => {
   describe('Real LINE Login with PKCE & WebBrowser (AC-2, AC-3, AC-4)', () => {
     beforeEach(() => {
       process.env.EXPO_PUBLIC_USE_MOCKS = '0';
+      process.env.EXPO_PUBLIC_API_URL = 'http://localhost:3011/api';
     });
 
-    it('AC-2: browser returns code → exchanges token, saves to SecureStore, routes to orders', async () => {
-      jest.spyOn(WebBrowser, 'openAuthSessionAsync').mockResolvedValueOnce({
+    it('AC-2: browser returns code → exchanges token with code + PKCE verifier, saves to SecureStore, routes to orders', async () => {
+      const openAuthSpy = jest.spyOn(WebBrowser, 'openAuthSessionAsync').mockResolvedValueOnce({
         type: 'success',
         url: 'barapp://auth?code=mock-auth-code',
       });
 
-      jest.spyOn(authApi, 'exchangeCode').mockResolvedValueOnce({
+      const exchangeSpy = jest.spyOn(authApi, 'exchangeCode').mockResolvedValueOnce({
         accessToken: 'access-token-123',
         refreshToken: 'refresh-token-456',
         expiresIn: 3600,
@@ -130,15 +132,49 @@ describe('LoginScreen (AC-2, AC-3, AC-4, CD-08 states 1–5)', () => {
         expect(mockReplace).toHaveBeenCalledWith('/(tabs)/orders');
       });
 
+      expect(exchangeSpy).toHaveBeenCalledTimes(1);
+      const [receivedCode, receivedVerifier] = exchangeSpy.mock.calls[0] ?? [];
+      expect(receivedCode).toBe('mock-auth-code');
+      expect(typeof receivedVerifier).toBe('string');
+      expect(receivedVerifier?.length).toBe(43);
+
+      const calledAuthUrl = openAuthSpy.mock.calls[0]?.[0] ?? '';
+      const challengeMatch = /code_challenge=([^&]+)/.exec(calledAuthUrl);
+      const passedChallenge = challengeMatch?.[1];
+
+      const expectedChallenge = crypto
+        .createHash('sha256')
+        .update(receivedVerifier as string)
+        .digest('base64url');
+      expect(passedChallenge).toBe(expectedChallenge);
+
       const tokens = await readTokens();
       expect(tokens?.accessToken).toBe('access-token-123');
       expect(tokens?.refreshToken).toBe('refresh-token-456');
       expect(getSession()?.staffName).toBe('พนักงานกานต์');
     });
 
-    it('AC-3: user cancels or dismisses browser → returns to default with no error', async () => {
+    it('AC-3: user cancels browser (CANCEL) → returns to default with no error', async () => {
       jest.spyOn(WebBrowser, 'openAuthSessionAsync').mockResolvedValueOnce({
         type: WebBrowser.WebBrowserResultType.CANCEL,
+      });
+
+      await renderWithProviders(<LoginScreen />);
+      const loginButton = screen.getByTestId('login-button');
+      fireEvent.press(loginButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('เข้าสู่ระบบด้วย LINE')).toBeTruthy();
+      });
+
+      expect(screen.queryByText('เข้าสู่ระบบไม่สำเร็จ')).toBeNull();
+      expect(screen.queryByText('บัญชี LINE นี้ยังไม่ได้ลงทะเบียน')).toBeNull();
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('AC-3: user dismisses browser (DISMISS) → returns to default with no error', async () => {
+      jest.spyOn(WebBrowser, 'openAuthSessionAsync').mockResolvedValueOnce({
+        type: WebBrowser.WebBrowserResultType.DISMISS,
       });
 
       await renderWithProviders(<LoginScreen />);
@@ -185,7 +221,7 @@ describe('LoginScreen (AC-2, AC-3, AC-4, CD-08 states 1–5)', () => {
       expect(screen.queryByText('บัญชี LINE นี้ยังไม่ได้ลงทะเบียน')).toBeNull();
     });
 
-    it('AC-4: error=login_failed or token exchange failure → renders login·3 copy with "ลองอีกครั้ง"', async () => {
+    it('AC-4: error=login_failed → renders login·3 copy with "ลองอีกครั้ง"', async () => {
       jest.spyOn(WebBrowser, 'openAuthSessionAsync').mockResolvedValueOnce({
         type: 'success',
         url: 'barapp://auth?error=login_failed',
@@ -202,6 +238,30 @@ describe('LoginScreen (AC-2, AC-3, AC-4, CD-08 states 1–5)', () => {
         ).toBeTruthy();
         expect(screen.getByText('ลองอีกครั้ง')).toBeTruthy();
       });
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('AC-4: token exchange failure (exchangeCode rejects) → renders login·3 copy with "ลองอีกครั้ง"', async () => {
+      jest.spyOn(WebBrowser, 'openAuthSessionAsync').mockResolvedValueOnce({
+        type: 'success',
+        url: 'barapp://auth?code=mock-auth-code',
+      });
+      jest.spyOn(authApi, 'exchangeCode').mockRejectedValueOnce(
+        new Error('Network error during token exchange'),
+      );
+
+      await renderWithProviders(<LoginScreen />);
+      const loginButton = screen.getByTestId('login-button');
+      fireEvent.press(loginButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('เข้าสู่ระบบไม่สำเร็จ')).toBeTruthy();
+        expect(
+          screen.getByText('ลองอีกครั้ง หากยังไม่ได้ ให้ตรวจว่าเปิดแอป LINE ในเครื่องนี้แล้ว'),
+        ).toBeTruthy();
+        expect(screen.getByText('ลองอีกครั้ง')).toBeTruthy();
+      });
+      expect(mockReplace).not.toHaveBeenCalled();
     });
   });
 });
