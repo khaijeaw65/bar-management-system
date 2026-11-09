@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "uniwind";
+@import "heroui-native/styles";
 @source "../node_modules/heroui-native/lib";
 
 @theme {
@@ -110,8 +111,8 @@
   }
 }
 
-@theme inline {
-  --font-sans: "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+@theme inline static {
+  --font-sans: NotoSansThai_400Regular;
 
   --color-bg-app: var(--bg-app);
   --color-bg-sunken: var(--bg-sunken);
