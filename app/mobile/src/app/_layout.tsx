@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HeroUINativeProvider } from 'heroui-native';
+import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useFonts,
@@ -32,6 +33,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>
+        <StatusBar style="auto" />
         <QueryClientProvider client={queryClient}>
           <AuthGate />
         </QueryClientProvider>
