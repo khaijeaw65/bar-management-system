@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig, type AxiosResponse } from 'axios';
-import { apiClient, ApiError, onAuthExpired } from '../../../lib/api/client';
+import { apiClient, ApiError, onAuthExpired, getApiBaseUrl } from '../../../lib/api/client';
 import * as tokenStorage from '../../../lib/auth/token-storage';
 
 function makeAxiosError(
@@ -155,5 +155,18 @@ describe('API Client (AC-5, AC-6)', () => {
     expect(authExpiredCalled).toBe(true);
 
     unsubscribe();
+  });
+
+  it('throws configuration error when EXPO_PUBLIC_API_URL is missing and mocks are disabled (#5)', () => {
+    const origMocks = process.env.EXPO_PUBLIC_USE_MOCKS;
+    const origUrl = process.env.EXPO_PUBLIC_API_URL;
+    try {
+      process.env.EXPO_PUBLIC_USE_MOCKS = '0';
+      delete process.env.EXPO_PUBLIC_API_URL;
+      expect(() => getApiBaseUrl()).toThrow('EXPO_PUBLIC_API_URL environment variable is required');
+    } finally {
+      process.env.EXPO_PUBLIC_USE_MOCKS = origMocks;
+      process.env.EXPO_PUBLIC_API_URL = origUrl;
+    }
   });
 });

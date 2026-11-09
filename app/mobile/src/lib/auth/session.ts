@@ -4,7 +4,7 @@ import * as Linking from 'expo-linking';
 import { createPkcePair } from './pkce';
 import { readTokens, saveTokens, clearTokens } from './token-storage';
 import { exchangeCode, getMe, logout } from '../api/auth';
-import { apiClient, onAuthExpired } from '../api/client';
+import { apiClient, onAuthExpired, getApiBaseUrl } from '../api/client';
 
 export interface StaffSession {
   staffName: string;
@@ -164,7 +164,7 @@ export async function signIn(opts?: { delayMs?: number }): Promise<StaffSession>
   }
 
   const { verifier, challenge } = await createPkcePair();
-  const apiBase = apiClient.defaults.baseURL || process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiBase = apiClient.defaults.baseURL || getApiBaseUrl();
   const authUrl = `${apiBase}/auth/line/login?client=mobile&code_challenge=${challenge}&code_challenge_method=S256`;
 
   const result = await WebBrowser.openAuthSessionAsync(authUrl, 'barapp://auth');

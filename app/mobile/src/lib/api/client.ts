@@ -29,10 +29,19 @@ export function notifyAuthExpired(): void {
   });
 }
 
-const baseURL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+export function getApiBaseUrl(): string {
+  const url = process.env.EXPO_PUBLIC_API_URL;
+  if (!url) {
+    if (process.env.EXPO_PUBLIC_USE_MOCKS === '1') {
+      return '';
+    }
+    throw new Error('EXPO_PUBLIC_API_URL environment variable is required when mocks are disabled');
+  }
+  return url;
+}
 
 export const apiClient = create({
-  baseURL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

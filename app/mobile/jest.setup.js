@@ -1,4 +1,5 @@
 process.env.EXPO_PUBLIC_USE_MOCKS = '1';
+process.env.EXPO_PUBLIC_API_URL = 'http://localhost:3011/api';
 
 const mockCache = {
   set() {},
