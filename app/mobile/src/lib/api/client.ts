@@ -1,4 +1,4 @@
-import axios, { create, type AxiosRequestConfig } from 'axios';
+import axios, { create, isAxiosError, type AxiosRequestConfig } from 'axios';
 import { MobileTokenResponseSchema } from '@bar/contracts';
 import { readTokens, saveTokens, clearTokens } from '../auth/token-storage';
 
@@ -102,7 +102,7 @@ apiClient.interceptors.response.use(
 
             return validated.accessToken;
           } catch (refreshErr) {
-            if (axios.isAxiosError(refreshErr)) {
+            if (isAxiosError(refreshErr)) {
               const status = refreshErr.response?.status;
               if (status === 401) {
                 await clearTokens();
@@ -131,7 +131,7 @@ apiClient.interceptors.response.use(
       return await apiClient.request(originalRequest);
     }
 
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const status = error.response?.status ?? 0;
       const errData = error.response?.data as { code?: string; message?: string } | undefined;
       const code = errData?.code ?? (status === 0 ? 'NETWORK_ERROR' : status === 401 ? 'UNAUTHORIZED' : 'API_ERROR');
