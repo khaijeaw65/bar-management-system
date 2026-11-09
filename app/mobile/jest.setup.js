@@ -1,3 +1,5 @@
+process.env.EXPO_PUBLIC_USE_MOCKS = '1';
+
 const mockCache = {
   set() {},
   get() {
@@ -87,3 +89,40 @@ jest.mock('expo-crypto', () => {
     },
   };
 });
+
+jest.mock('expo-web-browser', () => ({
+  openAuthSessionAsync: jest.fn(async () => ({ type: 'cancel' })),
+  dismissAuthSession: jest.fn(),
+  WebBrowserResultType: {
+    CANCEL: 'cancel',
+    DISMISS: 'dismiss',
+    OPENED: 'opened',
+    LOCKED: 'locked',
+    SUCCESS: 'success',
+  },
+}));
+
+jest.mock('expo-linking', () => ({
+  parse: jest.fn((url) => {
+    try {
+      const parsed = new URL(url);
+      const queryParams = Object.fromEntries(parsed.searchParams.entries());
+      return {
+        scheme: parsed.protocol.replace(':', ''),
+        hostname: parsed.hostname,
+        path: parsed.pathname,
+        queryParams,
+      };
+    } catch {
+      const questionIdx = url.indexOf('?');
+      if (questionIdx === -1) {
+        return { queryParams: {} };
+      }
+      const search = url.slice(questionIdx + 1);
+      const params = new URLSearchParams(search);
+      return { queryParams: Object.fromEntries(params.entries()) };
+    }
+  }),
+  createURL: jest.fn((path) => `barapp://${path}`),
+}));
+
