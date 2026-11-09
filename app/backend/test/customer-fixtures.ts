@@ -37,11 +37,20 @@ export async function startGuest(app: INestApplication, qrToken: string): Promis
   return cookie;
 }
 
-export function asGuest(app: INestApplication, method: 'get' | 'post' | 'patch', path: string, cookie: string) {
+export function asGuest(
+  app: INestApplication,
+  method: 'get' | 'post' | 'patch',
+  path: string,
+  cookie: string,
+): request.Test {
   return request(app.getHttpServer())[method](`/api/customer${path}`).set('Cookie', `guest_session=${cookie}`);
 }
 
-export function openVisit(app: INestApplication, accessToken: string, tableSeatId: string) {
+export function openVisit(
+  app: INestApplication,
+  accessToken: string,
+  tableSeatId: string,
+): request.Test {
   return request(app.getHttpServer())
     .post('/api/visits')
     .set({ Authorization: `Bearer ${accessToken}` })

@@ -1,33 +1,34 @@
 # State — KJ
-Updated: 2026-10-31 · Agent: Claude Code (BRIEF-058 audit PASS)
+Updated: 2026-11-08 15:50 · Agent: Cowork (re-scope planning — DR-031/032/033 Approved)
 > Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
 
 ## Resume
-**BRIEF-058 audit PASS, PR open** (S `33bd61d`) → `ci` green → merge (Field's own PR, §7). Next: AI owner insight / bootstrap batch per queue.
-
+DR-031 / 032 / 033 Approved 2026-11-08 → git hand ships `docs/dr-031-033-rescope` (ship line in chat) →
+next: 10 Nov advisor deck (`docs/bar_management_v3.pptx`).
 ## Active
-- Brief: BRIEF-058 Rev 1 · Stage: audit PASS, PR open · Branch: `feat/BRIEF-058-groups-policies-ui` (main merged in at start)
-- Done 21–31 Oct: BRIEF-057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85) · ERD DR-025 (#93) · DR-022 docs (#84) · 042 (#83) · 039 (#81) · 038 (#80) · 037 (#79) · 036 (#78)
-
+- Mode: Planning (re-scope after advisor review) · Brief: none · Branch: `main` · PR: none · BRIEF-071 merged (#123)
+- Uncommitted to read on `/resume`: `docs/decisions/DR-031-full-shop-management-scope.md`, `DR-032-own-ml-no-llm.md`,
+  `DR-033-aws-ecs-service-split.md` (all Approved) · source: `docs/research/2026-11-08-feature-interview-notes.md`
+## Session checkpoint (written by `/checkpoint` — do not re-ask in next session)
+- **Locked / Rejected in chat:** 8-topic interview complete, tiers, ECS infra, rejected list → all in the notes file
+- **Paused at:** DRs approved (P&L subtracts loss; worker split has an in-`api` fallback) → start the 10 Nov deck · 8–9 Nov = documents, timeline, UI update
+- **Checks:** not run (docs only)
 ## Next steps
-1. Plan to 8 Nov (Field 29 Oct): customer C1–C6 (047 → 048 order/tab/call-staff → UI → pay merge → POS badge) → IAM → AI owner insight (+ tuning) → rest of POS/admin · 2 Nov update: mobile briefs to Metee (010, 022, + new order) · Field: LINE console callback `http://localhost:3011/api/auth/line/callback` if not done
-2. `?includeHidden` → `menu:write` with the IAM brief (038 audit)
-3. **Overdue (was 25 Oct):** CD-14 phone new-order — ClickUp plan has it in S6 (9–22 Nov, Metee); record when Field confirms · BRIEF-010 → `/tickets` mismatch left for Metee's revision (Field 22 Oct)
-4. Real-use bootstrap batch: after the 8 Nov plan items, before AWS
-
+1. Git hand ships `docs/dr-031-033-rescope` (PR same day)
+2. 10 Nov deck (`docs/bar_management_v3.pptx`): feature map, café-vs-bar, ML plan, ask advisor K1 alcohol-law rules
+3. Confirm timeline in notes → FRD v2 + schema / ERD → CD-16…CD-23 briefs (UI) · BRIEF-065 (Metee) continues
 ## Blockers / Coordination
-- Shared files: none · Review queue: none ·  if `ci` hits frontend timeouts → re-run once (038 audit F4)
-- e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e · frontend unit tests time out under heavy load
-- Dev servers and SonarQube stopped; Postgres + Redis (docker) left running · dev `bar` T3 has extra test orders (#8–#10) and cancelled test payments from the 051/052 run proofs · `bar_test` was dropped once and re-created by e2e (a failed migration-revert spec had left it half-reverted)
+- K1 legal rules → advisor (10 Nov) · CLAUDE.md / AGENTS.md / infra.md / DR-002 updates per DR-031–033 locks (protected — Field OKs exact diff) · Metee drafts BRIEF-074–077 (untracked) untouched
 
 ## Carry over (executors keep unchanged — Cowork/Field edit)
-- Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
+- Port naming (Field 1 Nov): rule = `abstract class I<Name>`; 21 ports in code are unprefixed (BRIEF-067) → cleanup brief after backend phase (rename + `domain/ports/*.port.ts` + 067 S6/S7/S9). Until then: new ports use `I<Name>` — say so in each backend brief
+- Milestones: gate 8 Nov (order → pay → close) · advisor 2nd update 10 Nov · AWS 9–20 Nov (ECS split, DR-033) · exam prep 21–29 Nov · exams 3 / 4 / 8 Dec · **S1 project final exam 14 Dec** · feature freeze 15 Mar (proposed) · final Apr 2027 · build order + tiers → `docs/research/2026-11-08-feature-interview-notes.md` · Metee ~1 mobile brief/wk (≤ 10 h)
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)
 - Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete branches: merged (#45, #46, #48–#52, #54–#72 + `feat/BRIEF-017-void-comp-issues`, `feat/BRIEF-027-sold-out-auto-void`, `feat/BRIEF-028-web-login-real-api`, `feat/BRIEF-029-pos-floor-open-table`, `feat/BRIEF-030-pos-session-panel-close`, `feat/BRIEF-031-pos-order-entry` + local `docs/workflow-rev19`, `docs/rules-class-helpers`) and stale `docs/state-1018` (#53 closed), `docs/planning-1017-evening`, `docs/schema-38-tables`; optional auto-delete head branches
 - Dev env isolation (Field 23 Oct — after 036–038): e2e still shares Redis with the dev backend (BullMQ payments queue steals test expiry jobs; e2e flushdb signs out dev sessions) → own Redis DB index / queue prefix for tests, together with BRIEF-013 S2 (BullMQ drops the DB index) · until then stop the dev backend before backend test:e2e · after any e2e/seed reset: re-run seed:staff with Field's LINE sub (dev DB staff is "Field (demo)" / U-demo-owner since BRIEF-036) · demo menu needs created_at ≥ 7 days for "ขายน้อย" (BRIEF-036 run proof backdated it by hand)
 - Before AWS (9 Nov): BRIEF-013 S2 — BullMQ connection drops `rediss://` TLS + DB index
 - Before >1 backend task: BRIEF-013 S1 — expiry job that fires early is a silent no-op → re-schedule
-- Follow-ups: before a real-bar pilot → IAM brief (incl. `venue:update_payment` owner-only, `PermissionsGuard` as APP_GUARD — BRIEF-027 AC-6) · BRIEF-027 S2 (`runAsSystem` CLS helper when a 2nd system job appears) · BRIEF-028 S4 (menu "from" price → satang helper in 031) · BRIEF-029 S1 (`guestLabel` field parse) · BRIEF-030 S2 (group chip from the station ticket once charge items exist) · Sonar: add a coverage report path to `sonar-project.properties` (gate shows 0 %) + 18 pre-existing issues (setup.ts, SessionDrawer, backend order / payment / menu / seed) — cleanup brief or fix when each module is next touched (BRIEF-031) · S2 tooling: `migration:run` / `start:dev` build `@bar/contracts` first + BRIEF-018 PIN on PromptPay ID change · BRIEF-011 audit S3 · BRIEF-021 S1 + auth rate limiting · BRIEF-011 S1/S4 + `FRONTEND_URL` note + old IAM names · BRIEF-015 S3/S4 · BRIEF-016 S3 · BRIEF-019 S2 · BRIEF-024 S1 (shared exception instance), S2 (table-wide `hasPending`) · stale docs: FRD §13/§15 PWA, `docs/briefs/ui/*.md` tokens · DR-005 follow-ups (protected, Field): `backend.md` Auth + CLAUDE.md Auth row "Bearer for mobile" · BRIEF-038: `menu:write` for `?includeHidden` with IAM · DR-023 rule line "new tables with `updated_at` attach the trigger" → `backend.md` / CLAUDE.md (Field)
+- Follow-ups: BRIEF-066 audit S3–S6 (raw-row boolean typing · reorder audit `from` · `auditLogService`/`notificationsService` names + unused `TableAdminService` export · sort order inside insert tx) — fix when venue admin is next touched · before a real-bar pilot → IAM brief (incl. `venue:update_payment` owner-only, `PermissionsGuard` as APP_GUARD — BRIEF-027 AC-6) · BRIEF-027 S2 (`runAsSystem` CLS helper when a 2nd system job appears) · BRIEF-028 S4 (menu "from" price → satang helper in 031) · BRIEF-029 S1 (`guestLabel` field parse) · BRIEF-030 S2 (group chip from the station ticket once charge items exist) · Sonar: add a coverage report path to `sonar-project.properties` (gate shows 0 %) + 18 pre-existing issues (setup.ts, SessionDrawer, backend order / payment / menu / seed) — cleanup brief or fix when each module is next touched (BRIEF-031) · S2 tooling: `migration:run` / `start:dev` build `@bar/contracts` first + BRIEF-018 PIN on PromptPay ID change · BRIEF-011 audit S3 · BRIEF-021 S1 + auth rate limiting · BRIEF-011 S1/S4 + `FRONTEND_URL` note + old IAM names · BRIEF-015 S3/S4 · BRIEF-016 S3 · BRIEF-019 S2 · BRIEF-024 S1 (shared exception instance), S2 (table-wide `hasPending`) · stale docs: FRD §13/§15 PWA, `docs/briefs/ui/*.md` tokens · DR-005 follow-ups (protected, Field): `backend.md` Auth + CLAUDE.md Auth row "Bearer for mobile" · BRIEF-038: `menu:write` for `?includeHidden` with IAM · DR-023 rule line "new tables with `updated_at` attach the trigger" → `backend.md` / CLAUDE.md (Field)
 - Payment brief IDs (Field, 19 Oct): 013 core ✅ · 023 split · 024 PromptPay ID ✅ · 025 slip → EasySlip (CD-03 Q2 real slip) · 026 gateway + webhook (Xendit vs Omise DR; webhook URL = tunnel) · 027 sold-out auto-void ✅
 - Sizing: BRIEF-013 ~2.2k vs ~500 · BRIEF-027 ~1.2k vs ~700 · BRIEF-028 ~860 vs ~500 · 036 ~1.8k · 037 ~1.5k · 038 ~1.2k — race-heavy backend ≈ 1.7×, UI ≈ 1.6× (tests ≈ 40 %) → estimates now count tests
 - Design: CD-11 re-copy (R1 + R5) before the 8 Nov export · CD-02 "แจ้งโอนแล้ว" alert variant next revision · canvas index/recipe → `docs/design/README.md`
@@ -36,5 +37,4 @@ Updated: 2026-10-31 · Agent: Claude Code (BRIEF-058 audit PASS)
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-057 IAM U1 (audit) → IAM UI U2 (CD-13) → AI owner insight → bootstrap batch (before AWS) → phone 390 shell
-2. BRIEF-023 split equal (Deferred, DR-019) · BRIEF-018 void/comp + PIN · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)
+1. BRIEF-065 (Metee) → AI owner insight → bootstrap batch (before AWS) · later: BRIEF-023 split (Deferred, DR-019) · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)

@@ -274,10 +274,10 @@ describe('IAM groups & policies API (e2e)', () => {
     expect((await api().patch(`/staff-groups/${other}`, { name: 'แคชเชียร์' }).expect(409)).body.code).toBe('GROUP_NAME_TAKEN');
     await api().patch(`/staff-groups/${other}`, { name: 'บาร์เทนเดอร์ 2', description: 'กะดึก' }).expect(200);
 
-    const codes = await api().post('/policies', { name: 'ผิด', codes: ['orders:comp'] }).expect(400);
+    const codes = await api().post('/policies', { name: 'ผิด', codes: ['orders:nonexistent'] }).expect(400);
     expect(codes.body.code).toBe('VALIDATION_ERROR');
     const policyId = await createPolicy('ถูก', ['menu:read']);
-    await api().put(`/policies/${policyId}/permissions`, { codes: ['orders:comp'] }).expect(400);
+    await api().put(`/policies/${policyId}/permissions`, { codes: ['orders:nonexistent'] }).expect(400);
     await api().post('/staff-groups', { name: 'ใหม่', policyIds: [UNKNOWN] }).expect(400);
     // The refused create left nothing behind.
     const groups = (await api().get('/staff-groups').expect(200)).body.data.map((group: { name: string }) => group.name);

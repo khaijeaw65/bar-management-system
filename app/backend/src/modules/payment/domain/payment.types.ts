@@ -45,3 +45,19 @@ export interface NewPayment {
   paidAt: Date | null;
   guestSessionId?: string | null;
 }
+
+export interface TodayPaymentRecord {
+  id: string;
+  visitId: string;
+  seatLabel: string;
+  partNo: number;
+  partCount: number;
+  amount: string;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  confirmedVia: PaymentConfirmedVia | null;
+  slipTransRef: string | null;
+  statusReason: PaymentStatusReason | null;
+  paidAt: Date | null;
+  createdAt: Date;
+}

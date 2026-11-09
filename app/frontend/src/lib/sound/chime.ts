@@ -20,6 +20,7 @@ type AudioContextCtor = new () => AudioContext;
 
 let context: AudioContext | null = null;
 let state: SoundState | null = null;
+let unlockedByUser = false;
 const lastPlayed: Partial<Record<ChimeKind, number>> = {};
 const listeners = new Set<() => void>();
 
@@ -32,7 +33,8 @@ function readMuted(): boolean {
 }
 
 function isLocked(): boolean {
-  return context?.state !== "running";
+  if (!unlockedByUser || !context) return true;
+  return false;
 }
 
 function publish(next: SoundState): void {
@@ -67,8 +69,11 @@ export function setMuted(muted: boolean): void {
 
 // Browsers keep audio locked until a user gesture, so the first tap creates and resumes the context.
 export function unlockAudio(): void {
+  unlockedByUser = true;
   if (!context) {
-    const Ctor = (globalThis as { AudioContext?: AudioContextCtor }).AudioContext;
+    const Ctor =
+      (globalThis as { AudioContext?: AudioContextCtor }).AudioContext ??
+      (globalThis as { webkitAudioContext?: AudioContextCtor }).webkitAudioContext;
     if (!Ctor) return;
     try {
       context = new Ctor();
@@ -99,6 +104,9 @@ function scheduleNote(ctx: AudioContext, freq: number, at: number): void {
 export function playChime(kind: ChimeKind): void {
   const ctx = context;
   if (getSoundState().muted || !ctx || isLocked()) return;
+  if (ctx.state === "suspended") {
+    void ctx.resume();
+  }
   const now = Date.now();
   const last = lastPlayed[kind];
   if (last !== undefined && now - last < THROTTLE_MS) return;
@@ -114,6 +122,7 @@ export function playChime(kind: ChimeKind): void {
 export function resetSoundForTests(): void {
   context = null;
   state = null;
+  unlockedByUser = false;
   listeners.clear();
   delete lastPlayed.order;
   delete lastPlayed.bell;

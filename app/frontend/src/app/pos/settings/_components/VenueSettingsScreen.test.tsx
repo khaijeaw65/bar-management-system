@@ -209,3 +209,24 @@ test("shows Gateway as disabled with เร็วๆ นี้ (AC-7)", async ()
   expect(screen.getByText("เร็วๆ นี้")).toBeInTheDocument();
   expect(screen.getByRole("radio", { name: /PromptPay ของร้าน/ })).toBeChecked();
 });
+
+test("DEF-10 / AC-5: toggling QR ที่เคาน์เตอร์ toggles state reliably and enables บันทึก button", async () => {
+  const user = userEvent.setup();
+  renderScreen();
+
+  const switchEl = await screen.findByRole("switch", { name: /QR ที่เคาน์เตอร์/ });
+  expect(switchEl).not.toBeChecked();
+  expect(screen.getByRole("button", { name: "บันทึก" })).toBeDisabled();
+
+  await user.click(switchEl);
+  expect(switchEl).toBeChecked();
+  expect(screen.getByRole("button", { name: "บันทึก" })).toBeEnabled();
+});
+
+test("DEF-11 / AC-6: payment radio buttons have horizontal flex alignment classes", async () => {
+  renderScreen();
+  const radio = await screen.findByRole("radio", { name: /PromptPay ของร้าน/ });
+  const radioGroup = radio.closest('[data-slot="radio"]');
+  expect(radioGroup?.className).toContain("flex");
+  expect(radioGroup?.className).toContain("items-center");
+});

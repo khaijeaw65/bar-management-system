@@ -1,0 +1,7 @@
+---
+description: NestJS — Backend architecture, persistence, auth and API conventions.
+globs: app/backend/**
+alwaysApply: false
+---
+
+@/docs/rules/backend.md

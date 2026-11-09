@@ -1,16 +1,8 @@
 import type { DataSource, EntityManager } from 'typeorm';
+import { LockoutError, Refused } from './iam-write-guard.errors.js';
 
 /** Serialises every IAM write that can change who may manage staff, so two concurrent removals cannot both pass the lockout check. */
 const IAM_WRITE_LOCK = 7054001;
-
-class LockoutError extends Error {}
-
-/** Carries a refusal out of the transaction callback so everything the write already did is rolled back. */
-class Refused<T> extends Error {
-  public constructor(public readonly outcome: T) {
-    super('refused');
-  }
-}
 
 /** The BRIEF-054 lockout rule, shared by every IAM write (staff, groups, policies). */
 export class IamWriteGuard {

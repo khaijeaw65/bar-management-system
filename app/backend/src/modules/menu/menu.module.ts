@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CLOCK } from '../../common/clock.js';
+import { Clock } from '../../common/clock.js';
 import { SystemClock } from '../../common/system-clock.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
 import { StorageModule } from '../../common/storage/storage.module.js';
@@ -9,9 +9,9 @@ import { MenuCatalogService } from './application/menu-catalog.service.js';
 import { MenuPhotoService } from './application/menu-photo.service.js';
 import { MenuWriteService } from './application/menu-write.service.js';
 import { ModifierGroupService } from './application/modifier-group.service.js';
-import { MENU_CATALOG_REPOSITORY } from './domain/menu-catalog.repository.js';
-import { MENU_WRITE_REPOSITORY } from './domain/menu-write.repository.js';
-import { MODIFIER_GROUP_REPOSITORY } from './domain/modifier-group.repository.js';
+import { MenuCatalogRepository } from './domain/menu-catalog.repository.js';
+import { MenuWriteRepository } from './domain/menu-write.repository.js';
+import { ModifierGroupRepository } from './domain/modifier-group.repository.js';
 import { MenuItemWriteController } from './infrastructure/http/menu-item-write.controller.js';
 import { MenuController } from './infrastructure/http/menu.controller.js';
 import { ModifierGroupController } from './infrastructure/http/modifier-group.controller.js';
@@ -25,12 +25,12 @@ import { ModifierGroupTypeormRepository } from './infrastructure/persistence/mod
   controllers: [MenuController, MenuItemWriteController, ModifierGroupController],
   providers: [
     MenuCatalogTypeormRepository,
-    { provide: MENU_CATALOG_REPOSITORY, useExisting: MenuCatalogTypeormRepository },
+    { provide: MenuCatalogRepository, useExisting: MenuCatalogTypeormRepository },
     MenuWriteTypeormRepository,
-    { provide: MENU_WRITE_REPOSITORY, useExisting: MenuWriteTypeormRepository },
+    { provide: MenuWriteRepository, useExisting: MenuWriteTypeormRepository },
     ModifierGroupTypeormRepository,
-    { provide: MODIFIER_GROUP_REPOSITORY, useExisting: ModifierGroupTypeormRepository },
-    { provide: CLOCK, useClass: SystemClock },
+    { provide: ModifierGroupRepository, useExisting: ModifierGroupTypeormRepository },
+    { provide: Clock, useClass: SystemClock },
     IdempotencyService,
     MenuCatalogService,
     MenuPhotoService,

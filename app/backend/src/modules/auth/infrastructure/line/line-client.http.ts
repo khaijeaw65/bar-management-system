@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 import { LineConfigService } from '../../../../providers/config/line/config.service.js';
-import {
-  buildLineAuthorizeUrl,
-  type LineClient,
-} from '../../domain/line-client.js';
+import { buildLineAuthorizeUrl } from '../../domain/line-client.js';
+import type { LineClient } from '../../domain/ports/line-client.port.js';
 import type {
   LineAuthorizeInput,
   LineProfile,

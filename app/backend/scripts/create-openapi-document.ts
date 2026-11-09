@@ -13,21 +13,16 @@ import { GuestSessionService } from '../dist/modules/customer/application/guest-
 import { CustomerOrderController } from '../dist/modules/customer/infrastructure/http/customer-order.controller.js';
 import { CustomerPaymentController } from '../dist/modules/customer/infrastructure/http/customer-payment.controller.js';
 import { CustomerMenuController } from '../dist/modules/customer/infrastructure/http/customer-menu.controller.js';
-import {
-  CustomerScanController,
-  CustomerSessionController,
-} from '../dist/modules/customer/infrastructure/http/customer-session.controller.js';
+import { CustomerScanController } from '../dist/modules/customer/infrastructure/http/customer-qr.controller.js';
+import { CustomerSessionController } from '../dist/modules/customer/infrastructure/http/customer-session.controller.js';
 import { IamAdminService } from '../dist/modules/iam/application/iam-admin.service.js';
 import { StaffAdminService } from '../dist/modules/iam/application/staff-admin.service.js';
-import {
-  AccessRequestsController,
-  StaffController,
-} from '../dist/modules/iam/infrastructure/http/staff.controller.js';
-import {
-  PermissionCatalogController,
-  PoliciesController,
-  StaffGroupsController,
-} from '../dist/modules/iam/infrastructure/http/iam-admin.controller.js';
+import { StaffPinService } from '../dist/modules/iam/application/staff-pin.service.js';
+import { AccessRequestsController } from '../dist/modules/iam/infrastructure/http/access-requests.controller.js';
+import { PermissionCatalogController } from '../dist/modules/iam/infrastructure/http/iam-admin.controller.js';
+import { PoliciesController } from '../dist/modules/iam/infrastructure/http/policies.controller.js';
+import { StaffGroupsController } from '../dist/modules/iam/infrastructure/http/staff-groups.controller.js';
+import { StaffController } from '../dist/modules/iam/infrastructure/http/staff.controller.js';
 import { MeController } from '../dist/modules/iam/infrastructure/http/me.controller.js';
 import { PermissionResolver } from '../dist/modules/iam/application/permission-resolver.service.js';
 import { HealthController } from '../dist/modules/health/health.controller.js';
@@ -41,16 +36,19 @@ import { ModifierGroupController } from '../dist/modules/menu/infrastructure/htt
 import { IdempotencyService } from '../dist/common/idempotency/idempotency.service.js';
 import { OrderQueryService } from '../dist/modules/order/application/order-query.service.js';
 import { OrderService } from '../dist/modules/order/application/order.service.js';
+import { OrderAdjustmentService } from '../dist/modules/order/application/order-adjustment.service.js';
 import { SoldOutService } from '../dist/modules/order/application/sold-out.service.js';
 import { TicketService } from '../dist/modules/order/application/ticket.service.js';
 import { MenuAvailabilityController } from '../dist/modules/order/infrastructure/http/menu-availability.controller.js';
 import { OrdersController } from '../dist/modules/order/infrastructure/http/orders.controller.js';
+import { OrderItemsController } from '../dist/modules/order/infrastructure/http/order-items.controller.js';
 import { TicketsController } from '../dist/modules/order/infrastructure/http/tickets.controller.js';
 import { BillService } from '../dist/modules/payment/application/bill.service.js';
 import { PaymentService } from '../dist/modules/payment/application/payment.service.js';
 import { PaymentsController } from '../dist/modules/payment/infrastructure/http/payments.controller.js';
 import { ReportsService } from '../dist/modules/reports/application/reports.service.js';
 import { ReportsController } from '../dist/modules/reports/infrastructure/http/reports.controller.js';
+import { TableAdminService } from '../dist/modules/venue/application/table-admin.service.js';
 import { TableSeatService } from '../dist/modules/venue/application/table-seat.service.js';
 import { VenueSettingsService } from '../dist/modules/venue/application/venue-settings.service.js';
 import { VisitService } from '../dist/modules/venue/application/visit.service.js';
@@ -59,6 +57,9 @@ import { VenueController } from '../dist/modules/venue/infrastructure/http/venue
 import { VisitsController } from '../dist/modules/venue/infrastructure/http/visits.controller.js';
 import { AppConfigService } from '../dist/providers/config/app/config.service.js';
 import { JwtConfigService } from '../dist/providers/config/jwt/config.service.js';
+import { NotificationsController } from '../dist/modules/notifications/infrastructure/http/notifications.controller.js';
+import { NotificationsService } from '../dist/modules/notifications/notifications.service.js';
+import { PushTokenService } from '../dist/modules/notifications/application/push-token.service.js';
 
 // ponytail: export boots only the controllers we publish, with providers
 // stubbed, so it never connects to Postgres, Redis, or LINE. This file is
@@ -79,10 +80,12 @@ const documentedControllers = [
   MenuItemWriteController,
   ModifierGroupController,
   OrdersController,
+  OrderItemsController,
   TicketsController,
   MenuAvailabilityController,
   PaymentsController,
   ReportsController,
+  NotificationsController,
   CustomerScanController,
   CustomerSessionController,
   CustomerMenuController,
@@ -101,14 +104,17 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: AuthService, useValue: {} },
       { provide: PermissionResolver, useValue: {} },
       { provide: StaffAdminService, useValue: {} },
+      { provide: StaffPinService, useValue: {} },
       { provide: IamAdminService, useValue: {} },
       { provide: TableSeatService, useValue: {} },
+      { provide: TableAdminService, useValue: {} },
       { provide: VisitService, useValue: {} },
       { provide: VenueSettingsService, useValue: {} },
       { provide: MenuCatalogService, useValue: {} },
       { provide: MenuWriteService, useValue: {} },
       { provide: ModifierGroupService, useValue: {} },
       { provide: OrderService, useValue: {} },
+      { provide: OrderAdjustmentService, useValue: {} },
       { provide: OrderQueryService, useValue: {} },
       { provide: TicketService, useValue: {} },
       { provide: SoldOutService, useValue: {} },
@@ -123,6 +129,8 @@ export async function createOpenApiDocument(): Promise<OpenAPIObject> {
       { provide: CustomerOrderService, useValue: {} },
       { provide: CustomerTabService, useValue: {} },
       { provide: CustomerCallService, useValue: {} },
+      { provide: NotificationsService, useValue: {} },
+      { provide: PushTokenService, useValue: {} },
       {
         provide: AppConfigService,
         useValue: { nodeEnv: 'test', frontendUrl: 'http://localhost:3000' },

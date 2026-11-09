@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+# field-kit: pre-commit hook (delegates to ops/gates/pre-commit.sh + fast staged anti-pattern filter)
+set -e
+
+# 1. Run repository gate script if present
+if [ -f "ops/gates/pre-commit.sh" ]; then
+  sh ops/gates/pre-commit.sh
+fi
+
+# 2. Fast staged source file anti-pattern scanner (Patch 1: Markdown, JSON, .d.ts, tests exempt)
+STAGED_SOURCES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx)$' | grep -v -E '(\.d\.ts|\.spec\.ts|\.e2e-spec\.ts)$' || true)
+
+if [ -n "$STAGED_SOURCES" ]; then
+  # Ban type-safety cheats
+  FORBIDDEN_TYPES=$(echo "$STAGED_SOURCES" | xargs grep -E 'as any|@ts-ignore|@ts-expect-error' /dev/null || true)
+  if [ -n "$FORBIDDEN_TYPES" ]; then
+    echo "❌ [field-kit] Commit rejected: Forbidden type cheats ('as any', '@ts-ignore', '@ts-expect-error') found in staged source files:"
+    echo "$FORBIDDEN_TYPES"
+    echo "Fix: Parse at the boundary or define proper types (see docs/rules/core.md)."
+    exit 1
+  fi
+
+  # Ban classes hiding in .types.ts / .dto.ts (Note #64)
+  TYPE_FILES=$(echo "$STAGED_SOURCES" | grep -E '\.(types|dto|port)\.ts$' || true)
+  if [ -n "$TYPE_FILES" ]; then
+    CLASSES_IN_TYPES=$(echo "$TYPE_FILES" | xargs grep -E '^\s*(export\s+)?class\s+' /dev/null || true)
+    if [ -n "$CLASSES_IN_TYPES" ]; then
+      echo "❌ [field-kit] Commit rejected: Classes declared in .types.ts / .dto.ts (Note #64):"
+      echo "$CLASSES_IN_TYPES"
+      echo "Fix: .types.ts and .dto.ts may hold types/interfaces only. Move class to implementation or .errors.ts."
+      exit 1
+    fi
+  fi
+fi
+
+exit 0

@@ -1,6 +1,8 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
+import type { OrderLine } from "@bar/contracts";
+import { useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api/errors";
 import { usePermissions } from "@/lib/permissions/usePermissions";
 import { CloseConfirmModal } from "./CloseConfirmModal";
@@ -8,6 +10,7 @@ import { DrawerStatus } from "./DrawerStatus";
 import { SessionBody } from "./SessionBody";
 import { sessionGroups } from "./session-groups";
 import { useSession } from "./useSession";
+import { VoidCompModal } from "./VoidCompModal";
 
 export function SessionDrawer({
   visitId,
@@ -23,6 +26,8 @@ export function SessionDrawer({
   const session = useSession(visitId, onClose, holdEscape);
   const titleId = useId();
   const { can } = usePermissions();
+  const client = useQueryClient();
+  const [adjustingLine, setAdjustingLine] = useState<OrderLine | null>(null);
   const visit = session.visit.data;
   const missing = session.visit.error instanceof ApiError && session.visit.error.status === 404;
   if (missing) return null;
@@ -48,6 +53,7 @@ export function SessionDrawer({
           onClose={onClose}
           onPay={onPay}
           onCloseTable={session.requestClose}
+          onAdjust={setAdjustingLine}
         />
       ) : (
         <DrawerStatus
@@ -73,6 +79,16 @@ export function SessionDrawer({
           }}
         />
       ) : null}
+      <VoidCompModal
+        line={adjustingLine}
+        isOpen={Boolean(adjustingLine)}
+        onClose={() => setAdjustingLine(null)}
+        onSuccess={() => {
+          void session.visit.refetch();
+          void client.invalidateQueries({ queryKey: ["visits", visitId] });
+          void client.invalidateQueries({ queryKey: ["tables"] });
+        }}
+      />
     </aside>
   );
 }

@@ -19,6 +19,7 @@ const line = (itemName: string, extra: Partial<CustomerTab["orders"][number]["li
   lineTotal: "100.00",
   orderedByName: null,
   cancelled: false,
+  isComp: false,
   ...extra,
 });
 

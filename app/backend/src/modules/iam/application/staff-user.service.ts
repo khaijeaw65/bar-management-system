@@ -1,15 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { IdentityProvider } from '@bar/contracts';
-import {
-  STAFF_USER_REPOSITORY,
-  type StaffUserRepository,
-} from '../domain/staff-user.repository.js';
+import { StaffUserRepository } from '../domain/staff-user.repository.js';
 import type { StaffUserView } from '../domain/staff-user.types.js';
 
 @Injectable()
 export class StaffUserService {
   public constructor(
-    @Inject(STAFF_USER_REPOSITORY)
     private readonly staffUsers: StaffUserRepository,
   ) {}
 

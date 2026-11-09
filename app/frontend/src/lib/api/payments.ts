@@ -1,12 +1,18 @@
 import {
   PaymentAttemptSchema,
   PaymentSchema,
+  TodayPaymentsResponseSchema,
   type MarkPaid,
   type Payment,
   type PaymentAttempt,
   type PaymentMethod,
+  type TodayPaymentsResponse,
 } from "@bar/contracts";
 import { apiGet, apiPost } from "./client";
+
+export function getTodayPayments(): Promise<TodayPaymentsResponse> {
+  return apiGet("/payments/today", TodayPaymentsResponseSchema);
+}
 
 export function createPayment(visitId: string, method: PaymentMethod, idempotencyKey: string): Promise<PaymentAttempt> {
   return apiPost(`/visits/${visitId}/payments`, { method, mode: "merge" }, PaymentAttemptSchema, { idempotencyKey });

@@ -24,6 +24,8 @@ export const PERMISSION_CATALOG: ReadonlyArray<{
       { code: 'orders:read', label: 'ดูออเดอร์' },
       { code: 'orders:create', label: 'สั่งอาหาร' },
       { code: 'orders:update_status', label: 'เปลี่ยนสถานะออเดอร์' },
+      { code: 'orders:void', label: 'ยกเลิกรายการ' },
+      { code: 'orders:comp', label: 'Comp รายการ' },
     ],
   },
   {

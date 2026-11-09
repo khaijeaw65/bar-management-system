@@ -23,9 +23,22 @@ export const LineCancellationSchema = z.object({
   reason: z.string().nullable(),
   by: StaffRefSchema.nullable(),
   system: z.boolean(),
+  approvedBy: StaffRefSchema.nullable().default(null),
+  selfApproved: z.boolean().default(false),
 });
 
 export type LineCancellation = z.infer<typeof LineCancellationSchema>;
+
+export const LineCompSchema = z.object({
+  at: IsoDateTimeSchema,
+  by: StaffRefSchema.nullable(),
+  approvedBy: StaffRefSchema.nullable(),
+  selfApproved: z.boolean(),
+  reason: z.string().nullable(),
+  note: z.string().nullable(),
+});
+
+export type LineComp = z.infer<typeof LineCompSchema>;
 
 export const OrderLineSchema = z.object({
   id: UuidSchema,
@@ -40,9 +53,34 @@ export const OrderLineSchema = z.object({
   notes: z.string().nullable(),
   cancelledAt: IsoDateTimeSchema.nullable(),
   cancellation: LineCancellationSchema.nullable(),
+  comp: LineCompSchema.nullable().default(null),
 });
 
 export type OrderLine = z.infer<typeof OrderLineSchema>;
+
+export const AdjustmentReasonSchema = z.enum([
+  'out_of_stock',
+  'wrong_order',
+  'guest_changed',
+  'spoiled',
+  'special_service',
+  'other',
+]);
+
+export type AdjustmentReason = z.infer<typeof AdjustmentReasonSchema>;
+
+export const AdjustItemRequestSchema = z
+  .object({
+    reason: AdjustmentReasonSchema,
+    note: z.string().max(100).optional(),
+    pin: z.string().regex(/^\d{4}$/, 'PIN ต้องเป็นตัวเลข 4 หลัก').optional(),
+  })
+  .refine(
+    (data) => data.reason !== 'other' || (typeof data.note === 'string' && data.note.trim().length > 0),
+    { message: 'กรุณาระบุเหตุผลเพิ่มเติม', path: ['note'] },
+  );
+
+export type AdjustItemRequest = z.infer<typeof AdjustItemRequestSchema>;
 
 export const TicketIssueReasonSchema = z.enum(
   ['out_of_stock', 'equipment', 'other'],

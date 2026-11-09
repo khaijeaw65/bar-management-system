@@ -54,5 +54,6 @@ function tabLine(line: OrderLine): CustomerTabOrder['lines'][number] {
     lineTotal: line.lineTotal,
     orderedByName: line.orderedByName,
     cancelled: line.cancelledAt !== null,
+    isComp: line.comp !== null,
   };
 }

@@ -4,10 +4,12 @@ import {
   CreatePaymentSchema,
   MarkPaidSchema,
   PaymentSchema,
+  TodayPaymentsResponseSchema,
   UuidSchema,
   VerifySlipSchema,
   type Payment,
   type PaymentAttempt,
+  type TodayPaymentsResponse,
 } from '@bar/contracts';
 import type { Response } from 'express';
 import { RequirePermissions } from '../../../../common/decorators/require-permissions.decorator.js';
@@ -51,6 +53,17 @@ export class PaymentsController {
       header,
       response,
     });
+  }
+
+  @Get('payments/today')
+  @RequirePermissions('payments:read')
+  @ApiOperation({
+    summary: "Today's payments log and summary metrics",
+    description: staffAccess('payments:read'),
+  })
+  @ApiEnvelopedOk(TodayPaymentsResponseSchema)
+  public getToday(): Promise<TodayPaymentsResponse> {
+    return this.payments.getToday();
   }
 
   @Get('payments/:id')

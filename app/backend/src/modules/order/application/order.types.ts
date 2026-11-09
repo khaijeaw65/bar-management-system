@@ -25,3 +25,12 @@ export interface GuestOrderInput {
   items: RequestedLine[];
   bindVisit: (visitId: string) => Promise<void>;
 }
+
+export interface PlacedOrder {
+  orderId: string;
+  activated: boolean;
+  opened: boolean;
+  visitId: string;
+  tableSeatId: string;
+}
+

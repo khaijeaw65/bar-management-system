@@ -102,6 +102,9 @@ function itemOf(items: Map<string, FoldedLine>, ticket: FoldedTicket, row: Order
 }
 
 function newLine(row: OrderRow): FoldedLine {
+  const isComp = row.cancelKind === 'comp';
+  const isVoid = row.cancelKind === 'void' || (!row.cancelKind && row.cancelledAt !== null);
+
   return {
     id: row.itemId,
     variantId: row.variantId,
@@ -113,9 +116,11 @@ function newLine(row: OrderRow): FoldedLine {
     lineTotal: '0.00',
     orderedByName: row.orderedByName,
     notes: row.notes,
-    cancelledAt: row.cancelledAt ? row.cancelledAt.toISOString() : null,
-    cancellation: cancellationOf(row),
-    cancelledById: row.cancelledBy,
+    cancelledAt: isVoid && row.cancelledAt ? row.cancelledAt.toISOString() : null,
+    cancellation: isVoid ? cancellationOf(row) : null,
+    comp: isComp ? compOf(row) : null,
+    cancelledById: (isVoid || isComp) ? row.cancelledBy : null,
+    approvedById: (isVoid || isComp) ? row.approvedBy : null,
   };
 }
 
@@ -126,6 +131,20 @@ function cancellationOf(row: OrderRow): OrderLine['cancellation'] {
     reason: row.cancelReason,
     by: null,
     system: row.cancelledBy === null,
+    approvedBy: null,
+    selfApproved: row.cancelledBy !== null && row.approvedBy === null,
+  };
+}
+
+function compOf(row: OrderRow): OrderLine['comp'] {
+  if (!row.cancelledAt) return null;
+  return {
+    at: row.cancelledAt.toISOString(),
+    by: null,
+    approvedBy: null,
+    selfApproved: row.cancelledBy !== null && row.approvedBy === null,
+    reason: row.cancelReason,
+    note: row.cancelNote,
   };
 }
 
@@ -149,6 +168,7 @@ function lineTotal(item: OrderLine): string {
 }
 
 function toLineCents(item: OrderLine): number {
+  if (item.comp !== null) return 0;
   return lineCents(item.unitPrice, item.modifiers.map((modifier) => modifier.priceDelta), item.quantity);
 }
 

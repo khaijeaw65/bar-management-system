@@ -88,6 +88,7 @@ describe('TicketService escalate event', () => {
         emitToStaff: (event: string, payload: unknown) => events.push({ event, payload }),
         emitTabChanged: () => undefined,
       } as never,
+      { foodReady: async () => [] } as never,
     );
 
     await expect(service.resolveIssue(ticketId, staffId, { resolution: 'escalate' })).resolves.toMatchObject({

@@ -39,7 +39,7 @@ describe('TransformResponseInterceptor', () => {
     class ItemsController {
       @Post()
       @HttpCode(201)
-      create() {
+      public create() {
         return { id: '1' };
       }
     }
@@ -69,7 +69,7 @@ describe('TransformResponseInterceptor', () => {
     class GoController {
       @Get()
       @Redirect()
-      go() {
+      public go() {
         return { url: 'https://example.test/after', statusCode: 302 };
       }
     }
