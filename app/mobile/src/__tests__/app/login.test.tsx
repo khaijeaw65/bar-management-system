@@ -2,7 +2,12 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import LoginScreen from '../../app/login';
-import { resetSession, setMockSignInShouldFail, getSession } from '../../lib/auth/session';
+import {
+  resetSession,
+  setMockSignInShouldFail,
+  setMockSignInDelayMs,
+  getSession,
+} from '../../lib/auth/session';
 
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
@@ -18,6 +23,7 @@ async function renderWithProviders(ui: React.ReactElement) {
 describe('LoginScreen (AC-1)', () => {
   beforeEach(() => {
     resetSession();
+    setMockSignInDelayMs(0);
     mockReplace.mockClear();
   });
 
@@ -33,11 +39,18 @@ describe('LoginScreen (AC-1)', () => {
     expect(screen.getByText('เฉพาะพนักงาน The Loft Bar')).toBeTruthy();
   });
 
-  it('signs in with mock and lands on order queue (AC-1)', async () => {
+  it('shows pending spinner while signing in and then lands on orders queue (AC-1)', async () => {
+    // Set 80ms delay to assert pending state
+    setMockSignInDelayMs(80);
     await renderWithProviders(<LoginScreen />);
-    const loginButton = screen.getByText('เข้าสู่ระบบด้วย LINE');
+    const loginButton = screen.getByTestId('login-button');
 
     fireEvent.press(loginButton);
+
+    // Assert pending state (spinner visible)
+    await waitFor(() => {
+      expect(screen.getByTestId('login-spinner')).toBeTruthy();
+    });
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/(tabs)/orders');
@@ -48,7 +61,7 @@ describe('LoginScreen (AC-1)', () => {
   it('shows error Alert when login fails', async () => {
     setMockSignInShouldFail(true);
     await renderWithProviders(<LoginScreen />);
-    const loginButton = screen.getByText('เข้าสู่ระบบด้วย LINE');
+    const loginButton = screen.getByTestId('login-button');
 
     fireEvent.press(loginButton);
 

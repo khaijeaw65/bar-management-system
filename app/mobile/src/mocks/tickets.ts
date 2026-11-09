@@ -3,78 +3,92 @@ import type { TicketList } from '@bar/contracts';
 const sharedOrderId = '11111111-1111-4111-8111-111111111111';
 const staffBeam = { staffId: '00000000-0000-4000-8000-000000000001', displayName: 'บีม' };
 
-export const mockTickets: TicketList = {
-  items: [
-    // Ticket 1: Pending, Bar, Table T1 (shares orderId with Ticket 2)
-    {
-      id: 'a0000001-0000-4000-8000-000000000001',
-      orderId: sharedOrderId,
-      orderNumber: 42,
-      station: 'bar',
-      status: 'pending',
-      seat: {
-        id: 'e0000001-0000-4000-8000-000000000001',
-        label: 'T1',
-        kind: 'table',
-      },
-      items: [
-        {
-          id: 'b0000001-0000-4000-8000-000000000001',
-          variantId: 'c0000001-0000-4000-8000-000000000001',
-          name: 'ช้างดราฟต์',
-          variantName: 'Pint',
-          quantity: 2,
-          unitPrice: '160.00',
-          modifiers: [],
-          lineTotal: '320.00',
-          orderedByName: 'ต้น',
-          notes: null,
-          cancelledAt: null,
-          cancellation: null,
-          comp: null,
+export const minutesAgo = (mins: number) => new Date(Date.now() - mins * 60 * 1000).toISOString();
+
+let mockError = false;
+let mockDelayMs = process.env.NODE_ENV === 'test' ? 0 : 300;
+
+export function setMockTicketsError(error: boolean): void {
+  mockError = error;
+}
+
+export function setMockDelayMs(ms: number): void {
+  mockDelayMs = ms;
+}
+
+export function getFreshMockTickets(): TicketList {
+  return {
+    items: [
+      // Ticket 1: Pending, Bar, Table T1 (shares orderId with Ticket 2)
+      {
+        id: 'a0000001-0000-4000-8000-000000000001',
+        orderId: sharedOrderId,
+        orderNumber: 42,
+        station: 'bar',
+        status: 'pending',
+        seat: {
+          id: 'e0000001-0000-4000-8000-000000000001',
+          label: 'T1',
+          kind: 'table',
         },
-      ],
-      issue: null,
-      acceptedBy: null,
-      sentAt: null,
-      createdAt: '2026-11-05T12:00:00.000Z',
-      updatedAt: '2026-11-05T12:00:00.000Z',
-    },
-    // Ticket 2: Pending, Food, Table T1 (shares orderId with Ticket 1)
-    {
-      id: 'a0000001-0000-4000-8000-000000000002',
-      orderId: sharedOrderId,
-      orderNumber: 42,
-      station: 'food',
-      status: 'pending',
-      seat: {
-        id: 'e0000001-0000-4000-8000-000000000001',
-        label: 'T1',
-        kind: 'table',
+        items: [
+          {
+            id: 'b0000001-0000-4000-8000-000000000001',
+            variantId: 'c0000001-0000-4000-8000-000000000001',
+            name: 'ช้างดราฟต์',
+            variantName: 'Pint',
+            quantity: 2,
+            unitPrice: '160.00',
+            modifiers: [],
+            lineTotal: '320.00',
+            orderedByName: 'ต้น',
+            notes: null,
+            cancelledAt: null,
+            cancellation: null,
+            comp: null,
+          },
+        ],
+        issue: null,
+        acceptedBy: null,
+        sentAt: null,
+        createdAt: minutesAgo(2),
+        updatedAt: minutesAgo(2),
       },
-      items: [
-        {
-          id: 'b0000001-0000-4000-8000-000000000002',
-          variantId: 'c0000001-0000-4000-8000-000000000002',
-          name: 'ข้อไก่ทอด',
-          variantName: 'จานปกติ',
-          quantity: 1,
-          unitPrice: '120.00',
-          modifiers: [],
-          lineTotal: '120.00',
-          orderedByName: 'ต้น',
-          notes: null,
-          cancelledAt: null,
-          cancellation: null,
-          comp: null,
+      // Ticket 2: Pending, Food, Table T1 (shares orderId with Ticket 1)
+      {
+        id: 'a0000001-0000-4000-8000-000000000002',
+        orderId: sharedOrderId,
+        orderNumber: 42,
+        station: 'food',
+        status: 'pending',
+        seat: {
+          id: 'e0000001-0000-4000-8000-000000000001',
+          label: 'T1',
+          kind: 'table',
         },
-      ],
-      issue: null,
-      acceptedBy: null,
-      sentAt: null,
-      createdAt: '2026-11-05T12:01:00.000Z',
-      updatedAt: '2026-11-05T12:01:00.000Z',
-    },
+        items: [
+          {
+            id: 'b0000001-0000-4000-8000-000000000002',
+            variantId: 'c0000001-0000-4000-8000-000000000002',
+            name: 'ข้อไก่ทอด',
+            variantName: 'จานปกติ',
+            quantity: 1,
+            unitPrice: '120.00',
+            modifiers: [],
+            lineTotal: '120.00',
+            orderedByName: 'ต้น',
+            notes: null,
+            cancelledAt: null,
+            cancellation: null,
+            comp: null,
+          },
+        ],
+        issue: null,
+        acceptedBy: null,
+        sentAt: null,
+        createdAt: minutesAgo(2),
+        updatedAt: minutesAgo(2),
+      },
     // Ticket 3: Pending, Bar, Counter C2, orderedByName: null (1st without orderedByName)
     {
       id: 'a0000001-0000-4000-8000-000000000003',
@@ -122,8 +136,8 @@ export const mockTickets: TicketList = {
       issue: null,
       acceptedBy: null,
       sentAt: null,
-      createdAt: '2026-11-05T12:02:00.000Z',
-      updatedAt: '2026-11-05T12:02:00.000Z',
+      createdAt: minutesAgo(5),
+      updatedAt: minutesAgo(5),
     },
     // Ticket 4: Accepted, Bar, Table T3, 4 lines (1 cancelled line) -> tests >3 lines (+ 1 รายการ) and cancelled strike-through
     {
@@ -179,9 +193,9 @@ export const mockTickets: TicketList = {
           lineTotal: '260.00',
           orderedByName: 'เจน',
           notes: null,
-          cancelledAt: '2026-11-05T12:05:00.000Z',
+          cancelledAt: minutesAgo(10),
           cancellation: {
-            at: '2026-11-05T12:05:00.000Z',
+            at: minutesAgo(10),
             reason: 'guest_changed',
             by: staffBeam,
             system: false,
@@ -209,8 +223,8 @@ export const mockTickets: TicketList = {
       issue: null,
       acceptedBy: staffBeam,
       sentAt: null,
-      createdAt: '2026-11-05T12:03:00.000Z',
-      updatedAt: '2026-11-05T12:04:00.000Z',
+      createdAt: minutesAgo(15),
+      updatedAt: minutesAgo(15),
     },
     // Ticket 5: Accepted, Food, Counter C5, orderedByName: null (2nd without orderedByName)
     {
@@ -274,8 +288,8 @@ export const mockTickets: TicketList = {
       issue: null,
       acceptedBy: staffBeam,
       sentAt: null,
-      createdAt: '2026-11-05T12:04:00.000Z',
-      updatedAt: '2026-11-05T12:05:00.000Z',
+      createdAt: minutesAgo(25),
+      updatedAt: minutesAgo(25),
     },
     // Ticket 6: Ready, Bar, Table T4
     {
@@ -324,8 +338,8 @@ export const mockTickets: TicketList = {
       issue: null,
       acceptedBy: staffBeam,
       sentAt: null,
-      createdAt: '2026-11-05T12:05:00.000Z',
-      updatedAt: '2026-11-05T12:10:00.000Z',
+      createdAt: minutesAgo(40),
+      updatedAt: minutesAgo(40),
     },
     // Ticket 7: Ready, Food, Counter C1
     {
@@ -359,8 +373,8 @@ export const mockTickets: TicketList = {
       issue: null,
       acceptedBy: staffBeam,
       sentAt: null,
-      createdAt: '2026-11-05T12:06:00.000Z',
-      updatedAt: '2026-11-05T12:12:00.000Z',
+      createdAt: minutesAgo(55),
+      updatedAt: minutesAgo(55),
     },
     // Ticket 8: Issue, Bar, Table T2 (issue filled)
     {
@@ -400,8 +414,21 @@ export const mockTickets: TicketList = {
       },
       acceptedBy: staffBeam,
       sentAt: null,
-      createdAt: '2026-11-05T12:07:00.000Z',
-      updatedAt: '2026-11-05T12:08:00.000Z',
+      createdAt: minutesAgo(75),
+      updatedAt: minutesAgo(75),
     },
   ],
-};
+  };
+}
+
+export const mockTickets: TicketList = getFreshMockTickets();
+
+export async function fetchMockTickets(): Promise<TicketList> {
+  if (mockDelayMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, mockDelayMs));
+  }
+  if (mockError) {
+    throw new Error('โหลดออเดอร์ไม่สำเร็จ');
+  }
+  return getFreshMockTickets();
+}

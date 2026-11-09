@@ -40,12 +40,13 @@ export default function LoginScreen() {
         )}
 
         <Button
+          testID="login-button"
           className="w-full bg-accent rounded-xl items-center justify-center min-h-[52px]"
           isDisabled={isPending}
           onPress={handleLogin}
         >
           {isPending ? (
-            <Spinner size="sm" className="text-text-on-accent" />
+            <Spinner testID="login-spinner" size="sm" className="text-text-on-accent" />
           ) : (
             <Button.Label className="text-base font-bold text-text-on-accent font-sans">
               เข้าสู่ระบบด้วย LINE

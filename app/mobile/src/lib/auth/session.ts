@@ -7,10 +7,15 @@ export interface StaffSession {
 
 let currentSession: StaffSession | null = null;
 let mockSignInShouldFail = false;
+let mockSignInDelayMs = 500;
 const listeners = new Set<(session: StaffSession | null) => void>();
 
 export function setMockSignInShouldFail(shouldFail: boolean): void {
   mockSignInShouldFail = shouldFail;
+}
+
+export function setMockSignInDelayMs(ms: number): void {
+  mockSignInDelayMs = ms;
 }
 
 export function getSession(): StaffSession | null {
@@ -20,12 +25,12 @@ export function getSession(): StaffSession | null {
 export function resetSession(): void {
   currentSession = null;
   mockSignInShouldFail = false;
+  mockSignInDelayMs = 500;
   listeners.forEach((listener) => listener(null));
 }
 
 export async function signIn(opts?: { delayMs?: number }): Promise<StaffSession> {
-  const defaultDelay = process.env.NODE_ENV === 'test' ? 0 : 500;
-  const delay = opts?.delayMs ?? defaultDelay;
+  const delay = opts?.delayMs ?? mockSignInDelayMs;
   if (delay > 0) {
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
@@ -50,7 +55,6 @@ export async function signOut(): Promise<void> {
 
 export function useSession() {
   const [session, setSession] = useState<StaffSession | null>(currentSession);
-  const [isLoading] = useState(false);
 
   useEffect(() => {
     const listener = (newSession: StaffSession | null) => {
@@ -64,7 +68,7 @@ export function useSession() {
 
   return {
     session,
-    isLoading,
+    isLoading: false,
     signIn,
     signOut,
   };

@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function AuthGate() {
+export function AuthGate() {
   const { session, isLoading } = useSession();
   const segments = useSegments();
   const router = useRouter();

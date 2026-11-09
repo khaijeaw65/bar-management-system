@@ -7,19 +7,29 @@ export interface OrderCardProps {
   ticket: Ticket;
 }
 
-function getStatusMeta(status: string): { label: string; bgClass: string; textClass: string } {
-  switch (status) {
-    case 'pending':
-      return { label: 'ใหม่', bgClass: 'bg-status-new-bg', textClass: 'text-status-new-fg' };
-    case 'accepted':
-      return { label: 'กำลังเตรียม', bgClass: 'bg-status-making-bg', textClass: 'text-status-making-fg' };
-    case 'ready':
-      return { label: 'พร้อมเสิร์ฟ', bgClass: 'bg-status-served-bg', textClass: 'text-status-served-fg' };
-    case 'issue':
-      return { label: 'มีปัญหา', bgClass: 'bg-status-void-bg', textClass: 'text-status-void-fg' };
-    default:
-      return { label: status, bgClass: 'bg-status-neutral-bg', textClass: 'text-status-neutral-fg' };
-  }
+type TicketStatus = Ticket['status'];
+
+interface StatusMeta {
+  label: string;
+  bgClass: string;
+  textClass: string;
+}
+
+const STATUS_MAP: Record<TicketStatus, StatusMeta> = {
+  pending: { label: 'ใหม่', bgClass: 'bg-status-new-bg', textClass: 'text-status-new-fg' },
+  accepted: { label: 'กำลังเตรียม', bgClass: 'bg-status-making-bg', textClass: 'text-status-making-fg' },
+  ready: { label: 'พร้อมเสิร์ฟ', bgClass: 'bg-status-served-bg', textClass: 'text-status-served-fg' },
+  issue: { label: 'มีปัญหา', bgClass: 'bg-status-void-bg', textClass: 'text-status-void-fg' },
+  sent: { label: 'เสิร์ฟแล้ว', bgClass: 'bg-status-neutral-bg', textClass: 'text-status-neutral-fg' },
+  cancelled: { label: 'ยกเลิก', bgClass: 'bg-status-void-bg', textClass: 'text-status-void-fg' },
+};
+
+function getStatusMeta(status: TicketStatus): StatusMeta {
+  return STATUS_MAP[status] ?? {
+    label: status,
+    bgClass: 'bg-status-neutral-bg',
+    textClass: 'text-status-neutral-fg',
+  };
 }
 
 export function OrderCard({ ticket }: OrderCardProps) {
@@ -54,9 +64,11 @@ export function OrderCard({ ticket }: OrderCardProps) {
           return (
             <Text
               key={item.id}
+              testID={isCancelled ? 'cancelled-order-item' : undefined}
               className={`text-sm font-sans ${
                 isCancelled ? 'line-through text-text-faint' : 'text-text-body'
               }`}
+              style={isCancelled ? { textDecorationLine: 'line-through' } : undefined}
             >
               {item.quantity}× {item.name}
             </Text>
