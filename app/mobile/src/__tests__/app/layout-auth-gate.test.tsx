@@ -6,8 +6,8 @@ import {
   setSessionInitialized,
   signIn,
 } from '../../lib/auth/session';
-import { saveTokens, clearTokens } from '../../lib/auth/token-storage';
-import { notifyAuthExpired } from '../../lib/api/client';
+import { saveTokens, clearTokens, readTokens } from '../../lib/auth/token-storage';
+import { notifyAuthExpired, ApiError } from '../../lib/api/client';
 import * as authApi from '../../lib/api/auth';
 
 const mockReplace = jest.fn();
@@ -117,5 +117,29 @@ describe('AuthGate & App Start (AC-7)', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/(tabs)/orders');
     });
+  });
+
+  it('AC-7: does not wipe tokens on network error during getMe() at app start (#2)', async () => {
+    await saveTokens({
+      accessToken: 'offline-access-token',
+      refreshToken: 'offline-refresh-token',
+    });
+
+    jest.spyOn(authApi, 'getMe').mockRejectedValueOnce(
+      new ApiError(0, 'NETWORK_ERROR', 'Network offline or server unreachable'),
+    );
+
+    setSessionInitialized(false);
+    mockSegments = ['login'];
+
+    await render(<AuthGate />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith('/(tabs)/orders');
+    });
+
+    const tokens = await readTokens();
+    expect(tokens?.accessToken).toBe('offline-access-token');
+    expect(tokens?.refreshToken).toBe('offline-refresh-token');
   });
 });

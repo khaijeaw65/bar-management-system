@@ -157,6 +157,101 @@ describe('API Client (AC-5, AC-6)', () => {
     unsubscribe();
   });
 
+  it('keeps tokens and does not notify expiry when refresh fails with 5xx or offline network error (#2)', async () => {
+    await tokenStorage.saveTokens({
+      accessToken: 'expired-access-token',
+      refreshToken: 'valid-refresh-token',
+    });
+
+    let authExpiredCalled = false;
+    const unsubscribe = onAuthExpired(() => {
+      authExpiredCalled = true;
+    });
+
+    jest.spyOn(axios, 'post').mockImplementation(async () => {
+      const emptyConfig = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+      throw makeAxiosError(
+        503,
+        { code: 'SERVICE_UNAVAILABLE', message: 'Backend temporarily unavailable' },
+        emptyConfig,
+      );
+    });
+
+    apiClient.defaults.adapter = async (config) => {
+      throw makeAxiosError(401, { code: 'UNAUTHORIZED', message: 'Token expired' }, config);
+    };
+
+    let caughtError: unknown;
+    try {
+      await apiClient.get('/orders');
+    } catch (err) {
+      caughtError = err;
+    }
+
+    expect(caughtError).toBeInstanceOf(ApiError);
+    expect((caughtError as ApiError).status).toBe(503);
+    expect(authExpiredCalled).toBe(false);
+
+    const tokens = await tokenStorage.readTokens();
+    expect(tokens?.accessToken).toBe('expired-access-token');
+    expect(tokens?.refreshToken).toBe('valid-refresh-token');
+
+    unsubscribe();
+  });
+
+  it('passes retried request error (e.g. 409 Conflict) through without converting to 401 (#2)', async () => {
+    await tokenStorage.saveTokens({
+      accessToken: 'expired-access-token',
+      refreshToken: 'valid-refresh-token',
+    });
+
+    jest.spyOn(axios, 'post').mockImplementation(async (url) => {
+      if (typeof url === 'string' && url.includes('/auth/mobile/refresh')) {
+        return {
+          data: {
+            status: 'success',
+            data: {
+              accessToken: 'fresh-access-token',
+              refreshToken: 'fresh-refresh-token',
+              expiresIn: 3600,
+            },
+          },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: { headers: new AxiosHeaders() } as InternalAxiosRequestConfig,
+        };
+      }
+      throw new Error(`Unexpected POST to ${url}`);
+    });
+
+    apiClient.defaults.adapter = async (config) => {
+      const authHeader = config.headers?.Authorization;
+
+      if (authHeader === 'Bearer expired-access-token') {
+        throw makeAxiosError(401, { code: 'UNAUTHORIZED', message: 'Token expired' }, config);
+      }
+
+      if (authHeader === 'Bearer fresh-access-token') {
+        throw makeAxiosError(409, { code: 'CONFLICT', message: 'Order was updated by another staff' }, config);
+      }
+
+      throw new Error(`Unexpected auth header: ${String(authHeader)}`);
+    };
+
+    let caughtError: unknown;
+    try {
+      await apiClient.post('/orders/close', {});
+    } catch (err) {
+      caughtError = err;
+    }
+
+    expect(caughtError).toBeInstanceOf(ApiError);
+    expect((caughtError as ApiError).status).toBe(409);
+    expect((caughtError as ApiError).code).toBe('CONFLICT');
+    expect((caughtError as ApiError).message).toBe('Order was updated by another staff');
+  });
+
   it('throws configuration error when EXPO_PUBLIC_API_URL is missing and mocks are disabled (#5)', () => {
     const origMocks = process.env.EXPO_PUBLIC_USE_MOCKS;
     const origUrl = process.env.EXPO_PUBLIC_API_URL;

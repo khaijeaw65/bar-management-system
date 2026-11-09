@@ -10,6 +10,7 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = 'ApiError';
+    Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 
@@ -79,7 +80,9 @@ apiClient.interceptors.response.use(
           try {
             const tokens = await readTokens();
             if (!tokens?.refreshToken) {
-              throw new Error('No refresh token available');
+              await clearTokens();
+              notifyAuthExpired();
+              throw new ApiError(401, 'UNAUTHORIZED', 'No refresh token available');
             }
 
             const response = await axios.post(
@@ -99,8 +102,22 @@ apiClient.interceptors.response.use(
 
             return validated.accessToken;
           } catch (refreshErr) {
-            await clearTokens();
-            notifyAuthExpired();
+            if (axios.isAxiosError(refreshErr)) {
+              const status = refreshErr.response?.status;
+              if (status === 401) {
+                await clearTokens();
+                notifyAuthExpired();
+                throw new ApiError(401, 'UNAUTHORIZED', 'Session expired, please sign in again');
+              }
+              const errData = refreshErr.response?.data as { code?: string; message?: string } | undefined;
+              const code = errData?.code ?? (status ? 'API_ERROR' : 'NETWORK_ERROR');
+              const message = errData?.message ?? refreshErr.message ?? 'Refresh request failed';
+              throw new ApiError(status ?? 0, code, message);
+            }
+            if (refreshErr instanceof ApiError && refreshErr.status === 401) {
+              await clearTokens();
+              notifyAuthExpired();
+            }
             throw refreshErr;
           } finally {
             refreshPromise = null;
@@ -108,23 +125,25 @@ apiClient.interceptors.response.use(
         })();
       }
 
-      try {
-        const newAccessToken = await refreshPromise;
-        originalRequest.headers = originalRequest.headers || {};
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return await apiClient.request(originalRequest);
-      } catch {
-        return Promise.reject(
-          new ApiError(401, 'UNAUTHORIZED', 'Session expired, please sign in again')
-        );
-      }
+      const newAccessToken = await refreshPromise;
+      originalRequest.headers = originalRequest.headers || {};
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      return await apiClient.request(originalRequest);
     }
 
-    const status = error.response?.status ?? 500;
-    const errData = error.response?.data;
-    const code = errData?.code ?? (status === 401 ? 'UNAUTHORIZED' : 'API_ERROR');
-    const message = errData?.message ?? error.message ?? 'Unknown error';
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status ?? 0;
+      const errData = error.response?.data as { code?: string; message?: string } | undefined;
+      const code = errData?.code ?? (status === 0 ? 'NETWORK_ERROR' : status === 401 ? 'UNAUTHORIZED' : 'API_ERROR');
+      const message = errData?.message ?? error.message ?? 'Request failed';
+      return Promise.reject(new ApiError(status, code, message));
+    }
 
-    return Promise.reject(new ApiError(status, code, message));
+    if (error instanceof ApiError) {
+      return Promise.reject(error);
+    }
+
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return Promise.reject(new ApiError(500, 'API_ERROR', message));
   }
 );

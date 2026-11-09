@@ -4,7 +4,7 @@ import * as Linking from 'expo-linking';
 import { createPkcePair } from './pkce';
 import { readTokens, saveTokens, clearTokens } from './token-storage';
 import { exchangeCode, getMe, logout } from '../api/auth';
-import { apiClient, onAuthExpired, getApiBaseUrl } from '../api/client';
+import { apiClient, onAuthExpired, getApiBaseUrl, ApiError } from '../api/client';
 
 export interface StaffSession {
   staffName: string;
@@ -126,12 +126,23 @@ export async function initSession(): Promise<StaffSession | null> {
       isInitialized = true;
       notifyListeners(currentSession);
       return session;
-    } catch {
-      await clearTokens();
-      currentSession = null;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        await clearTokens();
+        currentSession = null;
+        isInitialized = true;
+        notifyListeners(null);
+        return null;
+      }
+      // On network failure or 5xx: keep stored tokens without silent logout
+      const session: StaffSession = {
+        staffName: 'พนักงาน',
+        role: 'staff',
+      };
+      currentSession = session;
       isInitialized = true;
-      notifyListeners(null);
-      return null;
+      notifyListeners(currentSession);
+      return session;
     } finally {
       initPromise = null;
     }
