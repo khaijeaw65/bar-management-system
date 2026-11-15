@@ -1,158 +1,103 @@
 # CLAUDE.md — AI-Powered Bar Management System
 
-> Read this file at the start of every session. It is the single source of truth for project context, architecture decisions, and working rules.
-> For full feature scope → `docs/FRD.md`. For schema details → `docs/schema.sql`. For workflow & roles → `docs/rules/workflow.md`. For current state → `docs/state/<person>/SESSION_STATE.md`.
+> Rendered from the same source as `AGENTS.md` — identical text, both tracked by `/sync-rules`. Inline on purpose: some Claude surfaces (e.g. Cowork) do not follow `@` imports.
 
----
+> Always loaded by every agent and tool. Single source for project context, the Field Guard and hard rules.
+> Process detail: `docs/rules/workflow.md` (read the section a command names). Docs map: `docs/README.md`.
 
-## Project Overview
+## Project
+Production-grade bar management system for small-to-medium counter bars in Thailand — senior capstone (2 semesters, DPU Computer Engineering).
+Core flow: **QR guest ordering → kitchen/bar display → PromptPay payment → session close** — finish it end-to-end before adding breadth.
+Differentiators: AI owner insight (sales / anomaly-fraud / menu — DR-014), bottle-keep, PromptPay QR, real-time kitchen/bar display.
+Deadline: April 2027 · Advisor: อ.สนายุ จินตนาวรรณกุล · Full scope: `docs/FRD.md` · Schema: `docs/schema.sql` (38 tables, 10 domains), ERD `docs/erd.html`
+**Team:**
+- KJ — ณัฐวัฒน์ จิรกุลประดิษฐ์ (66210096) — project lead / backend · decision owner (Field)
+- Metee — เมธี สิริปาณสาร (630107030019) — frontend/web and mobile developer
 
-Senior capstone project (2 semesters, DPU Computer Engineering).
-A production-grade bar management system for small-to-medium counter bars in Thailand.
-Key differentiators: AI-powered owner insight (sales / anomaly-fraud / menu — DR-014), bottle-keep, PromptPay QR payment, real-time kitchen/bar display.
+AI split (Field, 2026-10-09 · DR-030): agents write 100% of app code for both developers; Field reviews, owns architecture, decisions, brief approval, audit review and merge. Humans own architecture, integration and edge cases.
 
-**Team**
-- ณัฐวัฒน์ จิรกุลประดิษฐ์ (66210096) — Project Lead / Backend
-- เมธี สิริปาณสาร (630107030019) — Frontend Developer
-
-**Advisor:** อ.สนายุ จินตนาวรรณกุล
-**Deadline:** April 2027
-
----
-
-## Repo Structure
-
-```
-/
-├── app/
-│   ├── backend/            → NestJS modular monolith (ESM, Vitest, TypeORM)
-│   ├── frontend/           → Next.js 16 web app (HeroUI v3, Tailwind v4)
-│   ├── mobile/             → Expo React Native — staff surface (@bar/mobile)
-│   └── packages/contracts/ → @bar/contracts — shared enums & types
-├── docs/
-│   ├── rules/              → all agent rules (source of truth) incl. workflow.md
-│   ├── features/           → Spec-Anchored feature specs (<f>/requirements.md, design.md, ui.md) + INVARIANTS.md
-│   ├── briefs/             → executable briefs (<ID>-<slug>.md) + ui/ design references
-│   ├── state/              → kj/SESSION_STATE.md, methee/SESSION_STATE.md — current progress per person
-│   ├── handoffs/ decisions/ audits/
-│   └── FRD.md, schema.sql, erd.html, infra.md, handoff.md (frozen legacy log)
-├── .cursor/rules/ .agents/rules/ → thin wrappers → docs/rules/
-├── CLAUDE.md               ← this file
-└── AGENTS.md               → agent-agnostic context (Codex reads this)
-```
-
----
-
-## Tech Stack (LOCKED — do not change without a deliberate decision)
-
+## Stack (locked — change only through an Approved DR)
 | Layer | Choice |
 |---|---|
-| Frontend | Next.js 16 web app + HeroUI v3 + Tailwind v4 (DR-002) · axios + TanStack Query (DR-007) |
-| Mobile | Expo (React Native) — staff surface duplicate |
-| Backend | NestJS modular monolith + TypeORM |
-| Database | PostgreSQL (RDS) |
-| Cache | Redis (ElastiCache) — ACL + session + BullMQ + WebSocket pub/sub |
-| Queue | BullMQ (`@nestjs/bullmq`) |
-| WebSocket | NestJS Gateway (socket.io + Redis adapter) |
-| AI | OpenAI API |
-| Auth | LINE SSO + JWT + refresh token rotation |
-| Payment | PromptPay QR + webhook (GB Prime Pay) |
-| Infra | AWS ECS/ECR, RDS, S3, ElastiCache + Terraform (`infra/terraform/`) |
-| CI/CD | GitHub Actions · local SonarQube Community scan before commit (BRIEF-006; shared hosting decided in Nov) |
-| Local dev | Docker Compose (Postgres + Redis) + ngrok |
+| Backend | NestJS modular monolith + TypeORM · PostgreSQL (RDS) |
+| Frontend | Next.js 16 web app + HeroUI v3 + Tailwind v4 (DR-002) · axios + TanStack Query (DR-007) — no PWA |
+| Mobile | Expo (React Native) — staff surface only, same backend API (DR-009) |
+| Cache / queue / realtime | Redis (ElastiCache): ACL cache, session, BullMQ (`@nestjs/bullmq`), socket.io Redis adapter · NestJS WebSocket Gateway |
+| Auth | LINE SSO + JWT + refresh rotation |
+| Payment | PromptPay QR + GB Prime Pay webhook |
+| AI | OpenAI API (owner insight, DR-014) |
+| Infra | AWS ECS/ECR + RDS + S3 + ElastiCache + Terraform (`infra/terraform/`, DR-001) · frontend on Vercel · DNS on Cloudflare |
+| CI / local | GitHub Actions · Docker Compose (Postgres + Redis) + ngrok · SonarQube Community (opt-in per brief) |
 
----
+Repo: `app/backend` (NestJS) · `app/frontend` (Next.js) · `app/mobile` (Expo, `@bar/mobile`) · `app/packages/contracts` (`@bar/contracts`) · `docs/` · `infra/`.
 
-## Architecture (ALL LOCKED)
-
-### Shape
-- **One NestJS process** — REST API + WebSocket Gateway + webhook receiver. No microservices.
-- **One Next.js web app** — role-based surfaces (POS `/pos`, staff `/staff`, customer QR) via route segments. No PWA — native + push is the Expo app (DR-002).
-- **One Expo React Native app** — duplicates staff mobile surface only. Same backend API, no new endpoints. Scope: login, table/session list, order taking, order management, push notifications, guest notes entry, bottle keep check.
-- **Modular monolith** — extract services only if load demands it post-launch.
-
-### IAM Model
-- AWS-style most-permissive-wins: union of group policies + direct user policies.
-- Time-bound group membership (`valid_from` / `valid_until`).
-- Permission resolution cached in Redis, invalidated on any IAM change.
-- **Always use `PermissionsGuard` — never inline permission checks in controllers.**
-
-### Identity Model
-- Provider-agnostic from day 1. `staff_user_identity` + `customer_identity` hold LINE credentials.
-- Visit ≠ Customer. Visit created on QR scan; `customer_id` linked post-hoc (PDPA consent).
-
-### Deployment
-- Frontend → Vercel (free). Backend → AWS ECS + ECR.
-- DNS → Cloudflare (not Route 53). IaC → Terraform (DR-001) — AWS + Cloudflare from one config.
-- Cloud setup deferred to **last 2 weeks of November**. Local dev via Docker Compose until then.
-
----
-
-## Database (ERD — 10 domains, 38 tables)
-
-Domains: Venue & Tables · Guest & Identity · Staff IAM · Menu · Inventory · Order · Payment · Bottle Keep · Audit Log · Shift & AI Insight
-
-Full schema: `docs/schema.sql` | Visual ERD: `docs/erd.html`
-
-**Critical schema rules:**
-- All mutable tables have `created_by` / `updated_by` (FK → `staff_user`) + `created_at` / `updated_at` — `created_by` / `updated_by` populated by `AuditSubscriber` via `@nestjs/cls`; `updated_at` is set by the database (trigger `trg_<table>_updated_at`, DR-023) — app code never writes it, and a migration that creates a table with `updated_at` attaches the trigger.
-- `AuditSubscriber` is global — registered once in `AppModule`, not per module.
-- Services must use `save()` not `update()` on audited entities.
-- `audit_log` is append-only — never UPDATE or DELETE.
-- `order_item.unit_price_snapshot` + name snapshots (`item_name_snapshot`, `variant_name_snapshot`, `order_item_modifier.option_name_snapshot`) frozen at order time — menu price or name changes never affect existing orders (DR-022).
-- `gateway_tx_id` UNIQUE constraint = payment idempotency key.
-
----
-
-## Module Boundaries (to be defined — next task)
-
-Cross-cutting concerns to resolve:
-- `IamModule` — imported by almost everything; wraps `PermissionsGuard` + Redis cache.
-- `NotificationsModule` — injectable by Order + Payment modules to emit WebSocket events; do NOT import the gateway directly.
-- `BullMQ` — `PaymentModule` enqueues; separate processor consumes. HTTP controller must not be coupled to the processor.
-- `BaseEntity` — defined in `app/backend/src/common/`; all entities extend it.
-
----
-
-## Scoped Rules
-
-Before editing files in a path below, read its rule file.
-
+## Scoped rules — read before editing
 | Path | Rule file |
 |---|---|
-| `app/backend/**` | `docs/rules/backend.md` |
-| `app/frontend/**` | `docs/rules/frontend.md` |
-| `app/mobile/**` | `docs/rules/mobile.md` |
+| `app/backend/**` | `docs/rules/backend.md` (proven pack) |
+| `app/frontend/**` | `docs/rules/frontend.md` (proven pack) |
+| `app/mobile/**` | `docs/rules/mobile.md` (proven pack) |
+Editing `<app>/**` → read its rule file first, even if your tool did not load it. Workspace bans: `docs/rules/core.md`.
 
----
+## Architecture (locked)
+- **One NestJS process** — REST + WebSocket Gateway + webhook receiver. **One Next.js web app** — role surfaces by route (`/pos`, `/staff`, customer QR). **One Expo app** — staff mobile surface (login, tables/sessions, order taking + management, push, guest notes, bottle-keep check), no new endpoints. Modular monolith; extract services only if load demands it post-launch.
+- **IAM:** AWS-style most-permissive-wins (union of group + direct user policies), time-bound group membership (`valid_from` / `valid_until`), resolution cached in Redis and invalidated on any IAM change. Always `PermissionsGuard` — never inline permission checks in controllers.
+- **Identity:** provider-agnostic (`staff_user_identity`, `customer_identity` hold LINE credentials). Visit ≠ Customer: a visit is created on QR scan; `customer_id` is linked later only with PDPA consent.
+- **Modules:** `IamModule` wraps `PermissionsGuard` + Redis cache · `NotificationsModule` is injected by Order / Payment to emit WebSocket events (never import the gateway) · `PaymentModule` enqueues BullMQ jobs; a separate processor consumes — the HTTP controller never couples to it · all entities extend `BaseEntity` (`app/backend/src/common/`).
+- **Deployment:** frontend → Vercel; backend → AWS ECS + ECR; IaC Terraform for AWS + Cloudflare. EKS is a stretch goal only after ECS is solid.
 
-## Workflow & Decision Authority
+## Database rules
+- Mutable tables carry `created_by` / `updated_by` (FK → `staff_user`, set by the global `AuditSubscriber` via `@nestjs/cls`, registered once in `AppModule`) and `created_at` / `updated_at`. `updated_at` is set by the DB trigger `trg_<table>_updated_at` (DR-023) — app code never writes it; a migration that creates a table with `updated_at` attaches the trigger.
+- Services use `save()`, never `update()`, on audited entities. `audit_log` is append-only — never UPDATE or DELETE.
+- `order_item.unit_price_snapshot` and name snapshots (`item_name_snapshot`, `variant_name_snapshot`, `order_item_modifier.option_name_snapshot`) are frozen at order time (DR-022).
+- `gateway_tx_id` UNIQUE = payment idempotency key — check it before processing a webhook.
 
-Approval policy: routine scoped work and Git (including task-branch commit/push/PR creation) proceed without repeated questions; critical decisions, destructive actions, main merges and releases require explicit authority. See `docs/rules/workflow.md` §4. Tool/sandbox permission prompts remain separate.
+## Session start
+1. Identity: `.agent-local.json` in the main checkout. Read your local state `.field-kit/state/<id>-<kind>.md` (`<kind>` = `planning` or `BRIEF-###`; from a worktree: `../../.field-kit/state/`) and only the files it lists.
+2. Open with: where work stands · branch / worktree · next action. Then do the next action.
+3. Before rotating out of a long session: `/checkpoint`.
 
-Chat commands & skills: `onboard kj|methee`, `/new-feature`, `/new-brief`, `/new-dr`, `execute BRIEF-###` (`ทำ`), `start BRIEF-###`, `fix BRIEF-### (#…)`, `ship BRIEF-###`, `audit BRIEF-###` (`ตรวจ`), `/review`, `อนุมัติ merge BRIEF-###` (`approve merge`), `/checkpoint` (`/save-session`), `resume` (`/resume`), `/autopilot`, `สถานะ BRIEF-###` (`status`), `handoff` — definitions in `docs/rules/workflow.md` §4. Briefs use project-wide `BRIEF-###` (old BE/FE/MB/SH prefixes retired — rename map in `docs/rules/workflow.md` §10).
+## Field Guard — decisions go through Field
+Field is the only decision authority. Agents recommend or execute an explicit decision.
 
-@docs/rules/workflow.md
-@docs/rules/core.md
-@docs/rules/agent-boundaries.md
-@docs/rules/ponytail.md
-@docs/features/INVARIANTS.md
+| Trigger (must flag — never decide alone) | Examples |
+|---|---|
+| Dependencies | any new / removed / upgraded package in package.json |
+| Brief / e2e deviation | contract or DTO differs, an AC can't be met as written, a **locked e2e needs a change**, any work outside the brief's scope |
+| Flow / architecture | new module, cross-module import, endpoint or event not in the brief / `design.md`, bypassing a locked rule, changing the core flow |
+| Data | schema change, migration not implied by the brief, shared contract / enum change |
+| Sensitive | auth, payment, personal-data behaviour |
 
-- **Field** (KJ) is the only decision authority. Any new dependency, brief/e2e deviation, flow/architecture change, schema change, or auth/payment/PDPA change → needs approval: an exact Pre-decided item in the Ready brief, or an Approved DR. Neither → raise a DR and stop that path. Never decide alone.
-- **Roles:** Cowork = planner, QA acceptance-test author (seeded e2e) and default auditor (no app implementation code). Cursor / Claude Code / Antigravity / Codex = executors (unit `*.spec.ts` + app code inside a `Ready` brief; never edit seeded e2e files).
-- **Lifecycle:** executor marks `Implemented` → assigned auditor reviews → merge: Field's own PRs pre-approved once audit PASS + checks green on the audited head; Methee's PRs need Field's `อนุมัติ merge` for the exact head → merged PR means `Done`.
-- **Every session (planning included):** read own `docs/state/<person>/SESSION_STATE.md` first (+ only the active files it lists) and open with where work stands + the next action — no "resume" prompt needed. Implementation sessions also run the checkout check. Update state at checkpoints (commit, merge, status change, decision, blocker; keep its *Carry over* section) and use `/checkpoint` before rotating out of a long session. Commit/push per `docs/rules/workflow.md` §3 — one brief = one branch = one PR, opened only after audit PASS.
+**Not triggers (just do it):** private helpers, naming, refactors inside the brief's own files, unit-test structure, WHY comments.
 
----
+**Approved** = exactly one of: (a) an exact item in the current Ready brief — its *Pre-decided* list, or the Contracts / Code map of its linked `design.md`, or its `ui.md` — traced to Field by a *Source* row; or (b) an `Approved` DR. Anything beyond the exact wording is a deviation → new DR. A DR never unlocks a protected file.
 
-## Working Rules
+**Procedure:** stop that path only (continue unblocked work) → `/new-dr` → note it under Blockers in the brief / handoff → start your reply with `FIELD REVIEW NEEDED: DR-### — <one line>`. Only Field writes a Decision; Cowork may record one only when Field states it explicitly in the session. Silence or "looks good" is never approval.
 
-> **Agent boundaries:** See `docs/rules/agent-boundaries.md`. Never modify listed files.
+## Protected paths (full rules: `docs/rules/agent-boundaries.md`)
+Never edit without an exact brief unlock (brief §9 *Guard — unlocks*) or Field's OK on the exact diff in this session (`Approved-by: Field (session)` trailer):
+`CLAUDE.md` · `AGENTS.md` (root and nested `app/*/`) · `docs/rules/**` · `app/*/.cursor/rules/**` · `.cursor/rules/**` · `.agents/rules/**` · `.github/**` · `infra/**` · kit enforcement `.githooks/**`, `ops/gates/**`, `scripts/field-kit/**` (never brief-unlockable) · root config (package.json and friends) · `docs/schema.sql` · `docs/erd.html` · design source snapshots (`docs/design/source/**`, `docs/features/*/design-source/**`) · `docs/handoff.md` (frozen) · `docs/features/**`, `docs/briefs/**`, `docs/decisions/**` (ownership rules) · **e2e files and e2e runner config after their lock commit** (change only with `Approved-by: Field (e2e-change)`).
 
-- **Finish core vertical slice first:** order → pay → close. No scope expansion mid-build.
-- **Simple before complex.** No premature abstractions.
-- AI split (Field, 2026-10-09): **Field 0% coding / agents 100% — full reviewer mode** (Field writes no app code; owns architecture, decisions, brief approval, audit review and merge). Metee: agents 100%, same as Field — Cowork + Field audit his branches (DR-030). Humans own architecture, integration, edge cases.
-- EKS is a stretch goal — only after ECS is solid. Do not touch Kubernetes in Semester 1.
-- Infra features cut from scope (see `docs/FRD.md`): offline mode, member QR, staff performance analytics. Do not reintroduce.
-- Break tasks into small inside→out steps (`1 step = 1 commit`). Do not dump full solutions.
-- Always explain WHY a solution is chosen, not just what.
+## Hard rules
+1. **Never decide alone** — Guard triggers go through a DR.
+2. **Never audit work you implemented, fixed or paired on** — refuse and name Cowork.
+3. **Not run is never pass** — a required gate or run proof not run → status `BLOCKED`, never `Implemented`. Report exact commands, exits, limits.
+4. **2-attempt stop** — a step still red after 2 fix attempts → stop and report.
+5. **Bans (`docs/rules/core.md`):** no type cheats (`as any`, `as unknown as`, `@ts-ignore`), no silent catch or invented `?? ''` fallbacks, no fake tests, no dead code / shims.
+6. **Do not reintroduce cut features:** offline mode, member QR, staff performance analytics.
+7. **Every brief runs in its own worktree** `.worktrees/BRIEF-###`; the main checkout stays on `main`. Never `git worktree prune` / `remove` from a VM session.
+8. **Never push to `main`**; merge only through `pr-review` (merge commit only). `.env*` files are never committed.
+9. **No microservices, no Kubernetes/EKS** before ECS is stable and shipping.
+10. **Architecture and database rules above are locked** — `PermissionsGuard` only, `save()` not `update()` on audited entities, `audit_log` append-only, snapshots immutable, `gateway_tx_id` checked first.
+11. **Simple before complex** — no premature abstractions; inside → out steps, 1 step = 1 commit; explain WHY a solution is chosen.
+
+**Approval policy:** routine brief-scoped work and task-branch Git (commit / push / PR) proceed without repeated questions; critical decisions, destructive actions, main merges and releases need Field's explicit authority (`docs/rules/workflow.md` Section 4).
+
+## Commands (detail: `docs/rules/workflow.md` Section 4)
+`/new-brief` (default entry) · `/new-feature` · `/new-defect` · `/new-dr` · `scan BRIEF-###` · `execute BRIEF-###` (`ทำ`) · `fix BRIEF-### — audit round <n>` · `ship BRIEF-###` · `audit BRIEF-###` (`ตรวจ`) · `/review` · `pr-review` (`approve merge BRIEF-###` · `อนุมัติ merge`) · `/checkpoint` · `resume` · `/autopilot` · `onboard kj|methee` · `status BRIEF-###` (`สถานะ`) · `handoff`.
+Tools without these skills: find the command in `docs/rules/workflow.md` Section 4 and read the section its row names before acting.
+
+
+## Claude-only
+- Claude Code loads `<app>/CLAUDE.md` when you work inside an app folder; it points to that app's rule file.
+- Skills (`/new-brief`, `/execute`, `/audit`, …) read the workflow sections they need — do not load all of `docs/rules/workflow.md` up front.
