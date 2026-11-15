@@ -55,6 +55,9 @@ Read first: `docs/design/cd-template.md` (what a CD contains) · `docs/design/bo
 | CD-05 dashboard | https://claude.ai/artifact/WiY9xummEw5w2rPdnRqBdf | rev 1 built 11 Oct (review: R1–R6; R2 = chart tokens into DS) |
 | CD-11 journeys + notifications (presentation) | https://claude.ai/artifact/PpcMLoSNUudmcQU3kiYDsG | rev 1 built 11 Oct (review: R1–R4; R3 = DR-009 amendment; re-copy sources after other approvals) |
 | CD-08 staff app core | https://claude.ai/artifact/E1EzrLh3piE3esih4VyRwB | Field OK (R1–R5) · retrofit pending (+ สั่งออเดอร์) |
+| CD-16 stock items + recipes | https://claude.ai/artifact/6hAmmjP792i7PnqafPs4wY | **approved rev 2 (15 Nov)** · snapshot pending · Lucide blob `/_blob/873b4332b4530deb49ddbeb6e61861c4` |
+| CD-17 stock loss + count | https://claude.ai/artifact/HhGhQQe3XrQWouuqAfVSjZ | **approved rev 2 (15 Nov)** · snapshot pending · Lucide blob `/_blob/a09319ec18f2172ce50e3c746a482f86` |
+| CD-18 purchasing | https://claude.ai/artifact/TFr5arFaRwatUC4rPnkgSB | rev 1 built 15 Nov · **question** (R1–R7 open → purchasing brief session) · Lucide blob `/_blob/1e78c1baad4ca80bc58e3d10a8ec7c71` |
 | CD-14 staff new order | https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW | **rev 3 approved 10 Oct — template reference** (images in docs/design/assets/CD-14/) |
 Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV921SWCiAxGJxD78D (version 1791561405-c72e). CD-14 Lucide blob `/_blob/55621ac7d8cfe40fb69092b2ed520365` (CD-14 only).
 
@@ -71,7 +74,7 @@ Handoffs: `docs/design/CD-##-handoff.md`. DS: https://claude.ai/artifact/AXVdDV9
 - Shared child roots need `position: relative; isolation: isolate` or DS badges (`z-index: var(--z-raised)`) leak over modals.
 - `style="…"` on `x-import` is ignored → wrap in a `<div style>`.
 - Numeric props must be holes (`width="{{w84}}"`), not strings (`width="84"` renders wrong).
-- Toast body = children (no `description`); `action={{ {label} }}`. Input/Select error = `error="text"` (no `error-message`); Select supports `is-open`, `options=[{value,label}]`. PromptPayPanel: `amount` string, `qr-src`, `qr-size`, `status` (completed/cancelled/expired), `expires-in`.
+- Toast body = children (no `description`); `action={{ {label} }}` — **a Toast with no action must get `action` null/absent: `{label:''}` renders the object → React #31 crashes the board** (CD-17 rev 2). Input/Select error = `error="text"` (no `error-message`); Select supports `is-open`, `options=[{value,label}]`. PromptPayPanel: `amount` string, `qr-src`, `qr-size`, `status` (completed/cancelled/expired), `expires-in`.
 - DS Badge tones: neutral · accent · new · making · served · void · bottle (no `info`). StatusChip `kind="menu" status="soldout"` exists.
 - DS `Dialog` takes JSX `actions` → can't set from markup; draw alert dialogs from tokens + DS Buttons.
 - To stretch a DS component (e.g. SearchField) the `x-import` host must be the flex item: wrapper `class="sf"` + helmet `.sf > *{flex:1 1 auto;display:flex;min-width:0}`.

@@ -1,22 +1,19 @@
 # Backlog — AI-Powered Bar Management System
 
-> Queue, follow-ups, parked work and milestones (workflow §2). Moved unchanged from `docs/state/kj/SESSION_STATE.md` on 2026-11-15 (Rev 24 — state is local now).
+> Queue, follow-ups, parked work and milestones (workflow §2). Moved from `docs/state/kj/SESSION_STATE.md` on 2026-11-15 (Rev 24 — state is local now); merged with main's 2026-11-15 edits.
 > Planning sessions edit it; executors read it. Decisions belong in DRs, not here.
 > Newer re-scope (advisor review 7–8 Nov, Must / Should tiers, dates): `docs/research/2026-11-08-feature-map-rescope.md` (interview notes file not in the repo yet) → DR-031 / 032 / 033 (Pending).
 
-## Next steps (as of 2026-11-02)
-1. merge BRIEF-071
-2. AI owner insight (DR-014) — needs CD + feature spec first
-3. BRIEF-065 (Metee)
-
+## Next steps
+1. 10 Nov advisor: K1 alcohol law · 14-module scope · ML on synthetic data → write answers into notes
+2. DR-031 amendment (A1–A6 in notes) → Field OK → ship with or after `docs/dr-031-033-rescope`
+3. CD sessions 1–5 (session 1 = CD-16 ✓ approved · CD-17 ✓ approved · CD-18 built, before 21 Nov) · AWS 9–20 Nov (DR-033) · FRD v2 + schema / ERD
 ## Blockers / Coordination
-- Shared files: none · Review queue: none · if `ci` hits frontend timeouts → re-run once (038 audit F4)
-- e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e
-- Dev servers stopped; Postgres + Redis (docker) left running
+- K1 legal rules → advisor · CLAUDE.md / AGENTS.md / infra.md / DR-002 per DR-031–033 locks (protected — Field OKs diff) · BRIEF-074–077 (Metee) + `docs/audits/BRIEF-010.md` untouched
 
 ## Carry over — milestones, parked, Field to-do, follow-ups
 - Port naming (Field 1 Nov): rule = `abstract class I<Name>`; 21 ports in code are unprefixed (BRIEF-067) → cleanup brief after backend phase (rename + `domain/ports/*.port.ts` + 067 S6/S7/S9). Until then: new ports use `I<Name>` — say so in each backend brief
-- Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
+- Milestones: gate 8 Nov (order → pay → close) · advisor 2nd update 10 Nov · AWS 9–20 Nov (ECS split, DR-033) · exam prep 21–29 Nov · exams 3 / 4 / 8 Dec · **S1 project final exam 14 Dec** · feature freeze 15 Mar (proposed) · final Apr 2027 · build order + tiers → `docs/research/2026-11-08-feature-interview-notes.md` · Metee ~1 mobile brief/wk (≤ 10 h)
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)
 - Field to-do: advisor heads-up AI → owner insight (DR-014) · DS `--chart-1/2` (CD-05 R2) · decide: drop web `/staff` from CLAUDE.md + `frontend.md` (open since 10 Oct) · delete branches: merged (#45, #46, #48–#52, #54–#72 + `feat/BRIEF-017-void-comp-issues`, `feat/BRIEF-027-sold-out-auto-void`, `feat/BRIEF-028-web-login-real-api`, `feat/BRIEF-029-pos-floor-open-table`, `feat/BRIEF-030-pos-session-panel-close`, `feat/BRIEF-031-pos-order-entry` + local `docs/workflow-rev19`, `docs/rules-class-helpers`) and stale `docs/state-1018` (#53 closed), `docs/planning-1017-evening`, `docs/schema-38-tables`; optional auto-delete head branches
 - Dev env isolation (Field 23 Oct — after 036–038): e2e still shares Redis with the dev backend (BullMQ payments queue steals test expiry jobs; e2e flushdb signs out dev sessions) → own Redis DB index / queue prefix for tests, together with BRIEF-013 S2 (BullMQ drops the DB index) · until then stop the dev backend before backend test:e2e · after any e2e/seed reset: re-run seed:staff with Field's LINE sub (dev DB staff is "Field (demo)" / U-demo-owner since BRIEF-036) · demo menu needs created_at ≥ 7 days for "ขายน้อย" (BRIEF-036 run proof backdated it by hand)
@@ -31,4 +28,4 @@
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-065 (Metee) → AI owner insight → bootstrap batch (before AWS) · later: BRIEF-023 split (Deferred, DR-019) · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)
+1. BRIEF-065 (Metee) → AWS (DR-033) → stock + purchasing (30 Nov) · later: BRIEF-023 split (Deferred, DR-019) · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)
