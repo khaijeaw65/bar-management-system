@@ -1,88 +1,116 @@
-# Bar Management System — Workspace Rules
+# AI-Powered Bar Management System — Workspace Rules
 
-> Workspace-wide conventions for the monorepo.
-> Scoped rules: `docs/rules/backend.md` (NestJS), `docs/rules/frontend.md` (Next.js) and `docs/rules/mobile.md` (Expo).
->
-> Reference docs (read before working):
->   CLAUDE.md         → permanent project context
->   docs/FRD.md       → feature scope (what is in/out)
->   docs/schema.sql   → PostgreSQL schema (34 tables, 9 domains)
->   docs/rules/workflow.md → roles, briefs, gates, Field Guard (always read first)
->   docs/features/INVARIANTS.md → invariant index (always loaded; feature specs in docs/features/<f>/)
->   docs/state/<person>/SESSION_STATE.md → current progress (read at start, overwrite at end)
-
----
+> Workspace-wide conventions and bans for every stack. Stack rules: `docs/rules/<kind>.md` (listed in `AGENTS.md`).
+> Rule format: `ID · rule · [lint: <rule>], [ci: <check>] or [review] · Must / Suggest` + ❌ / ✅. `/review` and `/audit` cite IDs. `Suggest` never blocks a PASS.
 
 ## Project at a Glance
-AI-powered bar management POS for small-to-medium counter bars in Thailand.
-Senior capstone project — DPU Computer Engineering. Deadline: April 2027.
-2 developers. Production-grade. Phase 1 = order → pay → close core vertical.
+Production-grade bar management system for small-to-medium counter bars in Thailand (DPU CPE senior capstone).
+Core flow: **QR guest ordering → kitchen/bar display → PromptPay payment → session close**. Finish it end-to-end before adding breadth.
 
-## Monorepo Structure (pnpm workspaces + Turborepo)
+## Repo Structure (pnpm workspaces + Turborepo)
 ```
-/
-├── app/
-│   ├── backend/        @bar/backend  — NestJS API (port 3011)
-│   ├── frontend/       @bar/frontend — Next.js 16 web app (port 3010)
-│   └── packages/
-│       └── contracts/  @bar/contracts — shared enums & types (source of truth)
-├── docs/               project documentation (FRD, schema, handoff, rules)
-├── .cursor/rules/      → thin wrappers only — rule content lives in docs/rules/
-├── CLAUDE.md           → permanent context for all AI sessions
-├── AGENTS.md           → hard rules for autonomous agents
-├── turbo.json
-└── pnpm-workspace.yaml
+app/backend/                → @bar/backend  — NestJS API (port 3011)
+app/frontend/               → @bar/frontend — Next.js 16 web app (port 3010)
+app/mobile/                 → @bar/mobile   — Expo staff app
+app/packages/contracts/     → @bar/contracts — shared enums & types (source of truth)
 ```
+Create a folder when its first file is needed — no empty placeholders.
 
-## Shared Types (@bar/contracts)
-- `app/packages/contracts/src/enums.ts` is the SINGLE source of truth for shared enums
-- Never redefine OrderStatus, PaymentStatus, SessionState, StaffRole in app code
-- Import as: `import { OrderStatus } from '@bar/contracts'`
-- When adding a new shared enum/type: add to contracts first, then use it
-- Run `pnpm build` from root after modifying contracts — both apps depend on it
+## Shared Types (`@bar/contracts`)
+- `app/packages/contracts/src/enums.ts` is the single source of truth for shared enums — never redefine `OrderStatus`, `PaymentStatus`, `SessionState`, `StaffRole` in app code; import as `import { OrderStatus } from '@bar/contracts'`.
+- New shared enum / type → add it to contracts first, then use it. Run `pnpm build` from root after changing contracts — every app depends on it.
 
-## TypeScript / ESM Rules (all packages)
-- TypeScript 6, `strict: true`, `noUncheckedIndexedAccess: true`
-- ESM (`type: "module"`) everywhere — no CommonJS
-- **Backend + contracts:** NodeNext module resolution — relative imports MUST include `.js` extension. **Web app (`app/frontend`) and Expo app (`app/mobile`) use bundler resolution — no `.js` extensions** (see `frontend.md`):
-  - ✅ `import { Foo } from './foo.service.js'`
-  - ❌ `import { Foo } from './foo.service'`
-- Node built-ins: `import { randomUUID } from 'node:crypto'`
-- No barrel `index.ts` files that re-export everything (causes circular dep issues)
+## TypeScript / ESM (all packages)
+- TypeScript 6, `strict: true`, `noUncheckedIndexedAccess: true`; ESM (`type: "module"`) everywhere — no CommonJS.
+- **Backend + contracts:** NodeNext resolution — relative imports end in `.js` (`./foo.service.js`). **Web (`app/frontend`) and Expo (`app/mobile`):** bundler resolution — no `.js` extensions.
+- Node built-ins as `node:` (`import { randomUUID } from 'node:crypto'`). No barrel `index.ts` re-exporting everything (circular deps).
 
 ## Git Conventions
-- Routine task-scoped Git is pre-authorized under workflow.md §4; do not ask again for each commit/push/PR. Main merges, destructive/history-rewriting actions and releases remain explicitly gated.
-- Conventional commits: `feat/fix/chore/docs/refactor/test`
-- Brief work: scope = brief ID — `feat(BRIEF-001): ...`, branch `feat/BRIEF-001-<slug>`, PR title `BRIEF-001: <title>`
-- Non-brief chores: scope = module — `chore(repo): ...`
-- Never commit directly to `main` — use feature branches. One brief = one branch = one PR
-- PR description follows `.github/pull_request_template.md` (brief, DRs, handoff, gates)
+- Routine brief-scoped Git (commit / push / PR on the task branch) is pre-authorized — don't ask per commit. Main merges, destructive or history-rewriting actions and releases stay explicitly gated.
+- Conventional commits `<type>(<scope>): <subject>` — types `feat fix docs refactor test chore perf ci build style revert`; scope optional.
+- Brief work: branch `feat/BRIEF-###-<slug>` in `.worktrees/BRIEF-###`, commits `feat(BRIEF-###): <step>`, PR title `BRIEF-###: <title>`.
+- Autopilot: branch `auto/YYYY-MM-DD-<slug>` in its own worktree, one green commit per `docs/PLAN.md` step.
+- Never commit to `main` directly. One brief = one branch = one PR, following `.github/pull_request_template.md`.
 
-## Scope Discipline — HARD RULES
-- Phase 1 ONLY: guest-in → order → pay → close. No Phase 2 features.
-- CUT features (do NOT implement): offline mode, member QR, staff performance analytics
-- Stretch goals (do NOT start): EKS/Kubernetes, kitchen display UI
-- Do not expand scope without an Approved DR in `docs/decisions/` (Field Guard — workflow.md §5)
-- Finish the core vertical before adding breadth
+## Scope Discipline
+- Build the core flow first: QR guest ordering → kitchen/bar display → PromptPay payment → session close.
+- Cut (do NOT implement): offline mode, member QR, staff performance analytics
+- Stretch (do NOT start): EKS / Kubernetes (only after ECS is solid), kitchen display UI
+- Phase 1 only: guest-in → order → pay → close. No Phase 2 features.
+- No scope expansion without an Approved DR (Guard in `AGENTS.md`).
 
 ## Cross-app Contracts
-- Shared types/enums/schemas have one source of truth: `app/packages/contracts` (`@bar/contracts`, section above) and, for Feature Tier work, the feature's `docs/features/<feature>/design.md`. Never redefine them in app code.
-- Contract changes are a Data trigger (workflow.md Section 5) and must update `design.md` in the same PR.
+- Shared types / enums / schemas have one source: `app/packages/contracts` and the feature's `design.md`. Never redefine them in app code.
+- A contract change is a Data trigger and updates `design.md` in the same PR.
 
-## Coding Anti-Patterns — BANNED Across All Stacks
-1. **No type-safety cheats:** Zero `any`, `as any`, `as unknown as T`, `@ts-ignore`, `@ts-expect-error`, or non-null `!` on external/untrusted data. Parse untrusted data at the boundary (Zod/schema) or fix the type definition.
-2. **No silent error swallowing or fake fallbacks:** Never write a `catch` block that logs and returns `null`/`false`/`[]` to hide a failure — rethrow a typed domain/HTTP error or handle an explicit recovery path documented in the brief. Never invent silent fallback defaults (`?? ''`, `?? 0`) that are not in the contract.
-3. **No fake or tautological tests:** Tests must assert observable output or state changes, not mock call counts (`toHaveBeenCalled`). Never mock the class under test or its private helpers — mock only external boundaries/ports. Never weaken an assertion or edit a seeded `.e2e-spec.ts` file to make a failing test pass.
-4. **No dead code, stubs, or shims:** Delete unused functions, parameters, and callers in the same commit. No commented-out code blocks, no `// TODO` stubs on shipped AC paths, and no internal backwards-compatibility shims.
+## Banned Across All Stacks
+
+**CORE-01 · No type-safety cheats** · `[lint: no-explicit-any]` + `[review]` for `as unknown as`, `@ts-ignore`, `@ts-expect-error`, non-null `!` on untrusted data · **Must**
+```ts
+// ❌
+const user = (await res.json()) as unknown as User;
+// ✅ parse at the boundary
+const user = UserSchema.parse(await res.json());
+```
+
+**CORE-02 · No silent catch, no invented fallbacks** · `[review]` · **Must**
+```ts
+// ❌
+try { return await this.repo.find(id); } catch { return null; }
+const name = row.display_name ?? '';
+// ✅ rethrow a typed error; keep nullable as nullable (contract says string | null)
+const row = await this.repo.find(id);
+if (!row) throw new SeatNotFoundError(id);
+const name: string | null = row.display_name;
+```
+
+**CORE-03 · Tests assert outcomes, not calls** · `[review]` · **Must**
+```ts
+// ❌
+expect(repo.save).toHaveBeenCalled();
+// ✅
+expect(await repo.findOne(id)).toMatchObject({ status: 'closed' });
+```
+Mock only external boundaries / ports — never the class under test. Never weaken an assertion or touch a locked e2e to make a test pass.
+
+**CORE-04 · No dead code, stubs or shims** · `[review]` · **Must**
+```ts
+// ❌
+export { PermissionService } from './permission.service'; // keep old import path working
+// function oldTotal() { ... }
+// ✅ update the callers in the same commit and delete the old path
+```
+
+**CORE-05 · Type files hold types only** · `[lint: check-class-files]` where installed, else `[review]` · **Must**
+```ts
+// ❌ seat.types.ts
+export class DuplicateSeatLabelError extends Error {}
+// ✅ seat.errors.ts holds error classes; seat.types.ts holds types / interfaces
+```
+
+**CORE-06 · No compression to dodge limits** · `[review]` · **Must**
+```ts
+// ❌ packed to stay under 300 lines
+if (!a) throw new A(); if (!b) throw new B(); const x = { id, label, kind };
+// ✅ split the file by responsibility instead
+```
+Never reformat untouched code or strip comments in a fix round.
+
+**CORE-07 · No skipped or focused tests** · `[lint: no-disabled-tests, no-focused-tests]` on unit and e2e paths + `[review]` · **Must**
+```ts
+// ❌ a locked case switched off, or every other case silenced
+it.skip('rejects a retired seat', …);
+it.only('opens a table', …);
+// ✅ every case runs; a case that must change goes through the (e2e-change) path
+it('rejects a retired seat', …);
+```
 
 ## Development Workflow
-- Local: Docker Compose for Postgres + Redis (see `infra/docker-compose.yml`)
-- `pnpm dev` → Turborepo runs backend + frontend in parallel
-- Migrations: `migration:generate` → review → `migration:run` (never `synchronize: true`)
-- Migrations are additive by default (add column/table over drop/rename) and each has a working `down`: `migration:run` → `migration:revert` → `migration:run` before handoff. Never edit a migration already on `main` — write a new one.
-- Feature flags: not used — scope control is in FRD, not flags
+- Local: Docker Compose for Postgres + Redis (`infra/docker-compose.yml`); `pnpm dev` → Turborepo runs backend + frontend.
+- Migrations: `migration:generate` → review → `migration:run` (never `synchronize: true`); additive by default, each with a working `down` (`run` → `revert` → `run` before handoff); never edit a migration already on `main`.
+- Feature flags: not used — scope control is in the FRD.
+- Never invent commands that do not exist in a `package.json`; write "not available yet" in the handoff.
+- Secrets live in `.env*` (gitignored) and the cloud secret store; never in code, logs or docs.
 
-## Improvement notes
-While pairing, reviewing or auditing, write down anything that would improve the code or the kit — one line each, as you notice it. Don't fix it in the same session unless it's in the current brief.
-- **Code / style** → `docs/style-notes.md`: `decision or idea · example file · why`. Feeds the scoped rule files later.
-- **field-kit** → your reply, prefixed `kit:` (Field collects these for the kit's backlog). Kit fixes happen in batches, never during a coding session.
+## Improving the rules
+New rules come from evidence: a defect's *Should have been caught at* field or a repeated audit finding. Propose the rule (ID, ❌/✅, tag, severity) to Field; it enters only with Field's OK. Kit-level ideas go in your reply prefixed `kit:`.

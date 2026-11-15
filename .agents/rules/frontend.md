@@ -1,5 +1,5 @@
 ---
-description: Next.js 16 frontend architecture, UI, state, language, and PWA constraints.
+description: Next.js — Frontend structure, styling, state, API client and component limits.
 activation: glob
 glob: app/frontend/**
 ---

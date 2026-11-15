@@ -1,15 +1,10 @@
-# State — KJ
-Updated: 2026-11-02 · Agent: Antigravity (BRIEF-071 Rev 2 Shipped / PR open)
-> Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
+# Backlog — AI-Powered Bar Management System
 
-## Resume
-**BRIEF-071 Rev 2 Audit PASS — PR open**. Branch `feat/BRIEF-071-demo-defects-polish`. Next: merge BRIEF-071, then proceed to AI owner insight (DR-014).
+> Queue, follow-ups, parked work and milestones (workflow §2). Moved unchanged from `docs/state/kj/SESSION_STATE.md` on 2026-11-15 (Rev 24 — state is local now).
+> Planning sessions edit it; executors read it. Decisions belong in DRs, not here.
+> Newer re-scope (advisor review 7–8 Nov, Must / Should tiers, dates): `docs/research/2026-11-08-feature-map-rescope.md` (interview notes file not in the repo yet) → DR-031 / 032 / 033 (Pending).
 
-## Active
-- Brief: BRIEF-071 Rev 2 (Audit PASS — PR open) · Implementer: kj / Antigravity · Auditor: Antigravity
-- Done 21 Oct–2 Nov: BRIEF-073 (#122) · BRIEF-072 (#121) · BRIEF-071 (#120) · BRIEF-018 (#119) · BRIEF-070 (#118) · BRIEF-069 (#117) · BRIEF-068 (#116) · BRIEF-066 (#115) · BRIEF-067 (#113) · BRIEF-064 (#112) · adopt field-kit Rev 22 (#111) · BRIEF-063 (#110) · 061 (#109) · 058 (#108) · 057 (#107) · 056 (#106) · 055 (#105) · 054 (#104) · 053 (#103) · 052 (#102) · 051 (#101) · 050 (#100) · 049 (#99) · 048 (#98) · 047 (#97) · 046 (#95) · 025 (#94) · 045 (#92) · 041 (#91) · 040 (#90) · 044 (#87) · 043 (#85)
-
-## Next steps
+## Next steps (as of 2026-11-02)
 1. merge BRIEF-071
 2. AI owner insight (DR-014) — needs CD + feature spec first
 3. BRIEF-065 (Metee)
@@ -19,7 +14,7 @@ Updated: 2026-11-02 · Agent: Antigravity (BRIEF-071 Rev 2 Shipped / PR open)
 - e2e on `bar_test`; stop any dev backend before `test:e2e` · no `next dev` in `app/frontend` during frontend e2e
 - Dev servers stopped; Postgres + Redis (docker) left running
 
-## Carry over (executors keep unchanged — Cowork/Field edit)
+## Carry over — milestones, parked, Field to-do, follow-ups
 - Port naming (Field 1 Nov): rule = `abstract class I<Name>`; 21 ports in code are unprefixed (BRIEF-067) → cleanup brief after backend phase (rename + `domain/ports/*.port.ts` + 067 S6/S7/S9). Until then: new ports use `I<Name>` — say so in each backend brief
 - Milestones: checkpoint 25 Oct (orders API live, else cut web checkout polish — never the core slice) · gate 8 Nov (order → pay → close demo; freeze dropped — Field 22 Oct) · AWS 9–20 Nov · if ahead: bottle keep → dashboard → customer QR · LINE OA → Sem 2 · Metee ~1 mobile brief/wk (≤ 10 h), demo = phone order → POS live
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)

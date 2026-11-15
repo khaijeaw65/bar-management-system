@@ -1,13 +1,19 @@
+# field-kit CI (G2). Ruleset main-ci requires the status check named `ci` — the last job aggregates the others.
 name: ci
 
 on:
+  push:
+    branches: ['feat/**', 'fix/**', 'main']
   pull_request:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  ci:
-    name: ci
+  checks:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -91,3 +97,30 @@ jobs:
           else
             echo "Skipping openapi:export — backend and contracts are not affected"
           fi
+
+  lock:
+    runs-on: ubuntu-latest
+    env:
+      # Briefs seeded before workflow Rev 24 (Cowork-seeded e2e, no lock commit) finish under Rev 23 — skip the lock check.
+      # Remove an ID once its PR is merged; delete the list when it is empty.
+      LEGACY_BRIEFS: 'BRIEF-010 BRIEF-022 BRIEF-059 BRIEF-060 BRIEF-062 BRIEF-065 BRIEF-900'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Acceptance lock
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          ID=$(printf '%s' "$BRANCH" | grep -oE 'BRIEF-[0-9]+' | head -n1 || true)
+          if [ -n "$ID" ] && printf ' %s ' "$LEGACY_BRIEFS" | grep -q " $ID "; then
+            echo "lock: skip — $ID was seeded before Rev 24 (workflow §9 transition)"; exit 0
+          fi
+          bash scripts/field-kit/check-lock.sh
+
+  ci:
+    if: always()
+    needs: [checks, lock]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All required jobs passed
+        run: |
+          [ "${{ needs.checks.result }}" = success ] && [ "${{ needs.lock.result }}" = success ] || exit 1

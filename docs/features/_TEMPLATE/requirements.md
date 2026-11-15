@@ -8,12 +8,21 @@
 | **Status** | Draft · Active · Built |
 | **Backlog item** | <ClickUp task link or `docs/product/BACKLOG.md` item, or none> |
 | **Design** | [design.md](design.md) — flow, contracts, code map |
+| **FRD** | [`docs/FRD.md`](../../FRD.md) → <feature row> |
 | **UI** | [ui.md](ui.md) — screens, states, actions · owner: <member id> *(or `none — backend only`)* |
 | **Briefs** | [BRIEF-###](../../briefs/BRIEF-###-<slug>.md) <one-line slice purpose> · … *(links + purpose only — status lives in the brief/PR)* |
 
 ## Why / who
 
 <2–3 lines in plain language: who uses this, what outcome they get, and what existing behaviour it replaces (or "nothing — new").>
+
+## Flow (user steps)
+
+Business words only — no tables, columns or endpoints. Tech (`design.md`) and UI (`ui.md`, Claude Design) both read this table; anything missing here gets guessed later.
+
+| Step | User does | Sees / enters (business words + example value) | Rule |
+|---|---|---|---|
+| 1 | <action, e.g. "opens a bill for a table"> | <e.g. "table 5 · 2 guests"> | <e.g. "one open bill per table"> |
 
 ## Requirements
 
