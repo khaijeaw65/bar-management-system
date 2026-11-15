@@ -174,12 +174,12 @@ Main is the only long-lived branch. Branch `feat/BRIEF-###-<slug>` (or `fix/…`
 
 | Event | What happens |
 |---|---|
-| PR opened / updated | CI on affected packages · Vercel **preview** URL for frontend changes |
+| PR opened / updated | CI on affected packages (no preview deploys — Vercel dropped, DR-033) |
 | Merge to `main` | CI only. Nothing deploys. |
-| Field pushes a tag `vX.Y.Z` | Deploy workflow (frontend → Vercel prod, backend → ECS) |
+| Field pushes a tag `vX.Y.Z` | Deploy workflow: build `web` / `api` / `ml` images → ECR → update ECS services `web`, `api`, `worker` (+ `ml` task definition) |
 | Manual `workflow_dispatch` | Same deploy workflow — redeploy / rollback to an older tag |
 
-Only Field creates release tags (milestones, e.g. `v0.1.0` = core vertical end-to-end). Vercel auto-deploy of `main` is off (`git.deploymentEnabled.main: false`); previews stay on. The deploy workflow is its own brief, scheduled with cloud setup.
+Only Field creates release tags (milestones, e.g. `v0.1.0` = core vertical end-to-end). Demo stack: `terraform apply` → present → `terraform destroy` (`docs/infra.md`). The deploy workflow is its own brief in the AWS setup (DR-033 rollout).
 
 ## 8. Transition Rev 23 → Rev 24 (2026-11-15)
 - **Finish under Rev 23:** BRIEF-022, 059, 060, 062, 065, 900 (BRIEF-010 merged #129) — Cowork-seeded e2e (locked from the seed, never edited by the executor), no lock commit; CI `lock` skips them via `LEGACY_BRIEFS` in `ci.yml` (remove an ID when its PR merges). From today no branch commits `docs/state/**`: when a legacy branch merges `origin/main`, a modify/delete conflict there resolves by keeping it deleted (`git rm docs/state -r`), and its S..H stays audit + handoff only.
