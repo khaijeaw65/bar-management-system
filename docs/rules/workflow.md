@@ -182,7 +182,7 @@ Main is the only long-lived branch. Branch `feat/BRIEF-###-<slug>` (or `fix/…`
 Only Field creates release tags (milestones, e.g. `v0.1.0` = core vertical end-to-end). Vercel auto-deploy of `main` is off (`git.deploymentEnabled.main: false`); previews stay on. The deploy workflow is its own brief, scheduled with cloud setup.
 
 ## 8. Transition Rev 23 → Rev 24 (2026-11-15)
-- **Finish under Rev 23:** BRIEF-010, 022, 059, 060, 062, 065, 900 — Cowork-seeded e2e (locked from the seed, never edited by the executor), no lock commit; CI `lock` skips them via `LEGACY_BRIEFS` in `ci.yml` (remove an ID when its PR merges). From today no branch commits `docs/state/**`: when a legacy branch merges `origin/main`, a modify/delete conflict there resolves by keeping it deleted (`git rm docs/state -r`), and its S..H stays audit + handoff only.
+- **Finish under Rev 23:** BRIEF-022, 059, 060, 062, 065, 900 (BRIEF-010 merged #129) — Cowork-seeded e2e (locked from the seed, never edited by the executor), no lock commit; CI `lock` skips them via `LEGACY_BRIEFS` in `ci.yml` (remove an ID when its PR merges). From today no branch commits `docs/state/**`: when a legacy branch merges `origin/main`, a modify/delete conflict there resolves by keeping it deleted (`git rm docs/state -r`), and its S..H stays audit + handoff only.
 - **New flow:** every brief made Ready from today (incl. Drafts BRIEF-074…077 — re-shape them to the new brief template before Ready: *Sections on*, Acceptance test plan, Dry Run).
 - **State:** `docs/state/` left Git; each person keeps `.field-kit/state/<id>-planning.md` locally. Backlog, follow-ups, parked work and milestones → `docs/BACKLOG.md`.
 

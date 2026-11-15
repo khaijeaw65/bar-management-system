@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Defect ID** | DEF-15 |
-| **Status** | Open (Architecture / Flow Analysis) |
-| **Surface** | System Flow (Customer Pay / Kitchen Ticket / Order Adjustment) |
-| **Severity** | High (Edge Case / Operational Integrity) |
-| **Discovered** | 2026-11-02 (Hands-on test for Demo) |
+| **Status** | Investigated (architecture / flow analysis) |
+| **Fixed by** | none — rules in §3 wait for a brief |
+| **Surface** | System Flow (Customer Pay / Kitchen Ticket / Order Adjustment) · **Severity** High (Edge Case / Operational Integrity) |
+| **Found** | 2026-11-02 · hands-on test for demo |
+| **Should have been caught at** | — not assessed (logged before workflow Rev 24; fill when the defect is next touched) |
 
 ---
 
@@ -21,7 +21,7 @@ In counter bars, customers may pay their bill immediately after ordering (via Pr
 
 ### B. Void After Completed Payment
 - If a customer completes PromptPay payment immediately, but the bar subsequently marks the item as out of stock / issue, the system currently prevents voids after full payment because `paid > total`.
-- Requires the post-payment comp/refund reconciliation flow (noted in `SESSION_STATE.md` carry-over line 35 for BRIEF-018).
+- Requires the post-payment comp/refund reconciliation flow (noted in `docs/BACKLOG.md` → BRIEF-018 line).
 
 ### C. Self-Cancellation Race Condition
 - A guest should only be allowed to self-cancel an order while the ticket status is strictly `pending`.

@@ -103,7 +103,7 @@ jobs:
     env:
       # Briefs seeded before workflow Rev 24 (Cowork-seeded e2e, no lock commit) finish under Rev 23 — skip the lock check.
       # Remove an ID once its PR is merged; delete the list when it is empty.
-      LEGACY_BRIEFS: 'BRIEF-010 BRIEF-022 BRIEF-059 BRIEF-060 BRIEF-062 BRIEF-065 BRIEF-900'
+      LEGACY_BRIEFS: 'BRIEF-022 BRIEF-059 BRIEF-060 BRIEF-062 BRIEF-065 BRIEF-900'
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }

@@ -55,7 +55,7 @@ docs/quality/README.md    ← Field-owned quality procedure (local SonarQube); c
 docs/design/source/**     ← design source snapshots (byte copies, SHA-256 in the CD handoff §11): written once at CD approval, never edited; a new canvas version = a new snapshot
 docs/design/poc-source-handoff/source/**   ← same rule (POC worked example, BRIEF-900)
 ```
-Briefs seeded before workflow Rev 24 (BRIEF-010, 022, 059, 060, 062, 065, 900) keep the Rev 23 rule: their Cowork-seeded e2e files (`app/backend/test/**/*.e2e-spec.ts`, `app/frontend/e2e/**/*.spec.ts`, mobile e2e listed in the brief) are locked from the seed commit; executors never edit them.
+Briefs seeded before workflow Rev 24 (BRIEF-022, 059, 060, 062, 065, 900) keep the Rev 23 rule: their Cowork-seeded e2e files (`app/backend/test/**/*.e2e-spec.ts`, `app/frontend/e2e/**/*.spec.ts`, mobile e2e listed in the brief) are locked from the seed commit; executors never edit them.
 
 ---
 

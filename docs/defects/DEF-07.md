@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Defect ID** | DEF-07 |
-| **Status** | Open |
-| **Surface** | Web POS (`app/frontend`) |
-| **Severity** | Critical (Operational Flow) |
-| **Discovered** | 2026-11-01 (Hands-on test for Demo) |
+| **Status** | Fixed (merged) |
+| **Fixed by** | BRIEF-070 (PR #118, web) + BRIEF-018 (PR #119, backend) |
+| **Surface** | Web POS (`app/frontend`) · **Severity** Critical (Operational Flow) |
+| **Found** | 2026-11-01 · hands-on test for demo |
+| **Should have been caught at** | — not assessed (logged before workflow Rev 24; fill when the defect is next touched) |
 
 ---
 

@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Defect ID** | DEF-13 |
-| **Status** | Open |
-| **Surface** | Web POS Checkout (`app/frontend/src/app/pos/tables/_components/checkout/useSlipScanner.ts`) |
-| **Severity** | High (Local tablet testing) / Handled in Prod via HTTPS |
-| **Discovered** | 2026-11-02 (Hands-on test for Demo) |
+| **Status** | Investigated |
+| **Fixed by** | none — dev workaround in §3; production runs on HTTPS |
+| **Surface** | Web POS Checkout (`app/frontend/src/app/pos/tables/_components/checkout/useSlipScanner.ts`) · **Severity** High (Local tablet testing) / Handled in Prod via HTTPS |
+| **Found** | 2026-11-02 · hands-on test for demo |
+| **Should have been caught at** | — not assessed (logged before workflow Rev 24; fill when the defect is next touched) |
 
 ---
 

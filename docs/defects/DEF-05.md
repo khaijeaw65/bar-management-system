@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Defect ID** | DEF-05 |
-| **Status** | Open |
-| **Surface** | Customer Web (`app/frontend/src/app/customer`) |
-| **Severity** | Low (Polish / Layout) |
-| **Discovered** | 2026-11-01 (Hands-on test for Demo) |
+| **Status** | Fixed (merged) |
+| **Fixed by** | BRIEF-071 (PR #123) |
+| **Surface** | Customer Web (`app/frontend/src/app/customer`) · **Severity** Low (Polish / Layout) |
+| **Found** | 2026-11-01 · hands-on test for demo |
+| **Should have been caught at** | — not assessed (logged before workflow Rev 24; fill when the defect is next touched) |
 
 ---
 
