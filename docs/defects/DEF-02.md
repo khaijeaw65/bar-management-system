@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Defect ID** | DEF-02 |
-| **Status** | Open |
-| **Surface** | Customer Web (`app/frontend/src/app/customer`) |
-| **Severity** | High (Flow / UX) |
-| **Discovered** | 2026-11-01 (Hands-on test for Demo) |
+| **Status** | Logged |
+| **Fixed by** | none — needs a backend order-state change first |
+| **Surface** | Customer Web (`app/frontend/src/app/customer`) · **Severity** High (Flow / UX) |
+| **Found** | 2026-11-01 · hands-on test for demo |
+| **Should have been caught at** | — not assessed (logged before workflow Rev 24; fill when the defect is next touched) |
 
 ---
 

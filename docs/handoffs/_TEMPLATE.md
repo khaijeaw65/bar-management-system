@@ -2,87 +2,69 @@
 
 | | |
 |---|---|
-| **Implementer** | <id> (<tool>) |
-| **Date** | YYYY-MM-DD |
-| **Brief revision** | <n> |
-| **Branch** | `feat/BRIEF-###-<slug>` (PR opens after audit PASS) |
-| **Work Commit** | `<sha>` (work SHA S — commit evidence below was produced on) |
-| **Status** | Implemented — awaiting audit · Changes requested · Audit PASS |
+| **Implementer** | <id> (<tool>) · **Brief revision** <n> · **Date** YYYY-MM-DD |
+| **Branch** | `feat/BRIEF-###-<slug>` (worktree `.worktrees/BRIEF-###`) |
+| **Status** | Implemented — awaiting audit · Changes requested · Audit PASS · BLOCKED |
 
-> Created at Implemented (commit S). Updated once in the PASS commit (head H). Frozen at merge.
+> Committed as S. After the push, append **Work commit** and **CI run** below (uncommitted — they land in the ship commit H).
 
----
+**Work commit:** `<S>` · **CI run:** <url>
 
-## Part 1: Objective Receipts (Gate G1 & Run Proof)
-
-### Gate Execution Results
-| Gate | Command | Exit | Counts / Result |
+## Gates
+| Gate | Command | Exit | Result |
 |---|---|---|---|
-| Pre-Commit / Lint | `.githooks/pre-commit` | 0 | Staged files clean, zero anti-patterns |
-| Typecheck | `npx tsc --noEmit` | 0 | Zero compiler errors |
-| Scoped Unit Tests | `<unit-command>` | 0 | <n> passed |
-| Feature E2E | `<e2e-command>` | 0 | <n> passed (including repro test) |
-| Project Build | `<build-command>` | 0 | dist/ rebuilt cleanly from SHA <sha> |
+| Lint | `<cmd>` | 0 | |
+| Typecheck | `<cmd>` | 0 | |
+| Unit | `<cmd>` | 0 | <n> passed |
+| e2e | `<cmd>` | 0 | <n> passed |
+Not run → say why; status is `BLOCKED`, not Implemented. `--no-verify` used → say so here.
 
-### Hardened Run Proof (#57)
-- **Environment:** Stack up (`docker compose up -d` / local server) · Migrations applied · Health check 200
-- **Authenticated Request:**
-```bash
-curl -i -X <METHOD> http://localhost:<port>/<new-or-modified-endpoint> \
-  -H "Authorization: Bearer <session-token>" \
-  -H "Content-Type: application/json"
+## Acceptance lock
+Lock commit `<sha>` (pushed right after Step 0) · CI run on it: <url> — red output (assertion, not import error):
+```text
+<failing assertion excerpt>
 ```
-- **Raw Response Output (with dynamic server timestamp):**
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Date: <RFC-7231 timestamp matching commit window ±15min>
 
-{
-  "id": "<dynamic-id>",
-  "status": "<status>"
-}
-```
-*(For UI/Mobile: path to screenshot artifact or emulator screen verification).*
+## Owner approvals
+One row per commit carrying `Approved-by:` (`session` · `e2e-change`), written when the OK is given. None → `none`.
 
----
+| Trailer | Commit | What the owner OK'd (file + change) | Date |
+|---|---|---|---|
+| | | | |
 
-## Part 2: Field Intelligence & Disclosures
+## Builder's choices
+One row per item the brief left to the executor under *Builder's choice*. None → `none`.
 
-### Gaps Found (Spec vs. Reality)
-- <e.g. Mismatches between brief assumptions and actual code/schema, unhandled edge cases discovered>
-
-### Issues & Compromises From Work
-- <e.g. Performance trade-offs, concurrency/locking choices, tricky refactors>
-
-### Caller & Boundary Impact (#66)
-- **Shared services/repositories modified:** `<file paths>`
-- **Untouched callers identified:** `<caller services/controllers>`
-- **Verification:** <which caller test suites were re-run>
-
-### Unrun Gates & Conscious Skips (#67, #68)
-- <e.g. Full repo E2E suite skipped per #68 (scoped feature E2E run locally; full regression left for CI)>
-
-### Out-of-Scope Defects Discovered (Parked) (#69)
-- <none, or logged to `docs/defects/DEFECT-###-<slug>.md` without touching in this brief>
-
-### Operational & Living Docs Sync (#55)
-- **Living docs updated:** `<e.g. docs/api/README.md, or n/a>`
-- **New environment keys needed:** `<e.g. .env.example keys, or none>`
-- **Database migrations to run on deploy:** `<migration file or none>`
-
----
-
-## Acceptance Criteria Verification
-| AC | Met? | Evidence (test name / curl line) |
+| Item | Chosen | Why (inside the bound) |
 |---|---|---|
-| AC-1 | ✅ / ❌ | `<file:line>` |
+| | | |
 
----
+## Questions the brief did not answer
+Anything you had to stop and work out that the brief or its Read list should have told you (the next brief's Dry Run asks these first). None → `none`.
 
-<!-- Appended during fix rounds:
-### Fix Round <N> — <SHA>
-- Gate-Results: lint=0, typecheck=0, unit=<n>(pass), e2e=<n>(pass)
-- Caller tests re-run: <caller-spec> (pass)
-- Work-Commit: <SHA>
+## Read beyond the Read list
+Sections read outside the brief's Read list, and why (planners use this to write better Read lists). None → `none`.
+
+## Run proof
+<What ran (stack, migrations, health), the request on the changed path and its result in words. UI / defect: what was exercised. Screenshots in `.field-kit/proof/` (untracked): `<file>` — <what it shows>.>
+
+## AC check
+| AC | Met? | Evidence (test / step) | Screenshot *(screen ACs — mandatory)* |
+|---|---|---|---|
+| 1 | ✅ / ❌ | | `.field-kit/proof/AC1-<screen>-<state>.png` — <what it shows> · or `n/a (no screen)` |
+
+A screen AC without a screenshot of its result from the running build → status `BLOCKED`, not Implemented.
+
+## Disclosures
+- **Spec vs reality gaps:** <…>
+- **Compromises:** <…>
+- **Callers affected** (shared service / repository / transaction boundary changed → caller tests re-run): <…>
+- **Out-of-scope defects found:** <none · or `DEFECT-###` logged>
+- **Living docs updated / env keys / migrations to run:** <…>
+
+<!-- Fix rounds append here:
+### Fix round <N> — <new S>
+- `#<n> [<row>] ✓ <reproduced failing → proof passing>` — one line per FIX item
+- Found, not fixed (outside the FIX list): <… or none>
+- Gates re-run: <commands + results> · Run proof: <…> · Caller tests: <…>
 -->

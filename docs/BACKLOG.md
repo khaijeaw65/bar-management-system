@@ -1,26 +1,17 @@
-# State — KJ
-Updated: 2026-11-08 15:50 · Agent: Cowork (re-scope planning — DR-031/032/033 Approved)
-> Tracked branch snapshot, ≤ 40 lines — the only planning/progress file (workflow §2). Brief/DR/PR evidence is authoritative.
+# Backlog — AI-Powered Bar Management System
 
-## Resume
-DR-031 / 032 / 033 Approved 2026-11-08 → git hand ships `docs/dr-031-033-rescope` (ship line in chat) →
-next: 10 Nov advisor deck (`docs/bar_management_v3.pptx`).
-## Active
-- Mode: Planning (re-scope after advisor review) · Brief: none · Branch: `main` · PR: none · BRIEF-071 merged (#123)
-- Uncommitted to read on `/resume`: `docs/decisions/DR-031-full-shop-management-scope.md`, `DR-032-own-ml-no-llm.md`,
-  `DR-033-aws-ecs-service-split.md` (all Approved) · source: `docs/research/2026-11-08-feature-interview-notes.md`
-## Session checkpoint (written by `/checkpoint` — do not re-ask in next session)
-- **Locked / Rejected in chat:** 8-topic interview complete, tiers, ECS infra, rejected list → all in the notes file
-- **Paused at:** DRs approved (P&L subtracts loss; worker split has an in-`api` fallback) → start the 10 Nov deck · 8–9 Nov = documents, timeline, UI update
-- **Checks:** not run (docs only)
+> Queue, follow-ups, parked work and milestones (workflow §2). Moved from `docs/state/kj/SESSION_STATE.md` on 2026-11-15 (Rev 24 — state is local now); merged with main's 2026-11-15 edits.
+> Planning sessions edit it; executors read it. Decisions belong in DRs, not here.
+> Newer re-scope (advisor review 7–8 Nov, Must / Should tiers, dates): `docs/research/2026-11-08-feature-map-rescope.md` (interview notes file not in the repo yet) → DR-031 / 032 / 033 (Pending).
+
 ## Next steps
-1. Git hand ships `docs/dr-031-033-rescope` (PR same day)
-2. 10 Nov deck (`docs/bar_management_v3.pptx`): feature map, café-vs-bar, ML plan, ask advisor K1 alcohol-law rules
-3. Confirm timeline in notes → FRD v2 + schema / ERD → CD-16…CD-23 briefs (UI) · BRIEF-065 (Metee) continues
+1. 10 Nov advisor: K1 alcohol law · 14-module scope · ML on synthetic data → write answers into notes
+2. DR-031 amendment (A1–A6 in notes) → Field OK → ship with or after `docs/dr-031-033-rescope`
+3. CD sessions 1–5 (session 1 = CD-16 ✓ approved · CD-17 ✓ approved · CD-18 built, before 21 Nov) · AWS 9–20 Nov (DR-033) · FRD v2 + schema / ERD
 ## Blockers / Coordination
-- K1 legal rules → advisor (10 Nov) · CLAUDE.md / AGENTS.md / infra.md / DR-002 updates per DR-031–033 locks (protected — Field OKs exact diff) · Metee drafts BRIEF-074–077 (untracked) untouched
+- K1 legal rules → advisor · CLAUDE.md / AGENTS.md / infra.md / DR-002 per DR-031–033 locks (protected — Field OKs diff) · BRIEF-074–077 (Metee) + `docs/audits/BRIEF-010.md` untouched
 
-## Carry over (executors keep unchanged — Cowork/Field edit)
+## Carry over — milestones, parked, Field to-do, follow-ups
 - Port naming (Field 1 Nov): rule = `abstract class I<Name>`; 21 ports in code are unprefixed (BRIEF-067) → cleanup brief after backend phase (rename + `domain/ports/*.port.ts` + 067 S6/S7/S9). Until then: new ports use `I<Name>` — say so in each backend brief
 - Milestones: gate 8 Nov (order → pay → close) · advisor 2nd update 10 Nov · AWS 9–20 Nov (ECS split, DR-033) · exam prep 21–29 Nov · exams 3 / 4 / 8 Dec · **S1 project final exam 14 Dec** · feature freeze 15 Mar (proposed) · final Apr 2027 · build order + tiers → `docs/research/2026-11-08-feature-interview-notes.md` · Metee ~1 mobile brief/wk (≤ 10 h)
 - Parked: customer session CD-06 R3–R5 + CD-07 R4 (after 8 Nov) · CD-15 R4 DS StatusChip (Field edits DS) · structure review F5/F6 order read model + F7 venue↔order↔payment cycle (after 8 Nov; BRIEF-013 S3) · menu Redis cache (ex-017, after 8 Nov — Field 20 Oct)
@@ -37,4 +28,4 @@ next: 10 Nov advisor deck (`docs/bar_management_v3.pptx`).
 - Before AWS (9 Nov): web + API under one domain (`pos.` / `api.` via Cloudflare) — `lax` host-only cookies need same site; no `proxy.ts` gate until then (BRIEF-028 Q1) · Before a real-bar pilot: slip scan on the bar's actual tablet / phone browser over HTTPS (BRIEF-025 device check — Field 29 Oct)
 
 ## Queue
-1. BRIEF-065 (Metee) → AI owner insight → bootstrap batch (before AWS) · later: BRIEF-023 split (Deferred, DR-019) · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)
+1. BRIEF-065 (Metee) → AWS (DR-033) → stock + purchasing (30 Nov) · later: BRIEF-023 split (Deferred, DR-019) · BRIEF-026 gateway · staff-app slip verify (DR-027, Metee, after BRIEF-010)

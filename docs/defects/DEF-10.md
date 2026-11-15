@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Defect ID** | DEF-10 |
-| **Status** | Open |
-| **Surface** | Web POS (`app/frontend/src/app/pos/settings`) |
-| **Severity** | Medium (UX / Interaction) |
-| **Discovered** | 2026-11-02 (Hands-on test for Demo) |
+| **Status** | Fixed (merged) |
+| **Fixed by** | BRIEF-071 (PR #123) |
+| **Surface** | Web POS (`app/frontend/src/app/pos/settings`) · **Severity** Medium (UX / Interaction) |
+| **Found** | 2026-11-02 · hands-on test for demo |
+| **Should have been caught at** | — not assessed (logged before workflow Rev 24; fill when the defect is next touched) |
 
 ---
 

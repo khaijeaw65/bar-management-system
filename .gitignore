@@ -20,8 +20,14 @@ dist/
 .vscode/
 *.swp
 
-# Checkout identity only; personal state folders are tracked
+# Checkout identity (local)
 .agent-local.json
-# Legacy local state kept ignored during migration; not authoritative
-docs/state/kj.md
-docs/state/methee.md
+# State is local since workflow Rev 24 (.field-kit/state/); the old tracked folder stays out of Git
+docs/state/
+# field-kit: local identity, session state, worktrees, run-proof screenshots, env
+.field-kit/state/*
+!.field-kit/state/_TEMPLATE.md
+.field-kit/proof/
+.worktrees/
+.env.*
+!.env.example

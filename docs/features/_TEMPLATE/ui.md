@@ -1,12 +1,12 @@
 # <Feature> — UI
 
-> Screens, states and actions for `docs/features/<feature>/`. Requirements: [requirements.md](requirements.md) · Design: [design.md](design.md). Every row here is an AC source for the frontend brief.
+> Screens, states and actions for `docs/features/<feature>/` — written after `design.md` is confirmed (needs its contracts and error codes). Requirements: [requirements.md](requirements.md) · Design: [design.md](design.md). Every row here is an AC source for the frontend brief.
 
 | | |
 |---|---|
-| **Design** | <link to the design + version, or `none yet`> — link only, never copy the design here |
+| **Design** | <Claude Design link + approved version id, or `none yet`> · snapshot [`design-source/`](design-source/) (hashes below) |
 | **Design system** | <tokens source, e.g. `globals.css` + UI library and version> |
-| **Approved by** | <Field + date, or `— (Draft)`> |
+| **Approved by** | <Field + date + version id, or `— (Draft)`> |
 | **Frontend brief(s)** | <`BRIEF-###`> |
 | **UI owner** | <member id> |
 
@@ -58,6 +58,25 @@ Every screen gets every state: ✓ (how it looks) or `n/a (why)` — never leave
 - Filters & search: <single/multi-select, trim, what Clear / Escape resets>
 - Overflow: <which fields truncate (lines) vs wrap>
 - Keyboard & focus: <sticky footer, focus order>
+
+## Design input (what goes into Claude Design)
+
+Written from `requirements.md` → *Flow* and this file — **never the DB schema**. One block per screen; paste as is.
+
+```text
+Screen: <name> — user goal: <one line> — primary action: <one line>
+Shows: <field in business words> = <example value>, …
+States to draw: default · empty · error · <others from the matrix that change the layout>
+Constraints: smallest screen 360×780 · <language> · design system <name>
+```
+
+## Design source snapshot
+
+Approved version `<id>` (<date>) copied byte-for-byte into `design-source/`. Protected: a new design version means a new snapshot, never an edit.
+
+| File | SHA-256 |
+|---|---|
+| `design-source/<path>` | `<hash>` |
 
 ## Component mapping
 

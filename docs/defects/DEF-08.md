@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Defect ID** | DEF-08 |
-| **Status** | Resolved |
-| **Surface** | Customer Web (`app/frontend/src/app/customer`) & POS Web (`app/frontend/src/app/pos`) |
-| **Severity** | Critical (Mobile / Tablet LAN testing) |
-| **Discovered** | 2026-11-02 (Hands-on test for Demo) |
+| **Status** | Fixed (merged) |
+| **Fixed by** | BRIEF-071 (PR #123) |
+| **Surface** | Customer Web (`app/frontend/src/app/customer`) & POS Web (`app/frontend/src/app/pos`) · **Severity** Critical (Mobile / Tablet LAN testing) |
+| **Found** | 2026-11-02 · hands-on test for demo |
+| **Should have been caught at** | — not assessed (logged before workflow Rev 24; fill when the defect is next touched) |
 
 ---
 

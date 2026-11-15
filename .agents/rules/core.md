@@ -1,5 +1,5 @@
 ---
-description: Workspace-wide architecture, scope, and TypeScript conventions.
+description: Workspace-wide architecture, scope and conventions.
 activation: always
 ---
 

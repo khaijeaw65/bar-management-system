@@ -1,41 +1,26 @@
 #!/usr/bin/env sh
-# ops/gates/pre-push.sh — full typecheck, scoped unit/e2e tests, and build check
-# Inferred by /adopt or /bootstrap-project per stack
+# ops/gates/pre-push.sh — typecheck + affected unit tests. Any failure blocks the push (≤ 1–2 min target).
+# Full suites, e2e and build run in CI. Adjust per stack.
 set -e
 
-# Node / TypeScript stack default
-if [ -f "package.json" ]; then
-  # Graceful fallback if tools are missing in minimal VM sandboxes
-  if ! command -v pnpm >/dev/null 2>&1 && ! command -v npm >/dev/null 2>&1; then
-    echo "⚠️ [field-kit] Node/npm package manager not found in this environment. Skipping pre-push gates."
-    exit 0
+if [ -f package.json ]; then
+  if [ -f pnpm-lock.yaml ]; then PKG=pnpm; else PKG=npm; fi
+  if ! command -v "$PKG" >/dev/null 2>&1; then
+    echo "❌ [field-kit pre-push] $PKG not found — cannot run gates. Install it, or push with --no-verify and disclose it in the handoff."
+    exit 1
   fi
-
-  PKG_MGR="npm"
-  if command -v pnpm >/dev/null 2>&1; then
-    PKG_MGR="pnpm"
-  fi
-
-  echo "==> [field-kit pre-push] Running typecheck..."
-  if [ -f "tsconfig.json" ]; then
-    npx tsc --noEmit
-  fi
-
-  echo "==> [field-kit pre-push] Running unit tests..."
-  $PKG_MGR test -- --runInBand --passWithNoTests 2>/dev/null || $PKG_MGR test || true
-
-  echo "==> [field-kit pre-push] Checking build..."
-  if $PKG_MGR run | grep -q "build"; then
-    $PKG_MGR run build
+  if [ -f turbo.json ]; then
+    BASE=$(git merge-base HEAD origin/main 2>/dev/null || echo origin/main)
+    echo "==> [field-kit pre-push] typecheck + unit tests (affected since ${BASE%"${BASE#???????}"})"
+    $PKG exec turbo run typecheck test --filter="...[$BASE]"
+  else
+    echo "==> [field-kit pre-push] typecheck + unit tests"
+    $PKG run --if-present typecheck
+    $PKG run --if-present test
   fi
 fi
 
-# Kotlin / Gradle stack default
-if [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
-  if [ -x "./gradlew" ]; then
-    echo "==> [field-kit pre-push] Running Gradle check..."
-    ./gradlew check --daemon
-  fi
+if { [ -f build.gradle ] || [ -f build.gradle.kts ]; } && [ -x ./gradlew ]; then
+  echo "==> [field-kit pre-push] gradle test"
+  ./gradlew test
 fi
-
-exit 0

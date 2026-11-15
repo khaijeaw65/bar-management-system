@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Owner** | Field |
-| **Status** | To-be (Draft) |
+| **Status** | Built |
 | **Requirements** | [requirements.md](requirements.md) · **UI** [ui.md](ui.md) |
 | **Changed by** | `BRIEF-072`, `BRIEF-073` |
 

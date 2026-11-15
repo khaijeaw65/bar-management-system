@@ -24,7 +24,7 @@ Only decisions Field confirmed. A row without a *Source* naming Field is a propo
 
 ## Assumed (external / runtime only)
 
-Repo-readable facts (existing tables, columns, scripts, packages) never go here — the planner verifies those before `Ready` in each brief's *Planner dry run* table. Only external or runtime facts go here.
+Repo-readable facts (existing tables, columns, scripts, packages) never go here — the planner verifies those before `Ready` in each brief's *Dry Run*. Only external or runtime facts go here.
 
 | Assumption | Who verifies | When |
 |---|---|---|
