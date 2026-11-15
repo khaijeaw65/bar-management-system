@@ -19,6 +19,9 @@ if (!globalThis.ResizeObserver) {
     disconnect() {}
   };
 }
+if (typeof Element !== "undefined" && !Element.prototype.getAnimations) {
+  Element.prototype.getAnimations = () => [];
+}
 if (!window.matchMedia) {
   Object.defineProperty(window, "matchMedia", {
     writable: true,

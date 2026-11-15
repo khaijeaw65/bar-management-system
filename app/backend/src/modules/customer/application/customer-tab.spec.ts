@@ -21,6 +21,7 @@ function line(overrides: Partial<OrderLine> = {}): OrderLine {
     notes: 'ห้ามบอกใคร',
     cancelledAt: null,
     cancellation: null,
+    comp: null,
     ...overrides,
   };
 }

@@ -92,7 +92,11 @@ export function OrderScreen({ visitId }: Readonly<{ visitId: string }>) {
     }
     dispatch({ type: "add", line: lineFrom(item, variant, [], null, null, 1) });
     toast.success(`เพิ่ม ${item.name} แล้ว`, {
-      actionProps: { children: "เลิกทำ", onPress: () => dispatch({ type: "undo" }) },
+      actionProps: {
+        children: "เลิกทำ",
+        className: "mr-8",
+        onPress: () => dispatch({ type: "undo" }),
+      },
     });
   }
 

@@ -7,7 +7,13 @@ export function allowStaffOrigin(
   callback: OriginDecision,
 ): void {
   const origin = headerOrigin(request.headers.origin);
-  if (origin === undefined || origin === frontendUrl) {
+  if (
+    origin === undefined ||
+    origin === frontendUrl ||
+    (process.env.NODE_ENV !== 'production' &&
+      typeof origin === 'string' &&
+      (origin.includes('ngrok') || origin.includes('192.168.')))
+  ) {
     callback(undefined, true);
     return;
   }

@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { AccessRequestStatus, PermissionCode } from '@bar/contracts';
 import { DataSource, EntityManager } from 'typeorm';
 import { IamWriteGuard } from './iam-write-guard.js';
-import type { MembershipRow } from '../../domain/permission-source.js';
+import type { MembershipRow } from '../../domain/permission-source.types.js';
 import type { StaffAdminRepository } from '../../domain/staff-admin.repository.js';
 import type {
   AccessRequestRow,
@@ -14,32 +14,7 @@ import type {
   StaffRow,
   StaffWriteOutcome,
 } from '../../domain/staff-admin.types.js';
-
-interface RequestSql {
-  id: string;
-  external_id: string;
-  provider: 'line' | 'phone_otp';
-  display_name: string | null;
-  avatar_url: string | null;
-  status: AccessRequestStatus;
-  requested_at: Date;
-  decided_at: Date | null;
-}
-
-interface StaffSql {
-  id: string;
-  display_name: string;
-  is_active: boolean;
-  avatar_url: string | null;
-}
-
-interface MembershipSql {
-  user_id: string;
-  group_id: string;
-  group_name: string;
-  valid_from: Date;
-  valid_until: Date | null;
-}
+import type { MembershipSql, RequestSql, StaffSql } from './staff-admin.typeorm-repository.types.js';
 
 const REQUEST_COLUMNS = `id, external_id, provider, display_name, avatar_url, status, requested_at, decided_at`;
 

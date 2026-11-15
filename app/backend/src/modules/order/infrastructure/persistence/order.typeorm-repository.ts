@@ -6,6 +6,8 @@ import { businessDateLockKey } from '../../../../common/business-date.js';
 import type { OrderRepository } from '../../domain/order.repository.js';
 import type {
   BillRow,
+  LineAdjustmentWrite,
+  LockedItemAdjustment,
   LockedTicket,
   NewOrder,
   NewTicket,
@@ -33,9 +35,11 @@ import {
   BILL_SQL,
   GUEST_SESSION_IDS_SQL,
   LINE_ON_TICKET_SQL,
+  LOCK_ITEM_ADJUSTMENT_SQL,
   LOCK_TICKET_SQL,
   ORDER_ROWS_SQL,
   ORDER_TOTALS_SQL,
+  PAYMENT_STATUS_MOVING_SQL,
   PENDING_ITEM_LINES_SQL,
   PENDING_PAYMENT_SQL,
 } from './order.sql.js';
@@ -141,6 +145,7 @@ export class OrderTypeormRepository implements OrderRepository {
       item.cancelledAt = at;
       item.cancelledBy = null;
       item.cancelReason = reason;
+      item.cancelKind = 'void';
       await items.save(item);
     }
   }
@@ -148,6 +153,41 @@ export class OrderTypeormRepository implements OrderRepository {
   public async countActiveLines(ticketId: string): Promise<number> {
     const result: unknown = await this.manager.query(ACTIVE_LINE_COUNT_SQL, [ticketId]);
     return Number(rowList(result)[0]?.count ?? 0);
+  }
+
+  public async lockItemForAdjustment(itemId: string): Promise<LockedItemAdjustment | null> {
+    const rows = rowList(await this.manager.query(LOCK_ITEM_ADJUSTMENT_SQL, [itemId]));
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      itemId: String(row.item_id),
+      ticketId: String(row.ticket_id),
+      orderId: String(row.order_id),
+      visitId: String(row.visit_id),
+      visitState: String(row.visit_state),
+      cancelledAt: readOptionalDate(row.cancelled_at),
+      cancelKind: (readOptionalText(row.cancel_kind) as 'void' | 'comp' | null) ?? null,
+    };
+  }
+
+  public async paymentStatusOnVisit(visitId: string): Promise<'pending' | 'completed' | null> {
+    const rows = rowList(await this.manager.query(PAYMENT_STATUS_MOVING_SQL, [visitId]));
+    if (rows.some((r) => r.status === 'pending')) return 'pending';
+    if (rows.some((r) => r.status === 'completed')) return 'completed';
+    return null;
+  }
+
+  public async adjustLine(input: LineAdjustmentWrite): Promise<void> {
+    const items = this.manager.getRepository(OrderItem);
+    const item = await items.findOne({ where: { id: input.itemId } });
+    if (!item) throw new Error('item not found');
+    item.cancelledAt = input.at;
+    item.cancelledBy = input.cancelledBy;
+    item.cancelReason = input.reason;
+    item.cancelNote = input.note;
+    item.cancelKind = input.kind;
+    item.approvedBy = input.approvedBy;
+    await items.save(item);
   }
 
   private get manager(): EntityManager {
@@ -203,6 +243,8 @@ export class OrderTypeormRepository implements OrderRepository {
       cancelledBy: null,
       cancelReason: null,
       cancelNote: null,
+      cancelKind: null,
+      approvedBy: null,
     });
   }
 

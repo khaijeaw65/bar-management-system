@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { IdentityProvider } from '@bar/contracts';
 import { Repository } from 'typeorm';
 import { type StaffUserRepository } from '../../domain/staff-user.repository.js';
-import type { StaffUserView, StaffUserLookup } from '../../domain/staff-user.types.js';
+import type { StaffUserView, StaffUserLookup, StaffPinRecord } from '../../domain/staff-user.types.js';
 import { StaffUser } from './staff-user.entity.js';
 import { StaffUserIdentity } from './staff-user-identity.entity.js';
 
@@ -35,6 +35,36 @@ export class StaffUserTypeormRepository implements StaffUserRepository {
 
   public findById(id: string): Promise<StaffUserView | null> {
     return this.findView({ id });
+  }
+
+  public async findPinById(id: string): Promise<StaffPinRecord | null> {
+    const user = await this.users.findOne({ where: { id } });
+    if (!user) return null;
+    return {
+      id: user.id,
+      displayName: user.displayName,
+      isActive: user.isActive,
+      posPinHash: user.posPinHash,
+    };
+  }
+
+  public async findActiveWithPin(): Promise<StaffPinRecord[]> {
+    const list = await this.users.find({ where: { isActive: true } });
+    return list
+      .filter((u) => u.posPinHash !== null)
+      .map((u) => ({
+        id: u.id,
+        displayName: u.displayName,
+        isActive: u.isActive,
+        posPinHash: u.posPinHash,
+      }));
+  }
+
+  public async savePin(id: string, posPinHash: string | null): Promise<void> {
+    const user = await this.users.findOne({ where: { id } });
+    if (!user) throw new Error('user not found');
+    user.posPinHash = posPinHash;
+    await this.users.save(user);
   }
 
   private async findView(where: StaffUserLookup): Promise<StaffUserView | null> {

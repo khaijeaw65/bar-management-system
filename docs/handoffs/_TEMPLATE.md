@@ -1,59 +1,70 @@
-# Handoff — <ID> <Title>
+# Handoff — BRIEF-### <Title>
 
 | | |
 |---|---|
-| **Implementer** | <person> |
-| **Date** | YYYY-MM-DD |
-| **Brief revision** | <n> |
-| **Branch** | <branch> (PR opens after audit PASS) |
-| **Commit** | `<sha>` (the commit the evidence below was run on) |
-| **Status** | Implemented — awaiting audit · Changes requested · Audit PASS (merged PR determines Done) |
+| **Implementer** | <id> (<tool>) · **Brief revision** <n> · **Date** YYYY-MM-DD |
+| **Branch** | `feat/BRIEF-###-<slug>` (worktree `.worktrees/BRIEF-###`) |
+| **Status** | Implemented — awaiting audit · Changes requested · Audit PASS · BLOCKED |
 
-> Created at `Implemented` (one docs commit). Updated once in the PASS commit. Frozen at merge.
+> Committed as S. After the push, append **Work commit** and **CI run** below (uncommitted — they land in the ship commit H).
 
-## Summary
-<2–4 lines: what was built.>
+**Work commit:** `<S>` · **CI run:** <url>
 
-## Acceptance Criteria
-| AC | Result | Test |
+## Gates
+| Gate | Command | Exit | Result |
+|---|---|---|---|
+| Lint | `<cmd>` | 0 | |
+| Typecheck | `<cmd>` | 0 | |
+| Unit | `<cmd>` | 0 | <n> passed |
+| e2e | `<cmd>` | 0 | <n> passed |
+Not run → say why; status is `BLOCKED`, not Implemented. `--no-verify` used → say so here.
+
+## Acceptance lock
+Lock commit `<sha>` (pushed right after Step 0) · CI run on it: <url> — red output (assertion, not import error):
+```text
+<failing assertion excerpt>
+```
+
+## Owner approvals
+One row per commit carrying `Approved-by:` (`session` · `e2e-change`), written when the OK is given. None → `none`.
+
+| Trailer | Commit | What the owner OK'd (file + change) | Date |
+|---|---|---|---|
+| | | | |
+
+## Builder's choices
+One row per item the brief left to the executor under *Builder's choice*. None → `none`.
+
+| Item | Chosen | Why (inside the bound) |
 |---|---|---|
-| AC-1 | ✅ | `<path>::<test name>` |
+| | | |
 
-## Gate Evidence (G1)
-One row per gate command from the brief. Exact command, run on the commit above.
+## Questions the brief did not answer
+Anything you had to stop and work out that the brief or its Read list should have told you (the next brief's Dry Run asks these first). None → `none`.
 
-| Command | Exit | Result |
-|---|---|---|
-| `pnpm --filter @bar/<pkg> lint` | 0 | pass |
-| `pnpm --filter @bar/<pkg> typecheck` | 0 · — | pass · **BLOCKED — script missing** |
-| `pnpm --filter @bar/<pkg> test` | 0 | <n> passed · 0 failed · <n> skipped |
-| `pnpm --filter @bar/<pkg> test:e2e` | 0 · — | <n> passed · 0 failed · <n> skipped · not in brief · BLOCKED |
-| run proof: stack up → `migration:run` → `start:dev` → `curl -fsS localhost:3001/api/health` | 0 · — | health 200 on the commit above · n/a (docs/tooling only) · BLOCKED |
+## Read beyond the Read list
+Sections read outside the brief's Read list, and why (planners use this to write better Read lists). None → `none`.
 
-UI exercised: <screen + action → result, or n/a>
+## Run proof
+<What ran (stack, migrations, health), the request on the changed path and its result in words. UI / defect: what was exercised. Screenshots in `.field-kit/proof/` (untracked): `<file>` — <what it shows>.>
 
-## Sonar (local scan)
-- Scanned commit: <sha> · Quality Gate: <passed / failed / not available yet>
-- Issues by severity: <Blocker n · High n · Medium n · Low n · Info n> (paste `pnpm sonar:report` output)
-- Remaining issues + reason: <none, or list>
-- Who fixed: <developer / agent-assisted on blocker: what>
+## AC check
+| AC | Met? | Evidence (test / step) | Screenshot *(screen ACs — mandatory)* |
+|---|---|---|---|
+| 1 | ✅ / ❌ | | `.field-kit/proof/AC1-<screen>-<state>.png` — <what it shows> · or `n/a (no screen)` |
 
-## Decisions Raised
-- <DR-### — status> (or none)
+A screen AC without a screenshot of its result from the running build → status `BLOCKED`, not Implemented.
 
-## Deviations from Brief
-- None. <Any deviation must list an Approved DR.>
+## Disclosures
+- **Spec vs reality gaps:** <…>
+- **Compromises:** <…>
+- **Callers affected** (shared service / repository / transaction boundary changed → caller tests re-run): <…>
+- **Out-of-scope defects found:** <none · or `DEFECT-###` logged>
+- **Living docs updated / env keys / migrations to run:** <…>
 
-## Known Gaps / Follow-ups
-- <proposed only — not done, not in scope>
-
-## AI Usage
-**Low · Medium · High** — <one line: tool + what for>  e.g. `Low — Cursor: explained WS reconnect, reviewed tests`
-
-## Review Routing
-- Assigned auditor: <Cowork / Field-assigned Codex>
-- Next command: `audit <ID>`
-- Work SHA: <sha> · self-check source/contract comparison: <evidence>
-
-## Notes for Reviewer
-- <where to look first, tricky parts>
+<!-- Fix rounds append here:
+### Fix round <N> — <new S>
+- `#<n> [<row>] ✓ <reproduced failing → proof passing>` — one line per FIX item
+- Found, not fixed (outside the FIX list): <… or none>
+- Gates re-run: <commands + results> · Run proof: <…> · Caller tests: <…>
+-->

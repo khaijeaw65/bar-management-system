@@ -43,4 +43,15 @@ export class OrderItem extends BaseEntity {
 
   @Column({ type: COL.TEXT, nullable: true })
   public cancelNote!: string | null;
+
+  @Column({
+    type: COL.ENUM,
+    enum: ['void', 'comp'],
+    enumName: 'item_adjustment',
+    nullable: true,
+  })
+  public cancelKind!: 'void' | 'comp' | null;
+
+  @Column({ type: COL.UUID, nullable: true })
+  public approvedBy!: string | null;
 }

@@ -104,6 +104,7 @@ export const CustomerTabLineSchema = z.strictObject({
   lineTotal: MoneySchema,
   orderedByName: z.string().nullable(),
   cancelled: z.boolean(),
+  isComp: z.boolean().default(false),
 });
 export type CustomerTabLine = z.infer<typeof CustomerTabLineSchema>;
 

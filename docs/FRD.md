@@ -1,12 +1,60 @@
-# Functional Requirements Document (FRD)
-## AI-Powered Bar Management System with Guest Intelligence
+# FRD — AI-Powered Bar Management System
 
-**Version:** 1.2 — BASELINE (approved). Full scope; hardened for concurrency/edge cases; build sequenced by semester (see handoff.md).
-**Review status:** Dual independent review passed — GPT (~98%, approved to close) + Grok (9.2/10, all 17 edge cases closed). Do not reopen without a new business requirement or implementation discovery.
-**Target:** Small-to-medium counter bars in Thailand (counter seating + tables)
-**Last updated:** 2026-10-12 (DR-012/013/014: tickets, order numbers, payment modes, ops simplification, AI owner insight) · previously 2026-08-23 (rev: field research + GPT consistency pass + Grok edge-case pass — 17 collisions resolved via re-validation principle)
+> Product overview. Each feature gets a deep spec in `docs/features/<f>/` when it is picked up; link it here.
+> **Version 1.2 — baseline (approved)**, last content update 2026-10-12 (DR-012/013/014). Kit layout since 2026-11-15 (workflow Rev 24): overview + feature list on top, the v1.2 detailed requirements below with their section numbers unchanged (briefs and DRs cite them).
+> **Pending re-scope:** DR-031 (full shop management), DR-032 (own ML, no LLM), DR-033 (AWS ECS split) — FRD v2 follows their approval; until then this baseline stands.
+
+## Purpose
+Production-grade bar management system for small-to-medium counter bars in Thailand (counter seating + tables) — DPU CPE senior capstone. One platform for ordering, payment, inventory cost, guest intelligence and owner insight. Web app (guest QR, POS on counter tablet / desktop, back office) + Expo staff app (DR-002, DR-009).
+
+## Users
+| User | Goal |
+|---|---|
+| Owner | See money, leaks and what to change; set prices, staff and settings (back office + phone) |
+| Manager | Run the floor and back office — stock, voids / comps, shifts, reports |
+| Bartender | Take and make orders fast at the counter, take payment, close tabs |
+| Waiter | Take orders at tables, call the bill, hand off to the counter |
+| Guest | Order from the table QR without logging in; pay by PromptPay; optionally be remembered |
+
+## Core flow
+QR guest ordering → kitchen/bar display → PromptPay payment → session close
+
+## Features
+Priority follows the v1.2 baseline and DR-014; DR-031 (Pending) re-tiers it.
+
+| Feature | Summary | Priority | Spec |
+|---|---|---|---|
+| Staff access (IAM) | Groups + policies, time-bound membership, most-permissive-wins; seeded Owner / Manager / Staff groups; shared-POS PIN switch | Must | — FRD §2 · DR-014, DR-029 |
+| Tables, seats & sessions | Session tied to table / seat; shared vs separate (counter seats); manual close, idle warning only | Must | — FRD §3 · DR-011 |
+| Guest QR ordering | Scan → menu without login → order; call-staff bell; running tab with ticket status | Must | — FRD §3, §6 · DR-028 |
+| Order queue & tickets | Order → per-station tickets; status per ticket; ISSUE branch; cancelled lines stay visible | Must | — FRD §6 · DR-012, DR-013 |
+| Payment | Amount-locked PromptPay QR, slip verification, gateway webhook, cash, manual confirm; payment ≠ session close | Must | [`features/pos-payment-page/`](features/pos-payment-page/requirements.md) · FRD §7 · DR-014, DR-018, DR-027 |
+| Menu & sold-out | Items, variants, modifiers, charge items, 86 / auto-void on sold out, photos | Must | — FRD §5 · DR-020, DR-024, DR-025 |
+| Comps & voids | Reason code + manager PIN, solo self-approve flagged; immutable audit log | Must | — FRD §8 · DR-016 |
+| Staff mobile app | Staff surface on Expo: tables, order taking, queue, push, guest notes, bottle-keep check | Must | — FRD §15 · DR-009, DR-005, DR-003 |
+| Notifications | WebSocket in-app + Expo push for new order / call staff / ready; POS sound primary | Must | — FRD §13 · DR-003 |
+| AI owner insight | Sales summary, anomaly / fraud alerts, menu & stock suggestions — SQL calculates, AI explains | Must | — FRD §12 · DR-014 (DR-032 Pending: own ML) |
+| Promo items | Promo as its own item with time windows; price frozen at order | Should | — FRD §9 · DR-010 |
+| Owner / manager dashboards | Money view, action view, fraud view (no staff leaderboard) | Should | — FRD §12 · DR-015 |
+| End-of-shift cashout | Opening float, blind count, variance, manager review | Should | — FRD §8 |
+| Inventory & cost | Menu → inventory mapping, tracking categories A/B/C, restock requests, cost per drink, variance | Should | — FRD §5, §8 |
+| Customer identity & PDPA | LINE connect after ordering, split consent, "forget me" anonymisation | Should | — FRD §4 · DR-005 |
+| Bottle keep | Simple record: guest, bottle, date, note, active / finished | Should | — FRD §11 |
+| Guest intelligence | Organic guest profile + staff notes (S2) — no AI summary | Later | — FRD §10 |
+| Kitchen display | `/pos/kitchen` screen; bar / food tickets split by `kitchen_tag` | Later | — FRD §6 · DR-012 |
+| Split-equal | Equal split with a QR per person | Later | — FRD §7 · DR-019 |
+| LINE OA (customer) | "My Bottle", promos, reminders | Later | — FRD §14 |
+
+## Out of scope
+- **Cut:** offline mode, member QR, staff performance analytics, item-level bill split, multi-language, cross-border payments (WeChat / Alipay), card pre-auth, tip pooling.
+- **Deferred:** loyalty / stamp cards, phone OTP identity, EKS (after ECS is solid) — full list in §14.
 
 ---
+
+# Detailed requirements — v1.2 baseline
+
+**Review status:** Dual independent review passed — GPT (~98%, approved to close) + Grok (9.2/10, all 17 edge cases closed). Do not reopen without a new business requirement or implementation discovery.
+**History:** 2026-10-12 (DR-012/013/014: tickets, order numbers, payment modes, ops simplification, AI owner insight) · 2026-08-23 (field research + GPT consistency pass + Grok edge-case pass — 17 collisions resolved via re-validation principle).
 
 ## 1. Overview
 
@@ -361,7 +409,7 @@ Comps/voids totals grouped by reason; flag abnormal spikes by person/reason. **N
 
 ## 15. Frontend Surfaces
 
-- **PWA**, installable to home screen (feels native, Web Push capable).
+- **Web app, not a PWA (DR-002)** — no manifest / service worker; native install + push is the Expo staff app.
 - **Staff (bartender/waiter):** mobile-responsive.
 - **POS (owner/manager):** desktop + tablet.
 - Two zones in counter bars: counter (direct bartender interaction, no QR needed) + tables (QR self-service or waiter).

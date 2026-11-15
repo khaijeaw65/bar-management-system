@@ -2,91 +2,100 @@
 
 | | |
 |---|---|
-| **Status** | Draft · Ready — approval status; merged PR is authoritative for Done |
-| **Implementer** | kj / methee |
-| **Assigned auditor** | Cowork (default) / Codex (Field-assigned fallback) |
-| **Auditor assignment** | Field instruction/date; fallback reason or none |
-| **Affected apps** | backend / frontend / mobile / contracts / tooling (select all in scope) |
-| **Revision** | 1 |
-| **Depends on** | <brief IDs, or none> |
-| **References** | FRD §<n> · schema tables: <…> · UI brief: <…> · DRs: <…> |
-| **Audit depth** | Full (backend / core flow / auth-payment-PDPA) · Compact (low-risk UI, chores) |
-
----
+| **Owner** | Field · **Implementer** <id> (<tool>) · **Auditor** Cowork (fallback Codex) |
+| **Type** | Feature · Defect · Chore |
+| **Link** | `Feature: <f>` → [requirements](../features/<f>/requirements.md) · `Defect: DEFECT-###` · `standalone` (cites `docs/FRD.md` section) |
+| **Status** | Draft · Ready (merged PR = Done) · **Revision** 1 |
+| **Depends on** | <`BRIEF-###` — merged / not merged · or `none`> · **Unblocks** <`BRIEF-###` or `none`> |
+| **Sections on** | <tokens: `e2e` `runproof` `ui` `guard` `repro`> |
+| **Flags** | <none · or: new pattern · concurrency/tx · money/auth/personal data · integration · migration on existing rows · unknowns> — hard flags ≤ 1 (or `owner-accepted oversize`) |
 
 ## 1. Goal
-<1–2 lines: the user-facing or system outcome.>
+<1–2 plain lines: who gets what outcome; requirement IDs `R1..Rn` if a feature brief.>
 
 ## 2. Scope
-### In
-- <file / module / screen level — concrete>
+**In:** <ACs / files / modules.> **Out:** <excluded items and where they go.>
 
-### Out (do NOT build here)
-- <explicitly excluded items — prevents scope creep>
-
-## 3. Contract
-<The shape both sides build against. Put shared types in `app/packages/contracts` first.>
-- **Endpoints:** `METHOD /path` → request DTO / response DTO
-- **WS events:** `<event.name>` → payload
-- **Contracts changes:** <enum/type additions, or none>
-- **Permissions:** <policy action required by `PermissionsGuard`>
-- **Business rules:** <each non-obvious rule → its source (FRD §, DR, Field decision), or none>
-- **OpenAPI:** every endpoint above appears in `docs/api/openapi.json` (regenerated with `openapi:export`, committed in this PR) — standard AC for backend briefs
-- **Conventions:** `docs/api/README.md`
-
-## 4. Acceptance Criteria
-- **AC-1** — Given <state>, when <action>, then <result>.
-- **AC-2** — …
-
-## 5. Test Gate
-| AC | Test type | Location (expected) |
+## 3. Acceptance Criteria
+| AC | When | Then |
 |---|---|---|
-| AC-1 | unit | `app/backend/src/modules/<m>/…spec.ts` |
-| AC-2 | e2e | `app/backend/test/<m>.e2e-spec.ts` |
+| 1 | <trigger> | <observable result> |
 
-Gate commands (all must pass):
+## 4. Code map
+| File | Owns |
+|---|---|
+| `<path>` | <responsibility> |
+
+## Read list
+Executor and auditor read **only these sections** of the linked files (plus this brief). Reading beyond it is allowed — note what and why in the handoff.
+| File | Section / rows | Why |
+|---|---|---|
+| `docs/features/<f>/requirements.md` | <R ids · AC ids · Flow steps> | <ACs of this slice> |
+| `docs/features/<f>/design.md` | <Contracts → `METHOD /path` · Code map rows> | <what to build against> |
+| `docs/features/<f>/ui.md` *(ui)* | <screen · state rows · action-table rows> | <behaviour> |
+| `docs/features/<f>/design-source/` *(ui)* | <board names> | <look> |
+
+## 5. Gates
 ```bash
-pnpm --filter <pkg> lint
-pnpm --filter <pkg> typecheck
-pnpm --filter <pkg> test
-pnpm --filter <pkg> test:e2e   # if the brief has e2e ACs
+<lint> · <typecheck / build> · <unit> · <e2e (if e2e on)>
 ```
-Run proof (backend/frontend/mobile changes; docs/tooling-only → `n/a`):
+
+<!-- ===== Switchable sections: keep only those listed in "Sections on" ===== -->
+
+## 6. Acceptance test plan  *(e2e · repro)*
+Executor writes these at Step 0, runs them red, commits test files only as `test(BRIEF-###): acceptance (red)` — locked from then on.
+| AC | Given | When | Then | File |
+|---|---|---|---|---|
+| 1 | <state> | <request / action> | <observable result> | `<test path>` |
+*Type: Defect* → the first row is the repro from `DEFECT-###` (must fail red on current code).
+
+## 7. Run proof  *(runproof)*
 ```bash
-docker compose -f infra/docker-compose.yml up -d postgres redis
-pnpm --filter @bar/backend migration:run
-pnpm --filter @bar/backend start:dev   # separate shell, started on the work SHA
-curl -fsS localhost:3001/api/health
+<start / rebuild> · <migrations> · <health check> · <real request on the changed path>
 ```
-UI change: <screen + action to exercise in the browser / Expo app, or n/a>
+<!-- UI: name the screen + action; the executor attaches one result screenshot per screen AC (mandatory). Defect: replay the repro. Not feasible → narrow it here before Ready. -->
 
-A required script that doesn't exist yet = **BLOCKED** — report it, never skip silently.
+## 8. UI  *(ui)*
+<Screens, `ui.md` rows and design boards this brief delivers (approved snapshot only); tokens/components used. Values the boards leave open (found by the Dry Run) are Pre-decided in §9.>
 
-### Local Sonar scan
-- Required for this brief: yes (always for Metee) / optional — <reason>
-- Approved exclusions / "won't fix": <none, or Field-approved reference>
+## 9. Guard — unlocks and pre-decided items  *(guard)*
+- **Unlocked protected files** (exact paths, or `none`):
+- **Pre-decided** (exact `pkg@version`, endpoint, schema change — each with `Source: Field, <how>, <date>`):
 
-## 6. Constraints
-<Rules that matter most for this brief — e.g. `save()` not `update()`, `.js` import extensions, `PermissionsGuard` only, Thai hardcoded strings.>
+## 10. Dry Run — walk the build steps (before Ready)
+Walked by a **fresh agent that has only this brief and the repo** (what the executor will have) — §11 in order, **as if doing the work**: can each step be done, and what would it hit? One row per build step. `Ready` only when no row still has an open blocker or a value to guess.
+| Step | Touches (`path:line`, or `new`) | Needs → exists? (`path:line`) | Would block / have to guess → resolved by |
+|---|---|---|---|
+| 0 | | | |
+| 1 | | | |
 
-## 7. Decision Points (Field Guard)
-- **Pre-decided (exact only):** <package@range, endpoint path, file path — anything not this exact needs a DR>
-- **Likely DRs:** <known unknowns — raise a DR if hit>
+*Needs* to look for at each step: schema / entity · wiring + protected file (→ §9 unlock) · `package@version` *(guard)* · contract field, error code, nullability = DB nullability · token / component / board, and every value the boards leave open *(ui)* · e2e isolation config *(e2e)* · something an **earlier step must create first** (wrong order).
+*Resolved by:* Pre-decided item (§9) · **Builder's choice** (below) · new or reordered step · spec fix · owner answer · DR. Never leave a repo-readable fact as *Assumed*.
 
-## 8. Unlocked Protected Files
-<Exact paths only, no globs. Never rules files. Or: none>
-- `none`
+**Builder's choice** — what the executor may decide alone, inside a stated bound; each one is reported in the handoff. Never a Guard trigger (dependency, schema / contract, auth / payment / personal data, protected file) and never user-visible behaviour — those are Pre-decided or a DR.
+| Item | Bound |
+|---|---|
+| <e.g. private helper names, file split inside the code-map folder> | <e.g. within `src/modules/visit/`, no new exports> |
 
----
+Whole-brief checks (delete rows of sections that are off):
+| # | Check | `path:line` evidence | Result |
+|---|---|---|---|
+| A | Gate scripts in §5 exist | | |
+| B | Depends-on merged · no code-map overlap with briefs in flight | | |
+| C | Design snapshot approved; its tokens/font match the frontend (no drift) *(ui)* | | |
+| D | Run proof feasible — accounts, keys, callbacks, devices; result screenshots can be taken *(runproof · ui)* | | |
+| E | Every Read list section exists and names the exact rows | | |
 
-## Ready Checklist
-- [ ] Named implementer and auditor; scope/ACs/contracts/references complete
-- [ ] Exact gates (incl. run proof) and evidence; dependencies have completion conditions
-- [ ] Size within workflow §2 (≤ ~3 working days, ~500 net-new lines); otherwise split
-- [ ] No unresolved decision blocking the main outcome
-- [ ] Exact pre-decisions/unlocks; Field explicitly approved this revision
+**Executor scan** (required when the brief has a hard flag; otherwise optional): <`scan BRIEF-###` by <tool>, YYYY-MM-DD — <n> gaps, all resolved above · or `not required — no hard flag`>
+
+## 11. Build steps (ordered steps, never "phases" · inside → out · 1 step = 1 commit · stop after 2 failed fixes)
+| # | Step | Done when |
+|---|---|---|
+| 0 | Verify executor *Assumed* rows · write e2e from §6 → red → lock commit *(e2e/repro)* | red assertion output in handoff |
+| 1 | <step> | <check green> |
+| N | Gates + run proof + sync `design.md` / living docs | all green, proof recorded |
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
-| 1 | YYYY-MM-DD | Initial |
+| 1 | YYYY-MM-DD | Initial draft |

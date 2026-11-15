@@ -5,6 +5,7 @@ import { toast } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
+import { useAcknowledgeCall } from "@/hooks/useStaffCalls";
 import { TABLES_KEY } from "@/lib/api/tables";
 import { callTitle, isGuestOrder, orderTag } from "@/lib/pos/alerts";
 import { playChime, unlockAudio } from "@/lib/sound/chime";
@@ -18,8 +19,15 @@ function useAudioUnlock(): void {
   useEffect(() => {
     if (!locked) return;
     const unlock = () => unlockAudio();
-    document.addEventListener("pointerdown", unlock, { once: true, capture: true });
-    return () => document.removeEventListener("pointerdown", unlock, { capture: true });
+    const events = ["pointerdown", "click", "touchstart", "keydown"] as const;
+    for (const event of events) {
+      document.addEventListener(event, unlock, { once: true, capture: true });
+    }
+    return () => {
+      for (const event of events) {
+        document.removeEventListener(event, unlock, { capture: true });
+      }
+    };
   }, [locked]);
 }
 
@@ -28,6 +36,7 @@ export function usePosAlerts(): void {
   const client = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
+  const acknowledge = useAcknowledgeCall();
   useAudioUnlock();
 
   const refreshTables = useCallback(() => {
@@ -41,9 +50,18 @@ export function usePosAlerts(): void {
       refreshTables();
       playChime("bell");
       const label = client.getQueryData<TableList>(TABLES_KEY)?.items.find((s) => s.id === parsed.data.tableSeatId)?.label;
-      toast.warning(callTitle(label ?? "โต๊ะ", parsed.data));
+      const toastId = toast.warning(callTitle(label ?? "โต๊ะ", parsed.data), {
+        actionProps: {
+          children: "รับทราบ",
+          className: "mr-8",
+          onPress: () => {
+            acknowledge.mutate(parsed.data.tableSeatId);
+            toast.close(String(toastId));
+          },
+        },
+      });
     },
-    [client, refreshTables],
+    [acknowledge, client, refreshTables],
   );
 
   const onOrder = useCallback(
@@ -55,7 +73,11 @@ export function usePosAlerts(): void {
       if (pathname === "/pos/orders") return;
       const label = parsed.data.tickets[0]?.seat.label ?? "โต๊ะ";
       toast.success(`ออเดอร์ใหม่จาก QR · ${label} · ${orderTag(parsed.data.orderNumber)}`, {
-        actionProps: { children: "ดูออเดอร์", onPress: () => router.push("/pos/orders") },
+        actionProps: {
+          children: "ดูออเดอร์",
+          className: "mr-8",
+          onPress: () => router.push("/pos/orders"),
+        },
       });
     },
     [pathname, router],

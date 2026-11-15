@@ -69,6 +69,24 @@ test("AC-3: sends one POST with an Idempotency-Key, clears the cart and shows th
   expect(window.localStorage.getItem(`bar.customer.cart.${SEAT}`)).toBeNull();
 });
 
+test("DEF-09 / AC-4: submitting cart shows submitting state without flashing ตะกร้ายังว่าง before redirect", async () => {
+  seed(lineFor("ช้างดราฟต์", 1));
+  server.use(
+    http.post("*/api/customer/orders", async () => {
+      return HttpResponse.json(
+        { status: 201, code: "", message: "success", data: { orderId: crypto.randomUUID(), orderNumber: 1, visitId: crypto.randomUUID() } },
+        { status: 201 },
+      );
+    }),
+  );
+  const user = userEvent.setup();
+  renderCustomer(<CartScreen />);
+  await user.click(await screen.findByRole("button", { name: "สั่งเลย" }));
+  expect(screen.getByText("กำลังส่งออเดอร์...")).toBeInTheDocument();
+  expect(screen.queryByText("ตะกร้ายังว่าง")).not.toBeInTheDocument();
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/customer/tab"));
+});
+
 test("AC-4: a 409 marks the line, blocks the send until it is removed, then the retry succeeds", async () => {
   seed(lineFor("ยำหมูยอ", 1, "หมดทดสอบ"), lineFor("ช้างดราฟต์", 2));
   const user = userEvent.setup();
