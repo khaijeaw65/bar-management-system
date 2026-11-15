@@ -1,0 +1,129 @@
+# Staff app — take order — UI
+
+> Screens, states and actions for `docs/features/staff-order-entry/`. Requirements: [requirements.md](requirements.md) · Design: [design.md](design.md). Every row here is an AC source for the frontend brief.
+> Built from the Claude Design handoff(s) `docs/design/CD-14-handoff.md` (written before workflow Rev 24 — the CD came before `design.md`). The handoff stays the record of the canvas; this file is what briefs cite.
+
+| | |
+|---|---|
+| **Design** | CD-14 rev 5 — **approved** (Field 2026-10-10) · canvas https://claude.ai/artifact/VXJCDCG4BLQrXvXMaBFPTW · version `1791626200-39b3` |
+| **Design system** | DS version `1791561405-c72e` (The Loft Bar Design System) · `docs/design-system.md` · web = HeroUI v3, staff app = HeroUI Native |
+| **Approved by** | CD-14: Field 2026-10-10 |
+| **Frontend brief(s)** | BRIEF-074, BRIEF-075, BRIEF-076 (BRIEF-077 slip scan has no board — copy from CD-03, DR-027) |
+| **UI owner** | methee |
+
+## Overview
+
+- **Goal:** staff take an order at the table/counter on their phone and send it straight to the bar queue, without walking to the POS.
+- **User + context:** server / bartender · Friday 22:00, full bar, dim light, one hand, several guests ordering at once.
+- **Entry → exit:** (1) FAB "+ ออเดอร์" on the queue → pick seat; (2) "สั่งออเดอร์" in the CD-08 table summary sheet (seat known). Exit: sent → queue; discard → queue.
+- **Outcome:** 2 taps per drink (no-option item: tap row → add; assumes default quantity 1); retry never duplicates an order; sold-out / expired promo caught before send.
+- **Out of scope:** payment, close, void/comp, bottle-keep orders, guest profile, customer QR ordering (CD-06).
+- **Journeys:** J1 seated T3, 2× ช้างดราฟต์ + 1× โอลด์แฟชั่น (E1–E7) · J2 free seat C3: open then order, or POS opened it first → confirm before joining (E1–E4b).
+
+## Screens (boards)
+
+Images: `docs/design/assets/CD-14/<board>.png` (PNG 1x, dark, exported by Field 2026-10-10 from canvas version 1791609667-6972; `journey-1`, `journey-2`, `cart` images predate rev 4 queue cards — re-export if used).
+
+| Board | Type | States |
+|---|---|---|
+| `overview` | OVERVIEW | cover: goal, pain point, user/context, outcome, entry/exit, journeys, out of scope, key decisions |
+| `journey-1` | JOURNEY | queue → T3 → menu → ช้างดราฟต์ qty sheet (2) → โอลด์แฟชั่น item sheet → cart → sent (E1–E7) |
+| `journey-2` | JOURNEY | queue → seat sheet (C3 free) → opening → 4a opened (201) · 4b collision (200 attached) → **confirm dialog** (who/when/guest) → 5b joined after "สั่งเข้าโต๊ะเดิม" (E1, E2, E3a, E3b, E4b) |
+| `menu` | STATES | 1 loaded · 2 loading · 3 error + retry · 4 no result · 5 added from sheet (Toast) · 6 360×780 · 7 promo category (DR-010) · 8 disconnected · 9 typing + long names (2-line clamp) + keyboard |
+| `item-sheet` | STATES | 1 default · 2 required missing · 3 max toppings · 4 no-option item (qty + สั่งโดย + หมายเหตุ) |
+| `leave` | STATES | discard-cart dialog |
+| `cart` | STATES | 1 normal · 2 charge "คิดกับใคร?" · 3 sending · 4 success → queue · 5 sold out (409) · 6 network error · 7 visit closed (409) · 8 360×780 · 9 promo expired (409) · 10 long text · 11 permission revoked (403) |
+| `seat-sheet` | STATES | 1 loading · 2 error + retry · 3 no `visits:open` (free seats locked) — default / opening / attached are in J2 |
+| `flow` | FLOW MAP | from queue · from table (options + charge) · leave & errors |
+
+## Screen × State matrix
+
+✓ = drawn (board · state) · n/a = does not apply (reason) · shared = drawn elsewhere.
+
+| State | Seat sheet | Menu | Item sheet | Cart | Leave |
+|---|---|---|---|---|---|
+| default | ✓ J2·2 | ✓ menu·1 | ✓ ·1 / ·4 | ✓ ·1 | ✓ |
+| loading | ✓ ·1 | ✓ ·2 | n/a (data from menu) | n/a (local) | n/a |
+| empty | n/a (seeded seats) | ✓ ·4 no result | n/a | n/a (bar hidden when empty) | n/a |
+| error + retry | ✓ ·2 | ✓ ·3 | n/a | ✓ ·6 | n/a |
+| validation | n/a | n/a | ✓ ·2 / ·3 | ✓ ·2 (charge name) | n/a |
+| pending | ✓ J2·3 | n/a | n/a (local add) | ✓ ·3 | n/a |
+| success feedback | ✓ J2·4a | ✓ ·5 | shared menu·5 | ✓ ·4 | n/a |
+| failure per reason | ✓ ·3 (403 → locked) | n/a | n/a | ✓ ·5 ·7 ·9 ·11 | n/a |
+| stale / conflict | ✓ J2·4b confirm → 5b | ✓ ·7 / realtime | n/a | ✓ ·5 ·9 | n/a |
+| disconnected | shared menu·8 pattern | ✓ ·8 | n/a | shared ·6 | n/a |
+| permission denied | ✓ ·3 | n/a (entry hidden, R7) | n/a | ✓ ·11 | n/a |
+| long Thai text | n/a (seat labels short) | ✓ ·9 | shared cart·10 | ✓ ·10 | n/a |
+| smallest size | shared (fits 360) | ✓ ·6 | rule R3 (body scrolls) | ✓ ·8 | n/a |
+| keyboard open | n/a | ✓ ·9 | rule §9 (sheet rises above keyboard) | n/a | n/a |
+| session expired | global: 401 → CD-08 login, cart lost (R6) | ← | ← | ← | ← |
+
+## Action table
+
+| Action | API (status) | Permission | Success → UI | Failure → UI | Recovery | Data kept | Idempotency |
+|---|---|---|---|---|---|---|---|
+| Open seat sheet | `GET /tables` (available, BRIEF-011) | `tables:read` | sheet with live chips (J2·2) | network → seat-sheet·2 | retry | — | n/a |
+| Pick seated seat | none (uses `currentVisit.id` from `/tables`) | `orders:create` (entry hidden without, R7) | menu for that visit (J1·3) | — | — | — | n/a |
+| Open free seat | `POST /visits {tableSeatId}` (available, BRIEF-011) | `visits:open` (free tiles locked without, seat-sheet·3) | `201 attached:false` → menu, chip เปิดแล้ว, Toast "เปิดโต๊ะ C3 แล้ว" (J2·4a) · `200 attached:true` → **confirm dialog** (J2·4b): "สั่งเข้าโต๊ะเดิม" → menu, chip มีแขก, info Toast (J2·5b) · "เลือกโต๊ะอื่น" → back to sheet, C3 shown seated | network → Toast error, stay on sheet · 403 → lock tiles + Toast | retry (safe) | — | not needed: attach returns the live visit and creates nothing; cancel has no side effect |
+| Load menu | `GET /menu/categories`, `GET /menu/items` (planned: menu-management brief) | `menu:read` | rows with `available_now` + window | network → menu·3 · socket down → menu·8 | retry; refetch every 60 s + on `menu.availability_changed` | cart | n/a |
+| Add item | client; item detail `GET /menu/items/:id` (planned) | — | badge + cart bar + Toast (menu·5) | required option missing → FieldError (item-sheet·2) · sold out / out of window → row not tappable | pick option | cart (memory, R6) | — |
+| Charge item | client | — | line with "ค่าบริการ" | no name → add disabled (cart·2) | pick name | cart | — |
+| Send order | `POST /visits/:visitId/orders` + `Idempotency-Key` (planned, BRIEF-012) | `orders:create` | `201` → queue, Toast, new card highlighted (cart·4) | `409 ITEM_UNAVAILABLE {reason: sold_out\|out_of_window, itemIds}` → void lines (cart·5 / ·9) · `409 INVALID_STATE_TRANSITION` → cart·7 · `403` → cart·11 · network / timeout → cart·6 | remove void lines · retry · back to queue | cart until `201` | key created on first send of this cart; **reused** on retry/timeout (a timeout after a successful submit replays the original order); **new key** after any cart edit or after `201` |
+| Discard cart | client | — | dialog → queue (leave) | — | อยู่ต่อ | cart cleared | key dropped |
+
+## Messages & strings
+
+- **Seat sheet:** สั่งให้โต๊ะไหน? · เคาน์เตอร์ · โต๊ะ · เปิดโต๊ะและสั่ง · กำลังเปิด… · ให้ POS เปิด · "บัญชีนี้สั่งได้เฉพาะโต๊ะที่เปิดแล้ว — โต๊ะว่างให้ POS หรือผู้จัดการเปิด" · โหลดโต๊ะไม่สำเร็จ · Toast "เปิดโต๊ะ C3 แล้ว" / "เลือกเมนูเพื่อเริ่มสั่งได้เลย" · Dialog "C3 เพิ่งถูกเปิดไปแล้ว" · เปิดโดย / เวลา / แขก · "ถ้าเป็นลูกค้ากลุ่มเดียวกัน ออเดอร์จะเข้าบิลเดียวกัน — ถ้าเป็นคนละกลุ่ม ให้เลือกโต๊ะอื่น" · สั่งเข้าโต๊ะเดิม (กลุ่มมิ้นท์) · เลือกโต๊ะอื่น · Toast "สั่งเข้าโต๊ะ C3 ของกลุ่มมิ้นท์" / "ออเดอร์จะเข้าบิลเดียวกัน".
+- **Menu:** สั่งออเดอร์ — T3 · ค้นหาเมนู · ทั้งหมด · โปรโมชั่น · เบียร์สด · ค็อกเทล · ไฮบอล · อาหาร · ค่าบริการ · มีตัวเลือก · ค่าบริการ · ต้องระบุชื่อ · เริ่มต้น ฿260.00 · โปร · ถึง 21:00 · โปร · เริ่ม 22:00 (ศ.–ส.) · ตะกร้า n รายการ · ดูตะกร้า · โหลดเมนูไม่สำเร็จ / "ตรวจการเชื่อมต่อแล้วลองอีกครั้ง ตะกร้าที่เลือกไว้ยังอยู่" · ลองอีกครั้ง · ไม่พบเมนูที่ค้นหา / "ลองค้นหาด้วยคำอื่น หรือเลือกหมวด ทั้งหมด" · การเชื่อมต่อขาด / "สถานะเมนูอาจไม่ล่าสุด — ยังสั่งได้ ระบบตรวจของหมด / โปรหมดเวลาอีกครั้งตอนส่ง" · Toast "เพิ่ม ช้างดราฟต์ ×2 แล้ว" / "สั่งโดย ต้น · แก้ได้ในตะกร้า".
+- **Item sheet:** ตัวเลือก · ต้องเลือก 1 · ท็อปปิ้ง · ไม่บังคับ · สูงสุด 2 · ระดับน้ำแข็ง · ก้อนใหญ่ / ปกติ / ไม่ใส่ · สั่งโดย · + ชื่อใหม่ · หมายเหตุ (ไม่บังคับ) / "เช่น หวานน้อย" · เพิ่มลงตะกร้า · ฿280.00 · "กรุณาเลือกระดับน้ำแข็ง" · "เลือกได้สูงสุด 2 — เอาออกก่อนเพื่อเลือกอันอื่น".
+- **Cart:** ตะกร้า · T3 · รายการใหม่สั่งโดย · สั่งโดย {name} · ค่าบริการ · รวม · ส่งออเดอร์ · คิดกับใคร? · "ค่าบริการต้องระบุชื่อลูกค้า" · หมดแล้ว — ลบออกเพื่อส่งต่อ · หมดเวลาโปร — ลบออกเพื่อส่งต่อ · ลบออก · "มีรายการที่หมดแล้ว 1 รายการ" / "ลบออกก่อนจึงจะส่งได้" · "โปรหมดเวลาแล้ว 1 รายการ" / "โปรนี้ถึง 21:00 — ลบออก หรือสั่งเมนูปกติแทน" · "ส่งออเดอร์ไม่สำเร็จ ลองอีกครั้ง" / "ตะกร้ายังอยู่ครบ — ส่งซ้ำจะไม่เกิดออเดอร์ซ้ำ" · ลองส่งอีกครั้ง · "โต๊ะนี้ถูกปิดแล้ว" / "ออเดอร์ไม่ถูกส่ง เลือกโต๊ะใหม่จากคิวออเดอร์" · กลับไปคิวออเดอร์ · "บัญชีนี้ไม่มีสิทธิ์ส่งออเดอร์แล้ว" / "ตะกร้ายังอยู่ — ให้ผู้จัดการตรวจสิทธิ์ หรือให้พนักงานอื่นส่งแทน" · Toast "ส่งออเดอร์ T3 แล้ว · n รายการ" / "#0045 · ฿620.00".
+- **Leave:** ยกเลิกตะกร้า? · รายการในตะกร้าจะไม่ถูกส่ง · อยู่ต่อ · ทิ้งตะกร้า.
+
+## Behaviour decisions
+
+- **No quick add on the staff app** (Field 10 Oct; POS keeps it): every item opens the item sheet; no-option items get the short sheet. Charge item → "คิดกับใคร?" first.
+- Cart newest-first; name chips set `สั่งโดย` for new lines only. Cart bar hidden while the keyboard is open; item sheet rises above the keyboard (หมายเหตุ field stays visible).
+- Free seat: `POST /visits`; attach (`200 attached:true`) is a normal outcome, not an error — but the app **never joins silently**: it shows the confirm dialog (opener, time, guest label) first (Field 2026-10-10). One live visit per seat stays the rule; a different group picks another seat.
+- Realtime `menu.availability_changed` updates rows and void lines live; menu refetches every 60 s while open (DR-010 rule 12). Disconnected: ordering still allowed; server re-validates on send.
+- Promos (DR-010): server decides the window; out-of-window rows greyed, tap does nothing; expired promo in cart → same void-line flow as sold out.
+- Status never by colour alone (chips carry text). User-mindset checks (`cd-template.md` §5): ✓ dominant action per screen · ✓ targets · ✓ acknowledgement < 1 s (Toast / pending) · ✓ discard cart confirmed · ✓ every error says how to fix · ✓ "2 taps per drink" with its assumption · ☐ large-text Thai (not yet drawn) · ☐ walkthrough with staff (before final presentation).
+
+## Design input (what goes into Claude Design)
+
+Already drawn — the CD brief(s) `docs/design/CD-14.md` hold the pasted input. A new version starts from requirements → *Flow* and this file, never the DB schema.
+
+## Design source snapshot
+
+Approved version `1791626200-39b3` (2026-10-10), snapshot kept at its pre-Rev-24 path `docs/design/source/CD-14/` (frozen briefs link there — not moved). Hashes from CD-14 §11:
+
+| Path (under `docs/design/source/CD-14/`) | Bytes | SHA-256 | What |
+|---|---|---|---|
+| `blobs/55621ac7d8cfe40fb69092b2ed520365.js` | 357796 | `3411692820cb8d47543f69496aa25fd603a358f4498046f41c508a5a3342210e` | Lucide icon UMD (blob, all boards) |
+| `project/Cart.dc.html` | 26084 | `813de35d0f963254f110888137368a9e1e9245d6cd3fa677b2fc9700db1443a9` | board |
+| `project/Flow.dc.html` | 5884 | `0322bd88be6eba86eb4ee4cfd4e6b2fc3c34ad5f861bd83256f5b28e024abd79` | board |
+| `project/ItemSheet.dc.html` | 12707 | `b4c44c0a9e5457117cba7974cc5216bfc9301a6156891e983fb949e43fde2418` | board |
+| `project/Journey.dc.html` | 49667 | `500db08d6e3ec70ef1bbe0a81bdff225c6e330f662c30901255a39ee723e3f9f` | board |
+| `project/Leave.dc.html` | 6983 | `29bdfc30522d1e68c9d9f2b5a1d6a5b9b92150f5dfc91571872d0765fe474c05` | board |
+| `project/Main.dc.html` | 28725 | `093baa523d170af742bdbadd47223c7e0f56254eeac3f777442a9def3fb7df9f` | board |
+| `project/Menu.dc.html` | 16087 | `903263e812148802d0ea9596d8048860efefe720bc3497959e8ee3bc408ab77a` | board |
+| `project/Overview.dc.html` | 8320 | `15f886a4c0994aaafeeee9f30d7972b5b8533f4fa31634f4eb24426a5e74d6ab` | board |
+| `project/SeatSheet.dc.html` | 8198 | `cd9eeac2882b3fc64a73e23979c453b1f219521cd649c201beb2d7731f2ca2d3` | board |
+| `project/canvas.json` | 4987 | `c6890bd89d132934e174f8174e5c5380cc284b9dbd0c0f702f092746cda5cae0` | canvas index (boards, notes R1–R10, DS record) |
+| `project/ds/theloftbardesignsystem_99bbff/_ds_bundle.js` | 334785 | `8dabe62f5f9313829b05ac90564785a94d08e508abbe7b33727de87ec5d83aad` | DS component bundle (read for exact component sizes) |
+| `project/ds/theloftbardesignsystem_99bbff/assets/fonts/NotoSansThai-Bold.ttf` | 47480 | `0be544f347b3ab6382bdc2b555a783727a4858a3dc140670406924670967d916` | font |
+| `project/ds/theloftbardesignsystem_99bbff/assets/fonts/NotoSansThai-Regular.ttf` | 47484 | `9acb585d8662ca4ed1b1cf5889dfa1393f8555103b3986e1ea1e3af4faef70bd` | font |
+| `project/ds/theloftbardesignsystem_99bbff/assets/fonts/NotoSansThai-SemiBold.ttf` | 47552 | `2e0c06600ac07f9e22c9d360d3e3b37651af9aff9d2dd4b418ba9fd6856c51ea` | font |
+| `project/ds/theloftbardesignsystem_99bbff/styles.css` | 311 | `7866bbdf568cd66d45e96b2489b917076ee3e7ab42478f8ef7ef2d1b34f9bc1c` | DS token entry (imports tokens/*) |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/base.css` | 852 | `b0dca6d6222bca9864348d20f2d0522d9a428b6b9100d3bba4f434f5d2d917a6` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/colors.css` | 6613 | `99c03da4fee89686b67b4e1ea9a9895d1fa9ab5fdfff6ddb50eb1b4a484be8cf` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/elevation.css` | 1567 | `49d239c658fe4bec8642074191d22011eef872bcefd79f9e8df08120f0f1931e` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/fonts.css` | 691 | `8ab8369728a9af235c3998a3cad388d0c348d802f7e4a9a999cb95e48ce2b30d` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/heroui.css` | 1555 | `7a259174df15534fdab234363690592a165b829732d1724487cd1df4240989cb` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/motion.css` | 415 | `f722b6aff937e6950b8ba19ae2917327f202e3c1b9ebddfbbfde602c1d76b40e` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/radius.css` | 225 | `8a8fa95063c7b34da5520acae8c002430eb799e0b8c913c66a7af97bfb49ee85` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/spacing.css` | 445 | `636c636975a82e319862efceb54e5822da01937eabec0f0b5a1292169b002c52` | DS tokens |
+| `project/ds/theloftbardesignsystem_99bbff/tokens/typography.css` | 1727 | `9645fa74a5f12cbea4cfaa7613810ebe4f79db1c5a7b2d93eb5198eb52ec69e2` | DS tokens |
+| # | Drift | Fix |
+|---|---|---|
+| D1 | **No Expo theme yet** (`app/mobile/` not on this branch, DR-008). CD-14 is `expo-staff`, so there is nothing to diff. | The first mobile feature brief generates the RN theme from this snapshot's `tokens/*.css` (249 tokens, dark + light) — Pre-decided item, not inferred by the executor. |
+| D2 | Web `globals.css` (BRIEF-014) vs snapshot: all shared `:root` values equal; 35 semantic names absent on web (`--sp-*`, `--stack*`, `--tap-min` / `--tap-comfortable`, `--card-pad*`, `--ease-*`, `--font-ui` / `--font-thai` / `--font-numeric`, `--success-foreground`, `--warning-foreground`, `--bar-height`, `--sheet-grab`, `--gutter-*`, `--pos-key`, `--section-gap`, `--field-border-width`, `--ls-body`) + 55 primitives. | Info for CD-14 (mobile). For web CDs: check each name a board uses when writing that web brief; map to Tailwind scale or add to `globals.css` there. |

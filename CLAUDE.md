@@ -8,7 +8,7 @@
 ## Project
 Production-grade bar management system for small-to-medium counter bars in Thailand — senior capstone (2 semesters, DPU Computer Engineering).
 Core flow: **QR guest ordering → kitchen/bar display → PromptPay payment → session close** — finish it end-to-end before adding breadth.
-Differentiators: AI owner insight (sales / anomaly-fraud / menu — DR-014), bottle-keep, PromptPay QR, real-time kitchen/bar display.
+Differentiators: bar-specific shop management (stock + loss, purchasing, shift close, P&L, compliance lock, events — DR-031), own ML models (forecast, anomaly, guest recommendations — DR-032, no LLM), bottle-keep, PromptPay QR + slip verify, real-time kitchen/bar display.
 Deadline: April 2027 · Advisor: อ.สนายุ จินตนาวรรณกุล · Full scope: `docs/FRD.md` · Schema: `docs/schema.sql` (38 tables, 10 domains), ERD `docs/erd.html`
 **Team:**
 - KJ — ณัฐวัฒน์ จิรกุลประดิษฐ์ (66210096) — project lead / backend · decision owner (Field)
@@ -25,11 +25,11 @@ AI split (Field, 2026-10-09 · DR-030): agents write 100% of app code for both d
 | Cache / queue / realtime | Redis (ElastiCache): ACL cache, session, BullMQ (`@nestjs/bullmq`), socket.io Redis adapter · NestJS WebSocket Gateway |
 | Auth | LINE SSO + JWT + refresh rotation |
 | Payment | PromptPay QR + GB Prime Pay webhook |
-| AI | OpenAI API (owner insight, DR-014) |
-| Infra | AWS ECS/ECR + RDS + S3 + ElastiCache + Terraform (`infra/terraform/`, DR-001) · frontend on Vercel · DNS on Cloudflare |
+| AI | Own ML: Python (pandas, scikit-learn, LightGBM) daily batch job → `ml_*` tables — **no LLM API** (DR-032) |
+| Infra | AWS ECS: `web` + `api` + `worker` services + `ml` scheduled task, one ALB (DR-033) · RDS · ElastiCache · S3 · ECR · Terraform for AWS + Cloudflare (`infra/terraform/`, DR-001) · DNS on Cloudflare — `docs/infra.md` |
 | CI / local | GitHub Actions · Docker Compose (Postgres + Redis) + ngrok · SonarQube Community (opt-in per brief) |
 
-Repo: `app/backend` (NestJS) · `app/frontend` (Next.js) · `app/mobile` (Expo, `@bar/mobile`) · `app/packages/contracts` (`@bar/contracts`) · `docs/` · `infra/`.
+Repo: `app/backend` (NestJS) · `app/frontend` (Next.js) · `app/mobile` (Expo, `@bar/mobile`) · `app/packages/contracts` (`@bar/contracts`) · `app/ml/` (Python, DR-032 — created by its first brief) · `docs/` · `infra/`.
 
 ## Scoped rules — read before editing
 | Path | Rule file |
@@ -40,11 +40,11 @@ Repo: `app/backend` (NestJS) · `app/frontend` (Next.js) · `app/mobile` (Expo, 
 Editing `<app>/**` → read its rule file first, even if your tool did not load it. Workspace bans: `docs/rules/core.md`.
 
 ## Architecture (locked)
-- **One NestJS process** — REST + WebSocket Gateway + webhook receiver. **One Next.js web app** — role surfaces by route (`/pos`, `/staff`, customer QR). **One Expo app** — staff mobile surface (login, tables/sessions, order taking + management, push, guest notes, bottle-keep check), no new endpoints. Modular monolith; extract services only if load demands it post-launch.
+- **One NestJS codebase, two ECS services** — `api` (REST + WebSocket Gateway + webhooks) and `worker` (same image, BullMQ processors only) — still a modular monolith (DR-033). **One Python ML batch job** — scheduled, writes `ml_*` tables, no API (DR-032). **One Next.js web app** — role surfaces by route (`/pos`, `/staff`, customer QR). **One Expo app** — staff mobile surface (login, tables/sessions, order taking + management, push, guest notes, bottle-keep check), no new endpoints. Modular monolith; extract services only if load demands it post-launch.
 - **IAM:** AWS-style most-permissive-wins (union of group + direct user policies), time-bound group membership (`valid_from` / `valid_until`), resolution cached in Redis and invalidated on any IAM change. Always `PermissionsGuard` — never inline permission checks in controllers.
 - **Identity:** provider-agnostic (`staff_user_identity`, `customer_identity` hold LINE credentials). Visit ≠ Customer: a visit is created on QR scan; `customer_id` is linked later only with PDPA consent.
 - **Modules:** `IamModule` wraps `PermissionsGuard` + Redis cache · `NotificationsModule` is injected by Order / Payment to emit WebSocket events (never import the gateway) · `PaymentModule` enqueues BullMQ jobs; a separate processor consumes — the HTTP controller never couples to it · all entities extend `BaseEntity` (`app/backend/src/common/`).
-- **Deployment:** frontend → Vercel; backend → AWS ECS + ECR; IaC Terraform for AWS + Cloudflare. EKS is a stretch goal only after ECS is solid.
+- **Deployment:** web, api, worker and ml all on one AWS ECS cluster behind one ALB (`pos.` / `api.` host rules, DR-033); IaC Terraform for AWS + Cloudflare. EKS is a stretch goal only after ECS is solid.
 
 ## Database rules
 - Mutable tables carry `created_by` / `updated_by` (FK → `staff_user`, set by the global `AuditSubscriber` via `@nestjs/cls`, registered once in `AppModule`) and `created_at` / `updated_at`. `updated_at` is set by the DB trigger `trg_<table>_updated_at` (DR-023) — app code never writes it; a migration that creates a table with `updated_at` attaches the trigger.
@@ -87,7 +87,7 @@ Never edit without an exact brief unlock (brief §9 *Guard — unlocks*) or Fiel
 6. **Do not reintroduce cut features:** offline mode, member QR, staff performance analytics.
 7. **Every brief runs in its own worktree** `.worktrees/BRIEF-###`; the main checkout stays on `main`. Never `git worktree prune` / `remove` from a VM session.
 8. **Never push to `main`**; merge only through `pr-review` (merge commit only). `.env*` files are never committed.
-9. **No microservices, no Kubernetes/EKS** before ECS is stable and shipping.
+9. **No services beyond DR-033's `web` / `api` / `worker` / `ml`, no Kubernetes/EKS** before ECS is stable and shipping. **No LLM / OpenAI dependency anywhere** (DR-032).
 10. **Architecture and database rules above are locked** — `PermissionsGuard` only, `save()` not `update()` on audited entities, `audit_log` append-only, snapshots immutable, `gateway_tx_id` checked first.
 11. **Simple before complex** — no premature abstractions; inside → out steps, 1 step = 1 commit; explain WHY a solution is chosen.
 
