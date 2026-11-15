@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import { ShoppingBasket } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { orderedLines, previewOf } from "@/lib/order/cart";
@@ -16,8 +16,17 @@ export function CartScreen() {
   const router = useRouter();
   const { state, dispatch } = useCartContext();
   const { query } = useGuestSession();
-  const { send, pending, blocked } = useSendOrder(state, dispatch);
+  const { send, pending, redirecting, blocked } = useSendOrder(state, dispatch);
   const locked = pending || state.notice !== null;
+
+  if (redirecting) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center text-text-muted">
+        <Spinner size="lg" />
+        <p className="text-body-md">กำลังส่งออเดอร์...</p>
+      </div>
+    );
+  }
 
   if (state.lines.length === 0) {
     return (

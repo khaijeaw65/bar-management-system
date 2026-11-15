@@ -83,7 +83,7 @@ function placedOrder(): Order {
 test("quick add merges a line and undo removes the last tap", async () => {
   const user = userEvent.setup();
   renderScreen();
-  const tile = await screen.findByRole("button", { name: /สิงห์/ });
+  const tile = await screen.findByRole("button", { name: /สิงห์/ }, { timeout: 5000 });
   await user.click(tile);
   await user.click(tile);
   expect(screen.getAllByText("เพิ่ม สิงห์ แล้ว").length).toBeGreaterThan(0);

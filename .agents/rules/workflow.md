@@ -1,6 +1,6 @@
 ---
-description: Workflow — roles, brief lifecycle, quality gates, Field Guard (decision authority), session protocol.
-activation: always
+description: Workflow — roles, brief lifecycle, quality gates, decision guard, session protocol.
+activation: model_decision
 ---
 
 @/docs/rules/workflow.md

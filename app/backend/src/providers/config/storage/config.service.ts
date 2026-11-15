@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
-export interface StorageCredentials {
-  accessKeyId: string;
-  secretAccessKey: string;
-}
+import type { StorageCredentials } from './config.types.js';
 
 @Injectable()
 export class StorageConfigService {

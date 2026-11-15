@@ -7,6 +7,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { ApiError } from "@/lib/api/errors";
 import { cancelPayment, createPayment, getPayment, markPaymentPaid } from "@/lib/api/payments";
 import { getVisit } from "@/lib/api/visits";
+import { generateUuid } from "@/lib/utils/uuid";
 import { bootPhase, checkoutPhase } from "./checkout-phase";
 import { cashShort, pendingPayment, readAttempt } from "./payment";
 import { usePaymentStatus } from "./usePaymentStatus";
@@ -72,7 +73,7 @@ export function useCheckout(visitId: string, onDone: () => void) {
   }
 
   function keyForAttempt(): string {
-    keyRef.current ??= crypto.randomUUID();
+    keyRef.current ??= generateUuid();
     return keyRef.current;
   }
 
@@ -169,7 +170,7 @@ export function useCheckout(visitId: string, onDone: () => void) {
 
   function newQr() {
     if (busy.current) return;
-    const key = crypto.randomUUID();
+    const key = generateUuid();
     keyRef.current = key;
     setFault(null);
     runCreate("promptpay", key);

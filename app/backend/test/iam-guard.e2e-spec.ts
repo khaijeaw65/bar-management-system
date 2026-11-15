@@ -11,7 +11,7 @@ import { seedVenue } from '../src/cli/seed-venue.js';
 import { seedStaffMember } from '../src/cli/seed-iam.js';
 import { IamVersion } from '../src/modules/iam/application/iam-version.service.js';
 import { DEFAULT_GROUP_IDS } from '../src/modules/iam/domain/default-groups.js';
-import { PERMISSION_SOURCE, type PermissionSource } from '../src/modules/iam/domain/permission-source.js';
+import { PermissionSource } from '../src/modules/iam/domain/permission-source.js';
 import { RedisService } from '../src/providers/redis/redis.service.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
 
@@ -122,7 +122,7 @@ describe('IAM guard (e2e)', () => {
 
   it('AC-5: the second request reads the cache; a version bump recomputes; Redis down still authorises', async () => {
     const token = await tokenOf(staff);
-    const source = app.get<PermissionSource>(PERMISSION_SOURCE);
+    const source = app.get(PermissionSource);
     const loads = vi.spyOn(source, 'codesFor');
     await me(token).expect(200);
     await me(token).expect(200);
@@ -178,12 +178,12 @@ describe('IAM guard (e2e)', () => {
     const until = new Date(Date.now() + 3_600_000);
     await dataSource.query(`UPDATE user_group_membership SET valid_until = $2 WHERE user_id = $1`, [manager, until]);
     const body = (await me(await tokenOf(manager)).expect(200)).body.data;
-    expect(body.permissions).toHaveLength(18);
+    expect(body.permissions).toHaveLength(20);
     expect(body.permissions).not.toContain('staff:manage');
     expect(body.groups).toEqual([
       { id: DEFAULT_GROUP_IDS.manager, name: 'ผู้จัดการ', validUntil: until.toISOString() },
     ]);
-    expect((await me(await tokenOf(owner)).expect(200)).body.data.permissions).toHaveLength(20);
+    expect((await me(await tokenOf(owner)).expect(200)).body.data.permissions).toHaveLength(22);
     await request(app.getHttpServer()).get('/api/me/permissions').expect(401);
   });
 

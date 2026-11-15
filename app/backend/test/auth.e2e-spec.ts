@@ -15,11 +15,8 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
-import {
-  LINE_CLIENT,
-  buildLineAuthorizeUrl,
-  type LineClient,
-} from '../src/modules/auth/domain/line-client.js';
+import { buildLineAuthorizeUrl } from '../src/modules/auth/domain/line-client.js';
+import { LineClient } from '../src/modules/auth/domain/ports/line-client.port.js';
 import type {
   LineAuthorizeInput,
   LineProfile,
@@ -77,7 +74,7 @@ describe('Auth (e2e)', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(LINE_CLIENT)
+      .overrideProvider(LineClient)
       .useValue(line)
       .compile();
 

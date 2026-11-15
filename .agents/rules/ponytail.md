@@ -1,6 +1,6 @@
 ---
 description: Ponytail — lazy senior dev mode. Minimalism enforcer.
-activation: always
+activation: model_decision
 ---
 
 @/docs/rules/ponytail.md

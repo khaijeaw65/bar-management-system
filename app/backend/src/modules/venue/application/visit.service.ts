@@ -1,17 +1,17 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
-import { TABLE_STAFF_CALL_CLEARED, VISIT_OPENED, VISIT_STATE_CHANGED, type TableSummary } from '@bar/contracts';
+import {
+  TABLE_STAFF_CALL_CLEARED,
+  VISIT_OPENED,
+  VISIT_STATE_CHANGED,
+  type TableStaffCallClearedPayload,
+  type TableSummary,
+} from '@bar/contracts';
 import { DomainException } from '../../../common/domain-exception.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
-import {
-  TABLE_SEAT_REPOSITORY,
-  type TableSeatRepository,
-} from '../domain/table-seat.repository.js';
-import {
-  VISIT_REPOSITORY,
-  type VisitRepository,
-} from '../domain/visit.repository.js';
+import { TableSeatRepository } from '../domain/table-seat.repository.js';
+import { VisitRepository } from '../domain/visit.repository.js';
 import type { VisitRecord } from '../domain/visit.types.js';
 import { PaymentGuard } from '../../payment/application/payment-guard.js';
 import { toTableSummary } from './table-summary.js';
@@ -27,8 +27,7 @@ import type {
 @Injectable()
 export class VisitService {
   public constructor(
-    @Inject(VISIT_REPOSITORY) private readonly visitRepository: VisitRepository,
-    @Inject(TABLE_SEAT_REPOSITORY)
+    private readonly visitRepository: VisitRepository,
     private readonly tableSeatRepository: TableSeatRepository,
     private readonly staffUserService: StaffUserService,
     private readonly notificationsService: NotificationsService,
@@ -36,7 +35,6 @@ export class VisitService {
   ) {}
 
   public async open(input: OpenVisitInput): Promise<OpenVisitResult> {
-    await this.requireActiveSeat(input.tableSeatId);
     const result = await this.insertOrAttach(input);
     await this.emitOpened(result);
     return result;
@@ -99,7 +97,9 @@ export class VisitService {
     return this.visitRepository.closeIfLive(id);
   }
 
+  @Transactional()
   private async insertOrAttach(input: OpenVisitInput): Promise<OpenVisitResult> {
+    await this.requireActiveSeat(input.tableSeatId);
     const inserted = await this.visitRepository.insert(input);
     if (inserted.kind === 'taken') return this.attachedVisit(input.tableSeatId);
     return { visit: await this.toView(inserted.visit), attached: false };
@@ -126,7 +126,8 @@ export class VisitService {
   // The bell belongs to the seat; a closed visit leaves nothing for staff to answer.
   private async clearBell(tableSeatId: string): Promise<void> {
     if (await this.tableSeatRepository.clearStaffCall(tableSeatId)) {
-      this.notificationsService.emitToStaff(TABLE_STAFF_CALL_CLEARED, { tableSeatId });
+      const payload: TableStaffCallClearedPayload = { tableSeatId, acknowledgedBy: null };
+      this.notificationsService.emitToStaff(TABLE_STAFF_CALL_CLEARED, payload);
     }
   }
 
@@ -157,7 +158,7 @@ export class VisitService {
   }
 
   private async requireActiveSeat(id: string): Promise<void> {
-    const seat = await this.tableSeatRepository.findActiveById(id);
+    const seat = await this.tableSeatRepository.lockActiveForShare(id);
     if (!seat) throw new DomainException('NOT_FOUND', 'ไม่พบโต๊ะ', 404);
   }
 
