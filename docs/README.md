@@ -29,4 +29,7 @@ New here? Read in this order:
 | `docs/design-system.md` + `docs/design/` | Field (Claude Design) | Tokens / components change; new CD snapshot |
 | `docs/BACKLOG.md` | Field / planning session | Follow-ups, parked work, milestones change |
 
-Also: `docs/research/` (interview notes, re-scope), `docs/quality/README.md` (SonarQube), `docs/handoff.md` (frozen log, decisions up to 2026-09-23).
+Also: `docs/research/` (interview notes = Source for the DR-031 feature specs, re-scope), `docs/design/` (Claude Design CD briefs + handoffs + pre-Rev-24 snapshots), `docs/briefs/ui/` (screen content for built surfaces without a feature folder — retired as folders appear), `docs/quality/README.md` (SonarQube, opt-in), `docs/handoff.md` (frozen log, decisions up to 2026-09-23). Decks live in `presentation/` (local, not in Git).
+
+## Feature folders
+Built (as-built record, 2026-11-15): `ordering` · `menu` · `payments` · `pos-payment-page` · `tables-visits` · `guest-qr` · `staff-access` · `reports-dashboard` · `notifications`. Planned: `staff-order-entry` · `stock` · `purchasing` · `shift-cash-close` · `expenses-pnl` · `compliance-lock` · `events-reservations` · `ticketing` · `bottle-keep` · `ml-insight` · `guest-intelligence` · `staff-schedule` (business stage — `requirements.md`; `design.md` → `ui.md` follow per `/new-feature`).
