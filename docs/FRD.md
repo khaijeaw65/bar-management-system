@@ -2,10 +2,10 @@
 
 > Product overview. Each feature gets a deep spec in `docs/features/<f>/` when it is picked up; link it here.
 > **Version 1.2 — baseline (approved)**, last content update 2026-10-12 (DR-012/013/014). Kit layout since 2026-11-15 (workflow Rev 24): overview + feature list on top, the v1.2 detailed requirements below with their section numbers unchanged (briefs and DRs cite them).
-> **Pending re-scope:** DR-031 (full shop management), DR-032 (own ML, no LLM), DR-033 (AWS ECS split) — FRD v2 follows their approval; until then this baseline stands.
+> **Re-scope approved 2026-11-08:** DR-031 (bar shop management, Must / Should / Later), DR-032 (own ML, no LLM), DR-033 (all on AWS ECS). The new modules live in `docs/features/<f>/` — sections below marked *Superseded in part* defer to them; the rest of v1.2 stands.
 
 ## Purpose
-Production-grade bar management system for small-to-medium counter bars in Thailand (counter seating + tables) — DPU CPE senior capstone. One platform for ordering, payment, inventory cost, guest intelligence and owner insight. Web app (guest QR, POS on counter tablet / desktop, back office) + Expo staff app (DR-002, DR-009).
+Production-grade bar management system for small-to-medium counter bars in Thailand (counter seating + tables) — DPU CPE senior capstone. One platform for ordering, payment, bar shop management (stock, purchasing, cash close, P&L, compliance, events) and own-ML insight. Web app (guest QR, POS on counter tablet / desktop, back office) + Expo staff app (DR-002, DR-009).
 
 ## Users
 | User | Goal |
@@ -20,33 +20,41 @@ Production-grade bar management system for small-to-medium counter bars in Thail
 QR guest ordering → kitchen/bar display → PromptPay payment → session close
 
 ## Features
-Priority follows the v1.2 baseline and DR-014; DR-031 (Pending) re-tiers it.
+Tiers from DR-031 (Must = the Semester 2 promise; Should is cut first if time runs short). Built = shipped through merged briefs before the re-scope.
 
-| Feature | Summary | Priority | Spec |
-|---|---|---|---|
-| Staff access (IAM) | Groups + policies, time-bound membership, most-permissive-wins; seeded Owner / Manager / Staff groups; shared-POS PIN switch | Must | — FRD §2 · DR-014, DR-029 |
-| Tables, seats & sessions | Session tied to table / seat; shared vs separate (counter seats); manual close, idle warning only | Must | — FRD §3 · DR-011 |
-| Guest QR ordering | Scan → menu without login → order; call-staff bell; running tab with ticket status | Must | — FRD §3, §6 · DR-028 |
-| Order queue & tickets | Order → per-station tickets; status per ticket; ISSUE branch; cancelled lines stay visible | Must | — FRD §6 · DR-012, DR-013 |
-| Payment | Amount-locked PromptPay QR, slip verification, gateway webhook, cash, manual confirm; payment ≠ session close | Must | [`features/pos-payment-page/`](features/pos-payment-page/requirements.md) · FRD §7 · DR-014, DR-018, DR-027 |
-| Menu & sold-out | Items, variants, modifiers, charge items, 86 / auto-void on sold out, photos | Must | — FRD §5 · DR-020, DR-024, DR-025 |
-| Comps & voids | Reason code + manager PIN, solo self-approve flagged; immutable audit log | Must | — FRD §8 · DR-016 |
-| Staff mobile app | Staff surface on Expo: tables, order taking, queue, push, guest notes, bottle-keep check | Must | — FRD §15 · DR-009, DR-005, DR-003 |
-| Notifications | WebSocket in-app + Expo push for new order / call staff / ready; POS sound primary | Must | — FRD §13 · DR-003 |
-| AI owner insight | Sales summary, anomaly / fraud alerts, menu & stock suggestions — SQL calculates, AI explains | Must | — FRD §12 · DR-014 (DR-032 Pending: own ML) |
-| Promo items | Promo as its own item with time windows; price frozen at order | Should | — FRD §9 · DR-010 |
-| Owner / manager dashboards | Money view, action view, fraud view (no staff leaderboard) | Should | — FRD §12 · DR-015 |
-| End-of-shift cashout | Opening float, blind count, variance, manager review | Should | — FRD §8 |
-| Inventory & cost | Menu → inventory mapping, tracking categories A/B/C, restock requests, cost per drink, variance | Should | — FRD §5, §8 |
-| Customer identity & PDPA | LINE connect after ordering, split consent, "forget me" anonymisation | Should | — FRD §4 · DR-005 |
-| Bottle keep | Simple record: guest, bottle, date, note, active / finished | Should | — FRD §11 |
-| Guest intelligence | Organic guest profile + staff notes (S2) — no AI summary | Later | — FRD §10 |
-| Kitchen display | `/pos/kitchen` screen; bar / food tickets split by `kitchen_tag` | Later | — FRD §6 · DR-012 |
-| Split-equal | Equal split with a QR per person | Later | — FRD §7 · DR-019 |
-| LINE OA (customer) | "My Bottle", promos, reminders | Later | — FRD §14 |
+| Feature | Summary | Priority | Status | Spec |
+|---|---|---|---|---|
+| Staff access (IAM) | Groups + policies, time-bound membership, most-permissive-wins; seeded Owner / Manager / Staff; shared-POS PIN switch | Must | Built | [`staff-access`](features/staff-access/requirements.md) · FRD §2 · DR-014, DR-029 |
+| Tables, seats & sessions | Session tied to table / seat; shared vs separate; manual close, idle warning only | Must | Built | [`tables-visits`](features/tables-visits/requirements.md) · FRD §3 · DR-011 |
+| Guest QR ordering | Scan → menu without login → order; call-staff bell; running tab | Must | Built | [`guest-qr`](features/guest-qr/requirements.md) · FRD §3, §6 · DR-028 |
+| Order queue & tickets | Order → per-station tickets; status per ticket; ISSUE branch | Must | Built | [`ordering`](features/ordering/requirements.md) · FRD §6 · DR-012, DR-013 |
+| Payment | Amount-locked PromptPay QR, slip verify, gateway webhook, cash; payment ≠ session close | Must | Built | [`payments`](features/payments/requirements.md) · [`pos-payment-page`](features/pos-payment-page/requirements.md) · FRD §7 · DR-014, DR-018, DR-027 |
+| Menu & sold-out | Items, variants, modifiers, charge items, 86, photos | Must | Built | [`menu`](features/menu/requirements.md) · FRD §5 · DR-020, DR-024, DR-025 |
+| Comps & voids | Reason code + manager PIN; audit log | Must | Built | [`ordering`](features/ordering/requirements.md) · FRD §8 · DR-016 |
+| Staff app — take order | Seat → menu → cart → send; open a free seat; live menu | Must | Drafts BRIEF-074–077 | [`staff-order-entry`](features/staff-order-entry/requirements.md) · DR-009 |
+| Notifications | WebSocket in-app + Expo push; POS sound primary | Must | Built | [`notifications`](features/notifications/requirements.md) · FRD §13 · DR-003 |
+| Stock | Stock items, recipes, deduction on order, auto-86 + override, open-new-container loss, count | Must | Planned | [`stock`](features/stock/requirements.md) · DR-031 #1 |
+| Purchasing | Suppliers, PO → receive, cash buy, weighted average cost | Must | Planned | [`purchasing`](features/purchasing/requirements.md) · DR-031 #2 |
+| Shift & cash close | One open shift, pay-in / pay-out, blind count, low-stock checklist | Must | Planned | [`shift-cash-close`](features/shift-cash-close/requirements.md) · DR-031 #3 |
+| Expenses + P&L | Categories, recurring costs, cost sold, P&L per month and per item | Must | Planned | [`expenses-pnl`](features/expenses-pnl/requirements.md) · DR-031 #4 |
+| Compliance lock | Legal sale hours + no-sale days, no-alcohol day mode | Must | Planned | [`compliance-lock`](features/compliance-lock/requirements.md) · DR-031 #5 |
+| Events + reservations | Event calendar, CMS public page, table / whole-bar bookings | Must | Planned | [`events-reservations`](features/events-reservations/requirements.md) · DR-031 #6 |
+| Bottle keep | "ฝากขวด?" at checkout, serving from the bottle at ฿0 | Must | Planned | [`bottle-keep`](features/bottle-keep/requirements.md) · DR-031 #7 |
+| ML insight | Demand forecast, anomaly alerts, ML health — own models, no LLM | Must | Planned | [`ml-insight`](features/ml-insight/requirements.md) · DR-032 |
+| Guest intelligence | Usual order, recommendations, flags, bottle keep for attached guests — opt-in | Must | Planned | [`guest-intelligence`](features/guest-intelligence/requirements.md) · DR-032 |
+| Promo items | Promo as its own item with time windows | Should | Partly built (window editor S2) | — FRD §9 · DR-010 |
+| Owner / manager dashboards | Money view, action view, fraud view (no staff leaderboard) | Should | Built (BRIEF-036, 037) | [`reports-dashboard`](features/reports-dashboard/requirements.md) · FRD §12 · DR-015 |
+| Customer identity & PDPA | LINE connect after ordering, split consent, "forget me" | Should | Planned | — FRD §4 · DR-005 |
+| Ticketing | Event tickets, anti-bot, door check-in | Should | Planned | [`ticketing`](features/ticketing/requirements.md) · DR-031 #9 |
+| Staff schedule + payroll lite | Roster, QR check-in, attendance for pay, pay run | Should | Planned | [`staff-schedule`](features/staff-schedule/requirements.md) · DR-031 #10 |
+| Reorder list → PO | One tap → one PO per supplier | Should | Planned | in [`purchasing`](features/purchasing/requirements.md) · DR-031 #11 |
+| Kitchen display | `/pos/kitchen`; bar / food tickets split | Later | — | — FRD §6 · DR-012 |
+| Split-equal | Equal split with a QR per person | Later | — | — FRD §7 · DR-019 |
+| LINE OA | Guest features + supplier auto-send, venue opt-in | Later | — | — DR-031 |
+| Guest self-booking · private-party packages | From the public event page | Later | — | — DR-031 |
 
 ## Out of scope
-- **Cut:** offline mode, member QR, staff performance analytics, item-level bill split, multi-language, cross-border payments (WeChat / Alipay), card pre-auth, tip pooling.
+- **Cut:** offline mode, member QR, staff performance analytics, item-level bill split, multi-language, cross-border payments (WeChat / Alipay), card pre-auth, tip pooling, any LLM (DR-032), payroll beyond lite (tax, social security, OT, payslips), VAT, full accounting, multi-branch, e-Tax invoice, customer credit tab (DR-031).
 - **Deferred:** loyalty / stamp cards, phone OTP identity, EKS (after ECS is solid) — full list in §14.
 
 ---
@@ -168,6 +176,8 @@ Nobody identifies themselves to buy a drink. Identity offered only when it unloc
 ---
 
 ## 5. Menu & Inventory
+
+> **Superseded in part (DR-031):** inventory, recipes, food tracking (now optional recipe, portion / unit), restock and 86-by-stock → [`features/stock/`](features/stock/requirements.md). Menu-item types and drink flows below still stand.
 
 ### Menu item vs inventory item (important distinction)
 - **A menu item is not the same as an inventory item.** Multiple menu items can map to one inventory source, each deducting a different amount. E.g. "Hazy IPA (M)" and "Hazy IPA (L)" are two menu items pointing to **one keg**, deducting different volumes. Menu has two entries; inventory has one keg — no double-counting.
@@ -295,6 +305,8 @@ A payment attempt **locks the amount** for that attempt. While a payment is pend
 
 ## 8. Control & Integrity
 
+> **Superseded in part (DR-031):** variance → loss in [`features/stock/`](features/stock/requirements.md); end-of-shift cashout → [`features/shift-cash-close/`](features/shift-cash-close/requirements.md). Comps / voids, audit log and re-validation still stand.
+
 ### Comps & Voids
 - **Comp** = free drink intentionally given. **Void** = order cancelled before payment.
 - Both are fraud vectors (sweethearting, void-and-pocket).
@@ -344,6 +356,8 @@ Many collisions above share one root: **state can change between when an action 
 
 ## 10. Guest Intelligence (Differentiator)
 
+> **Superseded (DR-032):** → [`features/guest-intelligence/`](features/guest-intelligence/requirements.md) — recommendations from our own model, opt-in per venue + guest consent.
+
 - **Guest profile (organic, not form-filled):** name, photo (both optional + consent), drink preferences, visit history, flags (allergy, VIP), color tags, linked bottle-keep.
 - **Guest notes:** plain free text written by staff, opt-in with PDPA consent (S2). **The AI guest summary is dropped (DR-014)** — notes are short and read in seconds; AI moves to the owner (§12).
 - **Role:** memory aid for staff. The system surfaces "has this person been here, what do they like"; the bartender decides how to use it.
@@ -353,6 +367,8 @@ Many collisions above share one root: **state can change between when an action 
 
 ## 11. Bottle Keep (Differentiator)
 
+> **Superseded (DR-031 #7):** → [`features/bottle-keep/`](features/bottle-keep/requirements.md) — created from the bill, served at ฿0.
+
 - **Simple record (DR-014):** guest, bottle, date kept, note, status `active | finished`. Bottle keep is for regulars, case by case — no fixed expiry, no level tracking, no reminders; the post-it on the bottle stays human work.
 - **Separate from bar inventory** (already sold, not bar stock — excluded from variance).
 - "Order from my bottle" on the guest menu → S2.
@@ -360,6 +376,8 @@ Many collisions above share one root: **state can change between when an action 
 ---
 
 ## 12. Analytics
+
+> **Superseded in part (DR-031, DR-032):** "AI owner insight" via an LLM is replaced by own models → [`features/ml-insight/`](features/ml-insight/requirements.md); P&L → [`features/expenses-pnl/`](features/expenses-pnl/requirements.md). Business-day cut-off and dashboard intent still stand.
 
 **Business day (DR-014):** reports, order numbers and "until end of tonight" memberships use a venue cut-off, default **06:00** Asia/Bangkok — a 01:30 sale belongs to the previous night.
 
@@ -391,6 +409,8 @@ Comps/voids totals grouped by reason; flag abnormal spikes by person/reason. **N
 ---
 
 ## 14. Explicitly Cut / Deferred
+
+> **Updated by DR-031:** staff time clock un-parked (attendance for pay only → [`features/staff-schedule/`](features/staff-schedule/requirements.md)); new cuts listed in *Out of scope* above.
 
 **Cut (won't build):**
 - Offline mode — venues have strong Wi-Fi; complexity (sync conflicts) not worth it. Keep only basic network-drop retry UX.

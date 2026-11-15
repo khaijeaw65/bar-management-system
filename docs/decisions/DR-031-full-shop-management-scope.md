@@ -78,7 +78,7 @@ Option A in the tier order above. Stock first because purchasing, P&L, loss and 
 - LINE OA = venue opt-in setting; every LINE-OA feature has a copy / share fallback.
 - New IAM permissions: `purchasing`, `payroll`, `event:manage` (owner / manager), `reservation:write` (staff default).
 - New schema (tentative names; exact columns in each feature `design.md`, each needs Field's OK): `supplier`, `purchase_order`, `purchase_order_line`, `stock_receipt` (+ line), `container_open`, `stock_override`, `stock_adjustment`, `stock_count` (+ line), `cash_movement`, `expense`, `expense_category`, `recurring_expense`, `event`, `ticket_order`, `ticket`, `reservation`, `alcohol_no_sale_day`, `staff_pay_profile`, `roster_shift`, `attendance`, `pay_run` (+ line) + `venue` sale-hour / opt-in settings + `is_alcohol` on menu item and modifier option + `bottle_keep.order_item_id` (inventory / `shift` tables already in `schema.sql`).
-- New dependency Cloudflare Turnstile → separate **DR-034** when ticketing starts.
+- New dependency Cloudflare Turnstile → its own DR when ticketing starts (DR-034 is taken by the flaky-test fix).
 
 ---
 

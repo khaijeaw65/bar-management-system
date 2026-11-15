@@ -31,3 +31,6 @@ docs/state/
 .worktrees/
 .env.*
 !.env.example
+
+# Presentations (decks, deck build, screenshots) — local only, not docs
+presentation/
