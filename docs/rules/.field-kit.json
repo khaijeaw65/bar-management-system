@@ -71,11 +71,11 @@
       ],
       [
         "AI",
-        "OpenAI API (owner insight, DR-014)"
+        "Own ML: Python batch job, no LLM API (DR-032)"
       ],
       [
         "Infra",
-        "AWS ECS/ECR + RDS + S3 + ElastiCache + Terraform + Vercel"
+        "AWS ECS web + api + worker + ml task, one ALB · RDS · S3 · ElastiCache · Terraform (AWS + Cloudflare) (DR-033)"
       ]
     ],
     "root_config": [
@@ -90,7 +90,7 @@
     "docs/rules/core.md": "340b2ba7e95f41da3eff7cb56f090cdf2e8ba7df10370adba5359d322f08b09e",
     ".cursor/rules/core.mdc": "99dc6eb9277d0350d72a8899837b2ba657664c45c982551d3d9a7b9fcea5d22e",
     ".agents/rules/core.md": "436a7a8a21e1f21dc396f159bb0044f7c0bd9af216fda74334c95e94256e3016",
-    "docs/rules/workflow.md": "4938b1747abfbc3612784c141274ba7a99343d1a15ec3689b9f247bc80a49f2e",
+    "docs/rules/workflow.md": "3b440923a28df3a43653a7e15e920654a4c92f18b352f168b559437b8423888d",
     ".cursor/rules/workflow.mdc": "fb49faf96108070d245020ba13220ab4e4ff3a0ba49cb423a39eecef08098ba0",
     ".agents/rules/workflow.md": "bdc8a8eae980e6e868d809700df73451481c0a846e87c904214b937b67d96c13",
     "docs/rules/agent-boundaries.md": "af46f56b94bb2c38721af86b24cb318a0f2f4add6eea2c61855203d3ba3f617f",
@@ -120,8 +120,8 @@
     "docs/features/_TEMPLATE/requirements.md": "0ecfff7194f75316751a66e790e96048e6c8986843bb90160afbd187ea122beb",
     "docs/features/_TEMPLATE/design.md": "ebb599c544cc266096b8df65e9a2d90041d0095a516595b76d3a340a003c82ef",
     "docs/features/_TEMPLATE/ui.md": "184236c3eac2cc0e4e8d52ae7192ec25dd1ff6415b08c65e731943e50510f652",
-    "AGENTS.md": "4b349c1592e76f4ab048a44f235b1083b03e07809493be21cbd3da402bae6848",
-    "CLAUDE.md": "6263d107de2d08d7a60809d37cf62698353340e1f450c97362f32c3ba39ae1e2",
+    "AGENTS.md": "01aef63af6f4ac10cb3a4b793d5c064dd65fc97598409c2b0a31a9277dccee31",
+    "CLAUDE.md": "4d81a909a467fe8829f85be8d9b9c28fd1a3b425a7daaf357b755aa3643ab2cd",
     ".github/workflows/ci.yml": "2c3821fcb653a17fd5047e23eb1e05c26c386239b1134d3cd5757d27c7146fd4",
     "ops/github/README.md": "b6a9ecffe0c888e73bc5ed8117a3a4d8c96682f8971d8f1f6129ae72851ab1c3",
     ".githooks/pre-commit": "1a4ca1e5c38f7faf1193c60c1342ccdfc9fcfd986abe9e913cf2c6318fccc592",
