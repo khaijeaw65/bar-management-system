@@ -94,3 +94,14 @@ test("a tab.changed ping refetches the tab", async () => {
   act(() => fakeCustomerSocket.handlers?.onTabChanged(false));
   await waitFor(() => expect(tabCalls).toBe(2));
 });
+
+test("DEF-04 / AC-3: staff call acknowledgment shows confirmation banner and allows dismissal", async () => {
+  renderShell();
+  await screen.findByRole("heading", { name: "โต๊ะ T3" });
+  act(() => fakeCustomerSocket.handlers?.onCallAcknowledged?.());
+  expect(await screen.findByText("พนักงานรับทราบแล้ว กำลังมาที่โต๊ะของคุณ")).toBeInTheDocument();
+
+  const dismissBtn = screen.getByRole("button", { name: "ปิดการแจ้งเตือน" });
+  act(() => dismissBtn.click());
+  expect(screen.queryByText("พนักงานรับทราบแล้ว กำลังมาที่โต๊ะของคุณ")).not.toBeInTheDocument();
+});

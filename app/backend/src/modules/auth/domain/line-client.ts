@@ -1,17 +1,4 @@
-import type {
-  LineAuthorizeInput,
-  LineAuthorizeUrlInput,
-  LineProfile,
-  LineTokenExchange,
-} from './line-client.types.js';
-
-export interface LineClient {
-  authorizeUrl(input: LineAuthorizeInput): string;
-  exchangeCode(code: string): Promise<LineTokenExchange>;
-  verifyIdToken(idToken: string, nonce: string): Promise<LineProfile>;
-}
-
-export const LINE_CLIENT = Symbol('LINE_CLIENT');
+import type { LineAuthorizeUrlInput } from './line-client.types.js';
 
 export function buildLineAuthorizeUrl(input: LineAuthorizeUrlInput): string {
   const url = new URL('https://access.line.me/oauth2/v2.1/authorize');

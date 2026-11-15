@@ -1,5 +1,5 @@
 import type { AccessRequestStatus, PermissionCode } from '@bar/contracts';
-import type { MembershipRow } from './permission-source.js';
+import type { MembershipRow } from './permission-source.types.js';
 
 export interface AccessRequestRow {
   id: string;

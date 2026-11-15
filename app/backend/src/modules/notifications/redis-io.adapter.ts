@@ -30,7 +30,24 @@ export class RedisIoAdapter extends IoAdapter {
   ): ServerOptions {
     return {
       ...options,
-      cors: { origin: frontendUrl, credentials: true },
+      cors: {
+        origin: (
+          origin: string | undefined,
+          callback: (err: Error | null, allow?: boolean) => void,
+        ) => {
+          if (
+            !origin ||
+            origin === frontendUrl ||
+            (process.env.NODE_ENV !== 'production' &&
+              (origin.includes('ngrok') || origin.includes('192.168.')))
+          ) {
+            callback(null, true);
+            return;
+          }
+          callback(new Error('origin not allowed'));
+        },
+        credentials: true,
+      },
       allowRequest: (request, callback) => {
         allowStaffOrigin(request, frontendUrl, callback);
       },

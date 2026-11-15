@@ -1,59 +1,31 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type {
   MenuCategoryList,
   MenuItem,
   MenuItemList,
   MenuModifierGroup,
-  UnavailableReason,
 } from '@bar/contracts';
 import { StorageService } from '../../../common/storage/storage.service.js';
 import { hhmm } from '../../../common/time-label.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
-import {
-  MENU_CATALOG_REPOSITORY,
-  type MenuCatalogRepository,
-} from '../domain/menu-catalog.repository.js';
+import { Clock } from '../../../common/clock.js';
+import { MenuCatalogRepository } from '../domain/menu-catalog.repository.js';
 import type {
   MenuGroupRecord,
   MenuItemRecord,
   MenuVariantRecord,
 } from '../domain/menu.types.js';
 import { menuAvailability } from './menu-availability.js';
+import type { MenuListQuery, OrderableLookup, OrderableVariant } from './menu-catalog.types.js';
 import { money } from '../../../common/money.js';
-
-export interface MenuListQuery {
-  categoryId?: string;
-  availableOnly: boolean;
-  /** Hidden categories and their items too (back office, BRIEF-039). */
-  includeHidden?: boolean;
-}
-
-export interface OrderableVariant {
-  variantId: string;
-  price: string;
-  itemName: string;
-  variantName: string;
-  itemType: MenuItem['itemType'];
-  kitchenTag: MenuItemRecord['kitchenTag'];
-  availableNow: boolean;
-  unavailableReason: UnavailableReason | null;
-  modifierGroups: MenuModifierGroup[];
-}
-
-export interface OrderableLookup {
-  found: OrderableVariant[];
-  missing: string[];
-}
 
 @Injectable()
 export class MenuCatalogService {
   private readonly logger = new Logger(MenuCatalogService.name);
 
   public constructor(
-    @Inject(MENU_CATALOG_REPOSITORY)
     private readonly catalog: MenuCatalogRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly clock: Clock,
     private readonly storage: StorageService,
   ) {}
 

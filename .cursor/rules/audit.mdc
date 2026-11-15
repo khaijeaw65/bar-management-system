@@ -1,0 +1,6 @@
+---
+description: Audit reference — report rows, what can block, flag checklists. Read by audit sessions.
+alwaysApply: false
+---
+
+@/docs/rules/audit.md

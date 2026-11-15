@@ -1,0 +1,146 @@
+{
+  "kit_version": "0.1.0",
+  "generated": "2026-11-15",
+  "config": {
+    "project": {
+      "name": "AI-Powered Bar Management System",
+      "summary": "Production-grade bar management system for small-to-medium counter bars in Thailand (DPU CPE senior capstone).",
+      "deadline": "April 2027",
+      "core_flow": "QR guest ordering → kitchen/bar display → PromptPay payment → session close",
+      "cuts": [
+        "offline mode",
+        "member QR",
+        "staff performance analytics"
+      ]
+    },
+    "owner": {
+      "id": "kj",
+      "alias": "Field",
+      "github": "khaijeaw65"
+    },
+    "members": [
+      {
+        "id": "kj",
+        "name": "KJ",
+        "role": "backend lead"
+      },
+      {
+        "id": "methee",
+        "name": "Metee (เมธี)",
+        "role": "frontend/web and mobile developer"
+      }
+    ],
+    "auditor": "Cowork",
+    "auditor_fallback": "Codex",
+    "executors": [
+      "Cursor",
+      "Claude Code",
+      "Antigravity",
+      "Codex"
+    ],
+    "quality_scan": {
+      "tool": "SonarQube Community Build",
+      "command": "pnpm sonar"
+    },
+    "packs": [
+      {
+        "kind": "backend",
+        "stack": "nestjs",
+        "dir": "app/backend"
+      },
+      {
+        "kind": "frontend",
+        "stack": "next",
+        "dir": "app/frontend"
+      },
+      {
+        "kind": "mobile",
+        "stack": "expo",
+        "dir": "app/mobile"
+      }
+    ],
+    "contracts_location": "app/packages/contracts",
+    "stack_extra": [
+      [
+        "Auth",
+        "LINE SSO + JWT + refresh rotation"
+      ],
+      [
+        "Payment",
+        "PromptPay QR + GB Prime Pay webhook"
+      ],
+      [
+        "AI",
+        "OpenAI API (owner insight, DR-014)"
+      ],
+      [
+        "Infra",
+        "AWS ECS/ECR + RDS + S3 + ElastiCache + Terraform + Vercel"
+      ]
+    ],
+    "root_config": [
+      "turbo.json",
+      "pnpm-workspace.yaml",
+      "package.json (root)",
+      ".gitignore"
+    ],
+    "schema_file": "docs/schema.sql"
+  },
+  "rule_hashes": {
+    "docs/rules/core.md": "340b2ba7e95f41da3eff7cb56f090cdf2e8ba7df10370adba5359d322f08b09e",
+    ".cursor/rules/core.mdc": "99dc6eb9277d0350d72a8899837b2ba657664c45c982551d3d9a7b9fcea5d22e",
+    ".agents/rules/core.md": "436a7a8a21e1f21dc396f159bb0044f7c0bd9af216fda74334c95e94256e3016",
+    "docs/rules/workflow.md": "4938b1747abfbc3612784c141274ba7a99343d1a15ec3689b9f247bc80a49f2e",
+    ".cursor/rules/workflow.mdc": "fb49faf96108070d245020ba13220ab4e4ff3a0ba49cb423a39eecef08098ba0",
+    ".agents/rules/workflow.md": "bdc8a8eae980e6e868d809700df73451481c0a846e87c904214b937b67d96c13",
+    "docs/rules/agent-boundaries.md": "af46f56b94bb2c38721af86b24cb318a0f2f4add6eea2c61855203d3ba3f617f",
+    ".cursor/rules/agent-boundaries.mdc": "3a9e1c1c90b7646ebe9773743b2250d62a8e336167a265762587c8d0e5ef7952",
+    ".agents/rules/agent-boundaries.md": "110cff3a3aeaa06bb8f8e59cb16d4029a3587dc6c8d6b566cd844aa2041fd34a",
+    "docs/rules/ponytail.md": "52a06363622a8ab09bcc9f0d0d54f81c48d67aa384ac013f5a548f5c346f01e0",
+    ".cursor/rules/ponytail.mdc": "fa55e3e435e0fb9ba44c0033d6169bc505ca4e28638c58d9ddcda7ca66686519",
+    ".agents/rules/ponytail.md": "98ad53ab87999258df667edecfc6e150990900a081cb80cc81ae289cde2ef3c0",
+    "docs/rules/audit.md": "4d95a48b92b5f7d57d16588351d065e21c699451b0860ea7cc9b9fd5790d9e9e",
+    ".cursor/rules/audit.mdc": "f5a9b237da05ea0c9640dcfba73626cbb3f984161eb1f15354b028c158268f16",
+    ".agents/rules/audit.md": "621c151f94b0fdb1cca6225452f2704eeada2bea06ab87154e7fadc615bd112f",
+    "docs/rules/backend.md": "project-merged — treat as edited locally; never overwrite",
+    ".cursor/rules/backend.mdc": "ec1d2b8e6e63d324568f945aae1a822f3da358533f9926b5ae90e7d92afcb0ca",
+    ".agents/rules/backend.md": "472c70443874e898d8ac7cf2a364b1a8b0e13acd137a87087fafeefbc4f64758",
+    "docs/rules/frontend.md": "project-merged — treat as edited locally; never overwrite",
+    ".cursor/rules/frontend.mdc": "877a8018ea55e3fb0c5908fbfc641c5dc15f378111872461adb649996421c02c",
+    ".agents/rules/frontend.md": "429fff3092124a57483504a07fe896965a6cd88e3958b8673eccfa460acff48c",
+    "docs/rules/mobile.md": "project-merged — treat as edited locally; never overwrite",
+    ".cursor/rules/mobile.mdc": "f06f80aa982203aede34a69c1e63ea0d4880eb7d68ffb1880c8d318c73cb3af1",
+    ".agents/rules/mobile.md": "dd7d4fa845990e64559d290be152911e821f61b4aabcfc31e2c093bd4fa7f524",
+    "docs/briefs/_TEMPLATE.md": "7fd12f3fed6ec9d5794880076082dbd07c3bce3de0d0a8db37ecf502d3f369a4",
+    "docs/decisions/_TEMPLATE.md": "4192b6f1afdbb4171f712c9891eeba2657c04e457f3c3515bdbc1abaa5b6cdaf",
+    "docs/audits/_TEMPLATE.md": "ff79780496b05a6b6527d829877f6e34d3b0bf11500111d5edf853a418a1a115",
+    "docs/handoffs/_TEMPLATE.md": "90320af09a2ba9a06ed5405e3e4d2733743f5cdc21a29071e2b73d8f78562252",
+    "docs/defects/_TEMPLATE.md": "34e7408cbaf0d0797c5f6f209d16ef0f3b5858ea7220e860d92f484ab593114b",
+    ".field-kit/state/_TEMPLATE.md": "c5fb3a786e7a424bb42ac3b6563c9064b1a201ddb5efd9cb2b884685c559ca6e",
+    "docs/features/_TEMPLATE/requirements.md": "0ecfff7194f75316751a66e790e96048e6c8986843bb90160afbd187ea122beb",
+    "docs/features/_TEMPLATE/design.md": "ebb599c544cc266096b8df65e9a2d90041d0095a516595b76d3a340a003c82ef",
+    "docs/features/_TEMPLATE/ui.md": "184236c3eac2cc0e4e8d52ae7192ec25dd1ff6415b08c65e731943e50510f652",
+    "AGENTS.md": "4b349c1592e76f4ab048a44f235b1083b03e07809493be21cbd3da402bae6848",
+    "CLAUDE.md": "6263d107de2d08d7a60809d37cf62698353340e1f450c97362f32c3ba39ae1e2",
+    ".github/workflows/ci.yml": "2c3821fcb653a17fd5047e23eb1e05c26c386239b1134d3cd5757d27c7146fd4",
+    "ops/github/README.md": "b6a9ecffe0c888e73bc5ed8117a3a4d8c96682f8971d8f1f6129ae72851ab1c3",
+    ".githooks/pre-commit": "1a4ca1e5c38f7faf1193c60c1342ccdfc9fcfd986abe9e913cf2c6318fccc592",
+    ".githooks/pre-push": "b2e75d22cdb2e1280bf18fde733234712af852d6d5d327178395dcdcfca965e9",
+    ".githooks/commit-msg": "a2ceaa79581324bc8c7926235fdcd873e652c3115e189ac967aba7797ada0f3a",
+    "ops/gates/pre-commit.sh": "5e74df59a1076906b45c248a26ac47bb2aab90770f508e3b89b214723d1b91cc",
+    "ops/gates/pre-push.sh": "0855e38aa5a9ba9d31db4415fd8eccf455f22b6dffbec39934bffe8f85887366",
+    "scripts/field-kit/check-lock.sh": "d55107f5c14840dd9ad477527afcd9d10a22d58c87b0d80ac53a496e5a363593",
+    "scripts/field-kit/WORKTREE-EXCLUDES.md": "689a019906bcee81ee8364d20050a36c536c4c9cdfca6319ec2df32189217cae",
+    "scripts/field-kit/sonar-up.sh": "d23df7eb6d4ce59376ebc29d56b74016f40c28475a8c937ffc96df7a4ddfb516",
+    "scripts/field-kit/check-class-files.mjs": "a5d0455812d7fca34cd1d759bf1a85d424e7b55aee11086f8905fcedeb1b5c03",
+    "ops/github/ruleset-main-solo.json": "bcde4567f2e9ca8ce81dcd600454d5a324cdfb331143846e071b6bb002080f39",
+    "ops/github/ruleset-main-review.json": "3435367c6f6f89acf3d538757c96583f40aebeb8d928aea2a44fa3931eae6895",
+    "ops/github/ruleset-main-ci.json": "f9c41340e25f8b3354325fa72a392b82b9fd55766b4a0318effbd56eeba2004c"
+  },
+  "draft_packs": [],
+  "pending_merge": {
+    "docs/rules/backend.md": "project rules (DR-001..025) to fold into NEST-xx rule-ID format",
+    "docs/rules/frontend.md": "project rules (DR-002/004/007/018) to fold into FE-xx format",
+    "docs/rules/mobile.md": "project rules (DR-002..009) to fold into the new mobile pack"
+  }
+}

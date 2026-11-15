@@ -10,15 +10,13 @@ import type {
 } from '../report.types.js';
 
 /** Read-only SQL over other modules' tables (BRIEF-036 Q1 = A). No writes. */
-export interface ReportQueries {
-  businessDayCutoff(): Promise<string>;
-  periodTotals(window: ReportWindow): Promise<PeriodTotals>;
-  dailyTotals(window: ReportWindow): Promise<DayTotal[]>;
-  topItems(input: ItemSalesInput): Promise<ItemSales[]>;
-  bottomItems(input: ItemSalesInput): Promise<ItemSales[]>;
-  hourlyRevenue(window: ReportWindow): Promise<HourRevenue[]>;
-  openSeats(): Promise<OpenSeat[]>;
-  ticketCounts(): Promise<TicketCounts>;
+export abstract class ReportQueries {
+  public abstract businessDayCutoff(): Promise<string>;
+  public abstract periodTotals(window: ReportWindow): Promise<PeriodTotals>;
+  public abstract dailyTotals(window: ReportWindow): Promise<DayTotal[]>;
+  public abstract topItems(input: ItemSalesInput): Promise<ItemSales[]>;
+  public abstract bottomItems(input: ItemSalesInput): Promise<ItemSales[]>;
+  public abstract hourlyRevenue(window: ReportWindow): Promise<HourRevenue[]>;
+  public abstract openSeats(): Promise<OpenSeat[]>;
+  public abstract ticketCounts(): Promise<TicketCounts>;
 }
-
-export const REPORT_QUERIES = Symbol('REPORT_QUERIES');

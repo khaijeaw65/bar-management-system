@@ -136,6 +136,7 @@ function variantLine(variantId: string, quantity: number) {
     lineTotal: (unit * quantity).toFixed(2),
     orderedByName: displayName,
     cancelled: false,
+    isComp: false,
   };
 }
 

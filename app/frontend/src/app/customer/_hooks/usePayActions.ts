@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { cancelPayment, createPayment, notifyTransfer } from "@/lib/api/customer";
 import { ApiError } from "@/lib/api/errors";
+import { generateUuid } from "@/lib/utils/uuid";
 import { paymentKey } from "./useCustomerPayment";
 
 export type NotifyOutcome = { paymentId: string; at: string } | null;
@@ -17,7 +18,7 @@ export function usePayActions() {
 
   const create = useMutation({
     // A fresh key per press: a retry after a lost response is a new tap, and the server refuses a second attempt anyway.
-    mutationFn: () => createPayment(crypto.randomUUID()),
+    mutationFn: () => createPayment(generateUuid()),
     onMutate: () => setFailed(false),
     onSettled: refresh,
     onError: (error) => setFailed(!(error instanceof ApiError && error.code === "PAYMENT_IN_FLIGHT")),

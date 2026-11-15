@@ -8,8 +8,9 @@ import { LineConfigModule } from '../../providers/config/line/config.module.js';
 import { RedisModule } from '../../providers/redis/redis.module.js';
 import { IamModule } from '../iam/iam.module.js';
 import { AuthService } from './application/auth.service.js';
+import { DemoUserService } from './application/demo-user.service.js';
 import { TokenService } from './application/token.service.js';
-import { LINE_CLIENT } from './domain/line-client.js';
+import { LineClient } from './domain/ports/line-client.port.js';
 import { AuthController } from './infrastructure/http/auth.controller.js';
 import { JwtStrategy } from './infrastructure/http/jwt.strategy.js';
 import { LineClientHttp } from './infrastructure/line/line-client.http.js';
@@ -37,9 +38,10 @@ import { LineClientHttp } from './infrastructure/line/line-client.http.js';
   controllers: [AuthController],
   providers: [
     AuthService,
+    DemoUserService,
     TokenService,
     JwtStrategy,
-    { provide: LINE_CLIENT, useClass: LineClientHttp },
+    { provide: LineClient, useClass: LineClientHttp },
   ],
   exports: [TokenService],
 })

@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Post,
   Query,
   Redirect,
@@ -14,6 +15,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -21,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import {
   AuthMeSchema,
+  DemoLoginRequestSchema,
   MobileRefreshRequestSchema,
   MobileTokenRequestSchema,
   MobileTokenResponseSchema,
@@ -111,6 +114,28 @@ export class AuthController {
     return { url: result.location, statusCode: 302 };
   }
 
+  @Post('demo-login')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Dev demo user login and fast role switch',
+    description:
+      'Only available in non-production environments. Sets session cookies and returns ok.',
+  })
+  @ApiBody({ schema: zodToOpenApi(DemoLoginRequestSchema) })
+  @ApiEnvelopedOk(AuthOkSchema)
+  @ApiNotFoundResponse({ description: 'Not found in production environment' })
+  public async demoLogin(
+    @Body() body: unknown,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthOkResponse> {
+    this.assertNonProduction();
+    const parsed = DemoLoginRequestSchema.parse(body);
+    const result = await this.authService.demoLogin(parsed.role);
+    this.writeCookies(res, result.accessToken, result.refreshToken);
+    return { ok: true };
+  }
+
   @Post('mobile/token')
   @Public()
   @HttpCode(HttpStatus.OK)
@@ -181,6 +206,12 @@ export class AuthController {
   @ApiEnvelopedOk(AuthMeSchema)
   public me(@CurrentUser() user: CurrentUserPayload): Promise<AuthMe> {
     return this.authService.getCurrentStaffUser(user.sub);
+  }
+
+  private assertNonProduction(): void {
+    if (this.appConfig.nodeEnv === 'production') {
+      throw new NotFoundException();
+    }
   }
 
   private mobileTokens(

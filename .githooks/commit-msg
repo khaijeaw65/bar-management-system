@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+# field-kit: commit-msg hook — Conventional Commits, scope optional.
+# Examples: feat(BRIEF-066): add seat deactivation · fix: null guard · chore(deps): bump nest
+set -e
+
+FIRST_LINE=$(head -n 1 "$1")
+
+# Git-generated messages pass as-is
+if echo "$FIRST_LINE" | grep -qE '^(Merge |Revert "|fixup! |squash! |amend! )'; then
+  exit 0
+fi
+
+PATTERN='^(feat|fix|docs|refactor|test|chore|perf|ci|build|style|revert)(\([A-Za-z0-9_.#/-]+\))?!?: .+'
+if ! echo "$FIRST_LINE" | grep -qE "$PATTERN"; then
+  echo "❌ [field-kit] Commit message must be <type>(<scope>): <subject>  (scope optional)"
+  echo "   got: \"$FIRST_LINE\""
+  echo "   types: feat fix docs refactor test chore perf ci build style revert"
+  exit 1
+fi

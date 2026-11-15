@@ -1,57 +1,44 @@
-# Audit — <ID> <Title>
+# Audit — BRIEF-### <Title>
 
 | | |
 |---|---|
-| **Auditor** | <actual Cowork / Codex reviewer; session reference> |
-| **Assignment** | <brief auditor + Field instruction/date; fallback/reassignment reason> |
-| **Date** | YYYY-MM-DD |
-| **Branch / commit** | <branch> · `<sha>` (the audited commit) |
-| **Depth** | Full · Compact |
-| **Brief revision** | <n> |
-| **Recommendation** | PASS · CHANGES REQUIRED · BLOCKED  ← Field makes the final call |
+| **Auditor** | <tool> (assigned by <source>) · **Date** YYYY-MM-DD |
+| **Brief revision** | <n> · **Audited S** `<sha>` · **Lock commit** `<sha>` |
+| **Flags** | <from brief — which flag checklists apply> |
+| **Recommendation** | PASS · CHANGES REQUIRED · BLOCKED |
 
-> Findings describe code and documents, not people. Use "Current → Updated" framing.
+## Rows
+Rows and references: `docs/rules/audit.md`. One line per row — `pass` + evidence · `fail` → finding # · `n/a` + why. Delete rows of sections that are off.
 
-## Acceptance Criteria
-| AC | Met? | Evidence (test / file) | Note |
-|---|---|---|---|
-| AC-1 | ✅ / ❌ | | |
-
-## Rule Check
-| Rule | OK? | Note |
+| Row | Result | Evidence (`path:line` · test name · screenshot) |
 |---|---|---|
-| Scope — nothing outside the brief | | |
-| No unapproved deviations / deps | | |
-| `PermissionsGuard` only, no inline checks | | |
-| `save()` not `update()` on audited entities | | |
-| ESM `.js` imports · contracts as source of truth | | |
-| Agent boundaries respected | | |
-| Run proof on the audited SHA — migrations run, `/api/health` 200, UI exercised (not just a 200) | | |
-
-## Test Quality
-<Do the tests actually assert the ACs? Anything mocked away that should be real? Missing edge cases?>
+| A1 | | |
+| T1 · T2 | | |
+| P1 · P2 | | |
+| F: <TX-1 … / SEC-… / INT-… / MIG-…> | | |
+| U1 · U2 *(ui)* | | |
+| R1 | | |
+| D1 · D2 | | |
 
 ## Findings
-| # | Must fix / Suggestion | Severity | Evidence · Current → Updated |
-|---|---|---|---|
-| 1 | Must fix / Suggestion | High / Med / Low | |
+Every `Must fix` cites a row **and** its reference (AC · rule ID · flag-checklist ID · `ui.md` row · brief section). No reference → it belongs in *Outside the checklist*.
 
-## Recommendation to Field
-<one paragraph>
+| # | Row | Reference | Must fix / Suggest | `path:line` | Current → Updated |
+|---|---|---|---|---|---|
+| 1 | | | | | |
 
-**Next command:** <CHANGES REQUIRED → `execute BRIEF-###` — fix Must fix #… · PASS → `execute BRIEF-###` (PASS commit + PR) · BLOCKED → the DR or Field decision needed>
+`Suggest` never blocks PASS.
 
-> Compact audits: retain reviewer/assignment/commit metadata and Evidence Coverage; shorten the body to AC table + Findings + Recommendation.
-> Re-audit after changes: append `## Re-audit — <date> · <sha>` below; don't rewrite the original.
+## Outside the checklist (never blocks by itself)
+| # | Type | What | `path:line` | Owner decision |
+|---|---|---|---|---|
+| | `taste` (not specified by the brief or the rules) · `risk` (looks like a real defect, nothing covers it) | | | `risk` only: fix now · accept · add to `docs/rules/audit.md` |
 
-## Evidence Coverage
-- Reviewed work SHA: <S>
-- Sources/diff inspected independently: <paths, ACs>
-- Tests run or independently inspected: <commands, SHA, results, limitations>
-- Written uncommitted; the executor commits it unchanged at PASS (H). Pre-merge summary must verify S..H contains evidence-only changes (§7).
-- Repeated blocker: <attempts/evidence and decision needed, or none>
+## FIX
+<CHANGES REQUIRED only — the list the executor works from, nothing else: one line per `Must fix`: `#<n> [<row>] <what must be true after the fix>`.>
 
-## Sonar (local scan)
-- Handoff Sonar section present for the scanned commit = S (or later scan): <yes / no>
-- Remaining issues have reasons; no unapproved "won't fix"/exclusions: <yes / findings>
-- Learning mode respected (Metee fixed his own issues): <yes / notes>
+## Next
+`Next → in <Executor>: ship BRIEF-###` · `fix BRIEF-### — audit round <n>` · BLOCKED: <DR / decision needed>
+
+<!-- Re-audits append: ## Re-audit — YYYY-MM-DD · <new S> · round <n>
+     Scope: the fixed findings + the fix commits' diff only (docs/rules/audit.md §4). -->

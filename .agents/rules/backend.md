@@ -1,5 +1,5 @@
 ---
-description: NestJS backend architecture, TypeORM, auth, payment, and audit invariants.
+description: NestJS — Backend architecture, persistence, auth and API conventions.
 activation: glob
 glob: app/backend/**
 ---

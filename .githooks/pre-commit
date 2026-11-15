@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# field-kit: pre-commit hook — runs the project's linter on staged files (ops/gates/pre-commit.sh).
+# Bans live in lint rules (docs/rules/core.md), not in grep here.
+set -e
+[ -f ops/gates/pre-commit.sh ] && sh ops/gates/pre-commit.sh
+exit 0

@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import {
   PERMISSION_CATALOG,
   PERMISSION_CODES,
@@ -15,7 +15,7 @@ import {
 import { DomainException } from '../../../common/domain-exception.js';
 import { DEFAULT_GROUP_IDS, DEFAULT_POLICY_IDS } from '../domain/default-groups.js';
 import { deleteImpact } from '../domain/delete-impact.js';
-import { IAM_ADMIN_REPOSITORY, type IamAdminRepository } from '../domain/iam-admin.repository.js';
+import { IamAdminRepository } from '../domain/iam-admin.repository.js';
 import type { GroupWriteOutcome, NamedInput, PolicyWriteOutcome } from '../domain/iam-admin.types.js';
 import { IamVersion } from './iam-version.service.js';
 import { systemFirst, systemGroupOf, toPolicy, toStaffGroup } from './iam-admin.mapper.js';
@@ -29,7 +29,7 @@ export class IamAdminService implements OnApplicationBootstrap {
   private readonly logger = new Logger(IamAdminService.name);
 
   public constructor(
-    @Inject(IAM_ADMIN_REPOSITORY) private readonly repository: IamAdminRepository,
+    private readonly repository: IamAdminRepository,
     private readonly iamVersion: IamVersion,
   ) {}
 

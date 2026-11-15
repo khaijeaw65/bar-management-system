@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { ClsService } from 'nestjs-cls';
 import {
@@ -10,15 +10,15 @@ import {
   type NotVoidedTicket,
   type OrderStatus,
 } from '@bar/contracts';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { Clock } from '../../../common/clock.js';
 import { StaffUserService } from '../../iam/application/staff-user.service.js';
 import { MenuCatalogService } from '../../menu/application/menu-catalog.service.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { VisitService } from '../../venue/application/visit.service.js';
-import { ORDER_REPOSITORY, type OrderRepository } from '../domain/order.repository.js';
+import { OrderRepository } from '../domain/order.repository.js';
 import type { PendingItemLine } from '../domain/order.types.js';
 import type { TicketView } from './present-order.js';
-import type { SeatRef, ToggleOutcome } from './sold-out.types.js';
+import type { SeatRef, ToggleOutcome, VoidTicketsOutcome } from './sold-out.types.js';
 import { TicketService } from './ticket.service.js';
 
 const SOLD_OUT_REASON = 'ของหมด';
@@ -26,8 +26,8 @@ const SOLD_OUT_REASON = 'ของหมด';
 @Injectable()
 export class SoldOutService {
   public constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly orders: OrderRepository,
+    private readonly clock: Clock,
     private readonly menu: MenuCatalogService,
     private readonly visits: VisitService,
     private readonly tickets: TicketService,
@@ -99,22 +99,30 @@ export class SoldOutService {
     this.cls.set('userId', undefined);
     try {
       for (const group of this.groups(lines)) {
-        const ticketId = group[0]?.ticketId;
-        if (!ticketId) continue;
-        const locked = await this.orders.lockTicket(ticketId);
-        if (!locked || locked.status !== 'pending') {
-          notVoided.push(this.held(group, 'in_progress'));
-          continue;
-        }
-        await this.orders.cancelLines(group.map((line) => line.itemId), now, SOLD_OUT_REASON);
-        const emptied = await this.tickets.cancelWhenEmpty(ticketId);
-        if (emptied) cancelled.push(emptied);
-        autoVoided.push(this.voided(group, emptied ? 'cancelled' : 'pending'));
+        await this.voidTicketGroup(group, now, { autoVoided, notVoided, cancelled });
       }
     } finally {
       if (typeof actor === 'string') this.cls.set('userId', actor);
     }
     return { autoVoided, notVoided, cancelled };
+  }
+
+  private async voidTicketGroup(
+    group: PendingItemLine[],
+    now: Date,
+    outcome: VoidTicketsOutcome,
+  ): Promise<void> {
+    const ticketId = group[0]?.ticketId;
+    if (!ticketId) return;
+    const locked = await this.orders.lockTicket(ticketId);
+    if (locked?.status !== 'pending') {
+      outcome.notVoided.push(this.held(group, 'in_progress'));
+      return;
+    }
+    await this.orders.cancelLines(group.map((line) => line.itemId), now, SOLD_OUT_REASON);
+    const emptied = await this.tickets.cancelWhenEmpty(ticketId);
+    if (emptied) outcome.cancelled.push(emptied);
+    outcome.autoVoided.push(this.voided(group, emptied ? 'cancelled' : 'pending'));
   }
 
   private untouched(item: MenuItem, available: boolean, changed: boolean): ToggleOutcome {

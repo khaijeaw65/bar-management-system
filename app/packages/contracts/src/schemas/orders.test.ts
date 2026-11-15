@@ -1,7 +1,13 @@
 import { TicketIssueEscalatedPayloadSchema, TicketStatusChangedPayloadSchema } from '../events/order.js';
 import { ErrorCodeSchema } from './errors.js';
 import { OrderStatusSchema } from './enums.js';
-import { FlagIssueRequestSchema, PlaceOrderRequestSchema, TicketSchema } from './orders.js';
+import {
+  AdjustItemRequestSchema,
+  FlagIssueRequestSchema,
+  OrderLineSchema,
+  PlaceOrderRequestSchema,
+  TicketSchema,
+} from './orders.js';
 
 const id = '11111111-1111-4111-8111-111111111111';
 
@@ -92,5 +98,66 @@ describe('order contracts', () => {
         escalatedBy: { staffId: id, displayName: 'เอ' },
       }).success,
     ).toBe(false);
+  });
+
+  it('validates AdjustItemRequestSchema with reasons, note requirement, and 4-digit PIN', () => {
+    expect(AdjustItemRequestSchema.safeParse({ reason: 'out_of_stock' }).success).toBe(true);
+    expect(AdjustItemRequestSchema.safeParse({ reason: 'wrong_order', pin: '1234' }).success).toBe(true);
+    expect(AdjustItemRequestSchema.safeParse({ reason: 'wrong_order', pin: '123' }).success).toBe(false);
+    expect(AdjustItemRequestSchema.safeParse({ reason: 'wrong_order', pin: 'abcd' }).success).toBe(false);
+    expect(AdjustItemRequestSchema.safeParse({ reason: 'other' }).success).toBe(false);
+    expect(AdjustItemRequestSchema.safeParse({ reason: 'other', note: '   ' }).success).toBe(false);
+    expect(AdjustItemRequestSchema.safeParse({ reason: 'other', note: 'โปรโมชั่นพิเศษ' }).success).toBe(true);
+  });
+
+  it('parses voided and comped order lines', () => {
+    const voided = OrderLineSchema.parse({
+      id,
+      variantId: id,
+      name: 'เบียร์สิงห์',
+      variantName: 'ขวด',
+      quantity: 1,
+      unitPrice: '120.00',
+      modifiers: [],
+      lineTotal: '120.00',
+      orderedByName: null,
+      notes: null,
+      cancelledAt: '2026-10-31T12:00:00.000Z',
+      cancellation: {
+        at: '2026-10-31T12:00:00.000Z',
+        reason: 'wrong_order',
+        by: { staffId: id, displayName: 'สมชาย' },
+        system: false,
+        approvedBy: { staffId: id, displayName: 'ผู้จัดการ' },
+        selfApproved: false,
+      },
+    });
+    expect(voided.cancellation?.approvedBy?.displayName).toBe('ผู้จัดการ');
+    expect(voided.comp).toBeNull();
+
+    const comped = OrderLineSchema.parse({
+      id,
+      variantId: id,
+      name: 'โมฮิโต้',
+      variantName: 'แก้ว',
+      quantity: 1,
+      unitPrice: '180.00',
+      modifiers: [],
+      lineTotal: '0.00',
+      orderedByName: null,
+      notes: null,
+      cancelledAt: null,
+      cancellation: null,
+      comp: {
+        at: '2026-10-31T12:05:00.000Z',
+        by: { staffId: id, displayName: 'สมชาย' },
+        approvedBy: null,
+        selfApproved: true,
+        reason: 'special_service',
+        note: null,
+      },
+    });
+    expect(comped.comp?.selfApproved).toBe(true);
+    expect(comped.lineTotal).toBe('0.00');
   });
 });

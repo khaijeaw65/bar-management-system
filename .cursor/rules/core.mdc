@@ -1,5 +1,5 @@
 ---
-description: Workspace-wide architecture, scope, and TypeScript conventions for the Bar Management System monorepo.
+description: Workspace-wide architecture, scope and conventions.
 alwaysApply: true
 ---
 
