@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Defect ID** | DEF-03 |
-| **Status** | Open |
-| **Surface** | Web POS (`app/frontend`) |
-| **Severity** | Medium (Touchscreen UX) |
-| **Discovered** | 2026-11-01 (Hands-on test for Demo) |
+| **Status** | Fixed (merged) |
+| **Fixed by** | BRIEF-071 (PR #123) |
+| **Surface** | Web POS (`app/frontend`) · **Severity** Medium (Touchscreen UX) |
+| **Found** | 2026-11-01 · hands-on test for demo |
+| **Should have been caught at** | — not assessed (logged before workflow Rev 24; fill when the defect is next touched) |
 
 ---
 

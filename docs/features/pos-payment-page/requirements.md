@@ -5,9 +5,10 @@
 | | |
 |---|---|
 | **Owner** | Field |
-| **Status** | Active |
+| **Status** | Built |
 | **Backlog item** | Web POS Payment Center (`/pos/payment`) |
 | **Design** | [design.md](design.md) — flow, contracts, code map |
+| **FRD** | [`docs/FRD.md`](../../FRD.md) → Payment |
 | **UI** | [ui.md](ui.md) — screens, states, actions · owner: kj |
 | **Briefs** | [BRIEF-072](../../briefs/BRIEF-072-payments-today-api.md) Backend `GET /payments/today` API & contracts · [BRIEF-073](../../briefs/BRIEF-073-pos-payment-page-ui.md) Web POS `/pos/payment` UI page |
 
@@ -16,6 +17,18 @@
 Cashiers and bar managers need a centralized "ชำระเงิน" (Payment Center) page on Web POS to monitor all tables with unpaid bills, track in-flight PromptPay QR transactions with real-time feedback, trigger checkouts in 1 click, and audit today's completed and cancelled transactions without having to navigate into every individual table on the floor map.
 
 Replaces the disabled "เร็ว ๆ นี้" item in the POS rail and complements `/pos/tables` with a billing-focused operational workflow.
+
+## Flow (user steps)
+
+Business words only. Retrofitted 2026-11-15 from R1–R7 (Field interview 2026-11-02) — no new requirement.
+
+| Step | User does | Sees / enters (business words + example value) | Rule |
+|---|---|---|---|
+| 1 | Opens "ชำระเงิน" from the POS rail | Today's totals: paid ฿8,450 · PromptPay ฿6,200 · cash ฿2,250 · 3 bills waiting | Only staff who may view payments see the item (R1) |
+| 2 | Looks at "รอชำระ" | Tables waiting for money first ("T2 · ฿1,240 · เหลือ 12:45"), then every open bill ("T5 · 2 ชม. · 6 รายการ · ฿980"), a badge where the guest asked for the bill | A table with a QR already shown is listed apart from plain open bills (R3) |
+| 3 | Taps "ชำระเงิน" (or "ดู QR") on a table | The usual checkout opens for that table | Same checkout as from the floor map — no second payment path (R4) |
+| 4 | Finishes the payment | The table leaves "รอชำระ" and appears in today's history | Lists update by themselves, no reload (R7) |
+| 5 | Opens "ประวัติการชำระวันนี้", filters PromptPay / cash | "21:40 · T2 · ฿1,240 · PromptPay · สำเร็จ · สแกนสลิป" | Only tonight's business day (cut-off 06:00); newest first (R5, R6) |
 
 ## Requirements
 

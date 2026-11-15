@@ -1,13 +1,15 @@
 # POS Payment Page (ศูนย์การชำระเงิน) — UI Specification
 
-> UI spec for `/pos/payment` (`docs/features/pos-payment-page/ui.md`).
+> Screens, states and actions for `/pos/payment` (`docs/features/pos-payment-page/ui.md`). Requirements: [requirements.md](requirements.md) · Design: [design.md](design.md). Every row here is an AC source for the frontend brief.
 
 | | |
 |---|---|
-| **Feature** | [requirements.md](requirements.md) · [design.md](design.md) |
-| **Owner** | kj |
+| **Design** | none — built from this spec before the UI stage existed (no Claude Design board, no snapshot) |
+| **Design system** | HeroUI v3 + Tailwind v4 tokens in `app/frontend/src/app/globals.css` (`clay` palette, Noto Sans Thai) |
+| **Approved by** | Field, interview 2026-11-02 (spec, no board) |
+| **Frontend brief(s)** | BRIEF-073 |
+| **UI owner** | kj |
 | **Route** | `/pos/payment` (Web POS) |
-| **Design tokens** | HeroUI + Tailwind CSS (`clay` palette, Noto Sans Thai) |
 
 ## Layout & Structure
 
@@ -61,3 +63,11 @@
 | Click "ชำระเงิน" on table card | Opens `CheckoutModal` overlay. Background updates upon modal close/settlement. |
 | Realtime `payment.status_changed` | Updates active bill list immediately; if completed, removes from pending and appends to Tab 2. |
 | Network disconnect | Shows subtle warning banner: "การเชื่อมต่อขาด กำลังลองใหม่...". |
+
+## Design input (what goes into Claude Design)
+
+Not used — the page shipped from this spec (BRIEF-073). Write one block per screen from requirements → *Flow* when the page is redesigned.
+
+## Design source snapshot
+
+None — no approved board. A redesign adds `design-source/` with hashes here.
