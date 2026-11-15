@@ -1,18 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { sumSatang, toSatang } from '../../../common/money.js';
 import { OrderQueryService } from '../../order/application/order-query.service.js';
 import type { OrderTotal } from '../../order/domain/order.types.js';
-import {
-  PAYMENT_REPOSITORY,
-  type PaymentRepository,
-} from '../domain/ports/payment.repository.port.js';
+import { PaymentRepository } from '../domain/ports/payment.repository.port.js';
 import type { PaymentRecord } from '../domain/payment.types.js';
 import type { BillSnapshot } from './payment.types.js';
 
 @Injectable()
 export class BillService {
   public constructor(
-    @Inject(PAYMENT_REPOSITORY) private readonly payments: PaymentRepository,
+    private readonly payments: PaymentRepository,
     private readonly orders: OrderQueryService,
   ) {}
 

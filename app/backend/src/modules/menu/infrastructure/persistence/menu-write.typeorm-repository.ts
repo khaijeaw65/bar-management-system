@@ -4,12 +4,12 @@ import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-t
 import { ClsService } from 'nestjs-cls';
 import { In, QueryFailedError, Repository } from 'typeorm';
 import type { MenuVariantInput } from '@bar/contracts';
+import type { MenuWriteRepository } from '../../domain/menu-write.repository.js';
 import type {
   CategoryOrderRow,
   LockedMenuItem,
   MenuItemFields,
-  MenuWriteRepository,
-} from '../../domain/menu-write.repository.js';
+} from '../../domain/menu-write.types.js';
 import type { MenuCategoryRecord } from '../../domain/menu.types.js';
 import { DomainException } from '../../../../common/domain-exception.js';
 import { MenuCategory } from './menu-category.entity.js';
@@ -230,14 +230,17 @@ export class MenuWriteTypeormRepository implements MenuWriteRepository {
     try {
       return await categories.save(row);
     } catch (error) {
-      if (error instanceof QueryFailedError) {
-        const driver = error.driverError as { code?: string; constraint?: string };
-        if (driver.code === '23505' && driver.constraint === CATEGORY_NAME_INDEX) {
-          throw new DomainException('CATEGORY_NAME_TAKEN', 'มีหมวดชื่อนี้แล้ว', 409);
-        }
+      if (this.isCategoryNameCollision(error)) {
+        throw new DomainException('CATEGORY_NAME_TAKEN', 'มีหมวดชื่อนี้แล้ว', 409);
       }
       throw error;
     }
+  }
+
+  private isCategoryNameCollision(error: unknown): boolean {
+    if (!(error instanceof QueryFailedError)) return false;
+    const driver = error.driverError as { code?: string; constraint?: string };
+    return driver.code === '23505' && driver.constraint === CATEGORY_NAME_INDEX;
   }
 
   private async query(sql: string, parameters: unknown[]): Promise<Record<string, unknown>[]> {

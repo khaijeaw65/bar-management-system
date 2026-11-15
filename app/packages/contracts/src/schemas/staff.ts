@@ -98,3 +98,9 @@ export type EffectivePermissions = z.infer<typeof EffectivePermissionsSchema>;
 /** 409 `IAM_LOCKOUT` `data`. */
 export const IamLockoutDataSchema = z.object({ reason: z.literal('last_manager') });
 export type IamLockoutData = z.infer<typeof IamLockoutDataSchema>;
+
+export const SetPinRequestSchema = z.object({
+  pin: z.string().regex(/^\d{4}$/, 'PIN ต้องเป็นตัวเลข 4 หลัก'),
+  currentPin: z.string().regex(/^\d{4}$/, 'PIN ต้องเป็นตัวเลข 4 หลัก').optional(),
+});
+export type SetPinRequest = z.infer<typeof SetPinRequestSchema>;

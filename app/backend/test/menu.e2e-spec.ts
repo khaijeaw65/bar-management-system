@@ -14,7 +14,7 @@ import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
 import { seedMenu } from '../src/cli/seed-menu-catalog.js';
 import { seedVenue } from '../src/cli/seed-venue.js';
-import { CLOCK } from '../src/common/clock.js';
+import { Clock } from '../src/common/clock.js';
 import { MenuCatalogService } from '../src/modules/menu/application/menu-catalog.service.js';
 import { MenuItemVariant } from '../src/modules/menu/infrastructure/persistence/menu-item-variant.entity.js';
 import { clearStaffAndVenue, insertStaff, staffSession } from './staff-session.js';
@@ -31,7 +31,7 @@ describe('Menu and venue read (e2e)', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(CLOCK)
+      .overrideProvider(Clock)
       .useValue({ now: () => FRIDAY_2300 })
       .compile();
     app = moduleRef.createNestApplication();

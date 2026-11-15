@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { TableSeatKind, VisitState } from '@bar/contracts';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Repository } from 'typeorm';
@@ -8,6 +7,7 @@ import { readDate, readOptionalText, readText } from '../../../../common/persist
 import type { GuestSessionRepository } from '../../domain/guest-session.repository.js';
 import type { GuestSessionRow, NewGuestSession } from '../../domain/guest-session.types.js';
 import { GuestSession } from './guest-session.entity.js';
+import type { SessionJoinRow } from './guest-session.typeorm-repository.types.js';
 
 const FIND_BY_HASH = `
   SELECT g.id, g.visit_id, g.display_name, g.expires_at, g.created_at,
@@ -27,19 +27,6 @@ const PURGE_EXPIRED = `
   )
   RETURNING id
 `;
-
-interface SessionJoinRow {
-  id: unknown;
-  visit_id: unknown;
-  display_name: unknown;
-  expires_at: unknown;
-  created_at: unknown;
-  seat_id: unknown;
-  label: unknown;
-  kind: TableSeatKind;
-  is_active: boolean;
-  visit_state: VisitState | null;
-}
 
 @Injectable()
 export class GuestSessionTypeormRepository implements GuestSessionRepository {

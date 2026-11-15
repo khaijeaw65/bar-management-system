@@ -43,12 +43,13 @@ test("marks เมนู active and links โต๊ะ to the floor", async () =
   const tables = screen.getByRole("link", { name: "โต๊ะ" });
   expect(tables).toHaveAttribute("href", "/pos/tables");
   expect(tables).not.toHaveAttribute("aria-current");
-  await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(5));
+  await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(6));
+  expect(screen.getByRole("link", { name: "ชำระเงิน" })).toHaveAttribute("href", "/pos/payment");
   expect(screen.getByRole("link", { name: /ตั้งค่า/ })).toHaveAttribute("href", "/pos/settings");
   expect(screen.getByRole("link", { name: "รายงาน" })).toHaveAttribute("href", "/pos/reports");
 
   const soon = screen.getAllByTitle("เร็ว ๆ นี้");
-  expect(soon.map((item) => item.textContent)).toEqual(labels.filter((label) => !["เมนู", "โต๊ะ", "ออเดอร์", "รายงาน", "ตั้งค่า"].includes(label)));
+  expect(soon.map((item) => item.textContent)).toEqual(labels.filter((label) => !["เมนู", "โต๊ะ", "ออเดอร์", "ชำระเงิน", "รายงาน", "ตั้งค่า"].includes(label)));
   for (const item of soon) {
     expect(item).toHaveAttribute("aria-disabled", "true");
     expect(item.tagName).toBe("SPAN");
@@ -61,16 +62,17 @@ test("shows the pending ticket count on ออเดอร์", async () => {
   expect(screen.getByRole("link", { name: /ออเดอร์/ })).toHaveAttribute("href", "/pos/orders");
 });
 
-test("พนักงาน sees only โต๊ะ, ออเดอร์ and เมนู", async () => {
+test("พนักงาน sees only โต๊ะ, ออเดอร์, ชำระเงิน and เมนู", async () => {
   posMockControls.setRole("staff");
   render(<PosRail />);
   expect(await screen.findByRole("link", { name: "เมนู" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "โต๊ะ" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: /ออเดอร์/ })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "ชำระเงิน" })).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "รายงาน" })).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "ตั้งค่า" })).not.toBeInTheDocument();
   expect(screen.queryByTitle("เร็ว ๆ นี้")).not.toBeInTheDocument();
-  expect(screen.getAllByRole("link")).toHaveLength(3);
+  expect(screen.getAllByRole("link")).toHaveLength(4);
 });
 
 test("ผู้จัดการ keeps every rail item", async () => {

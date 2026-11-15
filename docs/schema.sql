@@ -27,6 +27,8 @@ CREATE TYPE inv_category        AS ENUM ('A', 'B', 'C');
 CREATE TYPE inv_tx_type         AS ENUM ('purchase', 'usage', 'adjustment', 'void');
 CREATE TYPE audit_action        AS ENUM ('CREATE', 'UPDATE', 'REJECT');
 CREATE TYPE actor_type          AS ENUM ('user', 'system');
+CREATE TYPE notification_type   AS ENUM ('table_idle', 'table_opened', 'restock_request', 'low_stock', 'payment_confirmed', 'order_new', 'food_ready', 'call_staff');  -- DR-003 (+ Am. 2: order_new replaces qr_order_new)
+CREATE TYPE item_adjustment     AS ENUM ('void', 'comp');  -- DR-016 A: how an order_item left full price
 
 -- ============================================================
 -- 1. VENUE & TABLES
@@ -426,10 +428,13 @@ CREATE TABLE order_item (
   cancelled_by          UUID REFERENCES staff_user(id),
   cancel_reason         VARCHAR(50),            -- ของหมด / สั่งผิด / ของเสีย … (CD-15 R3)
   cancel_note           TEXT,
+  cancel_kind           item_adjustment,        -- DR-016 A: NULL = active · void = off the bill · comp = served at ฿0 (cancelled_* then describe the comp)
+  approved_by           UUID REFERENCES staff_user(id),  -- PIN approver; NULL with cancelled_by set = self-approved (flagged); cancelled_by NULL = system (sold-out)
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by            UUID REFERENCES staff_user(id),
-  updated_by            UUID REFERENCES staff_user(id)
+  updated_by            UUID REFERENCES staff_user(id),
+  CONSTRAINT chk_order_item_adjustment CHECK ((cancel_kind IS NULL) = (cancelled_at IS NULL))  -- DR-016
 );
 
 ALTER TABLE order_ticket ADD CONSTRAINT fk_ticket_issue_item
@@ -566,6 +571,35 @@ CREATE TABLE ai_insight (
 );
 
 -- ============================================================
+-- 11. NOTIFICATIONS (DR-003)
+-- ============================================================
+
+-- One row per recipient staff (DR-003 A). System-written; staff only set read_at.
+-- Not an audited entity (like audit_log). Phase 1 types: order_new, call_staff, food_ready (DR-003 Am. 2).
+CREATE TABLE notification (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  recipient_id  UUID NOT NULL REFERENCES staff_user(id),
+  type          notification_type NOT NULL,
+  title         VARCHAR(200) NOT NULL,       -- Thai UI text, PDPA-safe (seat, order no., counts only)
+  body          VARCHAR(500),
+  ref_type      VARCHAR(50),                 -- 'order' | 'table_seat' | 'visit' | 'payment' …
+  ref_id        UUID,                        -- click-through target (no FK: polymorphic)
+  read_at       TIMESTAMPTZ,                 -- NULL = unread
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Expo push token per phone (DR-003 Am. 1). Shared phone: PUT with another staff's token reassigns it.
+-- Not an audited entity. DeviceNotRegistered in a ticket / receipt → row deleted.
+CREATE TABLE staff_push_token (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  staff_user_id   UUID NOT NULL REFERENCES staff_user(id) ON DELETE CASCADE,
+  expo_push_token VARCHAR(255) NOT NULL UNIQUE,   -- 'ExponentPushToken[…]'
+  platform        VARCHAR(10) NOT NULL CHECK (platform IN ('ios', 'android')),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_seen_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 
@@ -575,6 +609,7 @@ CREATE INDEX idx_visit_customer      ON visit(customer_id) WHERE customer_id IS 
 CREATE INDEX idx_visit_state         ON visit(state);
 CREATE UNIQUE INDEX uq_visit_live_per_seat ON visit(table_seat_id) WHERE state IN ('open','active','idle');  -- one live visit per seat (BRIEF-011 Q1)
 CREATE UNIQUE INDEX uq_menu_category_name ON menu_category (lower(trim(name)));  -- category names unique, hidden included (DR-025)
+CREATE UNIQUE INDEX uq_table_seat_label_active ON table_seat (lower(trim(label))) WHERE is_active;  -- active seat labels unique; a retired seat's label can be reused (BRIEF-066)
 
 -- Menu availability windows (DR-010)
 CREATE INDEX idx_menu_item_avail_item ON menu_item_availability(menu_item_id);
@@ -598,6 +633,11 @@ CREATE INDEX idx_payment_visit_status ON payment(visit_id, status);   -- BRIEF-0
 CREATE INDEX idx_membership_user     ON user_group_membership(user_id);
 CREATE INDEX idx_membership_group    ON user_group_membership(group_id);
 CREATE INDEX idx_membership_valid    ON user_group_membership(valid_until) WHERE valid_until IS NOT NULL;
+
+-- Notification lookups (DR-003)
+CREATE INDEX idx_notification_feed   ON notification(recipient_id, created_at DESC);
+CREATE INDEX idx_notification_unread ON notification(recipient_id) WHERE read_at IS NULL;
+CREATE INDEX idx_staff_push_token_user ON staff_push_token(staff_user_id);
 
 -- Audit log lookups
 CREATE INDEX idx_audit_entity        ON audit_log(entity, entity_id);

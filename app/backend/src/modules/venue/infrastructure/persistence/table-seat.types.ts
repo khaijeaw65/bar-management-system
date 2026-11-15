@@ -13,3 +13,13 @@ export interface SeatVisitRow {
   staff_call_reason: CallStaffReason | null;
   staff_call_note: string | null;
 }
+
+export interface SeatAdminRow {
+  id: string;
+  label: string;
+  kind: TableSeatKind;
+  sort_order: number | string;
+  is_active: boolean;
+  qr_token: string | null;
+  has_live_visit: boolean | string | number;
+}

@@ -1,4 +1,6 @@
 import {
+  DemoLoginRequestSchema,
+  DemoLoginRoleSchema,
   MobileRefreshRequestSchema,
   MobileTokenRequestSchema,
   MobileTokenResponseSchema,
@@ -44,5 +46,29 @@ describe('MobileTokenResponseSchema', () => {
       refreshToken: 'refresh',
       expiresIn: 900,
     });
+  });
+});
+
+describe('DemoLoginRoleSchema', () => {
+  it('accepts valid demo roles', () => {
+    expect(DemoLoginRoleSchema.parse('owner')).toBe('owner');
+    expect(DemoLoginRoleSchema.parse('manager')).toBe('manager');
+    expect(DemoLoginRoleSchema.parse('staff')).toBe('staff');
+  });
+
+  it('rejects invalid demo role', () => {
+    expect(DemoLoginRoleSchema.safeParse('admin').success).toBe(false);
+  });
+});
+
+describe('DemoLoginRequestSchema', () => {
+  it('validates role object', () => {
+    expect(DemoLoginRequestSchema.parse({ role: 'owner' })).toEqual({
+      role: 'owner',
+    });
+  });
+
+  it('rejects missing role', () => {
+    expect(DemoLoginRequestSchema.safeParse({}).success).toBe(false);
   });
 });

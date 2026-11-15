@@ -1,29 +1,16 @@
-## Brief
-<!-- One brief per PR. Title format: "<ID>: <title>" -->
-- Brief: `docs/briefs/<ID>-<slug>.md` (Rev <n>)
-- Handoff: `docs/handoffs/<ID>.md`
-- Audit: `docs/audits/<ID>.md` · audited commit `<sha>` (committed at PASS, before this PR opened)
+## What & why
+<2–3 lines a reader outside the team understands: what changed for whom, and why.>
 
-## Deviations from brief
-- [ ] None
-- [ ] Yes — every one has an **Approved** DR: DR-___
+## How it was verified
+- Tests: <unit / e2e counts, key cases>
+- Run proof: <what was exercised on the running app>
 
-## Gates
-- [ ] G1 — lint + typecheck + unit tests pass locally (missing scripts reported as BLOCKED in handoff)
-- [ ] G2 — CI green (once CI exists; until then G1 output is in the handoff)
-- [ ] Every AC is mapped to a test, or to manual evidence allowed by the brief (see handoff table)
-- [ ] `docs/state/<person>/SESSION_STATE.md` updated
+<details>
+<summary>Process gates</summary>
 
-## Dependencies
-- [ ] No `package.json` changes
-- [ ] `package.json` changed — approved by: ☐ brief Pre-decided item `<name@range>` ☐ DR-___
-
-## AI usage
-<!-- Low · Medium · High — one line: tool + what for -->
-
-## Review and merge
-- Assigned auditor: <Cowork / Field-assigned Codex>
-- Audit result: <PASS / CHANGES REQUIRED / BLOCKED> · outstanding Must fix: <count>
-- Audited work SHA: <S> · proposed head: <H> · S..H evidence-only delta: <summary>
-- Field approval: <instruction/date for exact H, or pending>
-- This PR opens only after audit PASS (workflow §3); merge must satisfy the gates.
+- Brief: `BRIEF-###` rev <n> · Link: <Feature / Defect / standalone>
+- DRs: <DR-### (status) or none>
+- Audit: PASS · `docs/audits/BRIEF-###.md` · audited S `<sha>` · head H `<sha>` · S..H = audit + handoff only
+- Handoff: `docs/handoffs/BRIEF-###.md` · CI `ci` green on H
+- Dependencies: <none · `pkg@range` approved by brief Pre-decided / DR-###>
+</details>

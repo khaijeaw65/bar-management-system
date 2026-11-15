@@ -1,37 +1,34 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { ORDER_CREATED, VISIT_STATE_CHANGED, type Order } from '@bar/contracts';
-import {
-  MenuCatalogService,
-  type OrderableLookup,
-} from '../../menu/application/menu-catalog.service.js';
-import { CLOCK, type Clock } from '../../../common/clock.js';
+import { MenuCatalogService } from '../../menu/application/menu-catalog.service.js';
+import type { OrderableLookup } from '../../menu/application/menu-catalog.types.js';
+import { Clock } from '../../../common/clock.js';
 import { DomainException } from '../../../common/domain-exception.js';
-import {
-  ORDER_REPOSITORY,
-  type OrderRepository,
-} from '../domain/order.repository.js';
+import { OrderRepository } from '../domain/order.repository.js';
 import type { NewOrder, NewTicket, PricedLine, TicketBucket } from '../domain/order.types.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { VenueSettingsService } from '../../venue/application/venue-settings.service.js';
 import { VisitService } from '../../venue/application/visit.service.js';
 import { businessDateUnder } from './business-date.js';
 import { bucketFor, priceLines } from './order-lines.js';
-import type { GuestOrderInput, PlaceOrderInput } from './order.types.js';
+import type { GuestOrderInput, PlacedOrder, PlaceOrderInput } from './order.types.js';
 import { OrderQueryService } from './order-query.service.js';
+import { NotificationRecipients } from '../../notifications/application/notification-recipients.js';
 
 @Injectable()
 export class OrderService {
   private readonly logger = new Logger(OrderService.name);
 
   public constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
-    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly orders: OrderRepository,
+    private readonly clock: Clock,
     private readonly visits: VisitService,
     private readonly venues: VenueSettingsService,
     private readonly menu: MenuCatalogService,
     private readonly notifications: NotificationsService,
     private readonly query: OrderQueryService,
+    private readonly notificationRecipients: NotificationRecipients,
   ) {}
 
   public async place(input: PlaceOrderInput): Promise<Order> {
@@ -108,9 +105,22 @@ export class OrderService {
       if (outcome.activated) this.emitActivated(outcome);
       this.notifications.emitToStaff(ORDER_CREATED, order);
       this.notifications.emitTabChanged(outcome.visitId);
+      await this.notifyNewOrder(order);
     } catch (error) {
       this.logger.warn(`order ${order.id} announce failed: ${error instanceof Error ? error.message : 'error'}`);
     }
+  }
+
+  private async notifyNewOrder(order: Order): Promise<void> {
+    const seatLabel = order.tickets[0]?.seat.label ?? 'โต๊ะ';
+    const count = order.tickets.flatMap((t) => t.items).reduce((sum, item) => sum + item.quantity, 0);
+    const recipients = await this.notificationRecipients.orderNew(order.createdBy?.staffId ?? null);
+    await this.notifications.notify('order_new', recipients, {
+      title: `ออเดอร์ใหม่ · ${seatLabel}`,
+      body: `${count} รายการ`,
+      refType: 'order',
+      refId: order.id,
+    });
   }
 
   private emitActivated(outcome: PlacedOrder): void {
@@ -129,12 +139,4 @@ export class OrderService {
     }
     return [...groups.entries()].map(([bucket, grouped]) => ({ bucket, lines: grouped }));
   }
-}
-
-interface PlacedOrder {
-  orderId: string;
-  activated: boolean;
-  opened: boolean;
-  visitId: string;
-  tableSeatId: string;
 }

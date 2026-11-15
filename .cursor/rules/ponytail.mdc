@@ -1,6 +1,6 @@
 ---
-description: Ponytail — lazy senior dev mode. Always pick the simplest solution that works.
-alwaysApply: true
+description: Ponytail — lazy senior dev mode. Minimalism enforcer.
+alwaysApply: false
 ---
 
 @/docs/rules/ponytail.md
