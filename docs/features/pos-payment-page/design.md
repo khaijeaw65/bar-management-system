@@ -158,7 +158,19 @@ app/frontend/src/
 - `GET /payments/today` must calculate the Bangkok business day bounds using the venue's cut-off hour.
 - `CheckoutModal` reuse must maintain proper cleanup of idempotency keys upon modal close.
 
+**Invariant enforcement** (rules in `requirements.md` → *Invariants*):
+
+| I | Enforced by |
+|---|---|
+| I-1 | Completed payments are never edited — `PaymentService` only transitions `pending → completed / cancelled / failed`; price snapshots on `order_item` (DR-022) |
+| I-2 | `PermissionsGuard` on `GET /payments/today` (`payments:read`) and the existing checkout routes — e2e: 403 without `payments:read` (BRIEF-072 AC-4) |
+- DR needed if: flow above changes · contracts above change · new dependency
+
 ## Observability
 
 - Log `GET /payments/today` requests with staff ID and business date.
 - No sensitive customer or payment details logged.
+
+## Not applicable
+
+Schema change · feature flag · backfill · new dependency.

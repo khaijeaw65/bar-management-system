@@ -8,7 +8,9 @@ One CD brief = one Claude Design session. Paste the brief's **"Paste into Claude
 
 **Component libraries (all briefs):** web = **HeroUI v3** (`@heroui/react`), staff app = **HeroUI Native** (Expo + Uniwind). Designs must use components those libraries provide and map to their theme variables (`docs/design-system.md` §1, §5); only the bar-specific components in §6 are custom. Every CD prompt restates this.
 
-**Sources of truth:** `docs/design-system.md` (tokens, type, spacing, components) · `docs/briefs/ui/*.md` (screen content per surface) · `docs/FRD.md` (behaviour). If a CD session changes a token or component, update `design-system.md` in the same PR.
+**Sources of truth:** `docs/design-system.md` (tokens, type, spacing, components) · `docs/features/<f>/ui.md` → *Design input* (screen content, written from the feature's `requirements.md` Flow — never the DB schema; `docs/briefs/ui/*.md` only for built surfaces without a feature folder) · `docs/features/<f>/requirements.md` (behaviour).
+
+**Kit order (workflow Rev 24):** a CD session runs in the feature's UI stage — after `requirements.md` and `design.md` are confirmed. The approved version is snapshotted into `docs/features/<f>/design-source/` (hashes in `ui.md`); CDs approved before Rev 24 keep `docs/design/source/CD-##/` (briefs link there). If a CD session changes a token or component, update `design-system.md` in the same PR.
 
 **Output per brief:** artboards named `CD-##/<artboard-id>` in the Claude Design project, a link written back into the brief's **Result** section, and any design-system changes as a diff to `design-system.md`.
 
