@@ -1,15 +1,33 @@
-import { View, Text } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Button } from 'heroui-native';
+import { Button, Spinner } from 'heroui-native';
 import { useSession } from '../../lib/auth/session';
 
 export default function MoreScreen() {
   const router = useRouter();
   const { session, signOut } = useSession();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    await signOut();
-    router.replace('/login');
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      router.replace('/login');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const confirmLogout = () => {
+    Alert.alert(
+      'ออกจากระบบ?',
+      'เครื่องนี้จะไม่ได้รับการแจ้งเตือนออเดอร์จนกว่าจะเข้าสู่ระบบอีกครั้ง',
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        { text: 'ออกจากระบบ', style: 'destructive', onPress: handleLogout },
+      ],
+    );
   };
 
   return (
@@ -25,12 +43,18 @@ export default function MoreScreen() {
       </View>
 
       <Button
+        testID="logout-button"
         className="w-full bg-surface-raised border border-line rounded-xl items-center justify-center min-h-[52px]"
-        onPress={handleLogout}
+        isDisabled={isLoggingOut}
+        onPress={confirmLogout}
       >
-        <Button.Label className="text-base font-semibold text-text-danger font-sans">
-          ออกจากระบบ
-        </Button.Label>
+        {isLoggingOut ? (
+          <Spinner size="sm" className="text-text-danger" />
+        ) : (
+          <Button.Label className="text-base font-semibold text-text-danger font-sans">
+            ออกจากระบบ
+          </Button.Label>
+        )}
       </Button>
     </View>
   );

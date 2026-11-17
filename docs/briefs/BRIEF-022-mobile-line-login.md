@@ -2,14 +2,14 @@
 
 | | |
 |---|---|
-| **Status** | Ready — Rev 1 approved by Field 2026-10-18 |
+| **Status** | Ready — Rev 2 approved by Field 2026-10-31 (in session) · Rev 1 2026-10-18 |
 | **Implementer** | metee (learning mode — writes ≥ 70 % himself; agent ≤ 20 %, workflow §8) |
 | **Assigned auditor** | Cowork (default) |
 | **Auditor assignment** | default; none |
 | **Affected apps** | mobile |
-| **Revision** | 1 |
-| **Depends on** | **BRIEF-010 merged** (shell, mock session, auth gate, tabs) · **BRIEF-021 merged** before AC-9 (real-device login) — every other AC runs on mocks, so work starts as soon as BRIEF-010 is merged |
-| **References** | **DR-005** (+ Am. 1–2) · DR-007 (axios) · DR-008 · `docs/rules/mobile.md` (API Client, Auth, Mocks, Testing) · `docs/design/CD-08-handoff.md` (login states 1–5, copy, R13) · BRIEF-021 §3 (endpoints + contracts schemas) |
+| **Revision** | 2 |
+| **Depends on** | **BRIEF-010 merged** (shell, mock session, auth gate, tabs) · BRIEF-021 merged ✅ (real-device login possible any time) — every other AC runs on mocks |
+| **References** | **DR-005** (+ Am. 1–2) · DR-007 (axios) · DR-008 · `docs/rules/mobile.md` (API Client, Auth, Mocks, Testing) · `docs/design/CD-08-handoff.md` (login states 1–5, copy, R13) · BRIEF-021 §3 (endpoints + contracts schemas) · BRIEF-054 (access requests; deactivated = logged out on every token) |
 | **Audit depth** | Full (auth) |
 | **Size** | ~10 h (week of 26 Oct, evenings) |
 
@@ -29,7 +29,7 @@ A staff member taps "เข้าสู่ระบบด้วย LINE", signs 
   2. `WebBrowser.openAuthSessionAsync(`${API}/auth/line/login?client=mobile&code_challenge=${challenge}&code_challenge_method=S256`, 'barapp://auth')`
   3. result `success` → parse the URL with `expo-linking` → `code` → `POST /auth/mobile/token { code, codeVerifier }` → `saveTokens()` → `GET /auth/me` → signed in.
   4. result `cancel` / `dismiss` → back to default, **no** error shown.
-  5. `error=not_registered` → login·4 · `error=login_failed` or any failure → login·3.
+  5. `error=not_registered` → login·4 · `error=login_failed` or any failure → login·3. Since BRIEF-054 the server records an access request for an unknown LINE account, so login·4's "ส่งคำขอ…แล้ว" is true; a **deactivated** staff member also gets `not_registered` (same screen — accepted, no new error code).
 - **API client** `src/lib/api/client.ts` (mobile.md → API Client) — one axios instance: base URL `EXPO_PUBLIC_API_URL`; request interceptor adds `Bearer <access>`; envelope `{ status, code, message, data }` unwrapped and `data` validated with the contracts schema; non-2xx → `ApiError(status, code, message)`. **401 → one shared refresh promise** (`POST /auth/mobile/refresh`) → retry the original request once; refresh fails → `clearTokens()` → signed out → login·5.
 - **Auth API wrappers** `src/lib/api/auth.ts` — `exchangeCode()`, `refreshTokens()`, `logout()`, `getMe()`, typed with `@bar/contracts` (`MobileTokenResponseSchema`, `AuthMeSchema`).
 - **App start** — `_layout.tsx` auth gate: tokens in SecureStore → `getMe()` (the client refreshes if the access token expired) → `(tabs)`; no tokens or refresh fails → `/login`. Splash/loading while checking — no login-screen flash for a signed-in user.
@@ -41,7 +41,7 @@ A staff member taps "เข้าสู่ระบบด้วย LINE", signs 
 ### Out (do NOT build here)
 - Wiring the order queue to the real API, status actions, order detail → next mobile brief.
 - New order (CD-14), tables, socket.io, push + push token (DR-003), notifications onboarding screen.
-- Permission-based read-only UI (needs the IAM permissions endpoint).
+- Permission-based read-only UI — `GET /me/permissions` exists now (BRIEF-054); used from M3.
 - iOS-specific work — Android dev build is the demo target (mobile.md).
 - Any change to `app/backend`, `app/frontend`, `app/packages/contracts` — missing something there → tell Field (BRIEF-021 or a DR).
 
@@ -61,10 +61,10 @@ Built by **BRIEF-021** — consume it, don't change it.
 - **AC-3** — Given the user closes the browser (`cancel` / `dismiss`), then the login screen is back to default with no error.
 - **AC-4** — Given `error=not_registered`, then login·4 copy shows; given `error=login_failed` or the token call fails, then login·3 copy shows with "ลองอีกครั้ง".
 - **AC-5** — Given an expired access token, when any API call returns 401, then exactly **one** refresh call happens even for 3 parallel requests, new tokens are saved, and each request is retried once and succeeds.
-- **AC-6** — Given the refresh call fails (401), then tokens are cleared and the app shows login·5 ("ออกจากระบบแล้ว"); the back gesture cannot reach the tabs.
+- **AC-6** — Given the refresh call fails (401) — own logout elsewhere, expiry, or the owner deactivated the account (BRIEF-054) — then tokens are cleared and the app shows login·5 ("ออกจากระบบแล้ว"); the back gesture cannot reach the tabs.
 - **AC-7** — Given saved tokens, when the app starts, then it goes straight to ออเดอร์ (no login flash); given none, then login.
 - **AC-8** — Given อื่นๆ → ออกจากระบบ → confirm, then logout is called with the refresh token, tokens are cleared and login shows — also when the logout call fails (network).
-- **AC-9** — **Real device (after BRIEF-021 merges):** Android dev build, `EXPO_PUBLIC_USE_MOCKS=0`, own backend over the tunnel → LINE login → อื่นๆ shows the real LINE display name; kill and reopen the app → still signed in. Screen recording in the handoff.
+- **AC-9** — **Real device (after BRIEF-021 merges):** Android dev build, `EXPO_PUBLIC_USE_MOCKS=0`, own backend over the tunnel → LINE login → อื่นๆ shows the real LINE display name; kill and reopen the app → still signed in → owner deactivates this staff in the web back office (`/pos/settings/staff`) → next app action shows login·5 → owner re-activates. Screen recording in the handoff.
 - **AC-10** — No token in logs or AsyncStorage: `grep -rn "AsyncStorage\|console.log" app/mobile/src/lib` → none for tokens; tokens are written only in `token-storage.ts`.
 - **AC-11** — Gates pass; `EXPO_PUBLIC_USE_MOCKS=1` still runs the whole app with no backend.
 
@@ -128,10 +128,12 @@ A required script that doesn't exist yet = **BLOCKED** — report it, never skip
 - [x] Named implementer and auditor; scope/ACs/contracts/references complete
 - [x] Exact gates and evidence; dependencies have completion conditions (BRIEF-010 merged; BRIEF-021 merged before AC-9)
 - [x] No unresolved decision blocking the main outcome (DR-005 Approved)
-- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (2026-10-18, in session)
+- [x] Exact pre-decisions/unlocks; Field explicitly approved this revision (Rev 2, 2026-10-31, in session)
 
 ## Changelog
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-10-18 | Initial Draft (Cowork) — Metee's week-2 brief after BRIEF-010 |
 | 1 | 2026-10-18 | Ready — Rev 1 approved by Field in session ("approve both") |
+| 2 | 2026-10-31 | Sync with today's API: BRIEF-021 merged (dependency done); `not_registered` now records an access request (054) and also covers deactivated staff; AC-6 + AC-9 add owner deactivation → login·5; `/me/permissions` exists (still out, M3). Endpoints and copy unchanged (Cowork) |
+| 2 | 2026-10-31 | Ready — Rev 2 approved by Field in session ("approve 010 Rev 3 and 022 Rev 2") |
