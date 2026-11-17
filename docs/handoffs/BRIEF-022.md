@@ -5,11 +5,11 @@
 | **Implementer** | methee (Antigravity) |
 | **Date** | 2026-11-09 |
 | **Brief revision** | 2 |
-| **Branch** | `feat/BRIEF-022-mobile-line-login` (PR opens after audit PASS) |
-| **Work Commit** | `a576248` |
-| **Status** | Implemented — awaiting audit |
+| **Branch** | `feat/BRIEF-022-mobile-line-login` |
+| **Work Commit** | `0583e37` |
+| **Status** | Audit PASS (AC-9 deferred to BRIEF-059 per Field approval) |
 
-> Created at Implemented (commit `a576248`). Updated once in the PASS commit. Frozen at merge.
+> Created at Implemented (commit `0583e37`). Updated once in the PASS commit. Frozen at merge.
 
 ---
 
@@ -135,7 +135,7 @@ Exported: .expo-export
 | AC-6 | ✅ | `src/__tests__/lib/api/client.test.ts`, `src/__tests__/app/layout-auth-gate.test.tsx` (refresh 401 clears tokens + shows login·5; offline/5xx keeps tokens; back button exits) |
 | AC-7 | ✅ | `src/__tests__/app/layout-auth-gate.test.tsx`, `src/__tests__/lib/api/client.test.ts` (saved tokens route to orders queue; initSession preserves tokens on network error) |
 | AC-8 | ✅ | `src/__tests__/app/tabs-more.test.tsx` (logout calls API, clears tokens even on network error, routes to login) |
-| AC-9 | ⚠️ | deferred — รอ Field (real-device LINE login over tunnel; mock emulator run verified) |
+| AC-9 | ⚠️ | deferred to BRIEF-059 (Approved by Field; mock emulator run verified) |
 | AC-10 | ✅ | Grep check: 0 occurrences of `AsyncStorage` or `console.log` for tokens in `app/mobile/src/lib` |
 | AC-11 | ✅ | Gates pass: lint=0, typecheck=0, test=0 (48 passed), export:check=0, Sonar QG: OK, mocks supported |
 
