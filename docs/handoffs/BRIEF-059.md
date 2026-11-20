@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Implementer** | methee (Claude agent, Cowork session — executor per DR-030) · **Brief revision** 2 · **Date** 2026-11-20 |
+| **Implementer** | methee (Claude agent, Cowork session, then Claude Code on Metee's Mac for push, gates and Sonar — executor per DR-030) · **Brief revision** 2 · **Date** 2026-11-20 |
 | **Branch** | `feat/BRIEF-059-mobile-queue-live-actions` (worktree `.worktrees/BRIEF-059`) |
-| **Status** | BLOCKED — code + automated gates green; AC-10 device run, Android screenshots and the local Sonar scan still need Metee's machine (see *Not run*) |
+| **Status** | BLOCKED — code + automated gates green on the Mac, Sonar run and its in-scope findings fixed; AC-10 device run and Android screenshots still need Metee's phone (see *Not run*) |
 
 > Committed as S once the BLOCKED rows are closed. After the push, append **Work commit** and **CI run** below (uncommitted — they land in the ship commit H).
 
@@ -16,11 +16,33 @@
 | Lint | `pnpm --filter @bar/mobile lint` | 0 | clean |
 | Typecheck | `pnpm --filter @bar/mobile typecheck` | 0 | clean |
 | Unit / component | `pnpm --filter @bar/mobile test` | 0 | 19 suites, 92 passed |
-| Export | `pnpm --filter @bar/mobile export:check` | 0 | Android bundle, 4469 modules (run on x86_64 Linux; the Cowork VM is aarch64 and the Hermes `linux64-bin/hermesc` cannot run there) |
-| Sonar | `pnpm sonar` + `pnpm sonar:report` | — | **not run** — needs the local SonarQube + `SONAR_HOST_URL` (missing from `.env`) on Metee's Mac |
+| Export | `pnpm --filter @bar/mobile export:check` | 0 | Android Hermes bundle `.hbc` 8.6 MB, on the Mac (first run was on x86_64 Linux; the Cowork VM is aarch64 and the Hermes `linux64-bin/hermesc` cannot run there) |
+| Sonar | `pnpm sonar` + `pnpm sonar:report` | 0 | Quality Gate **OK** — see *Sonar* below |
 
 Baseline on the untouched branch (`819f197`): lint 0 · typecheck 0 · test 48/48 · export bundling OK (Hermes step as above).
-Gates were run on a clean `pnpm install --frozen-lockfile` copy of the worktree, so the Mac's `node_modules` was not touched. No `--no-verify`.
+First run: on a clean `pnpm install --frozen-lockfile` copy of the worktree (Cowork). Re-run on Metee's Mac in the worktree, at `6257875` and again after the Sonar fix `d61154c`, with the same results each time (lint 0 · typecheck 0 · test 19 suites / 92 passed · export 0). Jest prints "A worker process has failed to exit gracefully" after the run (exit stays 0). No `--no-verify`.
+
+## Sonar
+Local SonarQube Community Build 26.9 (`http://localhost:9000`, the script's default; `SONAR_HOST_URL` is not set in `.env`).
+
+**Repo scan** (`pnpm sonar` + `pnpm sonar:report`, project `bar-management`):
+- Scanned commit: `d61154c`
+- Quality Gate: OK
+- Failed conditions: none
+- Issues by severity: BLOCKER 1 · HIGH 6 · MEDIUM 16 · LOW 7 · INFO 0, all in `app/backend` / `app/frontend`, none touched by this brief
+
+`sonar-project.properties` sets `sonar.sources` to backend, frontend and contracts only, so the repo scan does **not** cover `app/mobile`. To check this brief's code, a second scan ran with a one-off override (`SONAR_SCANNER_JSON_PARAMS`, local project key `bar-management-mobile`, sources `app/mobile/src`, tests `app/mobile/src` + `app/mobile/test`). Nothing committed was changed for it.
+
+**Mobile scan** (project `bar-management-mobile`, 2,220 ncloc):
+- Before the fix (`6257875`): Quality Gate OK · 22 open issues · 7 on lines this brief added
+- Fixed in `d61154c` (`fix(BRIEF-059): sonar findings`, no behaviour change):
+  - S6759 ×5: props read-only in `OrderCard`, `OrderItemLines`, `QueueList`, `QueueNotices`, `TicketActionButton`
+  - S6606 ×2: `??=` in `lib/api/client.ts` `refreshAccessToken()` and in `mocks/tickets.ts` `currentMockState()`
+- After the fix (`d61154c`): Quality Gate **OK** · bugs 0 · vulnerabilities 0 · security hotspots 0 · duplication 5.2 % · 15 code smells, all on lines from before this brief (git blame), so left alone:
+  - S7746 ×4 and S3358 ×1 in `lib/api/client.ts` (BRIEF-022 interceptor)
+  - S7781 ×4 and S8786 ×1 in `lib/auth/pkce.ts`
+  - S6759 ×3 in `LoginView.tsx` ×2 and `QueueFilterChips.tsx`
+  - S6478 ×2 in `app/(tabs)/_layout.tsx`
 
 ## Acceptance lock
 None — BRIEF-059 finishes under Rev 23 (workflow §6 *Finish under Rev 23*: no lock commit, CI `lock` skips it via `LEGACY_BRIEFS`). The brief has no e2e section; the ACs are covered by the component/unit tests below.
@@ -57,7 +79,7 @@ Automated only so far: the real-API branch is exercised by component tests that 
 ### Not run — needs Metee (status stays BLOCKED until done)
 1. **AC-10 real device** — Android dev build against the dev backend over the ngrok tunnel: POS creates an order → card + Toast on the phone within ~2 s → phone รับออเดอร์ → POS shows "กำลังเตรียม · {name}" → phone เสิร์ฟแล้ว → gone on both → POS and phone tap รับออเดอร์ on one order within 1 s → one wins, the other gets the info Toast. Screen recording in this handoff. (Also closes BRIEF-022 AC-9, deferred here.)
 2. **Screenshots** (dark + light, `mobile.md` manual evidence) — `.field-kit/proof/AC2-orders-kitchen-off.png`, `AC3-orders-kitchen-on.png`, `AC5-orders-conflict-toast.png`, `AC6-orders-read-only.png`, `AC7-orders-new-order.png`, `AC8-orders-disconnected.png`.
-3. **Sonar** — `pnpm sonar` then `pnpm sonar:report`; paste the summary here; fix findings (an agent may fix them).
+3. ~~**Sonar**~~ — done 2026-11-20 on the Mac; see *Sonar*.
 
 ## AC check
 | AC | Met? | Evidence (test / step) | Screenshot |
@@ -76,7 +98,8 @@ Automated only so far: the real-API branch is exercised by component tests that 
 
 ## Disclosures
 - **Spec vs reality gaps:** none in the API — `/tickets`, `/venue`, `/me/permissions`, WS `/staff` with `auth.token` all exist as the brief says.
-- **Compromises:** export:check was run on x86_64 Linux, not on Metee's Mac; the Mac run happens with the device run.
+- **Compromises:** export:check first ran on x86_64 Linux; it has since been re-run green on Metee's Mac. The Sonar mobile coverage comes from a one-off scanner override, not the committed config (see *Sonar*).
+- **For Field:** `sonar-project.properties` leaves out `app/mobile`, so `pnpm sonar` never scans the staff app. Adding `app/mobile/src` to `sonar.sources`/`sonar.tests` is a quality-config change (Field-owned), so it is not made here.
 - **Callers affected:** `lib/api/client.ts` refresh logic was moved into `refreshAccessToken()` (same behaviour, now shared with the socket) — BRIEF-022 client tests re-run green. BRIEF-010 tests updated: the พร้อมเสิร์ฟ filter now needs kitchen on, and the station label shows only on split orders (R18, as the brief says).
 - **Out-of-scope defects found:** none.
 - **Living docs / env keys / migrations:** none. `.env` needs `EXPO_PUBLIC_USE_MOCKS=0` + `EXPO_PUBLIC_API_URL=https://<ngrok>/api` for the device run; `SONAR_HOST_URL` for Sonar.
