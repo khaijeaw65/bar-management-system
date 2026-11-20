@@ -58,6 +58,62 @@ apiClient.interceptors.request.use(async (config) => {
 
 let refreshPromise: Promise<string> | null = null;
 
+async function runRefresh(): Promise<string> {
+  try {
+    const tokens = await readTokens();
+    if (!tokens?.refreshToken) {
+      await clearTokens();
+      notifyAuthExpired();
+      throw new ApiError(401, 'UNAUTHORIZED', 'No refresh token available');
+    }
+
+    const response = await axios.post(
+      `${apiClient.defaults.baseURL}/auth/mobile/refresh`,
+      { refreshToken: tokens.refreshToken },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    const body = response.data;
+    const data = body && typeof body === 'object' && 'data' in body ? body.data : body;
+    const validated = MobileTokenResponseSchema.parse(data);
+
+    await saveTokens({
+      accessToken: validated.accessToken,
+      refreshToken: validated.refreshToken,
+    });
+
+    return validated.accessToken;
+  } catch (refreshErr) {
+    if (isAxiosError(refreshErr)) {
+      const status = refreshErr.response?.status;
+      if (status === 401) {
+        await clearTokens();
+        notifyAuthExpired();
+        throw new ApiError(401, 'UNAUTHORIZED', 'Session expired, please sign in again');
+      }
+      const errData = refreshErr.response?.data as { code?: string; message?: string } | undefined;
+      const code = errData?.code ?? (status ? 'API_ERROR' : 'NETWORK_ERROR');
+      const message = errData?.message ?? refreshErr.message ?? 'Refresh request failed';
+      throw new ApiError(status ?? 0, code, message);
+    }
+    if (refreshErr instanceof ApiError && refreshErr.status === 401) {
+      await clearTokens();
+      notifyAuthExpired();
+    }
+    throw refreshErr;
+  }
+}
+
+/** One shared refresh for every caller (REST 401 retry and the realtime socket). */
+export function refreshAccessToken(): Promise<string> {
+  if (!refreshPromise) {
+    refreshPromise = runRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
 apiClient.interceptors.response.use(
   (response) => {
     const payload = response.data;
@@ -75,57 +131,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      if (!refreshPromise) {
-        refreshPromise = (async () => {
-          try {
-            const tokens = await readTokens();
-            if (!tokens?.refreshToken) {
-              await clearTokens();
-              notifyAuthExpired();
-              throw new ApiError(401, 'UNAUTHORIZED', 'No refresh token available');
-            }
-
-            const response = await axios.post(
-              `${apiClient.defaults.baseURL}/auth/mobile/refresh`,
-              { refreshToken: tokens.refreshToken },
-              { headers: { 'Content-Type': 'application/json' } }
-            );
-
-            const body = response.data;
-            const data = body && typeof body === 'object' && 'data' in body ? body.data : body;
-            const validated = MobileTokenResponseSchema.parse(data);
-
-            await saveTokens({
-              accessToken: validated.accessToken,
-              refreshToken: validated.refreshToken,
-            });
-
-            return validated.accessToken;
-          } catch (refreshErr) {
-            if (isAxiosError(refreshErr)) {
-              const status = refreshErr.response?.status;
-              if (status === 401) {
-                await clearTokens();
-                notifyAuthExpired();
-                throw new ApiError(401, 'UNAUTHORIZED', 'Session expired, please sign in again');
-              }
-              const errData = refreshErr.response?.data as { code?: string; message?: string } | undefined;
-              const code = errData?.code ?? (status ? 'API_ERROR' : 'NETWORK_ERROR');
-              const message = errData?.message ?? refreshErr.message ?? 'Refresh request failed';
-              throw new ApiError(status ?? 0, code, message);
-            }
-            if (refreshErr instanceof ApiError && refreshErr.status === 401) {
-              await clearTokens();
-              notifyAuthExpired();
-            }
-            throw refreshErr;
-          } finally {
-            refreshPromise = null;
-          }
-        })();
-      }
-
-      const newAccessToken = await refreshPromise;
+      const newAccessToken = await refreshAccessToken();
       originalRequest.headers = originalRequest.headers || {};
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
       return await apiClient.request(originalRequest);

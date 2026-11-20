@@ -1,5 +1,11 @@
 import { TicketListSchema } from '@bar/contracts';
-import { mockTickets } from '../../mocks/tickets';
+import {
+  mockTickets,
+  transitionMockTicket,
+  resetMockTickets,
+  fetchMockTickets,
+} from '../../mocks/tickets';
+import { setMockKitchenDisplay } from '../../mocks/venue';
 
 describe('tickets mock fixtures (AC-6)', () => {
   it('passes TicketListSchema validation', () => {
@@ -44,5 +50,39 @@ describe('tickets mock fixtures (AC-6)', () => {
     // 1 issue ticket with issue filled
     const withIssue = mockTickets.items.filter((t) => t.issue !== null);
     expect(withIssue.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('mock ticket transitions mirror the server rule', () => {
+  const pendingT1 = 'a0000001-0000-4000-8000-000000000001';
+  const acceptedT3 = 'a0000001-0000-4000-8000-000000000004';
+
+  beforeEach(() => {
+    resetMockTickets();
+    setMockKitchenDisplay(false);
+  });
+
+  it('accept sets acceptedBy and a second accept is a 409', async () => {
+    const accepted = await transitionMockTicket(pendingT1, 'accept');
+    expect(accepted.status).toBe('accepted');
+    expect(accepted.acceptedBy?.displayName).toBe('บีม');
+    await expect(transitionMockTicket(pendingT1, 'accept')).rejects.toMatchObject({
+      status: 409,
+      code: 'INVALID_STATE_TRANSITION',
+    });
+  });
+
+  it('kitchen off: ready is refused, send from accepted removes the ticket from the queue', async () => {
+    await expect(transitionMockTicket(acceptedT3, 'ready')).rejects.toMatchObject({ status: 409 });
+    const sent = await transitionMockTicket(acceptedT3, 'send');
+    expect(sent.status).toBe('sent');
+    const queue = await fetchMockTickets();
+    expect(queue.items.find((t) => t.id === acceptedT3)).toBeUndefined();
+  });
+
+  it('kitchen on: a table ticket goes accepted → ready', async () => {
+    setMockKitchenDisplay(true);
+    const ready = await transitionMockTicket(acceptedT3, 'ready');
+    expect(ready.status).toBe('ready');
   });
 });

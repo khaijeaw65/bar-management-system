@@ -1,4 +1,6 @@
-import type { TicketList } from '@bar/contracts';
+import type { Ticket, TicketList } from '@bar/contracts';
+import { ApiError } from '../lib/api/client';
+import { getMockVenue } from './venue';
 
 const sharedOrderId = '11111111-1111-4111-8111-111111111111';
 const staffBeam = { staffId: '00000000-0000-4000-8000-000000000001', displayName: 'บีม' };
@@ -423,6 +425,20 @@ export function getFreshMockTickets(): TicketList {
 
 export const mockTickets: TicketList = getFreshMockTickets();
 
+let mockState: TicketList | null = null;
+
+function currentMockState(): TicketList {
+  if (!mockState) {
+    mockState = getFreshMockTickets();
+  }
+  return mockState;
+}
+
+/** Back to the fixtures — tests call this so transitions never leak between cases. */
+export function resetMockTickets(): void {
+  mockState = null;
+}
+
 export async function fetchMockTickets(): Promise<TicketList> {
   if (mockDelayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, mockDelayMs));
@@ -430,5 +446,45 @@ export async function fetchMockTickets(): Promise<TicketList> {
   if (mockError) {
     throw new Error('โหลดออเดอร์ไม่สำเร็จ');
   }
-  return getFreshMockTickets();
+  return { items: currentMockState().items.filter((t) => t.status !== 'sent') };
+}
+
+type MockTransition = 'accept' | 'ready' | 'send';
+
+/** Mirrors the server rule (ticket-transition.ts) so mock mode behaves like the API. */
+function nextMockStatus(ticket: Ticket, action: MockTransition): Ticket['status'] | null {
+  const kitchenOn = getMockVenue().kitchenDisplayEnabled;
+  if (action === 'accept') return ticket.status === 'pending' ? 'accepted' : null;
+  if (action === 'ready') {
+    const allowed = ticket.status === 'accepted' && kitchenOn && ticket.seat.kind === 'table';
+    return allowed ? 'ready' : null;
+  }
+  const skipReady = !kitchenOn || ticket.seat.kind === 'counter';
+  const allowed = ticket.status === 'ready' || (ticket.status === 'accepted' && skipReady);
+  return allowed ? 'sent' : null;
+}
+
+export async function transitionMockTicket(id: string, action: MockTransition): Promise<Ticket> {
+  if (mockDelayMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, mockDelayMs));
+  }
+  const state = currentMockState();
+  const ticket = state.items.find((t) => t.id === id);
+  if (!ticket) {
+    throw new ApiError(404, 'NOT_FOUND', 'ไม่พบออเดอร์');
+  }
+  const status = nextMockStatus(ticket, action);
+  if (!status) {
+    throw new ApiError(409, 'INVALID_STATE_TRANSITION', 'สถานะออเดอร์เปลี่ยนไปแล้ว');
+  }
+  const now = new Date().toISOString();
+  const updated: Ticket = {
+    ...ticket,
+    status,
+    acceptedBy: action === 'accept' ? staffBeam : ticket.acceptedBy,
+    sentAt: status === 'sent' ? now : ticket.sentAt,
+    updatedAt: now,
+  };
+  mockState = { items: state.items.map((t) => (t.id === id ? updated : t)) };
+  return updated;
 }
