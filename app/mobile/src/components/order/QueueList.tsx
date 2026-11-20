@@ -18,7 +18,7 @@ export interface QueueListProps {
   onRefresh: () => void;
 }
 
-export function QueueList({ tickets, allTickets, highlighted, kitchenOn, canAct, isRefetching, onRefresh }: QueueListProps) {
+export function QueueList({ tickets, allTickets, highlighted, kitchenOn, canAct, isRefetching, onRefresh }: Readonly<QueueListProps>) {
   const split = useMemo(() => splitOrderIds(allTickets), [allTickets]);
 
   return (

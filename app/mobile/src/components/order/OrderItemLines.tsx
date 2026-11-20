@@ -4,7 +4,7 @@ import type { Ticket } from '@bar/contracts';
 const MAX_LINES = 3;
 
 /** Up to 3 item lines + "+ n รายการ"; cancelled lines struck through (CD-08 §9). */
-export function OrderItemLines({ items }: { items: Ticket['items'] }) {
+export function OrderItemLines({ items }: Readonly<{ items: Ticket['items'] }>) {
   const remainingCount = items.length - MAX_LINES;
   return (
     <View className="gap-1 mt-1">

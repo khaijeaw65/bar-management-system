@@ -428,9 +428,7 @@ export const mockTickets: TicketList = getFreshMockTickets();
 let mockState: TicketList | null = null;
 
 function currentMockState(): TicketList {
-  if (!mockState) {
-    mockState = getFreshMockTickets();
-  }
+  mockState ??= getFreshMockTickets();
   return mockState;
 }
 

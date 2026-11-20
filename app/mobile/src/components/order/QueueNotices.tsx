@@ -8,7 +8,7 @@ export interface QueueNoticesProps {
 }
 
 /** queue·6 connection banner and queue·8 read-only notice. */
-export function QueueNotices({ disconnected, readOnly }: QueueNoticesProps) {
+export function QueueNotices({ disconnected, readOnly }: Readonly<QueueNoticesProps>) {
   if (!disconnected && !readOnly) return null;
   return (
     <View className="px-4 pb-3 gap-2">

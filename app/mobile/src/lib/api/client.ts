@@ -106,11 +106,9 @@ async function runRefresh(): Promise<string> {
 
 /** One shared refresh for every caller (REST 401 retry and the realtime socket). */
 export function refreshAccessToken(): Promise<string> {
-  if (!refreshPromise) {
-    refreshPromise = runRefresh().finally(() => {
-      refreshPromise = null;
-    });
-  }
+  refreshPromise ??= runRefresh().finally(() => {
+    refreshPromise = null;
+  });
   return refreshPromise;
 }
 

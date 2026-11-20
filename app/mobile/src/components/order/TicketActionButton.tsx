@@ -9,7 +9,7 @@ export interface TicketActionButtonProps {
 }
 
 /** The card's one status step, bottom-left, ≤ 190 px (R7, CD-08 §7). No button for issue tickets (M4). */
-export function TicketActionButton({ ticket, kitchenOn }: TicketActionButtonProps) {
+export function TicketActionButton({ ticket, kitchenOn }: Readonly<TicketActionButtonProps>) {
   const { mutate, isPending } = useTicketAction(ticket.id);
   const action = nextAction(ticket, kitchenOn);
   if (!action) return null;

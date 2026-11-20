@@ -40,7 +40,7 @@ function chipLabel(ticket: Ticket): string {
   return ticket.status === 'accepted' && ticket.acceptedBy ? `${base} · ${ticket.acceptedBy.displayName}` : base;
 }
 
-export function OrderCard({ ticket, isSplit, highlighted = false, footer }: OrderCardProps) {
+export function OrderCard({ ticket, isSplit, highlighted = false, footer }: Readonly<OrderCardProps>) {
   const statusMeta = STATUS_MAP[ticket.status];
 
   return (
