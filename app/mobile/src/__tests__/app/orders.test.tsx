@@ -3,7 +3,8 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HeroUINativeProvider } from 'heroui-native';
 import OrdersScreen from '../../app/(tabs)/orders';
-import { setMockTicketsError, setMockDelayMs } from '../../mocks/tickets';
+import { setMockTicketsError, setMockDelayMs, resetMockTickets } from '../../mocks/tickets';
+import { setMockKitchenDisplay } from '../../mocks/venue';
 import * as api from '../../lib/api/tickets';
 
 function createTestQueryClient() {
@@ -33,6 +34,8 @@ describe('OrdersScreen (AC-3, AC-4, AC-5)', () => {
   beforeEach(() => {
     setMockTicketsError(false);
     setMockDelayMs(0);
+    resetMockTickets();
+    setMockKitchenDisplay(false);
     process.env.EXPO_PUBLIC_USE_MOCKS = '1';
   });
 
@@ -130,11 +133,14 @@ describe('OrdersScreen (AC-3, AC-4, AC-5)', () => {
       };
     });
 
+    // The พร้อมเสิร์ฟ filter exists only with the kitchen screen on (BRIEF-059, DR-014 #1)
+    setMockKitchenDisplay(true);
     const queryClient = createTestQueryClient();
     await renderOrdersScreen(queryClient);
 
     await waitFor(() => {
       expect(screen.getAllByText(orderTag(42))).toHaveLength(2);
+      expect(screen.getByTestId('filter-ready')).toBeTruthy();
     });
 
     // sent and cancelled are excluded

@@ -1,10 +1,20 @@
+import type { ReactNode } from 'react';
 import { View, Text } from 'react-native';
 import { Card, Chip } from 'heroui-native';
 import type { Ticket } from '@bar/contracts';
 import { timeAgo } from '../../lib/utils';
+import { orderTag } from '../../lib/tickets/copy';
+import { seatLine } from '../../lib/tickets/seat-line';
+import { OrderItemLines } from './OrderItemLines';
 
 export interface OrderCardProps {
   ticket: Ticket;
+  /** The order has more than one ticket in the list → show the station (R18). */
+  isSplit: boolean;
+  /** New order just arrived (queue·5). */
+  highlighted?: boolean;
+  /** Status button or read-only line, bottom-left (R7). */
+  footer?: ReactNode;
 }
 
 type TicketStatus = Ticket['status'];
@@ -24,55 +34,41 @@ const STATUS_MAP: Record<TicketStatus, StatusMeta> = {
   cancelled: { label: 'ยกเลิก', bgClass: 'bg-status-void-bg', textClass: 'text-status-void-fg' },
 };
 
-function getStatusMeta(status: TicketStatus): StatusMeta {
-  return STATUS_MAP[status];
+/** "กำลังเตรียม · บีม" — the acceptor's name rides on the accepted chip (R14). */
+function chipLabel(ticket: Ticket): string {
+  const base = STATUS_MAP[ticket.status].label;
+  return ticket.status === 'accepted' && ticket.acceptedBy ? `${base} · ${ticket.acceptedBy.displayName}` : base;
 }
 
-export function OrderCard({ ticket }: OrderCardProps) {
-  const orderNumberStr = `#${String(ticket.orderNumber).padStart(4, '0')}`;
-  const stationLabel = ticket.station === 'food' ? 'ครัว' : ticket.station === 'bar' ? 'บาร์' : null;
-  const firstOrderedBy = ticket.items.find((item) => item.orderedByName)?.orderedByName ?? null;
-  const seatAndInfo = [ticket.seat.label, firstOrderedBy, stationLabel].filter(Boolean).join(' · ');
-  const statusMeta = getStatusMeta(ticket.status);
-
-  const visibleItems = ticket.items.slice(0, 3);
-  const remainingCount = ticket.items.length - 3;
+export function OrderCard({ ticket, isSplit, highlighted = false, footer }: OrderCardProps) {
+  const statusMeta = STATUS_MAP[ticket.status];
 
   return (
-    <Card className="bg-surface-card border border-line p-4 rounded-xl gap-2">
+    <Card
+      testID={highlighted ? 'order-card-highlighted' : 'order-card'}
+      className={`border p-4 rounded-xl gap-2 ${
+        highlighted ? 'bg-accent-soft border-accent' : 'bg-surface-card border-line'
+      }`}
+    >
       <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center gap-2">
-          <Text className="text-base font-bold text-text-body font-sans">{orderNumberStr}</Text>
-          <Text className="text-sm text-text-muted font-sans">{timeAgo(ticket.createdAt)}</Text>
+        <View className="flex-row items-center gap-2 flex-shrink">
+          <Text className="text-base font-bold text-text-body font-sans">{orderTag(ticket.orderNumber)}</Text>
+          <Chip className={`px-2 py-0.5 rounded-full ${statusMeta.bgClass}`}>
+            <Chip.Label className={`text-xs font-semibold font-sans ${statusMeta.textClass}`}>
+              {chipLabel(ticket)}
+            </Chip.Label>
+          </Chip>
         </View>
-        <Chip className={`px-2 py-0.5 rounded-full ${statusMeta.bgClass}`}>
-          <Chip.Label className={`text-xs font-semibold font-sans ${statusMeta.textClass}`}>
-            {statusMeta.label}
-          </Chip.Label>
-        </Chip>
+        <Text className="text-sm text-text-muted font-sans">{timeAgo(ticket.createdAt)}</Text>
       </View>
 
-      <Text className="text-sm font-medium text-text-muted font-sans">{seatAndInfo}</Text>
+      <Text numberOfLines={1} className="text-sm font-medium text-text-muted font-sans">
+        {seatLine(ticket, isSplit)}
+      </Text>
 
-      <View className="gap-1 mt-1">
-        {visibleItems.map((item) => {
-          const isCancelled = item.cancelledAt !== null;
-          return (
-            <Text
-              key={item.id}
-              testID={isCancelled ? 'cancelled-order-item' : undefined}
-              className={`text-sm font-sans ${
-                isCancelled ? 'line-through text-text-faint' : 'text-text-body'
-              }`}
-            >
-              {item.quantity}× {item.name}
-            </Text>
-          );
-        })}
-        {remainingCount > 0 && (
-          <Text className="text-xs text-text-faint font-sans">+ {remainingCount} รายการ</Text>
-        )}
-      </View>
+      <OrderItemLines items={ticket.items} />
+
+      {footer}
     </Card>
   );
 }

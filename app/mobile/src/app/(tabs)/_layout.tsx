@@ -1,6 +1,8 @@
 import { Tabs } from 'expo-router';
 import { ClipboardList, Menu } from 'lucide-react-native';
 import { useCSSVariable } from 'uniwind';
+import { useStaffRealtime } from '../../hooks/useStaffRealtime';
+import { clearUnseenOrders, useNewOrders } from '../../lib/realtime/new-orders';
 
 function asColor(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined;
@@ -11,6 +13,8 @@ export default function TabsLayout() {
   const border = asColor(useCSSVariable('--line'));
   const activeTint = asColor(useCSSVariable('--accent'));
   const inactiveTint = asColor(useCSSVariable('--text-muted'));
+  useStaffRealtime();
+  const { unseen } = useNewOrders();
 
   return (
     <Tabs
@@ -27,8 +31,10 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="orders"
+        listeners={{ focus: clearUnseenOrders, tabPress: clearUnseenOrders }}
         options={{
           title: 'ออเดอร์',
+          tabBarBadge: unseen > 0 ? unseen : undefined,
           tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />,
         }}
       />

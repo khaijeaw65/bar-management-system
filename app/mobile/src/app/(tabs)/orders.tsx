@@ -1,25 +1,31 @@
-import { View, Text, FlatList, RefreshControl } from 'react-native';
+import { View, Text } from 'react-native';
 import { Alert, Button, Skeleton } from 'heroui-native';
 import { useTicketQueue } from '../../hooks/useTicketQueue';
 import { useQueueFilter } from '../../hooks/useQueueFilter';
-import { OrderCard } from '../../components/order/OrderCard';
+import { useVenue } from '../../hooks/useVenue';
+import { useMyPermissions } from '../../hooks/useMyPermissions';
+import { useConnectionBanner } from '../../hooks/useConnectionBanner';
+import { useNewOrders } from '../../lib/realtime/new-orders';
 import { QueueFilterChips } from '../../components/order/QueueFilterChips';
+import { QueueNotices } from '../../components/order/QueueNotices';
+import { QueueList } from '../../components/order/QueueList';
 
 export default function OrdersScreen() {
   const { data, isLoading, isError, isRefetching, refetch } = useTicketQueue();
   const { filter, setFilter, tickets, hasIssue } = useQueueFilter(data);
+  const venue = useVenue();
+  const permissions = useMyPermissions();
+  const disconnected = useConnectionBanner();
+  const { highlighted } = useNewOrders();
+  const kitchenOn = venue.data ? venue.data.kitchenDisplayEnabled : null;
+  const readOnly = permissions.isSuccess && !permissions.canUpdateStatus;
 
   if (isLoading) {
     return (
       <View className="flex-1 bg-bg-app p-4 pt-12 gap-3" testID="orders-loading">
         <Text className="text-2xl font-bold text-text-body font-sans mb-2">ออเดอร์</Text>
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton
-            key={i}
-            testID="order-skeleton"
-            isLoading
-            className="h-28 rounded-xl bg-surface-card"
-          />
+          <Skeleton key={i} testID="order-skeleton" isLoading className="h-28 rounded-xl bg-surface-card" />
         ))}
       </View>
     );
@@ -37,9 +43,7 @@ export default function OrdersScreen() {
           className="bg-surface-raised border border-line px-6 py-3 rounded-xl min-h-[44px]"
           onPress={() => refetch()}
         >
-          <Button.Label className="text-sm font-semibold text-text-body font-sans">
-            ลองอีกครั้ง
-          </Button.Label>
+          <Button.Label className="text-sm font-semibold text-text-body font-sans">ลองอีกครั้ง</Button.Label>
         </Button>
       </View>
     );
@@ -48,22 +52,21 @@ export default function OrdersScreen() {
   return (
     <View className="flex-1 bg-bg-app pt-12">
       <Text className="text-2xl font-bold text-text-body font-sans px-4 mb-3">ออเดอร์</Text>
+      <QueueNotices disconnected={disconnected} readOnly={readOnly} />
       <QueueFilterChips
         currentFilter={filter}
         onSelectFilter={setFilter}
         hasIssue={hasIssue}
+        showReady={kitchenOn === true}
       />
-      <FlatList
-        data={tickets}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <OrderCard ticket={item} />}
-        contentContainerClassName="p-4 gap-3"
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-        ListEmptyComponent={
-          <View className="py-20 items-center justify-center">
-            <Text className="text-sm text-text-faint font-sans">ยังไม่มีออเดอร์</Text>
-          </View>
-        }
+      <QueueList
+        tickets={tickets}
+        allTickets={data?.items ?? []}
+        highlighted={highlighted}
+        kitchenOn={kitchenOn}
+        canAct={permissions.canUpdateStatus}
+        isRefetching={isRefetching}
+        onRefresh={refetch}
       />
     </View>
   );

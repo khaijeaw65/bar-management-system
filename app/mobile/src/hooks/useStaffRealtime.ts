@@ -25,7 +25,9 @@ export function useStaffRealtime(): void {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const showRef = useRef(toast.show);
-  showRef.current = toast.show;
+  useEffect(() => {
+    showRef.current = toast.show;
+  }, [toast.show]);
 
   useEffect(() => {
     if (!realtimeEnabled()) return undefined;

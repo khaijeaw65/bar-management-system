@@ -19,13 +19,17 @@ export interface QueueFilterChipsProps {
   currentFilter: FilterType;
   onSelectFilter: (filter: FilterType) => void;
   hasIssue: boolean;
+  /** "พร้อมเสิร์ฟ" exists only with the kitchen screen on (DR-014 #1). */
+  showReady: boolean;
 }
 
 export function QueueFilterChips({
   currentFilter,
   onSelectFilter,
   hasIssue,
+  showReady,
 }: QueueFilterChipsProps) {
+  const filters = showReady ? FILTERS : FILTERS.filter((f) => f.id !== 'ready');
   return (
     <View className="pb-3">
       <ScrollView
@@ -33,7 +37,7 @@ export function QueueFilterChips({
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="px-4 gap-2"
       >
-        {FILTERS.map((f) => {
+        {filters.map((f) => {
           const active = currentFilter === f.id;
           return (
             <Chip
