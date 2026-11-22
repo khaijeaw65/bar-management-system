@@ -16,7 +16,7 @@ A **role is a session**, not a person. One person may run every role, switching 
 |---|---|---|
 | Planning | Cowork | Drafts in the main checkout (uncommitted): briefs, feature specs, defect files, DRs, FRD |
 | Implementation | Cursor, Claude Code, Antigravity, Codex — host tools only (git runs inside the worktree; a VM cannot) | Code + tests + handoff inside the brief's worktree; all brief commits and pushes |
-| Audit | Cowork (or Codex when Field assigns it) | Audit report only, uncommitted in the brief's worktree |
+| Audit | Cowork (or Codex when Field assigns it, or a subagent / fresh session of the builder tool when only that tool is available — `/audit` §1) | Audit report only, uncommitted in the brief's worktree |
 | PR review | a host tool with `gh` | Merge, worktree cleanup |
 | Autopilot | executor | Its own `auto/…` worktree and `docs/PLAN.md` |
 
@@ -57,7 +57,7 @@ docs/
                      └─ brief Draft → Dry Run (walk the steps; hard flag → executor scan) → Field "Ready"   (main checkout, uncommitted)
 execute ── worktree + seed commit → Step 0: e2e red = lock → build steps (1 step = 1 commit)
         ── gates + run proof → handoff commit = S → push
-audit   ── PASS ─────────────→ ship: commit audit + handoff = H → push → PR → pr-review → merge
+audit   ── PASS ─────────────→ ship: commit audit + handoff = H → push → PR → pr-review (verdict) → owner: approve merge → merge
         └─ CHANGES REQUIRED → fix → new S → re-audit
 ```
 
@@ -68,27 +68,29 @@ audit   ── PASS ─────────────→ ship: commit audi
 - **Read list:** the brief names the exact sections and rows of the feature files the executor and auditor read (R/AC ids, contracts, `ui.md` rows, design boards) — it points, it does not copy. Reading beyond it is noted in the handoff.
 - **Ceiling:** a brief must be auditable in one session; expected diff larger than that → split. Default is one brief whose work is ordered **steps** (never "phases").
 - **Design order:** UI design happens in the feature's UI stage, after `design.md` is confirmed, from `ui.md` → *Design input* — never from the DB schema and never inside a brief. A brief with `ui` on cites approved boards only.
-- **Sections on** (brief header, fixed tokens): `e2e` (behaviour visible via API/UI) · `runproof` (runtime change) · `ui` (screens) · `guard` (schema/deps/contract) · `repro` (bug). The Dry Run looks only for the needs of switched-on sections.
+- **Sections on** (brief header, fixed tokens): `e2e` (behaviour visible via API/UI) · `runproof` (runtime change) · `ui` (screens — header **UI** `small`: existing screen, before / after shots · `screens`: approved boards) · `guard` (schema/deps/contract) · `repro` (bug). The Dry Run looks only for the needs of switched-on sections.
 
 ### 3.2 Dry Run — walk the build steps (before Ready, `path:line` evidence)
 A rehearsal of the work, not a list of facts: a **fresh agent that has only the brief and the repo** (what the executor will have) goes through the build steps in order, as if doing them, to catch early what the executor would hit. The planner then closes every gap.
 - **Per step:** what it touches · what it needs and whether that exists (schema/entity · wiring + protected files → unlock list · packages · contract fields, error codes, nullability = DB nullability, no invented `?? ''` fallbacks · tokens/components/boards and every value the boards leave open · e2e isolation: own DB, Redis prefix, random port · something an earlier step must create first) · what would block or have to be guessed.
 - **Every blocker / guess is closed before Ready:** the code answers it · Pre-decided item · **Builder's choice** (the executor decides inside a stated bound and reports it in the handoff — never a Guard trigger or user-visible behaviour) · new or reordered step · spec fix · Field's answer · DR. A question that still reaches the build is written in the handoff (*Questions the brief did not answer*) and asked up front in the next briefs. Only external/runtime facts stay *Assumed*.
+- **Wording:** `scripts/field-kit/check-brief.sh` finds no hedge words (maybe, etc., TBD, น่าจะ, ตามความเหมาะสม …) — each becomes an exact rule, Pre-decided item or bounded Builder's choice.
 - **Whole-brief checks:** gate scripts exist (or `BLOCKED until BRIEF-###`) · every *Depends on* merged, no code-map overlap with briefs in flight (`.worktrees/*`, `feat/BRIEF-*`) · `ui`: design snapshot approved, tokens/font match the frontend · `runproof`: feasible — accounts, keys, callbacks, devices, screenshots — or narrowed now · Read list sections exist.
 - **Executor scan (`scan BRIEF-###`) — required with a hard flag, optional otherwise:** the executor walks the same steps read-only on the host, runs the brief's gates on `main` as a baseline, reports gaps to `.field-kit/state/<id>-scan-BRIEF-###.md` (local) and stops — no code, no branch. The planner resolves each gap and records the scan in the brief.
 
 Executors never turn a Draft into Ready. Record approval in the brief changelog; bump the revision on content changes.
 
 ### 3.3 Implementation (in the brief's worktree)
+0. **Brief check (builder, before any worktree):** `check-brief.sh` clean, every AC has a test-plan row, every step names its files, the steps can be walked without guessing, Read list sections exist, UI level set when `ui` is on (a `scan` before Ready with the brief unchanged → the first two checks only) — else stop and hand the gaps back to the planner (`/new-brief BRIEF-###`); never fill a gap yourself.
 1. **Seed:** `git worktree add --no-track .worktrees/BRIEF-### -b feat/BRIEF-###-<slug> origin/main` after `git fetch`; move the brief's own new files (brief, defect file, new feature folder) into it; apply tracked-file hunks (e.g. `INVARIANTS.md` rows) inside the worktree and restore the main-checkout copy; set the defect `Status: In progress · Fixed by: BRIEF-###`; copy `.env*` (never committed); install deps; **run the brief's gates once on the untouched worktree** — red = `main` is red → stop and report, do not start; commit `docs(BRIEF-###): Ready — Rev n`.
    - **A seed never gets its own PR** — the brief's one PR opens at ship (step 7). A seed PR opened by mistake is closed unmerged.
    - **Metee's machine:** his executor seeds and works in a worktree on his machine and pushes; Cowork audits the pushed branch from Field's main checkout (a host tool fetches it). The report goes to Metee unchanged and his executor commits it at ship.
 2. **Step 0:** verify executor-owned *Assumed* rows; write the e2e files from the brief's Acceptance test plan (mirror an existing green e2e); run → every new-behaviour case fails red on an assertion (cases already true are listed); commit **test files only** as `test(BRIEF-###): acceptance (red)` — the **lock** — and push it right away. The e2e runner config present at that commit is locked with it. Red output goes into the handoff. A locked file changed without the OK → `git revert` that commit (CI checks the net change since the lock); never rewrite branch history. A later change to a locked e2e file needs Field's OK and a commit with `Approved-by: Field (e2e-change)`.
 3. **Build steps:** inside → out, unit tests per step, **1 step = 1 commit** `feat(BRIEF-###): <step>`. Large context → `/checkpoint`; a fresh session resumes from the last commit.
 4. **Gates + run proof:** all brief gate commands green (this repo's e2e: backend Vitest `app/backend/test/**/*.e2e-spec.ts`, web Playwright `app/frontend/e2e/**/*.spec.ts`; native mobile run proof = build + install on an emulator/device → launch; a green build alone is not proof); run proof = stack up → migrations → health 200 → a real request on the changed path (UI: exercised on screen **with a result screenshot per screen AC**; defect: the repro replayed). Isolation: `COMPOSE_PROJECT_NAME=brief-###` and no fixed host ports, otherwise one stack at a time. Anything required not run → `BLOCKED`, ask Field.
-5. **Handoff:** write `docs/handoffs/BRIEF-###.md`, commit `docs(BRIEF-###): handoff` = **S**, push. Then append `Work commit: <S>` and the CI run URL to the handoff (uncommitted — lands in H). `Next → in Cowork: audit BRIEF-###`.
+5. **Handoff:** write `docs/handoffs/BRIEF-###.md`, commit `docs(BRIEF-###): handoff` = **S**, push. Then append `Work commit: <S>` and the CI run URL to the handoff (uncommitted — lands in H). Then the hand-off block for `audit BRIEF-###` to Cowork.
 6. **Fix round:** the list is the audit report's `## FIX` section, nothing else; per item reproduce it failing → fix → same proof passing; other problems seen are listed *Found, not fixed*; re-run gates + run proof; commit, push, append a fix round to the handoff; new S.
-7. **Ship (after PASS):** commit the audit report unchanged + final handoff = **H**, push, open the PR. `Next → in <host git tool>: pr-review`.
+7. **Ship (after PASS):** commit the audit report unchanged + final handoff = **H**, push, open the PR. Then `pr-review` (review phase — no merge): run it now when already in a host git tool, otherwise the hand-off block for `pr-review` to the host git tool.
 
 Stage explicit paths only — never `git add -A` / `git commit -a`. No bookkeeping-only commits.
 
@@ -104,7 +106,7 @@ At most **two** briefs in flight at once (Field), only when code maps do not ove
 
 ## 4. Identity, Commands, Session Loop
 
-`onboard <id>` writes `{ "developer": "<id>" }` to the gitignored `.agent-local.json` and creates the local state file from `.field-kit/state/_TEMPLATE.md`. Explicit session input wins; never infer identity from Git author or tool account. At session start also list keys in each `.env.example` (root, `app/backend`, `app/frontend`) missing from the matching local file (`.env`; `.env.local` for the frontend) — names only, never values.
+`onboard <id>` (skill `/onboard`; tools without the plugin follow its steps by hand) writes `{ "developer": "<id>" }` to the gitignored `.agent-local.json`, creates the local state file from `.field-kit/state/_TEMPLATE.md`, and sets `core.hooksPath=.githooks` when it is empty (never over another hook setup) — git config is per clone, so every person runs it once. Explicit session input wins; never infer identity from Git author or tool account. At session start also list keys in each `.env.example` (root, `app/backend`, `app/frontend`) missing from the matching local file (`.env`; `.env.local` for the frontend) — names only, never values.
 
 **Approval policy:** routine brief-scoped work and task-branch Git (commit / push / PR) proceed without repeated questions; critical decisions, destructive actions, main merges and releases need Field's explicit authority. Tool / sandbox permission prompts are separate.
 
@@ -112,6 +114,7 @@ At most **two** briefs in flight at once (Field), only when code maps do not ove
 |---|---|---|
 | `/new-brief` | 3.1–3.2 | Default entry: triage → Draft → Dry Run → Ready on Field's explicit OK. Routes to `/new-feature` when scope says so. |
 | `/new-feature` | 2, 3.1 | Interview → `features/<f>/` (+ FRD link, INVARIANTS rows) → proposed slices. |
+| `onboard <id>` | 4 | One person, one clone: `.agent-local.json`, local state file, `core.hooksPath`, hook bits. |
 | `/new-defect` | 2 | Log + investigate: defect file with root cause and "caught at" → offer `/new-brief Type: Defect`. |
 | `/new-dr` | AGENTS.md Guard | Pending DR with options, under-the-hood flow, recommendation. |
 | `scan BRIEF-###` | 3.2 | Executor, read-only, before Ready: walk the build steps + baseline gates on `main` → gap report. No code. |
@@ -120,15 +123,58 @@ At most **two** briefs in flight at once (Field), only when code maps do not ove
 | `ship BRIEF-###` | 3.3 step 7 | Audit + handoff = H → PR. |
 | `audit BRIEF-###` (`ตรวจ`) | 6 | Independent audit of S from the main checkout against the branch ref, row by row from `docs/rules/audit.md`. |
 | `/review` | 6 | Mid-coding diff check against rule IDs; no audit file. |
-| `pr-review` / `approve merge BRIEF-###` (`อนุมัติ merge`) | 7 | CI on H, S..H, authority, merge, worktree cleanup. |
+| `pr-review` | 7 | Review phase, right after ship: audit PASS, S..H, `ci` on H → verdict, posted as a PR comment naming H. No merge. |
+| `approve merge BRIEF-###` (`อนุมัติ merge`) | 7 | The owner's explicit word: re-check H, approve, merge, worktree cleanup. |
 | `/checkpoint` · `resume` | 1, 2 | Flush decisions to working files + local state; pick up with a 3-line header. |
 | `/autopilot` | 4 | Unattended run in its own `auto/…` worktree from `docs/PLAN.md`; one PR. The one exception to the brief flow — personal / low-stakes work only. |
 | `status BRIEF-###` (`สถานะ`) | — | Read-only: brief, branch, PR, CI. |
 | `handoff` | 3.3 | Stopping mid-brief: WIP commit `chore(BRIEF-###): wip — <step>` + push on the brief branch (no state, no PR). |
 
-**Cross-tool rule:** at S the executor writes `Next → in Cowork: audit BRIEF-###`; the auditor answers `Next → in <Executor>: fix …` or `ship …`. A session asked to audit work it implemented, fixed or paired on refuses and names the assigned auditor.
+**Cross-tool rule:** at S the executor hands off `audit BRIEF-###` to Cowork; the auditor hands back `fix BRIEF-### — audit round <n>` or `ship BRIEF-###` to the executor; after H, `pr-review` goes to the host git tool. Each hand-off uses the block below.
+
+**Hand-off message.** How a session ends depends on **where the next step happens**:
+
+| Next step | Reply |
+|---|---|
+| Same session, already authorized (the request covered it) | Just do it, then report the result. No question, no block. |
+| Same session, needs a decision only the owner can make (a finding, a choice between options, an action outside the request) | One short plain question about that decision — "Found 2 ways to fix the retry: A or B?" No block, no model line. |
+| Another tool, role or a fresh session (planner → builder → auditor → host git tool, or after `/checkpoint`) | The hand-off block below. |
+
+**Git steps the command covers are never asked** — commit, push, open the PR on a branch: do them (never to `main`) and report. **The merge is the exception:** it runs only on the owner's explicit `approve merge BRIEF-###`, after `pr-review` has reported its verdict. Never hand off to the tool or session you are in, and never ask a question and give a block for the same step. Report the result first, then the one ending. The block — the command alone inside the fence, nothing else:
+
+> ▶️ **Next → <tool>** · model **<tier>** · effort **<level>** — <one line why>
+> ```text
+> <exact command to paste, e.g. execute BRIEF-012>
+> ```
+
+One emoji only, as a marker on the Next line: ▶️ next step · ⚠️ when the hand-off carries a blocker or a warning (e.g. a same-tool audit, `BLOCKED`, brief-check gaps handed back to the planner). None inside the fence.
+
+Claude first: planning and audit in Cowork, building in the executor tool; another vendor's tool only when Claude is unavailable (then audits go through a subagent — `/audit` §1).
+
+**Model and effort — by the work, not by the agent.** The planner writes the brief's *Run with* row from triage; every hand-off repeats the row for the next step. Tiers map to each tool's own picker (Claude: standard = Sonnet, strongest = Opus).
+
+| Work | Model | Effort |
+|---|---|---|
+| Chore / docs / no flags | standard | low |
+| Normal brief, 0 hard flags | standard | medium |
+| 1 hard flag: concurrency/tx · integration · migration on existing rows; UI `screens`; 3+ e2e files | standard | high |
+| Hard flag money/auth/personal data · `owner-accepted oversize` · new pattern with unknowns | strongest | high |
+| Fix round 1 | as the brief | as the brief |
+| Fix round 2 | one row up | one row up |
+| Fix round 3, or a debug stuck after 2 attempts | strongest | max |
+| Dry Run walk · `scan` · pre-handoff `/review` subagent | standard | medium |
+| Audit, no hard flag | standard | medium |
+| Audit, any hard flag | strongest | high |
+
+Step up one row when the owner marks the brief critical (money moves, data can be lost, demo/deadline path).
 
 **No manual tasks for Field:** hand work to an executor as a command or a docs-branch line — never as shell steps for Field. Protected edits: the agent shows the exact diff, Field OKs, the agent writes.
+
+**Subagents** serve two purposes only: independence (the one who did the work does not check it) and context isolation (heavy reading returns a summary). Never for decisions, owner interviews or writing code.
+- Use: the pre-handoff `/review` in `execute` (fresh subagent, table only, edits nothing → handoff *Pre-handoff review*: reviewer · findings · fixed) and repo reading in `/new-feature` / `/new-defect` (read-only, one precise question, ≤ 15 bullets with `path:line`).
+- Spot-check 1–2 citations before using a result.
+- Audit by the builder tool (Claude unavailable): a subagent with no conversation context does the audit; the session only passes inputs and saves the report (`/audit` §1).
+- No subagent tool → do the step yourself and say so (`self-review`); for an audit, a fresh session instead. Correctness never depends on the subagent.
 
 ## 5. Field Guard
 The Guard (triggers, what counts as approved, procedure, recording rule) lives in `AGENTS.md` so every session sees it.
@@ -139,7 +185,7 @@ The Guard (triggers, what counts as approved, procedure, recording rule) lives i
 |---|---|
 | pre-commit (seconds) | project linter on staged files; conventional commit message (scope optional; `Revert "` passes) |
 | pre-push (≤ 1–2 min) | typecheck + affected unit tests — blocking; skipped only when every pushed commit touches `docs/**`; `--no-verify` must be disclosed in the handoff |
-| CI = G2 (check `ci`) | affected lint / typecheck / test · e2e with services · OpenAPI check (backend) · **e2e lock** (`scripts/field-kit/check-lock.sh`) |
+| CI = G2 (check `ci`) | affected lint / typecheck / test · e2e with services · OpenAPI check (backend) · **e2e lock** (`scripts/field-kit/check-lock.sh`) · **audit independence** at H (`scripts/field-kit/check-audit.sh`: a tool that built or fixed the brief audits only as `subagent` / `fresh session`) |
 | Audit = G3 | The ID rows of `docs/rules/audit.md`, each answered with evidence: ACs (A) · tests and lock (T) · protected paths, trailers, triage (P) · flag checklists (F) · `ui.md` rows and result screenshots (U) · `[review]` rule IDs (R) · docs and handoff (D). A `Must fix` cites a reference; anything else is noted *Outside the checklist* and Field decides |
 
 - **G1:** the brief's gate commands + run proof (Section 3.3 step 4).
@@ -166,7 +212,7 @@ Main is the only long-lived branch. Branch `feat/BRIEF-###-<slug>` (or `fix/…`
 
 **S..H integrity:** the audit reviews S; the report lands at H. Before merge, `git diff --name-only S..H` must contain only `docs/audits/BRIEF-###.md` and `docs/handoffs/BRIEF-###.md`. Anything else → re-audit.
 
-**Merge authority:** Field's own PRs are pre-approved once audit PASS, S..H is evidence-only and `ci` is green on H. Metee's PRs need Field's explicit `อนุมัติ merge BRIEF-###` (`approve merge`) for the exact H — before approval present PR, brief revision, H, audit result, G1/G2 evidence, zero open Must fix and remaining limits; Metee's PRs never use admin bypass. `pr-review` checks authority **before** any approval; when the PR author is the current GitHub user it skips `gh pr review --approve` (GitHub refuses self-approval).
+**Merge authority:** Every PR — Field's own too — merges only on Field's explicit `approve merge BRIEF-###` (`อนุมัติ merge`) for the exact H, after the `pr-review` phase found audit PASS, S..H evidence-only and `ci` green on H. For Metee's PRs, present PR, brief revision, H, audit result, G1/G2 evidence, zero open Must fix and remaining limits before approval; Metee's PRs never use admin bypass. The merge phase checks authority **before** any approval; when the PR author is the current GitHub user it skips `gh pr review --approve` (GitHub refuses self-approval).
 
 **Merge method:** merge commits only (`gh pr merge --merge --match-head-commit <H>`); never squash or rebase. `--admin` only where `ops/github/README.md` allows it (team profile, CI green on H). After merge: `git worktree remove .worktrees/BRIEF-###`, delete the branch, `git pull --ff-only` in the main checkout. Merged PR = Done.
 

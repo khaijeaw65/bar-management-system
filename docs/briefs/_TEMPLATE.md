@@ -2,12 +2,14 @@
 
 | | |
 |---|---|
-| **Owner** | Field · **Implementer** <id> (<tool>) · **Auditor** Cowork (fallback Codex) |
+| **Owner** | Field · **Implementer** <id> (<tool>) · **Auditor** Cowork |
 | **Type** | Feature · Defect · Chore |
 | **Link** | `Feature: <f>` → [requirements](../features/<f>/requirements.md) · `Defect: DEFECT-###` · `standalone` (cites `docs/FRD.md` section) |
 | **Status** | Draft · Ready (merged PR = Done) · **Revision** 1 |
 | **Depends on** | <`BRIEF-###` — merged / not merged · or `none`> · **Unblocks** <`BRIEF-###` or `none`> |
 | **Sections on** | <tokens: `e2e` `runproof` `ui` `guard` `repro`> |
+| **UI** | none · small (existing screen improved: before / after screenshots, no new design) · screens (approved boards from `/new-feature` Stage 3) |
+| **Run with** | build: <standard · strongest> / <low · medium · high · max> · audit: <tier> / <effort> — from workflow §4 *Model and effort* |
 | **Flags** | <none · or: new pattern · concurrency/tx · money/auth/personal data · integration · migration on existing rows · unknowns> — hard flags ≤ 1 (or `owner-accepted oversize`) |
 
 ## 1. Goal
@@ -56,7 +58,7 @@ Executor writes these at Step 0, runs them red, commits test files only as `test
 <!-- UI: name the screen + action; the executor attaches one result screenshot per screen AC (mandatory). Defect: replay the repro. Not feasible → narrow it here before Ready. -->
 
 ## 8. UI  *(ui)*
-<Screens, `ui.md` rows and design boards this brief delivers (approved snapshot only); tokens/components used. Values the boards leave open (found by the Dry Run) are Pre-decided in §9.>
+`small`: the screen, what changes, and the before screenshot (`.field-kit/proof/before-<screen>.png`, taken at Step 0). `screens`: <Screens, `ui.md` rows and design boards this brief delivers (approved snapshot only); tokens/components used. Values the boards leave open (found by the Dry Run) are Pre-decided in §9.>
 
 ## 9. Guard — unlocks and pre-decided items  *(guard)*
 - **Unlocked protected files** (exact paths, or `none`):

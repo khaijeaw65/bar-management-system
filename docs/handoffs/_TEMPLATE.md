@@ -32,6 +32,12 @@ One row per commit carrying `Approved-by:` (`session` · `e2e-change`), written 
 |---|---|---|---|
 | | | | |
 
+## Pre-handoff review
+One line: reviewer (`subagent` / `self-review`) · findings (Must / Suggest counts) · fixed (Must items fixed).
+
+## Brief check
+`pass · YYYY-MM-DD` (execute §1b) — or the gaps that sent the brief back, and the revision that closed them.
+
 ## Builder's choices
 One row per item the brief left to the executor under *Builder's choice*. None → `none`.
 
@@ -59,11 +65,13 @@ A screen AC without a screenshot of its result from the running build → status
 - **Spec vs reality gaps:** <…>
 - **Compromises:** <…>
 - **Callers affected** (shared service / repository / transaction boundary changed → caller tests re-run): <…>
+- **Files outside the code map** (brief §4 / §9) — each with why: <none · `path` — reason>
 - **Out-of-scope defects found:** <none · or `DEFECT-###` logged>
 - **Living docs updated / env keys / migrations to run:** <…>
 
 <!-- Fix rounds append here:
 ### Fix round <N> — <new S>
+- Implementer: <id> (<tool>)
 - `#<n> [<row>] ✓ <reproduced failing → proof passing>` — one line per FIX item
 - Found, not fixed (outside the FIX list): <… or none>
 - Gates re-run: <commands + results> · Run proof: <…> · Caller tests: <…>

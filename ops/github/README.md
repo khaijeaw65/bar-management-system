@@ -5,7 +5,7 @@ Goal: nothing reaches `main` without a green `ci` check, and no agent can skip i
 
 ## Layer 1 — process guard (always, free)
 
-- Agents merge only via `pr-review` (`approve merge BRIEF-###`): it checks the gates on the exact head first.
+- Agents merge only on the owner's `approve merge BRIEF-###` (`pr-review` merge phase), after the review phase's verdict on the exact head.
 - **Merge commits only** — never squash or rebase (the audit's `S..H` check needs the commits).
 - Nobody pushes to `main`. Local safety net: `.githooks/pre-push` refuses any push to `refs/heads/main` (except creating `main` on a new, empty remote).
 
