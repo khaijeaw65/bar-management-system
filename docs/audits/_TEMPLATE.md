@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Auditor** | <tool> (assigned by <source>) · **Date** YYYY-MM-DD |
+| **Auditor** | <tool> (<separate tool · subagent · fresh session>; assigned by <source>) · **Date** YYYY-MM-DD — a tool that built or fixed the brief audits only as `subagent` / `fresh session` (CI `audit-check`) |
 | **Brief revision** | <n> · **Audited S** `<sha>` · **Lock commit** `<sha>` |
 | **Flags** | <from brief — which flag checklists apply> |
 | **Recommendation** | PASS · CHANGES REQUIRED · BLOCKED |
@@ -14,7 +14,7 @@ Rows and references: `docs/rules/audit.md`. One line per row — `pass` + eviden
 |---|---|---|
 | A1 | | |
 | T1 · T2 | | |
-| P1 · P2 | | |
+| P1 · P2 · P3 | | |
 | F: <TX-1 … / SEC-… / INT-… / MIG-…> | | |
 | U1 · U2 *(ui)* | | |
 | R1 | | |
@@ -38,7 +38,8 @@ Every `Must fix` cites a row **and** its reference (AC · rule ID · flag-checkl
 <CHANGES REQUIRED only — the list the executor works from, nothing else: one line per `Must fix`: `#<n> [<row>] <what must be true after the fix>`.>
 
 ## Next
-`Next → in <Executor>: ship BRIEF-###` · `fix BRIEF-### — audit round <n>` · BLOCKED: <DR / decision needed>
+▶️ **Next → <Executor>** · model <tier> · effort <level> — <why>, then the command alone in a fence: `ship BRIEF-###` · `fix BRIEF-### — audit round <n>` · or BLOCKED: <DR / decision needed> (workflow §4 *Hand-off message*)
 
 <!-- Re-audits append: ## Re-audit — YYYY-MM-DD · <new S> · round <n>
+     Auditor: <tool> (<separate tool · subagent · fresh session>)   (own line — CI checks it against the handoff)
      Scope: the fixed findings + the fix commits' diff only (docs/rules/audit.md §4). -->

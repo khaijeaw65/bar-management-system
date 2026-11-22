@@ -8,13 +8,16 @@
 #   - each locked file must equal its last approved version (the lock, or the newest commit touching it with
 #     `Approved-by: <owner> (e2e-change)`); reverts are fine, history is never rewritten;
 #   - no `.only` / `.skip` in test files changed on the branch.
-# Skips: main, and auto/** or docs/** branches without a BRIEF id. Any branch naming BRIEF-### is checked.
+# Skips: main, auto/** or docs/** branches without a BRIEF id, and IDs in $LEGACY_BRIEFS (space-separated,
+# set in ci.yml — briefs seeded before the lock existed). Any other branch naming BRIEF-### is checked.
 set -euo pipefail
 
 BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-$(git rev-parse --abbrev-ref HEAD)}}"
 BASE_REF="${LOCK_BASE_REF:-origin/main}"
 ID=$(printf '%s' "$BRANCH" | grep -oE 'BRIEF-[0-9]+' | head -n1 || true)
 if [ "$BRANCH" = main ] || [ -z "$ID" ]; then echo "lock: skip ($BRANCH)"; exit 0; fi
+# Briefs seeded under an older kit line have no seed / lock commits to check (history is never rewritten).
+case " ${LEGACY_BRIEFS:-} " in *" $ID "*) echo "lock: skip — $ID is listed in LEGACY_BRIEFS"; exit 0;; esac
 
 fail() { echo "lock: FAIL — $*"; exit 1; }
 TEST_RE='(\.(e2e-)?spec\.[cm]?[jt]sx?|\.test\.[cm]?[jt]sx?)$|(^|/)(test|tests|e2e|__tests__)/'

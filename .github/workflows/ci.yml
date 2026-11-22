@@ -101,20 +101,16 @@ jobs:
   lock:
     runs-on: ubuntu-latest
     env:
-      # Briefs seeded before workflow Rev 24 (Cowork-seeded e2e, no lock commit) finish under Rev 23 — skip the lock check.
+      # Briefs seeded before workflow Rev 24 (Cowork-seeded e2e, no lock commit) finish under Rev 23 — check-lock.sh skips them (check-audit still runs).
       # Remove an ID once its PR is merged; delete the list when it is empty.
       LEGACY_BRIEFS: 'BRIEF-022 BRIEF-059 BRIEF-060 BRIEF-062 BRIEF-065 BRIEF-900'
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - name: Acceptance lock
-        run: |
-          BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          ID=$(printf '%s' "$BRANCH" | grep -oE 'BRIEF-[0-9]+' | head -n1 || true)
-          if [ -n "$ID" ] && printf ' %s ' "$LEGACY_BRIEFS" | grep -q " $ID "; then
-            echo "lock: skip — $ID was seeded before Rev 24 (workflow §9 transition)"; exit 0
-          fi
-          bash scripts/field-kit/check-lock.sh
+        run: bash scripts/field-kit/check-lock.sh
+      - name: Audit independence (clean context: a builder tool audits only as subagent / fresh session; runs once the audit report is on the branch)
+        run: bash scripts/field-kit/check-audit.sh
 
   ci:
     if: always()

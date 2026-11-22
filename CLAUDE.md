@@ -80,21 +80,21 @@ Never edit without an exact brief unlock (brief §9 *Guard — unlocks*) or Fiel
 
 ## Hard rules
 1. **Never decide alone** — Guard triggers go through a DR.
-2. **Never audit work you implemented, fixed or paired on** — refuse and name Cowork.
+2. **Never audit work you implemented, fixed or paired on** — audits run from the main checkout on `main` in a clean context: Cowork, or a subagent / fresh session when only the builder tool is available (`/audit` §1). CI blocks the merge when a builder tool audits without saying so.
 3. **Not run is never pass** — a required gate or run proof not run → status `BLOCKED`, never `Implemented`. Report exact commands, exits, limits.
 4. **2-attempt stop** — a step still red after 2 fix attempts → stop and report.
 5. **Bans (`docs/rules/core.md`):** no type cheats (`as any`, `as unknown as`, `@ts-ignore`), no silent catch or invented `?? ''` fallbacks, no fake tests, no dead code / shims.
 6. **Do not reintroduce cut features:** offline mode, member QR, staff performance analytics.
 7. **Every brief runs in its own worktree** `.worktrees/BRIEF-###`; the main checkout stays on `main`. Never `git worktree prune` / `remove` from a VM session.
-8. **Never push to `main`**; merge only through `pr-review` (merge commit only). `.env*` files are never committed.
+8. **Never push to `main`**; merge only on the owner's explicit `approve merge BRIEF-###` (the `pr-review` merge phase), merge commit only. `.env*` files are never committed.
 9. **No services beyond DR-033's `web` / `api` / `worker` / `ml`, no Kubernetes/EKS** before ECS is stable and shipping. **No LLM / OpenAI dependency anywhere** (DR-032).
 10. **Architecture and database rules above are locked** — `PermissionsGuard` only, `save()` not `update()` on audited entities, `audit_log` append-only, snapshots immutable, `gateway_tx_id` checked first.
 11. **Simple before complex** — no premature abstractions; inside → out steps, 1 step = 1 commit; explain WHY a solution is chosen.
 
 **Approval policy:** routine brief-scoped work and task-branch Git (commit / push / PR) proceed without repeated questions; critical decisions, destructive actions, main merges and releases need Field's explicit authority (`docs/rules/workflow.md` Section 4).
 
-## Commands (detail: `docs/rules/workflow.md` Section 4)
-`/new-brief` (default entry) · `/new-feature` · `/new-defect` · `/new-dr` · `scan BRIEF-###` · `execute BRIEF-###` (`ทำ`) · `fix BRIEF-### — audit round <n>` · `ship BRIEF-###` · `audit BRIEF-###` (`ตรวจ`) · `/review` · `pr-review` (`approve merge BRIEF-###` · `อนุมัติ merge`) · `/checkpoint` · `resume` · `/autopilot` · `onboard kj|methee` · `status BRIEF-###` (`สถานะ`) · `handoff`.
+## Commands (detail: `docs/rules/workflow.md` Section 4 — work that moves to another tool or session ends with a copyable hand-off block naming tool, model and effort; a next step in the same session is just done; only a decision the owner must make is asked, as one plain question; git steps are never asked)
+`onboard kj|methee` (first session) · `/new-brief` (default entry) · `/new-feature` · `/new-defect` · `/new-dr` · `scan BRIEF-###` · `execute BRIEF-###` (`ทำ`) · `fix BRIEF-### — audit round <n>` · `ship BRIEF-###` · `audit BRIEF-###` (`ตรวจ`) · `/review` · `pr-review` (`approve merge BRIEF-###` · `อนุมัติ merge`) · `/checkpoint` · `resume` · `/autopilot` · `status BRIEF-###` (`สถานะ`) · `handoff`.
 Tools without these skills: find the command in `docs/rules/workflow.md` Section 4 and read the section its row names before acting.
 
 
